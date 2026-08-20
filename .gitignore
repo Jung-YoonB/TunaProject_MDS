@@ -14,7 +14,6 @@ local.properties
 .recommenders
 .externalToolBuilders/
 *.launch
-.factorypath
 .buildpath
 .target
 
@@ -51,7 +50,6 @@ replay_pid*
 .classpath
 .factorypath
 .project
-.settings
 .springBeans
 .sts4-cache
 application*.properties
@@ -72,6 +70,9 @@ pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
 ### VisualStudioCode ###
 .vscode/*
