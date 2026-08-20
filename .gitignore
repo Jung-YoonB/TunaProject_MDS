@@ -46,6 +46,17 @@ out/
 hs_err_pid*
 replay_pid*
 
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+application*.properties
+application*.yml
+
 ### macOS ###
 .DS_Store
 .AppleDouble
@@ -76,3 +87,13 @@ Thumbs.db:encryptable
 ehthumbs.db
 $RECYCLE.BIN/
 *.stackdump
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
