@@ -11,7 +11,7 @@
 		</p>
 	</c:if>
 	
-	<form action="/member/join" method="post">
+	<form id="joinForm" action="/member/join" method="post">
 		<div>  <!-- 최외곽박스 -->
 			<div>  <!-- 제목 -->
 				<h2>회원가입</h2>
