@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>manageOrderDelivery</title>
+	<link rel="stylesheet" href="/resources/static/css/default.css">
+</head>
+<body>
+	<header>
+			<div>로고(이미지/메인 페이지 이동)</div>
+			<div>검색창</div>
+			<div>마이페이지, 찜, 장바구니(아이콘)</div>
+			<div>로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
+		</header>
+	<main>
+		<!-- 글자 영역 -->
+		<h2>주문/배송 관리 페이지</h2>
+		<!-- 최상단 영역 (대쉬보드 현황판) -->
+		<div>
+			발품 상태 (개수)
+			배송중인 물품 (개수)
+			배송 완료 상품 (개수)
+			환불된 상품 (개수)
+		</div>
+		<!-- 상단 영역 (검색 필터) -->
+		<div>
+			상품 기간 지정 (시작일 ~ 종료일)
+			주문 내용 검색 (드롭박스(태그)/검색창) 검색(버튼)
+			주문 상태 (드롭박스: 결제 대기, 결제 완료, 배송 대기, 배송 중, 배송 완료, 주문 취소)
+			가격 설정 (드롭박스: 가격대(tag))
+		</div>
+		<!-- 중간 영역 (전체 배송 조회) -->
+		<div>
+			체크 박스 (전체 선택 포함)
+			주문 번호
+			주문 기간
+			회원 이름
+			상품 게시글 제목, 상품 이름, 옵션 이름 + 주문 수량 (n개) 
+			주문 당시 상품 금액
+			주문 상태 (단순 표시 :결제 대기, 결제 완료, 배송 대기, 배송 중, 배송 완료, 주문 취소)
+			송장 번호
+			<!-- if -->
+				관리 버튼
+				결제 대기 -> 상태 변경 불가 표시
+				결제 완료 -> 배송 준비 버튼 노출 -> 클릭 시 comfirm 후 배송 대기 상태로 변경
+				배송 대기 -> 배송 시작 버튼 노출 -> 클릭 시 comfirm 후 배송 중 상태로 변경
+				배송 중 -> 배송 완료 버튼 노출 -> 클릭 시 comfirm 후 배송 완료 상태로 변경
+				배송 완료 -> 상태 변경 불가 표시
+			<!-- if -->
+		</div>
+		<!-- 하단 영역 (수동 관리 버튼) -->
+		<div>
+			Excel 다운로드
+			선택된 상품 상세 관리 페이지 이동 버튼
+		</div>
+		<!-- 최하단 영역 (페이지 번호) -->
+		<div>
+			← [1] [2] ... [5] →
+		</div>
+	</main>
+	<footer>
+		<div>
+			<div>
+				<h2>Masion De SAJO</h2>
+				<address>
+					<p>주소지</p>
+					<p>우편번호</p>
+					<p>고객센터번호</p>
+				</address>
+			</div>
+			<!-- 우측: 약관 및 고객센터 메뉴 -->
+			<nav>
+				<ul>
+					<li><a href="#">이용약관</a></li>
+					<li><a href="#">개인정보처리방침</a></li>
+					<li><a href="#">사업자정보</a></li>
+					<li><a href="#">고객센터</a></li>
+				</ul>
+			</nav>
+		</div>
+		<!-- 구분선 -->
+		<hr>
+		<!-- 하단: 저작권 정보 -->
+		<div>
+			<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
+		</div>
+	</footer>
+</body>
+</html>
