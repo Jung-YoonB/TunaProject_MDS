@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart</title>
+	<link rel="stylesheet" href="/resources/static/css/default.css">
+</head>
+<body>
+	<header>
+			<div>로고(이미지/메인 페이지 이동)</div>
+			<div>검색창</div>
+			<div>마이페이지, 찜, 장바구니(아이콘)</div>
+			<div>로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
+		</header>
+	<main>
+		<!-- 글자 영역 -->
+		<h2>장바구니</h2>
+		<!-- 상단 영역 -->
+		<div>전체 선택(체크박스)</div>
+		<div>선택 상품 삭제(버튼)</div>
+		<!-- 중간 상단: 상품란 -->
+		<div>
+			체크박스
+			상품 썸네일
+			상품 게시글 제목
+			상품 이름
+			상품 옵션 이름
+			<!--if -->
+				상품 판매가 + 회원 등급 할인 적용 표시 - 등급에 따라 표시
+				상품 할인가
+			<!--if -->
+			상품 수량 조절기
+			삭제 (버튼)
+		</div>
+		<!-- 중간 하단: 결제 정보란 -->
+		<div>
+			<h4>결제 예상 금액</h4>
+			<!--if -->
+				상품 판매가 + 회원 등급 할인 적용 표시 - 등급에 따라 표시
+				상품 할인가
+				배송비 (가격)
+				특정 금액 이상 배송비 0원
+			<!--if -->
+			총 결제 금액 (총 합산)
+		</div>
+		<!-- 하단 영역: 버튼-->
+		<div>
+			주문하기 (버튼)
+		</div>
+	</main>
+	<footer>
+		<div>
+			<div>
+				<h2>Masion De SAJO</h2>
+				<address>
+					<p>주소지</p>
+					<p>우편번호</p>
+					<p>고객센터번호</p>
+				</address>
+			</div>
+			<!-- 우측: 약관 및 고객센터 메뉴 -->
+			<nav>
+				<ul>
+					<li><a href="#">이용약관</a></li>
+					<li><a href="#">개인정보처리방침</a></li>
+					<li><a href="#">사업자정보</a></li>
+					<li><a href="#">고객센터</a></li>
+				</ul>
+			</nav>
+		</div>
+		<!-- 구분선 -->
+		<hr>
+		<!-- 하단: 저작권 정보 -->
+		<div>
+			<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
+		</div>
+	</footer>
+</body>
+</html>
