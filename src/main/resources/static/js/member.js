@@ -1,5 +1,7 @@
 /* 회원가입 페이지 */
 
+// css 용 클래스 msg-success, msg-error 로 틀만 잡아둠. 나중에 교체.
+
 // 비밀번호 일치 여부 확인
 const loginPw = document.querySelector("#loginPw");  // 비밀번호 입력창
 const loginPwConfirm = document.querySelector("#loginPwConfirm"); // 비밀번호 확인 입력창
@@ -20,7 +22,7 @@ function validatePwConfirm() {
 	checkPw = loginPw.value === loginPwConfirm.value;
 	
 	confirmResult.textContent = checkPw ? "비밀번호가 일치합니다." : "비밀번호가 일치하지 않습니다.";
-	confirmResult.className = checkPw ? "" : ""; // css 적용을 위해 클래스 추가용 
+	confirmResult.className = checkPw ? "msg-success" : "msg-error"; // css 적용을 위해 클래스 추가용 
 }
 
 loginPw.addEventListener('input', validatePwConfirm);
@@ -34,14 +36,14 @@ loginIdInput.addEventListener("input", function(){
 	checkId = null;
 });
 
-// 아이디 [중복확인] 버튼의 클릭 이벤트 리스너 추가
+// 아이디 중복확인 버튼의 클릭 이벤트 리스너 추가
 const checkIdBtn = document.querySelector("#idCheckBtn");
 checkIdBtn.addEventListener("click", async function(){
 	const loginId = loginIdInput.value.trim();
 	// 아이디 값이 입력되지 않았을 경우, 요청 x
 	if (loginId.length === 0) {
 		checkIdResult.textContent = "아이디를 입력해주세요.";
-		checkIdResult.className = ""; // 오류용 css 적용을 위한 클래스 추가용
+		checkIdResult.className = "msg-error"; // 오류용 css 적용을 위한 클래스 추가용
 		checkId = null;
 		return;
 	}
@@ -58,14 +60,14 @@ checkIdBtn.addEventListener("click", async function(){
 	
 	// console.log(result);
 	checkIdResult.textContent = result.message;
-	checkIdResult.className = result.data ? "" : ""; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
+	checkIdResult.className = result.data ? "msg-success" : "msg-error"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
 	
 	checkId = result.data ? null : loginId; 
 	} catch(error) {
 		console.log(error);
 		
 		checkIdResult.textContent = "중복 확인 중 오류가 발생했습니다.";
-		checkIdResult.className = ""; // 오류용 css 적용을 위한 클래스 추가용
+		checkIdResult.className = "msg-error"; // 오류용 css 적용을 위한 클래스 추가용
 		
 		checkId = null;
 	}
