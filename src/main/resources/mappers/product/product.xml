@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.kh.sajotuna.mds.product.model.mapper.ProductMapper">
+
+	<select id="getList" resultType="ProductListDTO">
+		SELECT 
+    P.PRODUCT_ID,           
+    P.PRODUCT_TITLE, 
+    MIN(PO.OPTION_PRICE) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS PRICE,
+    NVL((SELECT ROUND(AVG(SCORE), 1) FROM REVIEW R WHERE R.PRODUCT_ID = P.PRODUCT_ID), 0.0) AS SCORE
+	FROM PRODUCT P 
+	JOIN CATEGORY_DETAIL CD ON P.PRODUCT_ID = CD.PRODUCT_ID
+	JOIN CATEGORY C ON CD.CATEGORY_ID = C.CATEGORY_ID
+	JOIN OPTION_DETAIL OD ON P.PRODUCT_ID = OD.PRODUCT_ID
+	JOIN PRODUCT_OPTION PO ON OD.OPTION_ID = PO.OPTION_ID
+	GROUP BY 
+    P.PRODUCT_ID,           
+    P.PRODUCT_TITLE
+    order by product_id desc
+	</select>
+</mapper>
