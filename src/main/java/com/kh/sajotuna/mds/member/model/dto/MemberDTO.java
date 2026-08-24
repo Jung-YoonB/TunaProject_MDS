@@ -1,7 +1,6 @@
 package com.kh.sajotuna.mds.member.model.dto;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -19,15 +18,18 @@ import lombok.ToString;
 public class MemberDTO {
 
 	private Long memberId;
+	private Long gradeId;
+	private Long totalAmount;
 	private String memberName;
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate birth;
-	private Character gender;
+	private String gender;
 	private String loginId;
 	private String loginPw;
 	private String nickname;
 	private String email;
-	private LocalDateTime createdAt;
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private LocalDate createdAt;
 	private String phone;
 	private String role;
 	private Integer memberStatus;

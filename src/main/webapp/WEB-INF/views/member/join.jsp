@@ -16,7 +16,13 @@
 			<div>  <!-- 제목 -->
 				<h2>회원가입</h2>
 			</div>
-
+			
+			<!-- 히든 타입으로 초기값 세팅 -->
+			<input type="hidden" name="gradeId" value="1">
+			<input type="hidden" name="totalAmount" value="0">
+			<input type="hidden" name="role" value="USER">
+			<input type="hidden" name="memberStatus" value="1">
+			
 			<div> <!-- 아이디 입력 + 중복체크 버튼 -->
 				<label for="loginId">아이디</label>
 				<div> 
@@ -37,9 +43,9 @@
 				<p id="pwCheckMsg"><!--비밀번호 확인 후 표시할 영역--></p>
 			</div>
 
-			<div> <!-- 이름 입력 -->
+			<div> <!-- 이름 입력 / 한글 2~5자만 -->
 				<label for="memberName">이름</label>
-				<input type="text" id="memberName" name="memberName" required>
+				<input type="text" id="memberName" name="memberName" pattern="^[가-힣]{2,5}$" title="이름은 한글 2~5자 이내로 입력해주세요." required>
 			</div>
 
 			<div>  <!-- 생일 입력 -->
@@ -55,19 +61,31 @@
 				<label for="genderF">여자</label>
 			</div>
 			
-			<div> <!-- 닉네임 입력 -->
+			<div> <!-- 닉네임 입력 + 중복체크 버튼 -->
 				<label for="nickname">닉네임</label>
-				<input type="text" id="nickname" name="nickname" required>
+				<div>
+					<input type="text" id="nickname" name="nickname" required>
+					<button type="button" id="nickCheckBtn">중복확인</button>
+				</div>
+				<p id="nickCheckMsg"></p> <!--중복 확인 체크 후 표시할 영역-->
 			</div>
 			
-			<div> <!-- 이메일 입력 -->
+			<div> <!-- 이메일 입력 + 중복체크 버튼 -->
 				<label for="email">이메일</label>
-				<input type="email" id="email" name="email" autocomplete="off">
+				<div>
+					<input type="email" id="email" name="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="올바른 이메일 형식으로 작성해주세요." required>
+					<button type="button" id="emailCheckBtn">중복확인</button>
+				</div>
+				<p id="emailCheckMsg"></p> <!--중복 확인 체크 후 표시할 영역-->
 			</div>
 			
-			<div> <!-- 전화번호 입력 -->
+			<div> <!-- 전화번호 입력 + 중복체크 버튼 -->
 				<label for="phone">전화번호(* '-' 없이 숫자만 입력)</label>
-				<input type="text" id="phone" inputmode="numeric" pattern="01[0-9]{8,9}" maxlength="11" name="phone" required>
+				<div>
+					<input type="text" id="phone" inputmode="numeric" pattern="01[0-9]{8,9}" maxlength="11" name="phone" required>
+					<button type="button" id="phoneCheckBtn">중복확인</button>
+				</div>
+				<p id="phoneCheckMsg"></p> <!--중복 확인 체크 후 표시할 영역-->
 			</div>
 
 			<div> <!-- 가입 버튼 -->
