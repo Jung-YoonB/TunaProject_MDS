@@ -1,103 +1,110 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주문 배송 페이지</title>
-	<link rel="stylesheet" href="../css/default.css">
-</head>
-<body>
-	<header>
+	<head>
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>주문 배송 페이지</title>
+		<link rel="stylesheet" href="../css/default.css">
+	</head>
+	
+	<body>
+		<header>
 			<div id="logo_img">로고(이미지/메인 페이지 이동)</div>
 			<div id="search_box">검색창</div>
 			<div class="icon">마이페이지, 찜, 장바구니(아이콘)</div>
 			<div class="sign">로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
 		</header>
-	<main class="order-history" id="order-history-container" data-member-id="회원세션ID">
-		<!-- 글자 영역(Header) -->
-		<header class="page-header">
-		<h2>주문/배송 내역</h2>
-		</header>
-		<!-- 상단 영역 -->
-		<nav class="status-filter" aria-label="주문 상태 필터">
-			<ul>
-				<li><button type="button" class="active" data-status="all">전체</button></li>
-				<li><button type="button" data-status="preparing">배송준비중</button></li>
-				<li><button type="button" data-status="shipped">배송중</button></li>
-				<li><button type="button" data-status="delivered">배송완료</button></li>
-				<li><button type="button" data-status="canceled">주문취소</button></li>
-			</ul>
-		</nav>
-		<!-- 중간 영역 -->
-		<section class="order-list">
-			<article class="order-card" id="order-card-{Order.order_id}" data-order-id="{Order.order_id}" data-delivery-id="{Delivery.delivery_id}">
-				<!--상품 정보-->
-				<div class="order-header">
-					<span class="order-date">{Order.order-date}</span>
-					<span class="order-number">주문번호<strong>{Order.order-id}</strong></span>
-				</div>
-				<div class="order-body">
-					<div class="product-info">
-						<h3 class="product-name">{Product.product-name}</h3>
-						<p class="product-detail">{OrderDetail.qty}개 / {OrderDetail.price_fix}원</p>
-					</div>
-					<!--배송 상태 및 표시선-->
-					<div class="delivery-status">
-						<p class="status-text">{배송중}</p>
-						<div class="status-progress-bar2" aria-hidden="true">
-							<div class="progress-track"></div>
-							<div class="progress-fill"></div>
-						</div>
-					</div>
-				</div>
-				<!--하단 액션 버튼-->
-				<div class="order-action">
-					<button type="button" class="track-delivery-btn" data-tracking-no="{Delivery.delivry_no}">배송조회</button>
-					<button type="button" class="write-review-btn" data-product-id="{OrderDetail.product_id}">리뷰작성</button>
-				</div>
-			</article>
-		</section>
-				<!-- 하단 영역: 페이지 번호 -->
-		<nav class="pagination" aria-label="페이지 탐색">
-			<button type="button" class="btn-prev">← 이전</button>
-			<ol>
-				<li><button type="button" aria-current="page">1</button></li>
-				<li><button type="button">2</button></li>
-				<li><button type="button">3</button></li>
-				<li><button type="button">4</button></li>
-				<li><button type="button">5</button></li>
-			</ol>
-			<button type="button" class="btn-next">다음 →</button>
-		</nav>
-	</main>
-	<footer class="site-footer">
-		<!-- 상단: 회사 정보 및 nav -->
-		<div class="footer-top">
-			<!-- 좌측: 회사 정보 -->
-			<div class="company-info">
-				<h2>Masion De SAJO</h2>
-				<address>
-					<p>주소지</p>
-					<p>우편번호</p>
-					<p>고객센터번호</p>
-				</address>
-			</div>
-			<!-- 우측: 약관 및 고객센터 메뉴 -->
-			<nav class="footer-nav">
+		<main class="order-history" id="order-history-container" data-member-id="회원세션ID">
+			
+			<!-- 글자 영역(Header) -->
+			<header class="page-header">
+			<h2>주문/배송 내역</h2>
+			</header>
+			
+			<!-- 상단 영역 -->
+			<nav class="status-filter" aria-label="주문 상태 필터">
 				<ul>
-					<li><a href="#">이용약관</a></li>
-					<li><a href="#">개인정보처리방침</a></li>
-					<li><a href="#">사업자정보</a></li>
-					<li><a href="#">고객센터</a></li>
+					<li><button type="button" class="active" data-status="all">전체</button></li>
+					<li><button type="button" data-status="preparing">배송준비중</button></li>
+					<li><button type="button" data-status="shipped">배송중</button></li>
+					<li><button type="button" data-status="delivered">배송완료</button></li>
+					<li><button type="button" data-status="canceled">주문취소</button></li>
 				</ul>
 			</nav>
-		</div>
-		<!-- 구분선 -->
-		<hr class="footer-divider">
-		<!-- 하단: 저작권 정보 -->
-		<div class="footer-bottom">
-			<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
-		</div>
-	</footer>
-</body>
+			
+			<!-- 중간 영역 -->
+			<section class="order-list">
+				<article class="order-card" id="order-card-{Order.order_id}" data-order-id="{Order.order_id}" data-delivery-id="{Delivery.delivery_id}">
+					<!--상품 정보-->
+					<div class="order-header">
+						<span class="order-date">{Order.order-date}</span>
+						<span class="order-number">주문번호<strong>{Order.order-id}</strong></span>
+					</div>
+					<div class="order-body">
+						<div class="product-info">
+							<h3 class="product-name">{Product.product-name}</h3>
+							<p class="product-detail">{OrderDetail.qty}개 / {OrderDetail.price_fix}원</p>
+						</div>
+						<!--배송 상태 및 표시선-->
+						<div class="delivery-status">
+							<p class="status-text">{배송중}</p>
+							<div class="status-progress-bar2" aria-hidden="true">
+								<div class="progress-track"></div>
+								<div class="progress-fill"></div>
+							</div>
+						</div>
+					</div>
+					
+					<!--하단 액션 버튼-->
+					<div class="order-action">
+						<button type="button" class="track-delivery-btn" data-tracking-no="{Delivery.delivry_no}">배송조회</button>
+						<button type="button" class="write-review-btn" data-product-id="{OrderDetail.product_id}">리뷰작성</button>
+					</div>
+				</article>
+			</section>
+			
+			<!-- 하단 영역: 페이지 번호 -->
+			<nav class="pagination" aria-label="페이지 탐색">
+				<button type="button" class="btn-prev">← 이전</button>
+				<ol>
+					<li><button type="button" aria-current="page">1</button></li>
+					<li><button type="button">2</button></li>
+					<li><button type="button">3</button></li>
+					<li><button type="button">4</button></li>
+					<li><button type="button">5</button></li>
+				</ol>
+				<button type="button" class="btn-next">다음 →</button>
+			</nav>
+		</main>
+		
+		<footer class="site-footer">
+			<!-- 상단: 회사 정보 및 nav -->
+			<div class="footer-top">
+				<!-- 좌측: 회사 정보 -->
+				<div class="company-info">
+					<h2>Masion De SAJO</h2>
+					<address>
+						<p>주소지</p>
+						<p>우편번호</p>
+						<p>고객센터번호</p>
+					</address>
+				</div>
+				<!-- 우측: 약관 및 고객센터 메뉴 -->
+				<nav class="footer-nav">
+					<ul>
+						<li><a href="#">이용약관</a></li>
+						<li><a href="#">개인정보처리방침</a></li>
+						<li><a href="#">사업자정보</a></li>
+						<li><a href="#">고객센터</a></li>
+					</ul>
+				</nav>
+			</div>
+			<!-- 구분선 -->
+			<hr class="footer-divider">
+			<!-- 하단: 저작권 정보 -->
+			<div class="footer-bottom">
+				<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
+			</div>
+		</footer>
+	</body>
 </html>

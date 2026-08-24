@@ -1,97 +1,101 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>결과 검색창</title>
-	<link rel="stylesheet" href="../css/default.css">
-</head>
-<body>
-	<header>
-			<div id="logo_img">로고(이미지/메인 페이지 이동)</div>
-			<div id="search_box">검색창</div>
-			<div class="icon">마이페이지, 찜, 장바구니(아이콘)</div>
-			<div class="sign">로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
-		</header>
-	<main class="search-result-page">
-		<!-- 상단 영역: 메인 카테고리 -->
-		<nav id="category" aria-label="메인 카테고리">
-			<ul>
-				<li><button type="button">카테고리1</button></li>
-				<li><button type="button">카테고리 ... </button></li>
-				<li><button type="button">카테고리15</button></li>
-			</ul>
-		</nav>
-		<!-- 중간 영역: 검색창 및 상품 카드 -->
-		<section class="search-filter" aria-label="검색 및 필터">
-			<form class="search-form" action="/search">
-				<label for="searchInput" class="sr-only">검색어</label>
-					<input type="search" id="searchInput" placeholder="검색어를 입력하세요">	
-				<button type="submit">검색</button>
-			</form>
-			<div class="tag-selector">
-				<button type="button" class="tag-btn">태그1</button>
-				<button type="button" class="tag-btn">태그...</button>
-			</div>
-		</section>
-		<!-- 상품 카드 영역 (예시) -->
-		<section class="product-list" aria-label="검색 결과">
-			<article class="product-card">
-				<figure class="product-thumbnail">
-					<img src="" alt="">
-					<button type="button" class="btn-wishlist">찜하기</button>
-				</figure>
-				<div class="product-info">
-					<h2>상품 명칭</h2>
-					<p>상품 가격</p>
-				</div>
-				<div class="product-actions">
-					<button type="button" class="btn-cart">장바구니 담기</button>
-					<button type="button" class="btn-remove">찜 해제 - 이미 찜한 상품이면 찜하기 버튼이 찜 해제로</button>
-				</div>
-			</article>
-		<!-- 상품 카드 6개 정도? -->
-		</section>
-		<!-- 하단 영역: 페이지 번호 -->
-		<nav class="pagination" aria-label="페이지 탐색">
-			<button type="button" class="btn-prev">← 이전</button>
-			<ol>
-				<li><button type="button" aria-current="page">1</button></li>
-				<li><button type="button">2</button></li>
-				<li><button type="button">3</button></li>
-				<li><button type="button">4</button></li>
-				<li><button type="button">5</button></li>
-			</ol>
-			<button type="button" class="btn-next">다음 →</button>
-		</nav>
-	<footer class="site-footer">
-		<!-- 상단: 회사 정보 및 nav -->
-		<div class="footer-top">
-			<!-- 좌측: 회사 정보 -->
-			<div class="company-info">
-				<h2>Masion De SAJO</h2>
-				<address>
-					<p>주소지</p>
-					<p>우편번호</p>
-					<p>고객센터번호</p>
-				</address>
-			</div>
-			<!-- 우측: 약관 및 고객센터 메뉴 -->
-			<nav class="footer-nav">
+	<head>
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>결과 검색창</title>
+		<link rel="stylesheet" href="../css/default.css">
+	</head>
+	<body>
+		<header>
+				<div id="logo_img">로고(이미지/메인 페이지 이동)</div>
+				<div id="search_box">검색창</div>
+				<div class="icon">마이페이지, 찜, 장바구니(아이콘)</div>
+				<div class="sign">로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
+			</header>
+			
+		<main class="search-result-page">
+			<!-- 상단 영역: 메인 카테고리 -->
+			<nav id="category" aria-label="메인 카테고리">
 				<ul>
-					<li><a href="#">이용약관</a></li>
-					<li><a href="#">개인정보처리방침</a></li>
-					<li><a href="#">사업자정보</a></li>
-					<li><a href="#">고객센터</a></li>
+					<li><button type="button">카테고리1</button></li>
+					<li><button type="button">카테고리 ... </button></li>
+					<li><button type="button">카테고리15</button></li>
 				</ul>
 			</nav>
-		</div>
-		<!-- 구분선 -->
-		<hr class="footer-divider">
-		<!-- 하단: 저작권 정보 -->
-		<div class="footer-bottom">
-			<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
-		</div>
-	</footer>
-</body>
+			
+			<!-- 중간 영역: 검색창 및 상품 카드 -->
+			<section class="search-filter" aria-label="검색 및 필터">
+				<form class="search-form" action="/search">
+					<label for="searchInput" class="sr-only">검색어</label>
+						<input type="search" id="searchInput" placeholder="검색어를 입력하세요">	
+					<button type="submit">검색</button>
+				</form>
+				<div class="tag-selector">
+					<button type="button" class="tag-btn">태그1</button>
+					<button type="button" class="tag-btn">태그...</button>
+				</div>
+			</section>
+			
+			<!-- 상품 카드 영역 (예시) -->
+			<section class="product-list" aria-label="검색 결과">
+				<article class="product-card">
+					<figure class="product-thumbnail">
+						<img src="" alt="">
+						<button type="button" class="btn-wishlist">찜하기</button>
+					</figure>
+					<div class="product-info">
+						<h2>상품 명칭</h2>
+						<p>상품 가격</p>
+					</div>
+					<div class="product-actions">
+						<button type="button" class="btn-cart">장바구니 담기</button>
+						<button type="button" class="btn-remove">찜 해제 - 이미 찜한 상품이면 찜하기 버튼이 찜 해제로</button>
+					</div>
+				</article>
+			<!-- 상품 카드 6개 정도? -->
+			</section>
+				<!-- 하단 영역: 페이지 번호 -->
+				<nav class="pagination" aria-label="페이지 탐색">
+					<button type="button" class="btn-prev">← 이전</button>
+					<ol>
+						<li><button type="button" aria-current="page">1</button></li>
+						<li><button type="button">2</button></li>
+						<li><button type="button">3</button></li>
+						<li><button type="button">4</button></li>
+						<li><button type="button">5</button></li>
+					</ol>
+					<button type="button" class="btn-next">다음 →</button>
+				</nav>
+			</main>
+		<footer class="site-footer">
+			<!-- 상단: 회사 정보 및 nav -->
+			<div class="footer-top">
+				<!-- 좌측: 회사 정보 -->
+				<div class="company-info">
+					<h2>Masion De SAJO</h2>
+					<address>
+						<p>주소지</p>
+						<p>우편번호</p>
+						<p>고객센터번호</p>
+					</address>
+				</div>
+				<!-- 우측: 약관 및 고객센터 메뉴 -->
+				<nav class="footer-nav">
+					<ul>
+						<li><a href="#">이용약관</a></li>
+						<li><a href="#">개인정보처리방침</a></li>
+						<li><a href="#">사업자정보</a></li>
+						<li><a href="#">고객센터</a></li>
+					</ul>
+				</nav>
+			</div>
+			<!-- 구분선 -->
+			<hr class="footer-divider">
+			<!-- 하단: 저작권 정보 -->
+			<div class="footer-bottom">
+				<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
+			</div>
+		</footer>
+	</body>
 </html>
