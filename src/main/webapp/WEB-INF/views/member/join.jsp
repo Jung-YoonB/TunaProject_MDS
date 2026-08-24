@@ -1,7 +1,18 @@
 <%@ page language="java" contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-	<!-- <jsp:include page="/WEB-INF/views/common/header.jsp" /> -->
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>메종 드 사조 쇼핑몰</title>
+	</head>
+	<body>
+		<header >
+			<h1>메종 드 사조 쇼핑몰</h1>
+		</header>
+		<main>
+	<%-- <jsp:include page="/WEB-INF/views/common/header.jsp" /> --%>
 
 	
 	
@@ -65,9 +76,9 @@
 				<label for="nickname">닉네임</label>
 				<div>
 					<input type="text" id="nickname" name="nickname" required>
-					<button type="button" id="nickCheckBtn">중복확인</button>
+					<button type="button" id="nicknameCheckBtn">중복확인</button>
 				</div>
-				<p id="nickCheckMsg"></p> <!--중복 확인 체크 후 표시할 영역-->
+				<p id="nicknameCheckMsg"></p> <!--중복 확인 체크 후 표시할 영역-->
 			</div>
 			
 			<div> <!-- 이메일 입력 + 중복체크 버튼 -->
@@ -96,4 +107,11 @@
 	
 	<script src="/js/member.js"></script>
 	
-	<!-- <jsp:include page="/WEB-INF/views/common/footer.jsp" /> -->
+	
+	<%-- <jsp:include page="/WEB-INF/views/common/footer.jsp" /> --%>
+	</main>
+		<footer class="site-footer">
+			<p>Copyright 2026 커뮤니티 실습 - All Right Reserved.</p>
+		</footer>	
+		</body>
+	</html>
