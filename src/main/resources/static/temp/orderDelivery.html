@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>oderDelivery</title>
-	<link rel="stylesheet" href="/resources/static/css/default.css">
+	<link rel="stylesheet" href="../css/default.css">
 </head>
 <body>
 	<header>
@@ -39,7 +39,7 @@
 				<div class="order-body">
 					<div class="product-info">
 						<h3 class="product-name">{Product.product-name}</h3>
-						<p class="product-detail">{OrderDetail.qty}개 / {Order.total-price}원</p>
+						<p class="product-detail">{OrderDetail.qty}개 / {OrderDetail.price_fix}원</p>
 					</div>
 					<!--배송 상태 및 표시선-->
 					<div class="delivery-status">
@@ -57,6 +57,18 @@
 				</div>
 			</article>
 		</section>
+				<!-- 하단 영역: 페이지 번호 -->
+		<nav class="pagination" aria-label="페이지 탐색">
+			<button type="button" class="btn-prev">← 이전</button>
+			<ol>
+				<li><button type="button" aria-current="page">1</button></li>
+				<li><button type="button">2</button></li>
+				<li><button type="button">3</button></li>
+				<li><button type="button">4</button></li>
+				<li><button type="button">5</button></li>
+			</ol>
+			<button type="button" class="btn-next">다음 →</button>
+		</nav>
 	</main>
 	<footer class="site-footer">
 		<!-- 상단: 회사 정보 및 nav -->
