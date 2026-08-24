@@ -13,18 +13,26 @@
 			<div>마이페이지, 찜, 장바구니(아이콘)</div>
 			<div>로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
 		</header>
-	<main>
-		<!-- 글자 영역 -->
+	<main class="order-history" id="order-history-container" data-member-id="회원세션ID">
+		<!-- 글자 영역(Header) -->
+		<header class="page-header">
 		<h2>주문/배송 내역</h2>
+		</header>
 		<!-- 상단 영역 -->
-		<div>
-			전체
-			배송준비중
-			배송중
-			배송완료
-			주문취소
-		</div>
+		<nav class="status-filter" aria-label="주문 상태 필터">
+			<ul>
+				<li><button type="button" class="active" data-status="all">전체</button></li>
+				<li><button type="button" data-status="preparing">배송준비중</button></li>
+				<li><button type="button" data-status="shipped">배송중</button></li>
+				<li><button type="button" data-status="delivered">배송완료</button></li>
+				<li><button type="button" data-status="canceled">주문취소</button></li>
+			</ul>
+		</nav>
 		<!-- 중간 영역 -->
+		<section>
+			
+		</section>
+		
 		<div>
 			주문번호 / 주문일
 			상품 명칭

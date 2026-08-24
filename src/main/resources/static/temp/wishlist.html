@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wishlist</title>
+    <title>위시리스트</title>
 	<link rel="stylesheet" href="/resources/static/css/default.css">
 </head>
 <body>
@@ -14,42 +14,45 @@
 		<div class="sign">로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
 	</header>
 	<main>
-		<section class="whishlist-container">
+		<section class="wishlist-container" id="wishlist-container" data-member-id="회원세션ID">
 			<!-- 1. 페이지 제목 및 설명 구역-->
-			<div class="whishlist-header">
+			<div class="wishlist-header">
 				<h1>찜</h1>
 				<p>마음에 드는 상품을 모아두었어요</p>
 			</div>
 			<!-- 2. 찜한 상품 개수 및 정렬 필터 구역 -->
-			<div class="whishlist-header">
-				<div class="total-count">찜한 상품 N개</div>
-				<ul class="short-options">
-					<li class="active">인기순</li>
-					<li>낮은 가격순</li>
-					<li>높은 가격순</li>
+			<div class="wishlist-filter">
+				<div class="total-count" id="wish-total-count">찜한 상품 N개</div>
+				<ul class="short-options" id="wish-short-options">
+					<li class="active" data-sort="popular">인기순</li>
+					<li data-sort="price-asc">낮은 가격순</li>
+					<li data-sort="price-desc">높은 가격순</li>
 				</ul>
 			</div>
 			<!-- 3. 상품 카드 리스트 구역 -->
-			<div class="product-grid">
+			<div class="product-grid" id="wish-product-grid">
 				<!-- 상품 카드 영역 (예시) -->
-				<active class="product-card">
+				<article class="product-card" id="product-card-{product-id}" data-product-id="{Product.product-id}" data-wish-id="{Wish.wish-id}">
 					<div class="product-thumbnail">
-						<img>
-						<button>찜 아이콘 버튼(체크되어보이는 상태 -> 누르면 빈하트 /찜해제 효과 // 바로 사라지진 않음) </button>
+						<img src="" alt="">
+						<button type="button" class="btn-wish-toggle" data-action="remove-wish">
+							<!--찜 아이콘 버튼(체크되어보이는 상태 -> 누르면 빈하트 /찜해제 효과 // 바로 사라지진 않음)-->
+							<span class="sr-only">찜 해제</span>
+						</button>
 					</div>
 					<div class="product-info">
-						<h2>상품 명칭</h2>
-						<p>상품 가격</p>
+						<h2 class="product-name">{Product.product-name}</h2>
+						<p class="product-price">{가격 데이터}원</p>
 					</div>
 					<div class="product-actions">
 						<button type="button" class="btn-cart">장바구니 담기</button>
 						<button type="button" class="btn-purchase">결제하기</button>
 					</div>
-				</active>
+				</article>
 				<!-- 상품 카드 였던 것 -->
 			</div>
 			<!-- 4. 하단 안내 및 이동 버튼 구역 -->
-			<div class="whishlist-footer">
+			<div class="wishlist-footer">
 				<p>마음에 드는 상품을 찜해보세요</p>
 			</div>
 		</section> 

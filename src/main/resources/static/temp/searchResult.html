@@ -13,44 +13,62 @@
 			<div>마이페이지, 찜, 장바구니(아이콘)</div>
 			<div>로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
 		</header>
-	<main>
+	<main class="search-result-page">
 		<!-- 상단 영역: 메인 카테고리 -->
-		<div id="category">
+		<nav id="category" aria-label="메인 카테고리">
 			<ul>
-				<li>카테고리1</li>
-				<li>카테고리2</li>
-				<li>카테고리3</li>
-				<li>카테고리4</li>
-				<li>카테고리5</li>
-				<li>카테고리6</li>
-				<li>카테고리7</li>
+				<li><button type="button">카테고리1</button></li>
+				<li><button type="button">카테고리2</button></li>
+				<li><button type="button">카테고리3</button></li>
+				<li><button type="button">카테고리4</button></li>
+				<li><button type="button">카테고리5</button></li>
+				<li><button type="button">카테고리6</button></li>
+				<li><button type="button">카테고리7</button></li>
 			</ul>
-		</div>
+		</nav>
 		<!-- 중간 영역: 검색창 및 상품 카드 -->
-		<div>검색창</div>
-		<div>태그 선택창</div>
+		<section class="search-filter" aria-label="검색 및 필터">
+			<form class="search-form" action="/search">
+				<label for="searchInput" class="sr-only">검색어</label>
+					<input type="search" id="searchInput" placeholder="검색어를 입력하세요">	
+				<button type="submit">검색</button>
+			</form>
+			<div class="tag-selector">
+				<button type="button" class="tag-btn">태그1</button>
+				<button type="button" class="tag-btn">태그2</button>
+			</div>
+		</section>
 		<!-- 상품 카드 영역 (예시) -->
-		<active class="product-card">
-			<div class="product-thumbnail">
-				<img>
-				<button>찜하기</button>
-			</div>
-			<div class="product-info">
-				<h2>상품 명칭</h2>
-				<p>상품 가격</p>
-			</div>
-			<div class="product-actions">
-				<button type="button" class="btn-cart">장바구니 담기</button>
-				<button type="button" class="btn-remove">찜 해제</button>
-				<button type="button" class="btn-purchase">결제하기</button>
-			</div>
-		</active>
+		<section class="product-list" aria-label="검색 결과">
+			<article class="product-card">
+				<figure class="product-thumbnail">
+					<img src="" alt="">
+					<button type="button" class="btn-wishlist">찜하기</button>
+				</figure>
+				<div class="product-info">
+					<h2>상품 명칭</h2>
+					<p>상품 가격</p>
+				</div>
+				<div class="product-actions">
+					<button type="button" class="btn-cart">장바구니 담기</button>
+					<button type="button" class="btn-remove">찜 해제</button>
+					<button type="button" class="btn-purchase">결제하기</button>
+				</div>
+			</article>
 		<!-- 상품 카드 6개 정도? -->
+		</section>
 		<!-- 하단 영역: 페이지 번호 -->
-		<div>
-			←　[1] [2] ... [5] →
-		</div>
-	</main>
+		<nav class="pagination" aria-label="페이지 탐색">
+			<button type="button" class="btn-prev">← 이전</button>
+			<ol>
+				<li><button type="button" aria-current="page">1</button></li>
+				<li><button type="button">2</button></li>
+				<li><button type="button">3</button></li>
+				<li><button type="button">4</button></li>
+				<li><button type="button">5</button></li>
+			</ol>
+			<button type="button" class="btn-next">다음 →</button>
+		</nav>
 	<footer>
 		<div>
 			<div>
