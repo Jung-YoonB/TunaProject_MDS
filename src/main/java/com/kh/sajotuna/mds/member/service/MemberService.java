@@ -18,4 +18,7 @@ public interface MemberService {
 		
 	// 연락처 중복 체크
 	boolean isPhoneCheck(String phone);
+	
+	// 로그인
+	MemberDTO login(String loginId, String loginPw);
 }
