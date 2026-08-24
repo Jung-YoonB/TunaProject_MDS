@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.kh.sajotuna.mds.member.model.mapper.MemberMapper">
+	
+	<insert id="insertMember" parameterType="MemberDTO">
+		<selectKey
+			keyProperty="memberId" resultType="long" order="BEFORE">
+			SELECT SEQ_MEMBER_ID.NEXTVAL FROM DUAL
+		</selectKey>
+  		INSERT INTO MEMBER (MEMBER_ID, GRADE_ID, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME, EMAIL, PHONE, ROLE, MEMBER_STATUS)
+  		VALUES (#{memberId}, #{gradeId}, #{totalAmount}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname}, #{email}, #{phone}, #{role}, #{memberStatus})
+ 	</insert>
+  
+  	<select id="countByLoginId" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE LOGIN_ID = #{loginId}  
+  	</select>
+  	
+  	<select id="countByNickname" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE NICKNAME = #{nickname}  
+  	</select>
+  	
+  	<select id="countByEmail" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE EMAIL = #{email}  
+  	</select>
+  	
+  	<select id="countByPhone" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE PHONE = #{phone}  
+  	</select>
+</mapper>
