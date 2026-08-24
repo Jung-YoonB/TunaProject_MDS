@@ -4,43 +4,255 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 마이페이지</title>
-	<link rel="stylesheet" href="../css/default.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background-color: #f7f7f7;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        main {
+            width: 900px;
+            margin: 50px auto;
+        }
+
+        /* 제목 */
+        #title {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 25px;
+            margin-bottom: 20px;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        /* 관리자 정보 */
+        #AdminInfo {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        #AdminInfo h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .admin-info-row {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 10px;
+        }
+
+        .admin-label {
+            width: 70px;
+            font-weight: bold;
+        }
+
+        .admin-role {
+            display: inline-block;
+            padding: 4px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* 빠른 메뉴 */
+        #QuickMenu {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        #QuickMenu h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .quick-menu-list {
+            display: flex;
+            gap: 12px;
+        }
+
+        .quick-menu-item {
+            flex: 1;
+            padding: 20px 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        /* 관리 메뉴 */
+        .admin-section {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .admin-section h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .menu-list {
+            display: flex;
+            gap: 12px;
+        }
+
+        .menu-item {
+            flex: 1;
+            padding: 18px;
+            border: 1px solid #ddd;
+            background-color: white;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .menu-item:hover,
+        .quick-menu-item:hover {
+            background-color: #f5f5f5;
+        }
+
+    </style>
 </head>
+
 <body>
+
     <main>
+
+        <!-- 관리자 마이페이지 제목 -->
         <div id="title">
-            제목 영역 - 관리자 마이페이지
+            관리자 마이페이지
         </div>
-        <div id="admin-info">
-            관리자 정보 조회구역
-            이름 : 이름값
-            이름 옆 권한 태그 표시 (관리자 role : admin)
-            아이디 : 아이디값
+
+
+        <!-- 관리자 정보 -->
+        <div id="AdminInfo">
+
+            <h2>관리자 정보</h2>
+
+            <div class="admin-info-row">
+                <span class="admin-label">이름</span>
+                <span>이름값</span>
+                <span class="admin-role">ADMIN</span>
+            </div>
+
+            <div class="admin-info-row">
+                <span class="admin-label">아이디</span>
+                <span>아이디값</span>
+            </div>
+
         </div>
-        <div id="quick-menu">
-            빠른 메뉴 버튼 구역
-            상품 등록 이동 버튼
-            관리자용 주문배송 관리 이동 버튼
-            쿠폰 관리 이동 버튼
-            회원 관리 이동 버튼
+
+
+        <!-- 빠른 메뉴 -->
+        <div id="QuickMenu">
+
+            <h2>빠른 메뉴</h2>
+
+            <div class="quick-menu-list">
+
+                <div class="quick-menu-item">
+                    상품 등록
+                </div>
+
+                <div class="quick-menu-item">
+                    주문·배송 관리
+                </div>
+
+                <div class="quick-menu-item">
+                    쿠폰 관리
+                </div>
+
+                <div class="quick-menu-item">
+                    회원 관리
+                </div>
+
+            </div>
+
         </div>
-        <div id="admin-Order">
-            상품관리 관련 버튼 구역
-            상품 등록 이동
-            상품 관리 이동 (조회/삭제 구역)
-            관리자용 주문배송 관리 이동
+
+
+        <!-- 상품 관리 -->
+        <div id="AdminProduct" class="admin-section">
+
+            <h2>상품 관리</h2>
+
+            <div class="menu-list">
+
+                <div class="menu-item">
+                    상품 등록
+                </div>
+
+                <div class="menu-item">
+                    상품 관리
+                </div>
+
+                <div class="menu-item">
+                    주문·배송 관리
+                </div>
+
+            </div>
+
         </div>
-        <div id="admin-coupon">
-            쿠폰 관리 버튼 구역
-            쿠폰 등록 이동 버튼
-            쿠폰 관리 이동 버튼
+
+
+        <!-- 쿠폰 관리 -->
+        <div id="AdminCoupon" class="admin-section">
+
+            <h2>쿠폰 관리</h2>
+
+            <div class="menu-list">
+
+                <div class="menu-item">
+                    쿠폰 등록
+                </div>
+
+                <div class="menu-item">
+                    쿠폰 관리
+                </div>
+
+            </div>
+
         </div>
-        <div id="admin-cs">
-            고객센터 관련 버튼 구역
-            문의사항 이동
-            문의내역 이동
-            공지사항 이동
+
+
+        <!-- 고객센터 -->
+        <div id="AdminCS" class="admin-section">
+
+            <h2>고객센터</h2>
+
+            <div class="menu-list">
+
+                <div class="menu-item">
+                    문의사항
+                </div>
+
+                <div class="menu-item">
+                    문의내역
+                </div>
+
+                <div class="menu-item">
+                    공지사항
+                </div>
+
+            </div>
+
         </div>
+
     </main>
+
 </body>
+
 </html>
