@@ -1,335 +1,259 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마이페이지</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            background-color: #f7f7f7;
-            font-family: Arial, sans-serif;
-            color: #333;
-        }
-
-        main {
-            width: 900px;
-            margin: 50px auto;
-        }
-
-        /* 제목 */
-        #title {
-            background-color: white;
-            border: 1px solid #ddd;
-            padding: 25px;
-            margin-bottom: 20px;
-            font-size: 26px;
-            font-weight: bold;
-        }
-
-        /* 회원 정보 */
-        #MemberInfo {
-            background-color: white;
-            border: 1px solid #ddd;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        #MemberInfo h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-
-        .member-info-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px 30px;
-        }
-
-        .member-info-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .member-label {
-            width: 80px;
-            font-weight: bold;
-        }
-
-        .member-value {
-            color: #555;
-        }
-
-        /* 정보 수정 */
-        #EditMember {
-            margin-top: 20px;
-            text-align: right;
-        }
-
-        #EditMember button {
-            padding: 10px 20px;
-            border: 1px solid #ccc;
-            background-color: white;
-            cursor: pointer;
-        }
-
-        /* 빠른 메뉴 */
-        #QuickMenu {
-            background-color: white;
-            border: 1px solid #ddd;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        #QuickMenu h2 {
-            margin-top: 0;
-            font-size: 20px;
-        }
-
-        .quick-menu-list {
-            display: flex;
-            gap: 12px;
-        }
-
-        .quick-menu-item {
-            flex: 1;
-            padding: 20px 10px;
-            border: 1px solid #ddd;
-            background-color: white;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        /* 각 관리 영역 */
-        .my-section {
-            background-color: white;
-            border: 1px solid #ddd;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        .my-section h2 {
-            margin-top: 0;
-            font-size: 20px;
-        }
-
-        .menu-list {
-            display: flex;
-            gap: 12px;
-        }
-
-        .menu-item {
-            flex: 1;
-            padding: 18px;
-            border: 1px solid #ddd;
-            background-color: white;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        /* 리뷰 영역 */
-        #MyReview {
-            text-align: center;
-        }
-
-        .review-message {
-            padding: 25px;
-            border: 1px solid #eee;
-            margin-bottom: 15px;
-            color: #555;
-        }
-
-        #ReviewButton {
-            padding: 10px 25px;
-            border: 1px solid #ccc;
-            background-color: white;
-            cursor: pointer;
-        }
-
-        /* 마우스 효과 */
-        .quick-menu-item:hover,
-        .menu-item:hover,
-        button:hover {
-            background-color: #f5f5f5;
-        }
-
-    </style>
-
-</head>
-
-<body>
-
-    <main>
-
-        <!-- 마이페이지 제목 -->
-        <div id="title">
-            마이페이지
-        </div>
-
-
-        <!-- 회원 정보 -->
-        <div id="MemberInfo">
-
-            <h2>회원 정보</h2>
-
-            <div class="member-info-list">
-
-                <div class="member-info-item">
-                    <span class="member-label">이름</span>
-                    <span class="member-value">이름값</span>
-                </div>
-
-                <div class="member-info-item">
-                    <span class="member-label">닉네임</span>
-                    <span class="member-value">닉네임값</span>
-                </div>
-
-                <div class="member-info-item">
-                    <span class="member-label">회원 등급</span>
-                    <span class="member-value">등급값</span>
-                </div>
-
-                <div class="member-info-item">
-                    <span class="member-label">아이디</span>
-                    <span class="member-value">아이디값</span>
-                </div>
-
-                <div class="member-info-item">
-                    <span class="member-label">휴대폰</span>
-                    <span class="member-value">휴대폰값</span>
-                </div>
-
-                <div class="member-info-item">
-                    <span class="member-label">이메일</span>
-                    <span class="member-value">이메일값</span>
-                </div>
-
-                <div class="member-info-item">
-                    <span class="member-label">포인트</span>
-                    <span class="member-value">포인트값</span>
-                </div>
-
-                <div class="member-info-item">
-                    <span class="member-label">쿠폰</span>
-                    <span class="member-value">쿠폰값</span>
-                </div>
-
-            </div>
-
-            <div id="EditMember">
-                <button type="button">
-                    정보 수정
-                </button>
-            </div>
-
-        </div>
-
-
-        <!-- 빠른 메뉴 -->
-        <div id="QuickMenu">
-
-            <h2>빠른 메뉴</h2>
-
-            <div class="quick-menu-list">
-
-                <div class="quick-menu-item">
-                    주문·배송 조회
-                </div>
-
-                <div class="quick-menu-item">
-                    리뷰 작성
-                </div>
-
-                <div class="quick-menu-item">
-                    문의사항
-                </div>
-
-                <div class="quick-menu-item">
-                    문의내역
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- 주문 관리 -->
-        <div id="MyOrder" class="my-section">
-
-            <h2>주문 관리</h2>
-
-            <div class="menu-list">
-
-                <div class="menu-item">
-                    주문·배송 조회
-                </div>
-
-                <div class="menu-item">
-                    주문 취소 / 환불
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- 리뷰 -->
-        <div id="MyReview" class="my-section">
-
-            <h2>리뷰 작성</h2>
-
-            <!-- 리뷰가 없을 때 -->
-            <div class="review-message">
-                작성 가능한 리뷰가 없습니다.
-            </div>
-
-            <!-- 리뷰가 있을 때 사용할 영역 -->
-            <!--
-            <div class="review-message">
-                리뷰 작성해 주세요.
-            </div>
-
-            <button type="button" id="ReviewButton">
-                리뷰 작성
-            </button>
-            -->
-
-        </div>
-
-
-        <!-- 고객센터 -->
-        <div id="UserCS" class="my-section">
-
-            <h2>고객센터</h2>
-
-            <div class="menu-list">
-
-                <div class="menu-item">
-                    문의사항
-                </div>
-
-                <div class="menu-item">
-                    문의내역
-                </div>
-
-                <div class="menu-item">
-                    공지사항
-                </div>
-
-            </div>
-
-        </div>
-
-    </main>
-
-</body>
-
+	<head>
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>마이페이지</title>
+		<link rel="stylesheet" href="../css/default.css">
+		
+	    <style>
+	        * {
+	            box-sizing: border-box;
+	        }
+	
+	        body {
+	            margin: 0;
+	            background-color: #f7f7f7;
+	            font-family: Arial, sans-serif;
+	            color: #333;
+	        }
+	
+	        main {
+	            width: 900px;
+	            margin: 50px auto;
+	        }
+	
+	        /* 제목 */
+	        #title {
+	            background-color: white;
+	            border: 1px solid #ddd;
+	            padding: 25px;
+	            margin-bottom: 20px;
+	            font-size: 26px;
+	            font-weight: bold;
+	        }
+	
+	        /* 회원 정보 */
+	        #MemberInfo {
+	            background-color: white;
+	            border: 1px solid #ddd;
+	            padding: 25px;
+	            margin-bottom: 20px;
+	        }
+	
+	        #MemberInfo h2 {
+	            margin-top: 0;
+	            margin-bottom: 20px;
+	            font-size: 20px;
+	        }
+	
+	        .member-info-list {
+	            display: grid;
+	            grid-template-columns: 1fr 1fr;
+	            gap: 15px 30px;
+	        }
+	
+	        .member-info-item {
+	            display: flex;
+	            align-items: center;
+	            padding: 12px 0;
+	            border-bottom: 1px solid #eee;
+	        }
+	
+	        .member-label {
+	            width: 80px;
+	            font-weight: bold;
+	        }
+	
+	        .member-value {
+	            color: #555;
+	        }
+	
+	        /* 정보 수정 */
+	        #EditMember {
+	            margin-top: 20px;
+	            text-align: right;
+	        }
+	
+	        #EditMember button {
+	            padding: 10px 20px;
+	            border: 1px solid #ccc;
+	            background-color: white;
+	            cursor: pointer;
+	        }
+	
+	        /* 빠른 메뉴 */
+	        #QuickMenu {
+	            background-color: white;
+	            border: 1px solid #ddd;
+	            padding: 25px;
+	            margin-bottom: 20px;
+	        }
+	
+	        #QuickMenu h2 {
+	            margin-top: 0;
+	            font-size: 20px;
+	        }
+	
+	        .quick-menu-list {
+	            display: flex;
+	            gap: 12px;
+	        }
+	
+	        .quick-menu-item {
+	            flex: 1;
+	            padding: 20px 10px;
+	            border: 1px solid #ddd;
+	            background-color: white;
+	            text-align: center;
+	            cursor: pointer;
+	        }
+	
+	        /* 각 관리 영역 */
+	        .my-section {
+	            background-color: white;
+	            border: 1px solid #ddd;
+	            padding: 25px;
+	            margin-bottom: 20px;
+	        }
+	
+	        .my-section h2 {
+	            margin-top: 0;
+	            font-size: 20px;
+	        }
+	
+	        .menu-list {
+	            display: flex;
+	            gap: 12px;
+	        }
+	
+	        .menu-item {
+	            flex: 1;
+	            padding: 18px;
+	            border: 1px solid #ddd;
+	            background-color: white;
+	            text-align: center;
+	            cursor: pointer;
+	        }
+	
+	        /* 리뷰 영역 */
+	        #MyReview {
+	            text-align: center;
+	        }
+	
+	        .review-message {
+	            padding: 25px;
+	            border: 1px solid #eee;
+	            margin-bottom: 15px;
+	            color: #555;
+	        }
+	
+	        #ReviewButton {
+	            padding: 10px 25px;
+	            border: 1px solid #ccc;
+	            background-color: white;
+	            cursor: pointer;
+	        }
+	
+	        /* 마우스 효과 */
+	        .quick-menu-item:hover, .menu-item:hover, button:hover {
+	            background-color: #f5f5f5;
+	        }
+	    </style>
+	</head>
+
+	<body>
+	    <main>
+	        <!-- 마이페이지 제목 -->
+	        <div id="title">마이페이지</div>
+	
+	        <!-- 회원 정보 -->
+	        <div id="MemberInfo">
+	            <h2>회원 정보</h2>
+	            <div class="member-info-list">
+	                <div class="member-info-item">
+	                    <span class="member-label">이름</span>
+	                    <span class="member-value">이름값</span>
+	                </div>
+	
+	                <div class="member-info-item">
+	                    <span class="member-label">닉네임</span>
+	                    <span class="member-value">닉네임값</span>
+	                </div>
+	
+	                <div class="member-info-item">
+	                    <span class="member-label">회원 등급</span>
+	                    <span class="member-value">등급값</span>
+	                </div>
+	
+	                <div class="member-info-item">
+	                    <span class="member-label">아이디</span>
+	                    <span class="member-value">아이디값</span>
+	                </div>
+	
+	                <div class="member-info-item">
+	                    <span class="member-label">휴대폰</span>
+	                    <span class="member-value">휴대폰값</span>
+	                </div>
+	
+	                <div class="member-info-item">
+	                    <span class="member-label">이메일</span>
+	                    <span class="member-value">이메일값</span>
+	                </div>
+	
+	                <div class="member-info-item">
+	                    <span class="member-label">포인트</span>
+	                    <span class="member-value">포인트값</span>
+	                </div>
+	
+	                <div class="member-info-item">
+	                    <span class="member-label">쿠폰</span>
+	                    <span class="member-value">쿠폰값</span>
+	                </div>
+	
+	            </div>
+	
+	            <div id="EditMember">
+	                <button type="button">정보 수정</button>
+	            </div>
+	        </div>
+	
+	        <!-- 빠른 메뉴 -->
+	        <div id="QuickMenu">
+	            <h2>빠른 메뉴</h2>
+	            <div class="quick-menu-list">
+	                <div class="quick-menu-item">주문·배송 조회</div>
+	                <div class="quick-menu-item">리뷰 작성</div>
+	                <div class="quick-menu-item">문의사항</div>
+	                <div class="quick-menu-item">문의내역</div>
+	            </div>
+	        </div>
+	
+	        <!-- 주문 관리 -->
+	        <div id="MyOrder" class="my-section">
+	            <h2>주문 관리</h2>
+	            <div class="menu-list">
+	                <div class="menu-item">주문·배송 조회</div>
+	                <div class="menu-item">주문 취소 / 환불</div>
+	            </div>
+	        </div>
+	
+	        <!-- 리뷰 -->
+	        <div id="MyReview" class="my-section">
+	            <h2>리뷰 작성</h2>
+	            <!-- 리뷰가 없을 때 -->
+	            <div class="review-message">작성 가능한 리뷰가 없습니다.</div>
+	        </div>
+	
+	        <!-- 고객센터 -->
+	        <div id="UserCS" class="my-section">
+	            <h2>고객센터</h2>
+	            <div class="menu-list">
+	                <div class="menu-item">문의사항</div>
+	                <div class="menu-item">문의내역</div>
+	                <div class="menu-item">공지사항</div>
+	            </div>
+	        </div>
+	    </main>
+	</body>
 </html>

@@ -1,289 +1,183 @@
 <!DOCTYPE html>
-
 <html lang="ko">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>배송지 추가</title>
-
-    <style>
-
-        /* 전체 페이지 */
-        body {
-            margin: 0;
-            background-color: #f8f8f8;
-            font-family: Arial, sans-serif;
-            color: #333;
-        }
-
-        /* 전체 영역 */
-        main {
-            width: 600px;
-            margin: 50px auto;
-            padding: 40px;
-            background-color: white;
-            border: 1px solid #e5e5e5;
-            border-radius: 10px;
-            box-sizing: border-box;
-        }
-
-        /* 제목 */
-        #title {
-            margin-bottom: 30px;
-            font-size: 26px;
-            font-weight: bold;
-        }
-
-        /* 배송지 입력 영역 */
-        #DeliveryForm {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* 입력 항목 */
-        .form-item {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-item label {
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .form-item input {
-            height: 42px;
-            padding: 0 12px;
-            border: 1px solid #d9d9d9;
-            border-radius: 6px;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        .form-item input:focus {
-            border-color: #999;
-        }
-
-        /* 주소 입력 */
-        .address-search {
-            display: flex;
-            gap: 8px;
-        }
-
-        .address-search input {
-            flex: 1;
-        }
-
-        .address-search button {
-            width: 90px;
-            border: 1px solid #d9d9d9;
-            border-radius: 6px;
-            background-color: white;
-            cursor: pointer;
-        }
-
-        /* 기본 배송지 */
-        #default-address {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 5px;
-        }
-
-        #default-address input {
-            width: 16px;
-            height: 16px;
-        }
-
-        #default-address label {
-            font-size: 14px;
-        }
-
-        /* 버튼 영역 */
-        #ButtonArea {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-        }
-
-        #ButtonArea button {
-            flex: 1;
-            height: 45px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        /* 취소 */
-        #cancel-button {
-            border: 1px solid #d9d9d9;
-            background-color: white;
-            color: #333;
-        }
-
-        /* 배송지 추가 */
-        #add-button {
-            border: none;
-            background-color: #333;
-            color: white;
-        }
-
-    </style>
-
-</head>
-
-
-<body>
-
-    <main>
-
-        <!-- 제목 -->
-        <div id="title">
-            배송지 추가
-        </div>
-
-
-        <!-- 배송지 입력 -->
-        <div id="DeliveryForm">
-
-            <!-- 배송지 이름 -->
-            <div class="form-item">
-
-                <label for="address-name">
-                    배송지 이름
-                </label>
-
-                <input
-                    type="text"
-                    id="address-name"
-                    name="address_name"
-                    placeholder="예) 집, 회사"
-                >
-
-            </div>
-
-
-            <!-- 받는 사람 -->
-            <div class="form-item">
-
-                <label for="recipient">
-                    받는 사람
-                </label>
-
-                <input
-                    type="text"
-                    id="recipient"
-                    name="recipient"
-                    placeholder="받는 분의 이름을 입력해주세요"
-                >
-
-            </div>
-
-
-            <!-- 휴대폰 번호 -->
-            <div class="form-item">
-
-                <label for="phone">
-                    휴대폰 번호
-                </label>
-
-                <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    placeholder="010-0000-0000"
-                >
-
-            </div>
-
-
-            <!-- 주소 -->
-            <div class="form-item">
-
-                <label>
-                    배송지 주소
-                </label>
-
-                <div class="address-search">
-
-                    <input
-                        type="text"
-                        id="zipcode"
-                        name="zipcode"
-                        placeholder="우편번호"
-                        readonly
-                    >
-
-                    <button
-                        type="button"
-                        id="address-search-button"
-                    >
-                        주소 검색
-                    </button>
-
-                </div>
-
-                <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    placeholder="기본 주소"
-                    readonly
-                >
-
-                <input
-                    type="text"
-                    id="detail-address"
-                    name="detail_address"
-                    placeholder="상세 주소를 입력해주세요"
-                >
-
-            </div>
-
-
-            <!-- 기본 배송지 설정 -->
-            <div id="default-address">
-
-                <input
-                    type="checkbox"
-                    id="is-default"
-                    name="is_default"
-                >
-
-                <label for="is-default">
-                    기본 배송지로 설정
-                </label>
-
-            </div>
-
-        </div>
-
-
-        <!-- 버튼 -->
-        <div id="ButtonArea">
-
-            <button
-                type="button"
-                id="cancel-button"
-            >
-                취소
-            </button>
-
-            <button
-                type="submit"
-                id="add-button"
-            >
-                배송지 추가
-            </button>
-
-        </div>
-
-    </main>
-
-</body>
-
+	<head>
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>배송지 추가</title>
+		<link rel="stylesheet" href="../css/default.css">
+		
+	    <style>
+	        /* 전체 페이지 */
+	        body {
+	            margin: 0;
+	            background-color: #f8f8f8;
+	            font-family: Arial, sans-serif;
+	            color: #333;
+	        }
+	
+	        /* 전체 영역 */
+	        main {
+	            width: 600px;
+	            margin: 50px auto;
+	            padding: 40px;
+	            background-color: white;
+	            border: 1px solid #e5e5e5;
+	            border-radius: 10px;
+	            box-sizing: border-box;
+	        }
+	
+	        /* 제목 */
+	        #title {
+	            margin-bottom: 30px;
+	            font-size: 26px;
+	            font-weight: bold;
+	        }
+	
+	        /* 배송지 입력 영역 */
+	        #DeliveryForm {
+	            display: flex;
+	            flex-direction: column;
+	            gap: 20px;
+	        }
+	
+	        /* 입력 항목 */
+	        .form-item {
+	            display: flex;
+	            flex-direction: column;
+	            gap: 8px;
+	        }
+	
+	        .form-item label {
+	            font-size: 14px;
+	            font-weight: bold;
+	        }
+	
+	        .form-item input {
+	            height: 42px;
+	            padding: 0 12px;
+	            border: 1px solid #d9d9d9;
+	            border-radius: 6px;
+	            box-sizing: border-box;
+	            outline: none;
+	        }
+	
+	        .form-item input:focus {
+	            border-color: #999;
+	        }
+	
+	        /* 주소 입력 */
+	        .address-search {
+	            display: flex;
+	            gap: 8px;
+	        }
+	
+	        .address-search input {
+	            flex: 1;
+	        }
+	
+	        .address-search button {
+	            width: 90px;
+	            border: 1px solid #d9d9d9;
+	            border-radius: 6px;
+	            background-color: white;
+	            cursor: pointer;
+	        }
+	
+	        /* 기본 배송지 */
+	        #default-address {
+	            display: flex;
+	            align-items: center;
+	            gap: 8px;
+	            margin-top: 5px;
+	        }
+	
+	        #default-address input {
+	            width: 16px;
+	            height: 16px;
+	        }
+	
+	        #default-address label {
+	            font-size: 14px;
+	        }
+	
+	        /* 버튼 영역 */
+	        #ButtonArea {
+	            display: flex;
+	            gap: 10px;
+	            margin-top: 30px;
+	        }
+	
+	        #ButtonArea button {
+	            flex: 1;
+	            height: 45px;
+	            border-radius: 6px;
+	            cursor: pointer;
+	            font-size: 14px;
+	        }
+	
+	        /* 취소 */
+	        #cancel-button {
+	            border: 1px solid #d9d9d9;
+	            background-color: white;
+	            color: #333;
+	        }
+	
+	        /* 배송지 추가 */
+	        #add-button {
+	            border: none;
+	            background-color: #333;
+	            color: white;
+	        }
+	    </style>
+	</head>
+
+	<body>
+	    <main>
+	        <!-- 제목 -->
+	        <div id="title">배송지 추가</div>
+	        <!-- 배송지 입력 -->
+	        <div id="DeliveryForm">
+	            <!-- 배송지 이름 -->
+	            <div class="form-item">
+	                <label for="address-name">배송지 이름</label>
+	                <input type="text" id="address-name" name="address_name" placeholder="예) 집, 회사">
+	            </div>
+	
+	            <!-- 받는 사람 -->
+	            <div class="form-item">
+	                <label for="recipient">받는 사람</label>
+	                <input type="text" id="recipient" name="recipient" placeholder="받는 분의 이름을 입력해주세요">
+	            </div>
+	
+	            <!-- 휴대폰 번호 -->
+	            <div class="form-item">
+	                <label for="phone">휴대폰 번호</label>
+	                <input type="tel" id="phone" name="phone" placeholder="010-0000-0000">
+	            </div>
+	
+	            <!-- 주소 -->
+	            <div class="form-item">
+	                <label>배송지 주소</label>
+	                <div class="address-search">
+	                    <input type="text" id="zipcode" name="zipcode" placeholder="우편번호" readonly>
+	                    <button type="button" id="address-search-button">주소 검색</button>
+	                </div>
+	                <input type="text" id="address" name="address" placeholder="기본 주소" readonly>
+	                <input type="text" id="detail-address" name="detail_address" placeholder="상세 주소를 입력해주세요">
+	            </div>
+	
+	            <!-- 기본 배송지 설정 -->
+	            <div id="default-address">
+	                <input type="checkbox" id="is-default" name="is_default">
+	                <label for="is-default">기본 배송지로 설정</label>
+	            </div>
+	        </div>
+	
+	        <!-- 버튼 -->
+	        <div id="ButtonArea">
+	            <button type="button" id="cancel-button">취소</button>
+	            <button type="submit" id="add-button">배송지 추가</button>
+	        </div>
+	    </main>
+	</body>
 </html>
