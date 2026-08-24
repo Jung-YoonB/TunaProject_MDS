@@ -6,13 +6,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.kh.sajotuna.mds.common.dto.ApiResponse;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
+import com.kh.sajotuna.mds.util.SessionConst;
+import com.kh.sajotuna.mds.util.dto.ApiResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @Controller
@@ -27,6 +31,11 @@ public class MemberController {
 	@GetMapping("/join")
 	public String joinForm() {
 		return "member/join";
+	}
+	
+	@GetMapping("/login")
+	public String loginForm() {
+		return "member/login";
 	}
 	
 	//------------------
@@ -95,5 +104,36 @@ public class MemberController {
 		String message = isDuplicate ? "이미 사용중인 연락처입니다." : "사용 가능한 연락처입니다.";
 		
 		return ApiResponse.success(message, isDuplicate);
+	}
+	
+	@PostMapping("/login")
+	public String login(String loginId, String loginPw
+			,@RequestParam(required=false) String redirectURL
+			, HttpSession session, RedirectAttributes redirectAttr) {
+		try {
+		MemberDTO member = service.login(loginId,loginPw);
+		
+		// 로그인 성공 -> 세션에 저장 / 실패 -> 에러 메시지 전달
+		session.setAttribute(SessionConst.LOGIN_MEMBER, member);
+		} catch(IllegalStateException e) {
+			redirectAttr.addFlashAttribute("error", e.getMessage());
+			return "redirect:/member/login";
+		}
+		
+		if (redirectURL != null && !redirectURL.isBlank()) {
+			return "redirect:" + redirectURL;
+		}
+		
+		return "redirect:/";
+	}
+	
+	@GetMapping("/logout")
+	public String logout(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if(session != null) {
+			session.invalidate();
+		}
+		
+		return "redirect:/";
 	}
 }

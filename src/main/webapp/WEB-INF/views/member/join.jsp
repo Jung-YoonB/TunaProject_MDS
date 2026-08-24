@@ -30,10 +30,7 @@
 			<form id="joinForm" action="/member/join" method="post">
 				
 				<!-- 히든 타입으로 초기값 세팅 -->
-				<input type="hidden" name="gradeId" value="1">
-				<input type="hidden" name="totalAmount" value="0">
 				<input type="hidden" name="role" value="USER">
-				<input type="hidden" name="memberStatus" value="1">
 				
 				<!-- 아이디 -->
 				<div id="Username"> 
@@ -68,7 +65,7 @@
 				<!-- 생일 -->
 				<div id="Birth">  
 					<label for="birth">생일</label>
-					<input type="date" id="birth" name="birth" class="signup-input" required>
+					<input type="date" id="birth" name="birth" class="signup-input">
 				</div>
 				
 				<!-- 성별 -->
@@ -94,7 +91,7 @@
 				<div id="Email"> 
 					<label for="email">이메일</label>
 					<div class="id-input-box">
-						<input type="email" id="email" name="email" class="signup-input" placeholder="이메일을 입력해주세요" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="올바른 이메일 형식으로 작성해주세요." required>
+						<input type="email" id="email" name="email" class="signup-input" placeholder="이메일을 입력해주세요" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="올바른 이메일 형식으로 작성해주세요.">
 						<button type="button" id="emailCheckBtn" class="check-btn">중복확인</button>
 					</div>
 					<p id="emailCheckMsg" class="msg-error"></p>

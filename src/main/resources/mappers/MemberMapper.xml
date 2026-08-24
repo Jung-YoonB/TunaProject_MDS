@@ -29,4 +29,13 @@
   	<select id="countByPhone" parameterType="String" resultType="int">
 		SELECT COUNT(*) FROM MEMBER WHERE PHONE = #{phone}  
   	</select>
+  	
+  	<select id="selectByLoginId" parameterType="String" resultType="MemberDTO">
+		SELECT MEMBER_ID, GRADE_ID, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
+			EMAIL, CREATED_AT, PHONE, ROLE, MEMBER_STATUS,
+			TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
+			TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR 
+		FROM MEMBER 
+		WHERE LOGIN_ID = #{loginId}
+  	</select>
 </mapper>

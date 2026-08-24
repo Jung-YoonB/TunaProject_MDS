@@ -21,4 +21,7 @@ public interface MemberMapper {
 				
 	// 연락처 중복 확인
 	int countByPhone(String phone);
+	
+	// 아이디를 통한 회원 조회
+	MemberDTO selectByLoginId(String loginId);
 }

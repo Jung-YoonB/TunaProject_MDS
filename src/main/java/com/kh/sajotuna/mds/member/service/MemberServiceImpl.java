@@ -68,5 +68,18 @@ public class MemberServiceImpl implements MemberService{
 	public boolean isPhoneCheck(String phone) {
 		return mapper.countByPhone(phone) > 0;
 	}
+
+	@Override
+	public MemberDTO login(String loginId, String loginPw) throws IllegalStateException{
+		MemberDTO member = mapper.selectByLoginId(loginId);
+		
+		if (member == null || !passwordEncoder.matches(loginPw, member.getLoginPw())) {
+			throw new IllegalStateException("아이디 또는 비밀번호가 일치하지 않습니다.");
+		}
+		
+		return member;
+	}
+	
+	
 	
 }
