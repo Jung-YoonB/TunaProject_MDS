@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>장바구니</title>
-	<link rel="stylesheet" href="/resources/static/css/default.css">
+	<link rel="stylesheet" href="../css/default.css">
 </head>
 <body>
 	<header>
@@ -26,9 +26,9 @@
 		</div>
 		<!-- 중간 상단: 상품란 -->
 		<section class="cart-itemlist" id="cart-itemlist">
-			<article class="cart-item" data-cart-id="{Cart.cart-id}" data-product-id="{Product.product-id}">
+			<article class="cart-item" data-cart-id="{Cart.cart_id}" data-product-id="{Product.product_id}">
 				<!--체크박스-->
-				<input type="checkbox" class="item-checkbox" name="cart-item" value="{Cart.cart-id}" checked>
+				<input type="checkbox" class="item-checkbox" name="cart-item" value="{Cart.cart_id}" checked>
 				<!--상품 썸네일 (ProductImage 테이블)-->
 				<div class="item-thumbnail">
 					<img src="" alt="">

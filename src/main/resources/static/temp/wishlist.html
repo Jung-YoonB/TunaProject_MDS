@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>위시리스트</title>
-	<link rel="stylesheet" href="/resources/static/css/default.css">
+	<link rel="stylesheet" href="../css/default.css">
 </head>
 <body>
     <header>
@@ -23,6 +23,13 @@
 			<!-- 2. 찜한 상품 개수 및 정렬 필터 구역 -->
 			<div class="wishlist-filter">
 				<div class="total-count" id="wish-total-count">찜한 상품 N개</div>
+					<div class="cart-controls">
+					<label class="checkbox-label">
+						<input type="checkbox" id="check-all" checked>
+						<span>전체 선택</span>
+					</label>
+					<button type="button" id="delete-btn">선택 상품 삭제</button>
+					</div>
 				<ul class="short-options" id="wish-short-options">
 					<li class="active" data-sort="popular">인기순</li>
 					<li data-sort="price-asc">낮은 가격순</li>
@@ -32,7 +39,7 @@
 			<!-- 3. 상품 카드 리스트 구역 -->
 			<div class="product-grid" id="wish-product-grid">
 				<!-- 상품 카드 영역 (예시) -->
-				<article class="product-card" id="product-card-{product-id}" data-product-id="{Product.product-id}" data-wish-id="{Wish.wish-id}">
+				<article class="product-card" id="product-card-{product_id}" data-product-id="{Product.product_id}" data-wish-id="{Wish.wish_id}">
 					<div class="product-thumbnail">
 						<img src="" alt="">
 						<button type="button" class="btn-wish-toggle" data-action="remove-wish">

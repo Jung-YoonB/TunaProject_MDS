@@ -8,10 +8,10 @@
 </head>
 <body>
 	<header>
-			<div>로고(이미지/메인 페이지 이동)</div>
-			<div>검색창</div>
-			<div>마이페이지, 찜, 장바구니(아이콘)</div>
-			<div>로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
+			<div id="logo_img">로고(이미지/메인 페이지 이동)</div>
+			<div id="search_box">검색창</div>
+			<div class="icon">마이페이지, 찜, 장바구니(아이콘)</div>
+			<div class="sign">로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
 		</header>
 	<main class="order-history" id="order-history-container" data-member-id="회원세션ID">
 		<!-- 글자 영역(Header) -->
@@ -29,23 +29,40 @@
 			</ul>
 		</nav>
 		<!-- 중간 영역 -->
-		<section>
-			
+		<section class="order-list">
+			<article class="order-card" id="order-card-{Order.order_id}" data-order-id="{Order.order_id}" data-delivery-id="{Delivery.delivery_id}">
+				<!--상품 정보-->
+				<div class="order-header">
+					<span class="order-date">{Order.order-date}</span>
+					<span class="order-number">주문번호<strong>{Order.order-id}</strong></span>
+				</div>
+				<div class="order-body">
+					<div class="product-info">
+						<h3 class="product-name">{Product.product-name}</h3>
+						<p class="product-detail">{OrderDetail.qty}개 / {Order.total-price}원</p>
+					</div>
+					<!--배송 상태 및 표시선-->
+					<div class="delivery-status">
+						<p class="status-text">{배송중}</p>
+						<div class="status-progress-bar2" aria-hidden="true">
+							<div class="progress-track"></div>
+							<div class="progress-fill"></div>
+						</div>
+					</div>
+				</div>
+				<!--하단 액션 버튼-->
+				<div class="order-action">
+					<button type="button" class="track-delivery-btn" data-tracking-no="{Delivery.delivry_no}">배송조회</button>
+					<button type="button" class="write-review-btn" data-product-id="{OrderDetail.product_id}">리뷰작성</button>
+				</div>
+			</article>
 		</section>
-		
-		<div>
-			주문번호 / 주문일
-			상품 명칭
-			선택된 상품 개수, 상품 가격
-			배송 상태
-			현재 배송 상태 (표시선)
-			배송 조회 (버튼)
-			리뷰 작성 (버튼)
-		</div>
 	</main>
-	<footer>
-		<div>
-			<div>
+	<footer class="site-footer">
+		<!-- 상단: 회사 정보 및 nav -->
+		<div class="footer-top">
+			<!-- 좌측: 회사 정보 -->
+			<div class="company-info">
 				<h2>Masion De SAJO</h2>
 				<address>
 					<p>주소지</p>
@@ -54,7 +71,7 @@
 				</address>
 			</div>
 			<!-- 우측: 약관 및 고객센터 메뉴 -->
-			<nav>
+			<nav class="footer-nav">
 				<ul>
 					<li><a href="#">이용약관</a></li>
 					<li><a href="#">개인정보처리방침</a></li>
@@ -64,9 +81,9 @@
 			</nav>
 		</div>
 		<!-- 구분선 -->
-		<hr>
+		<hr class="footer-divider">
 		<!-- 하단: 저작권 정보 -->
-		<div>
+		<div class="footer-bottom">
 			<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
 		</div>
 	</footer>
