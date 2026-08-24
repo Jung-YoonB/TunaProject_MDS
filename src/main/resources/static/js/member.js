@@ -6,37 +6,46 @@
 const loginPw = document.querySelector("#loginPw");  // 비밀번호 입력창
 const loginPwConfirm = document.querySelector("#loginPwConfirm"); // 비밀번호 확인 입력창
 
-
+let checkReg =false; // 정규식 일치 여부 확인용
 let checkPw = false; // 비밀번호 일치 여부 확인용
 
-function validatePwConfirm() {
-	const confirmResult = document.querySelector("#pwCheckMsg");
-	const confirmRegResult = document.querySelector("#loginPwRegConfirm");
-	confirmRegResult.textContent = ""; 	
-	
+function validatePassword() {
+	const confirmRegResult = document.querySelector("#pwRegCheckMsg");
+	confirmRegResult.textContent = "";
 	const pwRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()])[a-zA-Z0-9!@#$%^&*()]{8,16}$/;
-					    if (!pwRegex.test(loginPw.value)) {
-					        confirmRegResult.textContent = "영어와 숫자, 특수문자가 최소 하나씩 들어가는 8~16자로 입력해주세요.";
-					        confirmRegResult.className = "msg-error";
-					        checkPw = null;
-					        return;
-					    }
+	
+	// 1. 비밀번호 입력 여부 및 정규식 검사
+	if (loginPw.value.length === 0) {
+		confirmRegResult.textContent = "";
+		checkReg = false;
+	} else if (pwRegex.test(loginPw.value)) {
+		checkReg = true;
+	} else {
+		confirmRegResult.textContent = "영어와 숫자, 특수문자가 최소 하나씩 들어가는 8~16자로 입력해주세요.";
+		confirmRegResult.className = "msg-error";
+		checkReg = false;
+	}
+	
+	const confirmResult = document.querySelector("#pwCheckMsg");
+	confirmResult.textContent = "";
 	
 	// 비밀번호 확인 입력창이 비어있을 경우 검사 x
 	if (!loginPwConfirm.value.trim()){
-		confirmResult.textContent = "";
 		checkPw = false;
 		return;
 	}
 	
-	checkPw = loginPw.value === loginPwConfirm.value;
+	let checkMatch = loginPw.value === loginPwConfirm.value;
+	checkPw = checkReg && checkMatch;
 	
-	confirmResult.textContent = checkPw ? "비밀번호가 일치합니다." : "비밀번호가 일치하지 않습니다.";
-	confirmResult.className = checkPw ? "msg-success" : "msg-error"; // css 적용을 위해 클래스 추가용 
+	// 2. 삼항 연산자 문구 유지 및 클래스 동기화
+	confirmResult.textContent = checkPw ? "비밀번호가 정상적으로 확인되었습니다." : (!checkReg ? "비밀번호의 형식을 확인해주세요." : "입력하신 비밀번호가 동일하지 않습니다.");
+	// checkPw(최종 성공)일 때만 초록색(msg-success) 부여
+	confirmResult.className = checkPw ? "msg-success" : "msg-error"; 
 }
 
-loginPw.addEventListener('input', validatePwConfirm);
-loginPwConfirm.addEventListener('input', validatePwConfirm);
+loginPw.addEventListener('input', validatePassword);
+loginPwConfirm.addEventListener('input', validatePassword);
 
 let checkId = null;   // 아이디 중복체크 값
 const checkIdResult = document.querySelector("#idCheckMsg");
@@ -250,7 +259,7 @@ joinForm.addEventListener("submit", function(e){
 	
 	if(!checkPw) {
 		e.preventDefault();   // 폼 제출 막기
-		alert("비밀번호가 일치하지 않습니다.");
+		alert("비밀번호 형식을 확인하거나 일치 여부를 확인해주세요.");
 		return;
 		}
 	
