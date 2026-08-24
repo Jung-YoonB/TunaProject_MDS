@@ -6,7 +6,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>메종 드 사조 쇼핑몰</title>
-		<link rel="stylesheet" href="/css/join.css">
+		<link rel="stylesheet" href="/css/member.css">
 	</head>
 	<body>
 		<header>

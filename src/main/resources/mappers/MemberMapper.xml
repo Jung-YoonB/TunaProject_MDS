@@ -10,8 +10,8 @@
 			keyProperty="memberId" resultType="long" order="BEFORE">
 			SELECT SEQ_MEMBER_ID.NEXTVAL FROM DUAL
 		</selectKey>
-  		INSERT INTO MEMBER (MEMBER_ID, GRADE_ID, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME, EMAIL, PHONE, ROLE, MEMBER_STATUS)
-  		VALUES (#{memberId}, #{gradeId}, #{totalAmount}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname}, #{email}, #{phone}, #{role}, #{memberStatus})
+  		INSERT INTO MEMBER (MEMBER_ID, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME, EMAIL, PHONE, ROLE)
+  		VALUES (#{memberId}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname}, #{email}, #{phone}, #{role})
  	</insert>
   
   	<select id="countByLoginId" parameterType="String" resultType="int">

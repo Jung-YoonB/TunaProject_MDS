@@ -1,14 +1,15 @@
 @charset "UTF-8";
 
 /* ==========================================
-   1. 전체 페이지 레이아웃
+   1. 공통 페이지 레이아웃 & 기본 스타일
    ========================================== */
+/* 페이지 전체 배경 */
 body {
     margin: 0;
     background-color: #f8f6f2;
 }
 
-/* 회원가입 카드 컨테이너 */
+/* 폼 카드 컨테이너 공통 (기본: 회원가입용 500px) */
 main {
     width: 500px;
     margin: 60px auto;
@@ -19,7 +20,13 @@ main {
     box-sizing: border-box;
 }
 
-/* 회원가입 제목 */
+/* 로그인 페이지 전용 컨테이너 너비 및 여백 조절 */
+main.login-card {
+    width: 420px;
+    margin: 100px auto;
+}
+
+/* 페이지 제목 */
 #title {
     text-align: center;
     font-size: 30px;
@@ -27,10 +34,48 @@ main {
     margin-bottom: 35px;
 }
 
+/* 필드 라벨 공통 */
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+
 /* ==========================================
-   2. 폼 요소 & 입력 필드
+   2. 공통 입력창 (Input) 스타일
    ========================================== */
-/* 각 입력 폼 그룹 간격 */
+/* 회원가입 및 로그인 입력창 (.signup-input, .login-input 둘 다 대응) */
+.signup-input,
+.login-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    font-size: 15px;
+    outline: none;
+}
+
+/* 회원가입용 높이 미세 조정 (45px) */
+.signup-input {
+    height: 45px;
+    font-size: 14px;
+}
+
+/* 입력창 포커스 효과 */
+.signup-input:focus,
+.login-input:focus {
+    border-color: #b59b7b;
+}
+
+
+/* ==========================================
+   3. 회원가입 전용 스타일
+   ========================================== */
+/* 입력 필드 그룹 간격 */
 #Name, 
 #Birth, 
 #Gender, 
@@ -43,34 +88,7 @@ main {
     margin-bottom: 20px;
 }
 
-/* 필드 라벨 */
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-/* 공통 입력창 스타일 */
-.signup-input {
-    width: 100%;
-    height: 45px;
-    padding: 0 15px;
-    box-sizing: border-box;
-    border: 1px solid #d8d3cc;
-    border-radius: 6px;
-    font-size: 14px;
-    outline: none;
-}
-
-.signup-input:focus {
-    border-color: #b59b7b;
-}
-
-/* ==========================================
-   3. 특수 필드 (중복확인 입력창 / 성별)
-   ========================================== */
-/* 입력창 + 중복확인 버튼 가로 배치 */
+/* 중복확인 입력창 + 버튼 가로 배치 */
 .id-input-box {
     display: flex;
     gap: 8px;
@@ -80,7 +98,7 @@ label {
     flex: 1;
 }
 
-/* 중복확인 버튼 공통 클래스 (.check-btn) */
+/* 중복확인 버튼 */
 .check-btn {
     width: 90px;
     height: 45px;
@@ -97,7 +115,7 @@ label {
     background-color: #f8f6f2;
 }
 
-/* 성별 선택 영역 */
+/* 성별 선택 라디오 영역 */
 #Gender {
     display: flex;
     align-items: center;
@@ -120,9 +138,7 @@ label {
     margin: 0;
 }
 
-/* ==========================================
-   4. 이용약관 및 체크박스
-   ========================================== */
+/* 약관 동의 영역 */
 #PrivacyBox {
     display: flex;
     align-items: center;
@@ -151,9 +167,6 @@ label {
     text-decoration: underline;
 }
 
-/* ==========================================
-   5. 버튼 및 링크
-   ========================================== */
 /* 회원가입 제출 버튼 */
 #SignUp {
     margin-top: 25px;
@@ -171,7 +184,7 @@ label {
     cursor: pointer;
 }
 
-/* 하단 기존 회원 로그인 버튼 */
+/* 하단 기존 회원 로그인 이동 영역 */
 #Login {
     text-align: center;
     margin-top: 20px;
@@ -190,8 +203,60 @@ label {
     color: #222222;
 }
 
+
 /* ==========================================
-   6. 유효성 검사 결과 메시지
+   4. 로그인 전용 스타일
+   ========================================== */
+/* 입력 필드 간격 */
+.login-field {
+    margin-bottom: 20px;
+}
+
+/* 로그인 버튼 영역 */
+#SignIn {
+    margin-top: 30px;
+}
+
+#SignIn button {
+    width: 100%;
+    height: 52px;
+    border: none;
+    border-radius: 6px;
+    background-color: #222222;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* 로그인 하단 메뉴 (아이디 찾기 / 비밀번호 찾기 / 회원가입) */
+#AccountInfo {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+#AccountInfo button {
+    padding: 0 15px;
+    background: none;
+    border: none;
+    border-right: 1px solid #ddd;
+    color: #777777;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+#AccountInfo button:last-child {
+    border-right: none;
+}
+
+#AccountInfo button:hover {
+    color: #222222;
+}
+
+
+/* ==========================================
+   5. 유효성 검사 메시지 (공통)
    ========================================== */
 .msg-error {
     color: #e74c3c;

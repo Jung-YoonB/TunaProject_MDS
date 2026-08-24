@@ -1,5 +1,7 @@
 package com.kh.sajotuna.mds.member.controller;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -115,6 +117,7 @@ public class MemberController {
 		
 		// 로그인 성공 -> 세션에 저장 / 실패 -> 에러 메시지 전달
 		session.setAttribute(SessionConst.LOGIN_MEMBER, member);
+		System.out.println("세션 저장 완료: " + session.getAttribute("loginMember")); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
 			return "redirect:/member/login";
