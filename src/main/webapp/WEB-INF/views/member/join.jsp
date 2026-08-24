@@ -46,6 +46,7 @@
 			<div> <!--비밀번호 입력-->
 				<label for="loginPw">비밀번호</label>
 				<input type="password" id="loginPw" name="loginPw" required>
+				<p id="pwRegCheckMsg"><!--비밀번호 정규식 확인 후 표시할 영역--></p>
 			</div>
 
 			<div> <!--비밀번호 확인 입력-->

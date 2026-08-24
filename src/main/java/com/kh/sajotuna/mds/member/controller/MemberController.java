@@ -1,6 +1,7 @@
 package com.kh.sajotuna.mds.member.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.kh.sajotuna.mds.common.dto.ApiResponse;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
+
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/member")
@@ -29,10 +32,15 @@ public class MemberController {
 	//------------------
 	
 	@PostMapping("/join")
-	public String join(@ModelAttribute MemberDTO member,
+	public String join(@ModelAttribute @Valid MemberDTO member,
+						BindingResult bindingResult,
 						RedirectAttributes redirectAttr) {
 		
-		System.out.println(member);
+		if (bindingResult.hasErrors()) {
+			String eMsg = bindingResult.getFieldError().getDefaultMessage();
+			redirectAttr.addFlashAttribute("error", eMsg);
+			return "redirect:/member/join";
+		}
 		
 		try {
 				service.join(member);
@@ -82,7 +90,7 @@ public class MemberController {
 	@ResponseBody
 	public ApiResponse<Boolean> checkPhone(String phone) {
 		
-		boolean isDuplicate = service.isEmailCheck(phone);
+		boolean isDuplicate = service.isPhoneCheck(phone);
 		
 		String message = isDuplicate ? "이미 사용중인 연락처입니다." : "사용 가능한 연락처입니다.";
 		

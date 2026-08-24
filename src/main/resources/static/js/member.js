@@ -11,6 +11,16 @@ let checkPw = false; // 비밀번호 일치 여부 확인용
 
 function validatePwConfirm() {
 	const confirmResult = document.querySelector("#pwCheckMsg");
+	const confirmRegResult = document.querySelector("#loginPwRegConfirm");
+	confirmRegResult.textContent = ""; 	
+	
+	const pwRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()])[a-zA-Z0-9!@#$%^&*()]{8,16}$/;
+					    if (!pwRegex.test(loginPw.value)) {
+					        confirmRegResult.textContent = "영어와 숫자, 특수문자가 최소 하나씩 들어가는 8~16자로 입력해주세요.";
+					        confirmRegResult.className = "msg-error";
+					        checkPw = null;
+					        return;
+					    }
 	
 	// 비밀번호 확인 입력창이 비어있을 경우 검사 x
 	if (!loginPwConfirm.value.trim()){
@@ -48,6 +58,15 @@ idCheckBtn.addEventListener("click", async function(){
 		return;
 	}
 	
+	const idRegex = /^[a-z][a-z0-9]{5,19}$/;
+			    if (!idRegex.test(loginId)) {
+			        checkIdResult.textContent = "첫글자를 영어로 하는 6~20자로 입력해주세요.";
+			        checkIdResult.className = "msg-error";
+			        checkId = null;
+			        return;
+			    }
+	
+	
 	// 입력된 아이디값이 중복되는 지 서버로 요청
 	try{
 	const response = await fetch("/member/checkId?loginId=" + encodeURIComponent(loginId), {
@@ -60,7 +79,7 @@ idCheckBtn.addEventListener("click", async function(){
 	
 	// console.log(result);
 	checkIdResult.textContent = result.message;
-	checkIdResult.className = result.data ? "msg-success" : "msg-error"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
+	checkIdResult.className = result.data ? "msg-error" : "msg-success"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
 	
 	checkId = result.data ? null : loginId; 
 	} catch(error) {
@@ -104,7 +123,7 @@ nicknameCheckBtn.addEventListener("click", async function(){
 	const result = await response.json();
 	
 	checkNicknameResult.textContent = result.message;
-	checkNicknameResult.className = result.data ? "msg-success" : "msg-error"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
+	checkNicknameResult.className = result.data ? "msg-error" : "msg-success"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
 	
 	checkNickname = result.data ? null : nickname; 
 	} catch(error) {
@@ -154,7 +173,7 @@ const emailCheckBtn = document.querySelector("#emailCheckBtn");
 	const result = await response.json();
 	
 	checkEmailResult.textContent = result.message;
-	checkEmailResult.className = result.data ? "msg-success" : "msg-error"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
+	checkEmailResult.className = result.data ? "msg-error" : "msg-success"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
 	
 	checkEmail = result.data ? null : email; 
 	} catch(error) {
@@ -205,7 +224,7 @@ const phoneCheckBtn = document.querySelector("#phoneCheckBtn");
 	const result = await response.json();
 	
 	checkPhoneResult.textContent = result.message;
-	checkPhoneResult.className = result.data ? "msg-success" : "msg-error"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
+	checkPhoneResult.className = result.data ? "msg-error" : "msg-success"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
 	
 	checkPhone = result.data ? null : phone; 
 	} catch(error) {

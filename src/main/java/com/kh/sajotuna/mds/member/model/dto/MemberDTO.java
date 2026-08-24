@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +25,9 @@ public class MemberDTO {
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate birth;
 	private String gender;
+	@Pattern(regexp="^[a-z][a-z0-9]{5,19}$", message="첫글자를 영어로 하는 6~20자로 입력해주세요.")
 	private String loginId;
+	@Pattern(regexp="^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()])[a-zA-Z0-9!@#$%^&*()]{8,16}$", message="영어와 숫자, 특수문자가 최소 하나씩 들어가는 8~16자로 입력해주세요.")
 	private String loginPw;
 	private String nickname;
 	private String email;
