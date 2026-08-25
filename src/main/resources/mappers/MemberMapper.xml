@@ -13,6 +13,11 @@
   		INSERT INTO MEMBER (MEMBER_ID, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME, EMAIL, PHONE, ROLE)
   		VALUES (#{memberId}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname}, #{email}, #{phone}, #{role})
  	</insert>
+ 	
+ 	<insert id="insertPoint" parameterType="long">
+  		INSERT INTO MEMBERPOINT (POINT_ID, MEMBER_ID)
+  		VALUES (SEQ_POINT_ID.NEXTVAL, #{memberId})
+ 	</insert>
   
   	<select id="countByLoginId" parameterType="String" resultType="int">
 		SELECT COUNT(*) FROM MEMBER WHERE LOGIN_ID = #{loginId}  
@@ -37,5 +42,14 @@
 			TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR 
 		FROM MEMBER 
 		WHERE LOGIN_ID = #{loginId}
+  	</select>
+  	
+  	<select id="selectByMemberId" parameterType="long" resultType="MemberDTO">
+		SELECT MEMBER_ID, GRADE_ID, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
+			EMAIL, CREATED_AT, PHONE, ROLE, MEMBER_STATUS,
+			TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
+			TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR 
+		FROM MEMBER 
+		WHERE MEMBER_ID = #{memberId}
   	</select>
 </mapper>

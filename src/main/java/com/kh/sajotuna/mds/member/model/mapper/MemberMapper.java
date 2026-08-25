@@ -10,6 +10,9 @@ public interface MemberMapper {
 	// 회원 가입
 	int insertMember(MemberDTO member);
 	
+	// 가입 시 포인트 초기화
+	int insertPoint(Long memberId);
+	
 	// 아이디 중복 확인
 	int countByLoginId(String loginId);
 		
@@ -22,6 +25,9 @@ public interface MemberMapper {
 	// 연락처 중복 확인
 	int countByPhone(String phone);
 	
-	// 아이디를 통한 회원 조회
+	// 로그인 아이디를 통한 회원 조회
 	MemberDTO selectByLoginId(String loginId);
+	
+	// 멤버 아이디를 통한 회원 조회
+	MemberDTO selectByMemberId(Long memberId);
 }

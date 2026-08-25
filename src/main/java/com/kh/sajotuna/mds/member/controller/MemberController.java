@@ -27,10 +27,10 @@ public class MemberController {
 		this.service = service;
 	}
 	
-	// 단순 화면 이동
-	@GetMapping("/join")
-	public String joinForm() {
-		return "member/join";
+	// GET: 화면 요청 / 데이터 조회
+	@GetMapping("/signUp")
+	public String signUpForm() {
+		return "member/signUp";
 	}
 	
 	@GetMapping("/login")
@@ -38,27 +38,35 @@ public class MemberController {
 		return "member/login";
 	}
 	
-	//------------------
+	@GetMapping("/mypage")
+	public String mypageForm(HttpSession session) {
+		long memberId = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_MEMBER)).getMemberId();
+		session.setAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(memberId)));
+		System.out.println("세션 정보 갱신"); // 추적용 출력
+		return "member/mypage";
+	}
 	
-	@PostMapping("/join")
-	public String join(@ModelAttribute @Valid MemberDTO member,
+	// POST: CUD 기능
+	
+	@PostMapping("/signUp")
+	public String signUp(@ModelAttribute @Valid MemberDTO member,
 						BindingResult bindingResult,
 						RedirectAttributes redirectAttr) {
 		
 		if (bindingResult.hasErrors()) {
 			String eMsg = bindingResult.getFieldError().getDefaultMessage();
 			redirectAttr.addFlashAttribute("error", eMsg);
-			return "redirect:/member/join";
+			return "redirect:/member/signUp";
 		}
 		
 		try {
-				service.join(member);
+				service.signUp(member);
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
-			return "redirect:/member/join";
+			return "redirect:/member/signUp";
 		}
 				
-		redirectAttr.addFlashAttribute("joinSuccess", true);
+		redirectAttr.addFlashAttribute("signUpSuccess", true);
 		return "redirect:/member/login";
 	}
 	
@@ -115,7 +123,7 @@ public class MemberController {
 		
 		// 로그인 성공 -> 세션에 저장 / 실패 -> 에러 메시지 전달
 		session.setAttribute(SessionConst.LOGIN_MEMBER, member);
-		System.out.println("세션 저장 완료: " + session.getAttribute("loginMember")); // 로그인 체크용 나중에 삭제
+		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_MEMBER)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
 			return "redirect:/member/login";

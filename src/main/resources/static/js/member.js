@@ -248,8 +248,8 @@ const phoneCheckBtn = document.querySelector("#phoneCheckBtn");
 });
 
 
-const joinForm = document.querySelector("#joinForm");
-joinForm.addEventListener("submit", function(e){
+const signUpForm = document.querySelector("#signUpForm");
+signUpForm.addEventListener("submit", function(e){
 
 	if(!checkId) {
 			e.preventDefault();   // 폼 제출 막기

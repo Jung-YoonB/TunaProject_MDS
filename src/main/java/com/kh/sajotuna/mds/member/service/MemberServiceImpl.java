@@ -2,6 +2,7 @@ package com.kh.sajotuna.mds.member.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
@@ -18,7 +19,8 @@ public class MemberServiceImpl implements MemberService{
 	private final PasswordEncoder passwordEncoder;
 	
 	@Override
-	public void join(MemberDTO member) {
+	@Transactional
+	public void signUp(MemberDTO member) {
 		// 아이디 중복검사
 		if(isLoginIdCheck(member.getLoginId())) {
 			throw new IllegalStateException("이미 사용중인 아이디입니다.");
@@ -45,6 +47,7 @@ public class MemberServiceImpl implements MemberService{
 				
 		// 체크 된 데이터를 저장
 		mapper.insertMember(member);
+		mapper.insertPoint(member.getMemberId()); // 회원의 포인트도 초기화
 		
 	}
 
@@ -79,7 +82,12 @@ public class MemberServiceImpl implements MemberService{
 		
 		return member;
 	}
-	
-	
+
+	@Override
+	public MemberDTO getMemberByMemberId(Long memberId) {
+		MemberDTO member = mapper.selectByMemberId(memberId);
+		
+		return member;
+	}
 	
 }
