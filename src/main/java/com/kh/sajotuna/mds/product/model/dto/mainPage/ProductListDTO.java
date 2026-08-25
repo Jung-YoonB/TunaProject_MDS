@@ -1,4 +1,4 @@
-package com.kh.sajotuna.mds.product.model.dto;
+package com.kh.sajotuna.mds.product.model.dto.mainPage;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,4 +14,5 @@ public class ProductListDTO {
 	private String productTitle;
 	private int price;
 	private double score;
+	private String thumbnail;
 }
