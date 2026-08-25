@@ -20,7 +20,7 @@ public interface MemberService {
 	boolean isPhoneCheck(String phone);
 	
 	// 로그인
-	MemberDTO login(String loginId, String loginPw);
+	Long login(String loginId, String loginPw);
 	
 	// 멤버id로 회원 정보 검색
 	MemberDTO getMemberByMemberId(Long memberId);

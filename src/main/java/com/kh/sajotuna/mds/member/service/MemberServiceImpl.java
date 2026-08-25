@@ -73,15 +73,16 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
-	public MemberDTO login(String loginId, String loginPw) throws IllegalStateException{
+	public Long login(String loginId, String loginPw) throws IllegalStateException{
+
 		MemberDTO member = mapper.selectByLoginId(loginId);
-		
 		if (member == null || !passwordEncoder.matches(loginPw, member.getLoginPw())) {
 			throw new IllegalStateException("아이디 또는 비밀번호가 일치하지 않습니다.");
 		}
-		
-		return member;
+		Long memberId = member.getMemberId();
+		return memberId;
 	}
+
 
 	@Override
 	public MemberDTO getMemberByMemberId(Long memberId) {

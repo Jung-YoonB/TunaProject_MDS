@@ -1,6 +1,7 @@
 package com.kh.sajotuna.mds.member.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -39,10 +40,11 @@ public class MemberController {
 	}
 	
 	@GetMapping("/mypage")
-	public String mypageForm(HttpSession session) {
-		long memberId = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_MEMBER)).getMemberId();
-		session.setAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(memberId)));
-		System.out.println("세션 정보 갱신"); // 추적용 출력
+	public String mypageForm(HttpSession session, Model model) {
+		System.out.println("=== 마이페이지 컨트롤러 진입 성공 ===");
+		Long memberId = ((Long)session.getAttribute(SessionConst.LOGIN_MEMBER_ID));
+		model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(memberId)));
+		System.out.println("모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
 		return "member/mypage";
 	}
 	
@@ -119,11 +121,10 @@ public class MemberController {
 			,@RequestParam(required=false) String redirectURL
 			, HttpSession session, RedirectAttributes redirectAttr) {
 		try {
-		MemberDTO member = service.login(loginId,loginPw);
 		
 		// 로그인 성공 -> 세션에 저장 / 실패 -> 에러 메시지 전달
-		session.setAttribute(SessionConst.LOGIN_MEMBER, member);
-		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_MEMBER)); // 로그인 체크용 나중에 삭제
+		session.setAttribute(SessionConst.LOGIN_MEMBER_ID, service.login(loginId,loginPw));
+		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_MEMBER_ID)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
 			return "redirect:/member/login";
