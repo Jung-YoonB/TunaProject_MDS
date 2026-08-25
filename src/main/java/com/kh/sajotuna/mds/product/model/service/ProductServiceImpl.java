@@ -43,13 +43,12 @@ public class ProductServiceImpl implements ProductService{
 		List<String> images = mapper.getImages(productId);
 		dto.setThumbnail(thumbnail);
 		dto.setImage(images);
-		System.out.println("service detail :: " + dto.toString());
+		System.out.println("service detail :: " + dto);
 		List<OptionDTO> optionList = mapper.getOptionList(productId);
 		for(OptionDTO o : optionList) {
 			o.setPrice(o.getPrice() - dto.getPrice());
 		}
-		DetailPageDTO result = new DetailPageDTO(dto, optionList);
-		return result;
+		return new DetailPageDTO(dto, optionList);
 	}
 
 	@Override
@@ -66,7 +65,7 @@ public class ProductServiceImpl implements ProductService{
 
 		for(ReviewDTO review : reviewList) {
 			for(ReviewImagesDTO image : reviewImages) {
-				if(review.getReviewId() == image.getReviewId()) {
+				if(review.getReviewId().equals(image.getReviewId())) {
 					images.add(image);
 				}
 			}
