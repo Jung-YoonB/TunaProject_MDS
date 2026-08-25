@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.kh.sajotuna.mds.member.model.mapper.MemberMapper">
+	
+	<insert id="insertMember" parameterType="MemberDTO">
+		<selectKey
+			keyProperty="memberId" resultType="long" order="BEFORE">
+			SELECT SEQ_MEMBER_ID.NEXTVAL FROM DUAL
+		</selectKey>
+  		INSERT INTO MEMBER (MEMBER_ID, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME, EMAIL, PHONE, ROLE)
+  		VALUES (#{memberId}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname}, #{email}, #{phone}, #{role})
+ 	</insert>
+ 	
+ 	<insert id="insertPoint" parameterType="long">
+  		INSERT INTO MEMBERPOINT (POINT_ID, MEMBER_ID)
+  		VALUES (SEQ_POINT_ID.NEXTVAL, #{memberId})
+ 	</insert>
+  
+  	<select id="countByLoginId" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE LOGIN_ID = #{loginId}  
+  	</select>
+  	
+  	<select id="countByNickname" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE NICKNAME = #{nickname}  
+  	</select>
+  	
+  	<select id="countByEmail" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE EMAIL = #{email}  
+  	</select>
+  	
+  	<select id="countByPhone" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE PHONE = #{phone}  
+  	</select>
+  	
+  	<select id="selectByLoginId" parameterType="String" resultType="MemberDTO">
+		SELECT MEMBER_ID, GRADE_ID, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
+			EMAIL, CREATED_AT, PHONE, ROLE, MEMBER_STATUS,
+			TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
+			TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR 
+		FROM MEMBER 
+		WHERE LOGIN_ID = #{loginId}
+  	</select>
+  	
+  	<select id="selectByMemberId" parameterType="long" resultType="MemberDTO">
+		SELECT M.MEMBER_ID, GRADE_ID, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
+			EMAIL, M.CREATED_AT, PHONE, ROLE, MEMBER_STATUS,P.POINT,
+			TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
+			TO_CHAR(M.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR, 
+				(SELECT COUNT(*)
+				FROM COUPONHISTORY H LEFT JOIN COUPON C ON H.COUPON_ID = C.COUPON_ID
+				WHERE M.MEMBER_ID = H.MEMBER_ID AND SYSDATE &lt;= C.DEADLINE AND H.TYPE='ISSUE') AS COUPON_QTY
+		FROM MEMBER M LEFT JOIN MEMBERPOINT P ON M.MEMBER_ID = P.MEMBER_ID
+		WHERE M.MEMBER_ID = #{memberId}
+  	</select>
+</mapper>

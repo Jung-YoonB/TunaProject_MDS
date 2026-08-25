@@ -1,0 +1,28 @@
+package com.kh.sajotuna.mds.member.service;
+
+import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+
+public interface MemberService {
+
+	// 회원 가입
+		void signUp(MemberDTO member);
+	
+	// 아이디 중복체크
+	boolean isLoginIdCheck(String loginId);
+	
+	// 닉네임 중복 체크
+	boolean isNicknameCheck(String nickname);
+	
+	// 이메일 중복 체크
+	boolean isEmailCheck(String email);
+		
+	// 연락처 중복 체크
+	boolean isPhoneCheck(String phone);
+	
+	// 로그인
+	Long login(String loginId, String loginPw);
+	
+	// 멤버id로 회원 정보 검색
+	MemberDTO getMemberByMemberId(Long memberId);
+
+}
