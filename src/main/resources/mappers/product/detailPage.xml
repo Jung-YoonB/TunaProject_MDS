@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.kh.sajotuna.mds.product.model.mapper.ProductMapper">
+
+	<select id="productDetail" resultType="ProductDetailDTO" parameterType="Long">
+		select p.product_id, p.product_title, p.product_name, p.product_content, MIN(PO.OPTION_PRICE) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS PRICE
+		from product p join optiondetail o on p.product_id = o.product_id
+        join productoption po on po.option_id = o.option_id
+		where p.product_id = #{productId} and p.status = 'ON_SALE'
+        GROUP BY  p.product_id, p.product_title, p.product_name, p.product_content
+	</select>
+	
+	<select id="getThumbnail" resultType="String" parameterType="Long">
+	select product_image_save_name as thumbnail
+	from productimage
+	where product_id = #{productId} and product_title_image = 0
+	</select>
+	
+	<select id="getImages" resultType="String" parameterType="Long">
+	select product_image_save_name as images
+	from productimage 
+	where product_id = #{productId} and product_title_image = 1
+	</select>
+	
+	<select id="getOptionList" resultType="OptionDTO" parameterType="Long">
+	select o.option_id, o.option_name, o.option_price as price
+	from productoption o join optiondetail od on o.option_id = od.option_id
+	join product p on od.product_id = p.product_id
+	where p.product_id = #{productId}
+	</select>
+</mapper>
