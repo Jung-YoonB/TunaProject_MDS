@@ -31,4 +31,23 @@
 	join product p on od.product_id = p.product_id
 	where p.product_id = #{productId}
 	</select>
+
+	<select id="getReviewList" resultType="ReviewDTO" parameterType="Long">
+		select r.REVIEW_ID, r.SCORE, r.REVIEW_TEXT, to_char(r.WRITE_DATE, 'YYYY-MM-DD'), po.OPTION_NAME, p.PRODUCT_NAME, po.OPTION_PRICE, m.NICKNAME, orderd.QTY
+		from review r join OPTIONDETAIL od on r.OD_ID = od.OPTION_ID
+		join PRODUCTOPTION po on po.OPTION_ID = od.OPTION_ID
+		join product p on p.PRODUCT_ID = od.PRODUCT_ID
+		join member m on m.MEMBER_ID = r.MEMBER_ID
+		join productorder pr on pr.MEMBER_ID = m.MEMBER_ID
+		join orderdetail orderd on orderd.ORDER_ID = pr.ORDER_ID
+		where p.PRODUCT_ID = #{productId}
+	</select>
+
+	<select id="getReviewImages" resultType="ReviewImagesDTO" >
+		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_images
+		from REVIEWIMAGE ri join REVIEW r on ri.REVIEW_ID = r.REVIEW_ID
+		where r.REVIEW_ID in <foreach collection="list" item="reviewId" open="(" separator=", " close=")">
+		#{reviewId}
+	</foreach>
+	</select>
 </mapper>

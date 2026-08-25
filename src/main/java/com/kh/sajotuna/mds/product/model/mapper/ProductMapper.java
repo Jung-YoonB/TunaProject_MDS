@@ -2,6 +2,8 @@ package com.kh.sajotuna.mds.product.model.mapper;
 
 import java.util.List;
 
+import com.kh.sajotuna.mds.product.model.dto.detail.ReviewDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.ReviewImagesDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
@@ -23,4 +25,7 @@ public interface ProductMapper {
 	List<String> getImages (Long productId);
 	
 	List<OptionDTO> getOptionList(Long productId);
+
+	List<ReviewDTO> getReviewList(Long productId);
+	List<ReviewImagesDTO> getReviewImages(List<Long> reviewId);
 }
