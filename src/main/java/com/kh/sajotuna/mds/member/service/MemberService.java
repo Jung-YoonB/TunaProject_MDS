@@ -5,7 +5,7 @@ import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 public interface MemberService {
 
 	// 회원 가입
-		void join(MemberDTO member);
+		void signUp(MemberDTO member);
 	
 	// 아이디 중복체크
 	boolean isLoginIdCheck(String loginId);
@@ -20,5 +20,9 @@ public interface MemberService {
 	boolean isPhoneCheck(String phone);
 	
 	// 로그인
-	MemberDTO login(String loginId, String loginPw);
+	Long login(String loginId, String loginPw);
+	
+	// 멤버id로 회원 정보 검색
+	MemberDTO getMemberByMemberId(Long memberId);
+
 }
