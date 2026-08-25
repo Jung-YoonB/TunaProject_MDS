@@ -1,6 +1,7 @@
 package com.kh.sajotuna.mds.member.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -27,10 +28,10 @@ public class MemberController {
 		this.service = service;
 	}
 	
-	// 단순 화면 이동
-	@GetMapping("/join")
-	public String joinForm() {
-		return "member/join";
+	// GET: 화면 요청 / 데이터 조회
+	@GetMapping("/signUp")
+	public String signUpForm() {
+		return "member/signUp";
 	}
 	
 	@GetMapping("/login")
@@ -38,27 +39,36 @@ public class MemberController {
 		return "member/login";
 	}
 	
-	//------------------
+	@GetMapping("/mypage")
+	public String mypageForm(HttpSession session, Model model) {
+		System.out.println("=== 마이페이지 컨트롤러 진입 성공 ===");
+		Long memberId = ((Long)session.getAttribute(SessionConst.LOGIN_MEMBER_ID));
+		model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(memberId)));
+		System.out.println("모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
+		return "member/mypage";
+	}
 	
-	@PostMapping("/join")
-	public String join(@ModelAttribute @Valid MemberDTO member,
+	// POST: CUD 기능
+	
+	@PostMapping("/signUp")
+	public String signUp(@ModelAttribute @Valid MemberDTO member,
 						BindingResult bindingResult,
 						RedirectAttributes redirectAttr) {
 		
 		if (bindingResult.hasErrors()) {
 			String eMsg = bindingResult.getFieldError().getDefaultMessage();
 			redirectAttr.addFlashAttribute("error", eMsg);
-			return "redirect:/member/join";
+			return "redirect:/member/signUp";
 		}
 		
 		try {
-				service.join(member);
+				service.signUp(member);
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
-			return "redirect:/member/join";
+			return "redirect:/member/signUp";
 		}
 				
-		redirectAttr.addFlashAttribute("joinSuccess", true);
+		redirectAttr.addFlashAttribute("signUpSuccess", true);
 		return "redirect:/member/login";
 	}
 	
@@ -111,10 +121,10 @@ public class MemberController {
 			,@RequestParam(required=false) String redirectURL
 			, HttpSession session, RedirectAttributes redirectAttr) {
 		try {
-		MemberDTO member = service.login(loginId,loginPw);
 		
 		// 로그인 성공 -> 세션에 저장 / 실패 -> 에러 메시지 전달
-		session.setAttribute(SessionConst.LOGIN_MEMBER, member);
+		session.setAttribute(SessionConst.LOGIN_MEMBER_ID, service.login(loginId,loginPw));
+		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_MEMBER_ID)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
 			return "redirect:/member/login";

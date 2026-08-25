@@ -18,7 +18,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 			throws Exception {
 		HttpSession session = request.getSession(false);
 		
-		boolean isLoggedIn = session != null && session.getAttribute(SessionConst.LOGIN_MEMBER) != null;
+		boolean isLoggedIn = session != null && session.getAttribute(SessionConst.LOGIN_MEMBER_ID) != null;
 		
 		// 로그인 되어 있을 경우 컨트롤러 경로 진행
 		if (isLoggedIn) return true;
