@@ -30,6 +30,6 @@ public class WebConfig implements WebMvcConfigurer{
 			// 로그인 없이 접속 시도 시 로그인 요청
 				.addPathPatterns("/member/mypage");
 	}
-	
+
 	
 }
