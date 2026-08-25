@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>리뷰 작성 페이지</title>
+		<link rel="stylesheet" href="../css/default.css">
+	</head>
+	
+	<body>
+		<header>
+			<div id="logo_img">로고(이미지/메인 페이지 이동)</div>
+			<div id="search_box">검색창</div>
+			<div class="icon">마이페이지, 찜, 장바구니(아이콘)</div>
+			<div class="sign">로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
+		</header>
+		
+		<main class="review-write-page" id="review-write-container">
+			<!-- 1. 타이틀 페이지 -->
+			<header class="header-page ">
+				<h2>리뷰 작성</h2>
+				<p class="subtitle">상품은 만족스러우셨나요?</p>
+			</header>
+			
+			<!-- 2. 리뷰 작성 -->
+			<form id="review-form" action="/review/write" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="product_id" value="{Product.product_id}">
+				<input type="hidden" name="order_id" value="{Order.order_id}">
+				
+				<!-- 3. 리뷰 대상 상품 정보 카드 -->
+				<section class="review-product-card" aria-label="리뷰 작성 상품 정보">
+					<div class="product-thumbnail">
+						<img src="{ProductImage.product_image_path}" alt="{Product.product_name}">
+					</div>
+					<div class="product-info">
+						<strong class="product-name">{Product.product_name}</strong>
+						<p class="product-price">{결제금액}원</p>
+					</div>
+				</section>
+				
+				<!-- 4. 별점 입력 영역 -->
+				<section class="star-rating-section" aria-label="별점 입력">
+					<h3>별점을 남겨주세요</h3>
+					<div class="star-container" id="star-rating">
+						<button type="button" class="filled-star-btn" data-value="1" aria-label="1점">★</button>
+						<button type="button" class="filled-star-btn" data-value="2" aria-label="2점">★</button>
+						<button type="button" class="filled-star-btn" data-value="3" aria-label="3점">★</button>
+						<button type="button" class="filled-star-btn" data-value="4" aria-label="4점">★</button>
+						<button type="button" class="empty-star-btn" data-value="5" aria-label="5점">☆</button>
+					</div>
+					<input type="hidden" name="score" id="review-score" value="4">
+				</section>
+				
+				<!-- 5. 텍스트 후기 입력 영역 -->
+				<section class="review-text-section" aria-label="후기 텍스트 입력">
+					<h3>후기를 남겨주세요</h3>
+					<div class="textarea-wrapper">
+						<textarea name="review_text" id="review-content" placeholder="상품에 대한 솔직한 후기를 남겨주세요" maxlength="500" required></textarea>
+						<div class="char-count">
+							<span id="current-char-count">0</span> / 500
+						</div>
+					</div>
+				</section>
+				
+				<!-- 6. 사진 첨부 영역 -->
+				<section class="photo-upload-section" aria-label="사진 첨부">
+					<h3>사진 추가<span class="text-muted">(선택, 최대 5장)</span></h3>
+					<div class="upload-container">
+						<label class="upload-box-btn" for="review-photos">
+							<span class="plus-icon">+</span>
+						</label>
+						<input type="file" id="review-photos" name="review_images" accept="image/*" multiple hidden>
+						<ul class="photo-preview-list" id="photo-preview-list"></ul>
+					</div>
+				</section>
+				
+				<!-- 7. 제출 버튼 -->
+				<div class="form-actions-bottom">
+					<button type="submit" class="solid-large-btn" id="review-submit-btn">리뷰 등록</button>
+				</div>
+			</form>
+		</main>
+		
+		<footer class="site-footer">
+			<!-- 상단: 회사 정보 및 nav -->
+			<div class="footer-top">
+				<!-- 좌측: 회사 정보 -->
+				<div class="company-info">
+					<h2>Masion De SAJO</h2>
+					<address>
+						<p>주소지</p>
+						<p>우편번호</p>
+						<p>고객센터번호</p>
+					</address>
+				</div>
+				<!-- 우측: 약관 및 고객센터 메뉴 -->
+				<nav class="footer-nav">
+					<ul>
+						<li><a href="#">이용약관</a></li>
+						<li><a href="#">개인정보처리방침</a></li>
+						<li><a href="#">사업자정보</a></li>
+						<li><a href="#">고객센터</a></li>
+					</ul>
+				</nav>
+			</div>
+			<!-- 구분선 -->
+			<hr class="footer-divider">
+			<!-- 하단: 저작권 정보 -->
+			<div class="footer-bottom">
+				<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
+			</div>
+		</footer>
+	</body>
+</html>
