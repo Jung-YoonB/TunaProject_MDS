@@ -1,9 +1,12 @@
 package com.kh.sajotuna.mds.member.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
 
@@ -73,14 +76,15 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
-	public Long login(String loginId, String loginPw) throws IllegalStateException{
+	public MemberDTO login(String loginId, String loginPw) throws IllegalStateException{
 
 		MemberDTO member = mapper.selectByLoginId(loginId);
 		if (member == null || !passwordEncoder.matches(loginPw, member.getLoginPw())) {
 			throw new IllegalStateException("아이디 또는 비밀번호가 일치하지 않습니다.");
 		}
-		Long memberId = member.getMemberId();
-		return memberId;
+		
+		MemberDTO sessionMember = new MemberDTO(member.getMemberId(),member.getRole());
+		return sessionMember;
 	}
 
 
@@ -90,5 +94,13 @@ public class MemberServiceImpl implements MemberService{
 		
 		return member;
 	}
+
+	@Override
+	public List<CouponDTO> listCoupon(Long memberId) {
+		List<CouponDTO> couponList = mapper.selectCouponsByMemberId(memberId);
+		
+		return couponList;
+	}
+	
 	
 }

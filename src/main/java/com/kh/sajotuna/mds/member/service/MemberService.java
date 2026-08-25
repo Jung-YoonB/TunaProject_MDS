@@ -1,5 +1,8 @@
 package com.kh.sajotuna.mds.member.service;
 
+import java.util.List;
+
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 
 public interface MemberService {
@@ -20,8 +23,11 @@ public interface MemberService {
 	boolean isPhoneCheck(String phone);
 	
 	// 로그인
-	Long login(String loginId, String loginPw);
+	MemberDTO login(String loginId, String loginPw);
 	
 	// 멤버id로 회원 정보 검색
 	MemberDTO getMemberByMemberId(Long memberId);
+	
+	// 멤버id로 보유 쿠폰 검색
+	List<CouponDTO> listCoupon(Long memberId);
 }

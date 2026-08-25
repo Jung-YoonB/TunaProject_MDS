@@ -41,11 +41,20 @@ public class MemberController {
 	
 	@GetMapping("/mypage")
 	public String mypageForm(HttpSession session, Model model) {
+		
 		System.out.println("=== 마이페이지 컨트롤러 진입 성공 ===");
-		Long memberId = ((Long)session.getAttribute(SessionConst.LOGIN_MEMBER_ID));
-		model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(memberId)));
+		
+		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
 		System.out.println("모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
-		return "member/mypage";
+				
+		if(member.getRole().equals("USER")) {
+			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
+			return "member/mypage";
+		} else {
+			return "member/adminmypage";
+		}
+		// 유저는 loginMember 에 유저DTO, couponList에 List<CouponDTO> 가 모델에 저장되고 넘어감
 	}
 	
 	// POST: CUD 기능
@@ -121,10 +130,10 @@ public class MemberController {
 			,@RequestParam(required=false) String redirectURL
 			, HttpSession session, RedirectAttributes redirectAttr) {
 		try {
-		
+			MemberDTO member = service.login(loginId,loginPw);
 		// 로그인 성공 -> 세션에 저장 / 실패 -> 에러 메시지 전달
-		session.setAttribute(SessionConst.LOGIN_MEMBER_ID, service.login(loginId,loginPw));
-		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_MEMBER_ID)); // 로그인 체크용 나중에 삭제
+		session.setAttribute(SessionConst.LOGIN_SESSION, member );
+		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_SESSION)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
 			return "redirect:/member/login";

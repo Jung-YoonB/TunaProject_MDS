@@ -1,7 +1,10 @@
 package com.kh.sajotuna.mds.member.model.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 
 @Mapper
@@ -30,4 +33,7 @@ public interface MemberMapper {
 	
 	// 멤버 아이디를 통한 회원 조회
 	MemberDTO selectByMemberId(Long memberId);
+	
+	// 멤버 아이디를 통한 보유 쿠폰 조회
+	List<CouponDTO> selectCouponsByMemberId(Long memberId);
 }
