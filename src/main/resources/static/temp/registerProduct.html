@@ -6,6 +6,7 @@
 	    <title>상품 등록 페이지</title>
 		<link rel="stylesheet" href="../css/default.css">
 	</head>
+	
 	<body>
 		<header>
 			<div id="logo_img">로고(이미지/메인 페이지 이동)</div>
@@ -13,9 +14,63 @@
 			<div class="icon">마이페이지, 찜, 장바구니(아이콘)</div>
 			<div class="sign">로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
 		</header>
-		<main>
+		
+		<main class="product-register-page" id="product-register-container">
+			<!-- 1. 타이틀 영역 -->
+			<header class="page-header">
+				<h2>상품 등록</h2>
+				<p class="subtitle">새로운 상품 정보를 입력해 주세요</p>
+			</header>
+			
+			<!-- 2. 상품 등록폼 -->
+			<form id="product-register-form" action="/admin/product/register" method="post" enctype="multipart/form-data">
+				<div class="registration-card-grid">
+					<!--대표 이미지 업로드-->
+					<label class="input-card" for="upload-main-img">
+						<div class="card-icon"><i class="icon-main-img"></i></div>
+						<h3>대표 이미지</h3>
+						<p>메인 이미지 업로드</p>
+						<input type="file" id="upload-main-img" name="main_image" accept="image/*" hidden>
+					</label>
+					<!--추가 이미지 업로드-->
+					<label class="input-card" for="upload-sub-img">
+						<div class="card-icon"><i class="icon-sub-img"></i></div>
+						<h3>추가 이미지</h3>
+						<p>상세 이미지 업로드</p>
+						<input type="file" id="upload-sub-img" name="sub_images" accept="image/*" multiple hidden>
+					</label>
+					<!--상세 이미지 업로드-->
+					<label class="input-card" for="upload-detail-imgs">
+						<div class="card-icon"><i class="icon-document"></i></div>
+						<h3>상세 이미지</h3>
+						<p>상세보기 이미지 설정</p>
+						<input type="file" id="upload-detail-img" name="detail_images" accept="image/*" multiple hidden>
+					</label>
+					
+					<!--상품명 입력-->
+					<button type="button" class="input-card trigger-modal-btn" data-target="modal-product-name">
+						<div class="card-icon"><i class="text-icon"></i></div>
+						<h3>상품명</h3>
+						<p>상품 제목 입력</p>
+						<input type="hidden" id="hidden-product-name" name="product_name">
+					</button>
+					<!--상품 설명 입력-->
+					<button type="button" class="input-card trigger-modal-btn" data-target="modal-product-desc">
+						<div class="card-icon"><i class="edit-icon"></i></div>
+						<h3>상품 설명</h3>
+						<p>상품 상세 내용 입력</p>
+						<input type="hidden" id="hidden-product-content" name="product_content">
+					</button>
+				</div>
+				
+				<!-- 4. 상품 등록 제출 버튼 -->
+				<div class="bottom-action-form">
+					<button type="button" class="solid-large-btn" id="product-submit-btn">상품 등록</button>
+				</div>
+			</form>
 			
 		</main>
+		
 		<footer class="site-footer">
 			<!-- 상단: 회사 정보 및 nav -->
 			<div class="footer-top">
