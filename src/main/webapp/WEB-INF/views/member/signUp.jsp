@@ -8,8 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원가입</title>
 
-    <link rel="stylesheet" href="../css/default.css">
-    <link rel="stylesheet" href="../css/style_member.css">
+    <link rel="stylesheet" href="/css/default.css">
+    <link rel="stylesheet" href="/css/style_member.css">
 </head>
 
 <body>

@@ -9,8 +9,8 @@
 
     <title>내 쿠폰</title>
 
-    <link rel="stylesheet" href="../css/default.css">
-    <link rel="stylesheet" href="../css/style_coupon.css">
+    <link rel="stylesheet" href="/css/default.css">
+    <link rel="stylesheet" href="/css/style_coupon.css">
 </head>
 
 <body>
