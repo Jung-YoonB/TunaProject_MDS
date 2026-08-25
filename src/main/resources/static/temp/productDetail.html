@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>상품 상세</title>
+	    <link rel="stylesheet" href="../css/default.css">
+		
+	    <style>
+	        /* 전체 페이지 */
+	        body {
+	            margin: 0;
+	            background-color: #f8f8f8;
+	            font-family: Arial, sans-serif;
+	            color: #333;
+	        }
+	
+	        /* 전체 영역 */
+	        main {
+	            width: 1100px;
+	            margin: 40px auto;
+	            padding: 30px;
+	            background-color: white;
+	            box-sizing: border-box;
+	        }
+	
+	        /* 카테고리 */
+	        #category {
+	            margin-bottom: 15px;
+	            font-size: 14px;
+	            font-weight: bold;
+	        }
+	
+	        /* 상품 이동 경로 */
+	        #link-short {
+	            margin-bottom: 30px;
+	            font-size: 13px;
+	            color: #888;
+	        }
+	
+	        /* 상품 메인 영역 */
+	        #ProductArea {
+	            display: flex;
+	            gap: 45px;
+	        }
+	
+	        /* 이미지 영역 */
+	        #ProductImages {
+	            width: 500px;
+	        }
+	
+	        /* 메인 이미지 */
+	        #product-main-img {
+	            width: 500px;
+	            height: 500px;
+	            display: flex;
+	            align-items: center;
+	            justify-content: center;
+	            background-color: #f5f5f5;
+	            border-radius: 8px;
+	            font-size: 16px;
+	            color: #999;
+	        }
+	
+	        /* 서브 이미지 */
+	        #product-sub-img {
+	            display: flex;
+	            gap: 10px;
+	            margin-top: 12px;
+	        }
+	
+	        .sub-img {
+	            width: 80px;
+	            height: 80px;
+	            display: flex;
+	            align-items: center;
+	            justify-content: center;
+	            background-color: #f5f5f5;
+	            border: 1px solid #ddd;
+	            border-radius: 6px;
+	            font-size: 12px;
+	            color: #999;
+	        }
+	
+	        /* 상품 정보 */
+	        #product-detail {
+	            flex: 1;
+	        }
+	
+	        /* 상품 제목 */
+	        .product-title {
+	            margin-bottom: 15px;
+	            font-size: 25px;
+	            font-weight: bold;
+	        }
+	
+	        /* 상품 설명 */
+	        .product-description {
+	            margin-bottom: 20px;
+	            font-size: 14px;
+	            line-height: 1.6;
+	            color: #777;
+	        }
+	
+	        /* 리뷰 / 찜 */
+	        #ProductStats {
+	            display: flex;
+	            gap: 15px;
+	            margin-bottom: 25px;
+	            font-size: 13px;
+	        }
+	
+	        .stat-box {
+	            padding: 7px 10px;
+	            border: 1px solid #eee;
+	            border-radius: 5px;
+	            background-color: #fafafa;
+	        }
+	
+	        /* 가격 영역 */
+	        #PriceInfo {
+	            padding: 20px 0;
+	            border-top: 1px solid #eee;
+	            border-bottom: 1px solid #eee;
+	        }
+	
+	        .price-row {
+	            display: flex;
+	            justify-content: space-between;
+	            align-items: center;
+	            margin-bottom: 12px;
+	        }
+	
+	        .price-label {
+	            font-size: 14px;
+	            color: #666;
+	        }
+	
+	        .original-price {
+	            font-size: 15px;
+	            color: #999;
+	            text-decoration: line-through;
+	        }
+	
+	        .discount-rate {
+	            margin-right: 8px;
+	            font-size: 20px;
+	            font-weight: bold;
+	        }
+	
+	        .sale-price {
+	            font-size: 24px;
+	            font-weight: bold;
+	        }
+	
+	        /* 옵션 */
+	        #ProductOption {
+	            margin-top: 25px;
+	        }
+	
+	        .option-title {
+	            margin-bottom: 10px;
+	            font-size: 14px;
+	            font-weight: bold;
+	        }
+	
+	        #product-option {
+	            width: 100%;
+	            height: 45px;
+	            padding: 0 10px;
+	            border: 1px solid #ddd;
+	            border-radius: 6px;
+	            background-color: white;
+	            box-sizing: border-box;
+	        }
+	
+	        /* 수량 */
+	        #ProductQuantity {
+	            margin-top: 20px;
+	        }
+	
+	        #quantity {
+	            width: 100px;
+	            height: 40px;
+	            padding: 0 10px;
+	            border: 1px solid #ddd;
+	            border-radius: 6px;
+	            box-sizing: border-box;
+	        }
+	
+	        /* 배송 안내 */
+	        #DeliveryInfo {
+	            margin-top: 20px;
+	            padding: 15px;
+	            background-color: #fafafa;
+	            border: 1px solid #eee;
+	            border-radius: 6px;
+	            font-size: 13px;
+	            line-height: 1.6;
+	            color: #666;
+	        }
+	
+	        /* 총 상품 금액 */
+	        #TotalPrice {
+	            display: flex;
+	            justify-content: space-between;
+	            align-items: center;
+	            margin-top: 25px;
+	            padding: 20px;
+	            background-color: #f8f8f8;
+	            border-radius: 8px;
+	        }
+	
+	        #TotalPrice .total-label {
+	            font-size: 15px;
+	            font-weight: bold;
+	        }
+	
+	        #total-product-price {
+	            font-size: 25px;
+	            font-weight: bold;
+	        }
+	
+	        /* 버튼 */
+	        #ProductButtons {
+	            display: flex;
+	            gap: 10px;
+	            margin-top: 15px;
+	        }
+	
+	        #ProductButtons button {
+	            height: 50px;
+	            border: 1px solid #ddd;
+	            border-radius: 6px;
+	            background-color: white;
+	            cursor: pointer;
+	            font-size: 14px;
+	        }
+	
+	        #wish-button {
+	            width: 55px;
+	        }
+	
+	        #cart-button {
+	            flex: 1;
+	        }
+	
+	        #buy-button {
+	            flex: 1;
+	            background-color: #222 !important;
+	            color: white;
+	            border-color: #222 !important;
+	        }
+	    </style>
+	</head>
+	
+	<body>
+	    <main>
+	        <!-- 상품 카테고리 -->
+	        <div id="category">추석 선물 세트</div>
+			
+	        <!-- 상품 이동 경로 -->
+	        <div id="link-short">홈 &gt; 추석 선물 세트 &gt; 프리미엄 한우</div>
+	
+	        <!-- 상품 이미지 + 상품 정보 -->
+	        <div id="ProductArea">
+	            <!-- 상품 이미지 -->
+	            <div id="ProductImages">
+	                <!-- 메인 이미지 -->
+	                <div id="product-main-img">상품 메인 이미지</div>
+	
+	                <!-- 서브 이미지 -->
+	                <div id="product-sub-img">
+	                    <div class="sub-img">이미지 1</div>
+	                    <div class="sub-img">이미지 2</div>
+	                    <div class="sub-img">이미지 3</div>
+	                    <div class="sub-img">이미지 4</div>
+	                </div>
+	            </div>
+	
+	            <!-- 상품 상세 정보 -->
+	            <div id="product-detail">
+	                <!-- 상품 제목 -->
+	                <div class="product-title">프리미엄 한우 선물세트</div>
+	
+	                <!-- 상품 설명 -->
+	                <div class="product-description">
+	                    소중한 분께 감사의 마음을 전할 수 있는 프리미엄 한우 선물세트입니다.
+	                </div>
+	
+	                <!-- 리뷰 / 찜 -->
+	                <div id="ProductStats">
+	                    <div class="stat-box">★ 4.9</div>
+	                    <div class="stat-box">리뷰 128개</div>
+	                    <div class="stat-box"> ♡ 찜 56</div>
+	                </div>
+	
+	                <!-- 가격 -->
+	                <div id="PriceInfo">
+	                    <div class="price-row">
+	                        <span class="price-label">정상가</span>
+	                        <span class="original-price">150,000원</span>
+	                    </div>
+	
+	                    <div class="price-row">
+	                        <span class="price-label">판매가</span>
+	                        <div>
+	                            <span class="discount-rate">10%</span>
+	                            <span class="sale-price">135,000원</span>
+	                        </div>
+	                    </div>
+	                </div>
+	
+	                <!-- 상품 옵션 -->
+	                <div id="ProductOption">
+	                    <div class="option-title">상품 옵션</div>
+	                    <select id="product-option">
+	                        <option value="">상품 옵션을 선택해주세요</option>
+	                        <option value="basic">기본 구성</option>
+	                        <option value="premium">프리미엄 구성</option>
+	                    </select>
+	                </div>
+	
+	                <!-- 상품 수량 -->
+	                <div id="ProductQuantity">
+	                    <div class="option-title">상품 수량</div>
+	                    <input type="number" id="quantity" value="1" min="1">
+	                </div>
+	
+	                <!-- 배송 안내 -->
+	                <div id="DeliveryInfo">
+	                    <strong>배송 안내</strong>
+						<br>주문 후 2~3일 이내 배송됩니다.
+	                    <br>제주 및 도서산간 지역은 추가 배송비가 발생할 수 있습니다.
+	                </div>
+	
+	                <!-- 총 상품 금액 -->
+	                <div id="TotalPrice">
+	                    <span class="total-label">총 상품 금액</span>
+	                    <strong id="total-product-price">135,000원</strong>
+	                </div>
+	
+	                <!-- 상품 버튼 -->
+	                <div id="ProductButtons">
+	                    <button type="button" id="wish-button"> ♡ </button>
+	                    <button type="button" id="cart-button">장바구니</button>
+	                    <button type="button" id="buy-button">바로 구매</button>
+	                </div>
+	            </div>
+	        </div>
+	    </main>
+	</body>
+</html>
