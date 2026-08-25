@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
+
     <!-- 배너 -->
     <div id="banner">배너 이미지</div>
     <!-- 선물 카테고리 -->
