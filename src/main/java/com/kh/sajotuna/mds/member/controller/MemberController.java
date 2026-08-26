@@ -1,5 +1,7 @@
 package com.kh.sajotuna.mds.member.controller;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
 import com.kh.sajotuna.mds.util.SessionConst;
@@ -39,23 +42,93 @@ public class MemberController {
 		return "member/login";
 	}
 	
-	@GetMapping("/mypage")
-	public String mypageForm(HttpSession session, Model model) {
+	@GetMapping("/myPage")
+	public String myPageForm(HttpSession session, Model model) {
 		
 		System.out.println("=== 마이페이지 컨트롤러 진입 성공 ===");
 		
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 		model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
-		System.out.println("모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
+		System.out.println("마이페이지용 모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
 				
 		if(member.getRole().equals("USER")) {
 			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
-			return "member/mypage";
+			return "member/myPage";
 		} else {
-			return "member/adminmypage";
+			return "member/adminmyPage";
 		}
 		// 유저는 loginMember 에 유저DTO, couponList에 List<CouponDTO> 가 모델에 저장되고 넘어감
 	}
+	
+	@GetMapping("/usercouponView")
+	public String userCouponViewForm(HttpSession session, Model model) {
+		
+		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+				
+		if(member.getRole().equals("USER")) {
+			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
+			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<CouponDTO>)model.getAttribute("couponList")); // 추적용 출력
+			return "member/usercouponView";
+		} else {
+			return "member/admincouponView"; // 주소 나중에 확인
+		}
+		// 유저는 couponList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
+	}
+	
+	@GetMapping("/wish")
+	public String wishlistForm(HttpSession session, Model model) {
+		
+		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		
+		
+		return "member/wish"; // 기능 구현 전까지 오류 막기용
+		/*
+		if(member.getRole().equals("USER")) {
+			model.addAttribute("wishList", (service.listWish(member.getMemberId()))); 기능 미구현
+			return "member/wish"; 
+		}  else {
+			return "member/admin..."; // 관리자용 주소 나중에 확인
+		} 
+		*/
+		// 유저는 wishList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
+	}
+	
+	@GetMapping("/cart")
+	public String cartForm(HttpSession session, Model model) {
+		
+		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		
+		
+		return "member/cart"; // 기능 구현 전까지 오류 막기용
+		/*
+		if(member.getRole().equals("USER")) {
+			model.addAttribute("cartList", (service.listCart(member.getMemberId()))); 기능 미구현
+			return "member/cart"; 
+		}  else {
+			return "member/admin..."; // 관리자용 주소 나중에 확인
+		} 
+		*/
+		// 유저는 cartList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
+	}
+	
+	@GetMapping("/userOrderDelivery")
+	public String userOrderDeliveryForm(HttpSession session, Model model) {
+		
+		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		
+		
+		return "member/userOrderDelivery"; // 기능 구현 전까지 오류 막기용
+		/*
+		if(member.getRole().equals("USER")) {
+			model.addAttribute("cartList", (service.listCart(member.getMemberId()))); 기능 미구현
+			return "member/userOrderDelivery"; 
+		}  else {
+			return "member/admin..."; // 관리자용 주소 나중에 확인
+		} 
+		*/
+		// 유저는 cartList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
+	}
+	
 	
 	// POST: CUD 기능
 	

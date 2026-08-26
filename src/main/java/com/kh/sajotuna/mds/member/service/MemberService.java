@@ -2,13 +2,13 @@ package com.kh.sajotuna.mds.member.service;
 
 import java.util.List;
 
-import com.kh.sajotuna.mds.coupon.model.CouponDTO;
+import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 
 public interface MemberService {
 
 	// 회원 가입
-		void signUp(MemberDTO member);
+	void signUp(MemberDTO member);
 	
 	// 아이디 중복체크
 	boolean isLoginIdCheck(String loginId);
