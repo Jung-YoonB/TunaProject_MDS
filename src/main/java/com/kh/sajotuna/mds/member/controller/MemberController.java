@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.member.model.dto.WishDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
 import com.kh.sajotuna.mds.util.SessionConst;
 import com.kh.sajotuna.mds.util.dto.ApiResponse;
@@ -80,16 +81,14 @@ public class MemberController {
 		
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 		
-		
-		return "member/wish"; // 기능 구현 전까지 오류 막기용
-		/*
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("wishList", (service.listWish(member.getMemberId()))); 기능 미구현
+			model.addAttribute("wishList", (service.listWish(member.getMemberId())));
+			System.out.println("찜하기용 모델로 저장" + (List<WishDTO>)model.getAttribute("wishList")); // 추적용 출력
 			return "member/wish"; 
 		}  else {
 			return "member/admin..."; // 관리자용 주소 나중에 확인
 		} 
-		*/
+		
 		// 유저는 wishList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
@@ -99,16 +98,13 @@ public class MemberController {
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 		
 		
-		return "member/cart"; // 기능 구현 전까지 오류 막기용
-		/*
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("cartList", (service.listCart(member.getMemberId()))); 기능 미구현
+			model.addAttribute("cartList", (service.listCart(member.getMemberId()))); 
 			return "member/cart"; 
 		}  else {
 			return "member/admin..."; // 관리자용 주소 나중에 확인
 		} 
-		*/
-		// 유저는 cartList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
+		// 유저는 cartList에 List<CartDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	@GetMapping("/userOrderDelivery")

@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
+import com.kh.sajotuna.mds.member.model.dto.CartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.member.model.dto.WishDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -102,5 +104,20 @@ public class MemberServiceImpl implements MemberService{
 		return couponList;
 	}
 
+	@Override
+	public List<WishDTO> listWish(Long memberId) {
+		List<WishDTO> wishList = mapper.selectWishesByMemberId(memberId);
+		
+		return wishList;
+	}
+	
+	@Override
+	public List<CartDTO> listCart(Long memberId) {
+		List<CartDTO> cartList = mapper.selectCartsByMemberId(memberId);
+		
+		return cartList;
+	}
+
+	
 }
 

@@ -3,7 +3,9 @@ package com.kh.sajotuna.mds.member.service;
 import java.util.List;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
+import com.kh.sajotuna.mds.member.model.dto.CartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.member.model.dto.WishDTO;
 
 public interface MemberService {
 
@@ -30,5 +32,10 @@ public interface MemberService {
 	
 	// 멤버id로 보유 쿠폰 검색
 	List<CouponDTO> listCoupon(Long memberId);
-
+	
+	// 멤버id로 찜하기 검색
+	List<WishDTO> listWish(Long memberId);
+	
+	// 멤버id로 장바구니 검색
+	List<CartDTO> listCart(Long memberId);
 }

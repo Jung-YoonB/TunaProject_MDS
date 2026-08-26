@@ -1,7 +1,5 @@
 /* 회원가입 페이지 */
 
-// css 용 클래스 msg-success, msg-error 로 틀만 잡아둠. 나중에 교체.
-
 // 비밀번호 일치 여부 확인
 const loginPw = document.querySelector("#login_pw");  // 비밀번호 입력창
 const loginPwConfirm = document.querySelector("#login_pw_confirm"); // 비밀번호 확인 입력창
@@ -32,7 +30,7 @@ function validatePassword() {
     // 비밀번호 확인 입력창이 비어있을 경우 검사 x
     if (!loginPwConfirm.value.trim()) {
         checkPw = false;
-		confirmResult.textContent = ""
+		confirmResult.textContent = "";
         return;
     }
 
