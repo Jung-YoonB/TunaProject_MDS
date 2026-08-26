@@ -62,12 +62,13 @@ public class MemberController {
 	@PostMapping("/signUp")
 	public String signUp(@ModelAttribute @Valid MemberDTO member,
 						BindingResult bindingResult,
+						Model model,
 						RedirectAttributes redirectAttr) {
 		
 		if (bindingResult.hasErrors()) {
 			String eMsg = bindingResult.getFieldError().getDefaultMessage();
-			redirectAttr.addFlashAttribute("error", eMsg);
-			return "redirect:/member/signUp";
+			model.addAttribute("error", eMsg);
+			return "member/signUp";
 		}
 		
 		try {
