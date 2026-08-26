@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
+import com.kh.sajotuna.mds.member.model.dto.CartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.WishDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
@@ -56,12 +57,12 @@ public class MemberController {
 			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
 			return "member/myPage";
 		} else {
-			return "member/adminmyPage";
+			return "member/adminMyPage"; // 추후 기능 구현
 		}
 		// 유저는 loginMember 에 유저DTO, couponList에 List<CouponDTO> 가 모델에 저장되고 넘어감
 	}
 	
-	@GetMapping("/usercouponView")
+	@GetMapping("/couponView")
 	public String userCouponViewForm(HttpSession session, Model model) {
 		
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
@@ -71,7 +72,7 @@ public class MemberController {
 			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<CouponDTO>)model.getAttribute("couponList")); // 추적용 출력
 			return "member/usercouponView";
 		} else {
-			return "member/admincouponView"; // 주소 나중에 확인
+			return "member/admincouponView"; // 주소 나중에 확인 + 조회 기능 구현
 		}
 		// 유저는 couponList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
 	}
@@ -86,7 +87,7 @@ public class MemberController {
 			System.out.println("찜하기용 모델로 저장" + (List<WishDTO>)model.getAttribute("wishList")); // 추적용 출력
 			return "member/wish"; 
 		}  else {
-			return "member/admin..."; // 관리자용 주소 나중에 확인
+			return "member/admin"; // 관리자용 주소 나중에 확인
 		} 
 		
 		// 유저는 wishList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
@@ -99,7 +100,8 @@ public class MemberController {
 		
 		
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("cartList", (service.listCart(member.getMemberId()))); 
+			model.addAttribute("cartList", (service.listCart(member.getMemberId())));
+			System.out.println("장바구니용 모델로 저장" + (List<CartDTO>)model.getAttribute("cartList")); // 추적용 출력
 			return "member/cart"; 
 		}  else {
 			return "member/admin..."; // 관리자용 주소 나중에 확인
@@ -107,21 +109,20 @@ public class MemberController {
 		// 유저는 cartList에 List<CartDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
-	@GetMapping("/userOrderDelivery")
+	@GetMapping("/orderDelivery")
 	public String userOrderDeliveryForm(HttpSession session, Model model) {
 		
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 		
 		
-		return "member/userOrderDelivery"; // 기능 구현 전까지 오류 막기용
-		/*
+		
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("cartList", (service.listCart(member.getMemberId()))); 기능 미구현
-			return "member/userOrderDelivery"; 
+			model.addAttribute("DeliveryList", (service.listDelivery(member.getMemberId())));
+			return "member/orderDelivery"; 
 		}  else {
-			return "member/admin..."; // 관리자용 주소 나중에 확인
+			return "member/adminOrderDelivery"; 
 		} 
-		*/
+		
 		// 유저는 cartList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
 	}
 	

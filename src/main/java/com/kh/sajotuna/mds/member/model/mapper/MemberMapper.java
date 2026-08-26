@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.CartDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.WishDTO;
 
@@ -44,4 +45,10 @@ public interface MemberMapper {
 	
 	// 멤버 아이디를 통한 장바구니 조회
 	List<CartDTO> selectCartsByMemberId(Long memberId);
+	
+	// 멤버 아이디를 통한 배송데이터 조회
+	List<DeliveryDTO> selectDeliveriesByMemberId(Long memberId);
+	
+	// 오더 아이디를 통한 대표 상품정보 조회
+	DeliveryDTO selectProductByOrderId(Long orderId);
 }

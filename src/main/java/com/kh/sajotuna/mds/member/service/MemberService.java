@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.CartDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.WishDTO;
 
@@ -38,4 +39,7 @@ public interface MemberService {
 	
 	// 멤버id로 장바구니 검색
 	List<CartDTO> listCart(Long memberId);
+	
+	// 멤버id로 배송데이터 검색
+	List<DeliveryDTO> listDelivery(Long memberId);
 }

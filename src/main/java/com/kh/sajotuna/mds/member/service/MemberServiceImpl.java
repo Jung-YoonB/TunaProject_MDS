@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.CartDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.WishDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
@@ -116,6 +117,23 @@ public class MemberServiceImpl implements MemberService{
 		List<CartDTO> cartList = mapper.selectCartsByMemberId(memberId);
 		
 		return cartList;
+	}
+
+	@Override
+	public List<DeliveryDTO> listDelivery(Long memberId) {
+		List<DeliveryDTO> deliveryList = mapper.selectDeliveriesByMemberId(memberId);
+		
+		for(DeliveryDTO list : deliveryList) {
+			DeliveryDTO productInfo = mapper.selectProductByOrderId(list.getOrderId());
+			if (productInfo != null) {
+				list.setProductName(productInfo.getProductName());
+				list.setProductImagePath(productInfo.getProductImagePath());
+			} else {
+				//TODO : 만약 상품 정보가 null일 경우 대비
+			}
+		}
+		
+		return deliveryList;
 	}
 
 	
