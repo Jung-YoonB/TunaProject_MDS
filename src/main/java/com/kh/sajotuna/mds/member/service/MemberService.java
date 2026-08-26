@@ -30,4 +30,5 @@ public interface MemberService {
 	
 	// 멤버id로 보유 쿠폰 검색
 	List<CouponDTO> listCoupon(Long memberId);
+
 }
