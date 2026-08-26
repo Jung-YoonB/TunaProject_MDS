@@ -9,6 +9,6 @@ public class HomeController {
 	@GetMapping("/")
 	public String home() {
 		// webapp/WEB-INK/views/home/home.jsp
-		return "home/home";
+		return "member/signUp";
 	}
 }

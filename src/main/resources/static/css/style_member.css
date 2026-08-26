@@ -102,6 +102,16 @@ body {
 /* ================================
    회원가입
 ================================ */
+body {
+    margin: 0;
+    background-color: #f8f6f2;
+}
+
+#title {
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+}
 
 .signup-page main {
     width: 500px;
