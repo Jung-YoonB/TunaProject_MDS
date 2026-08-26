@@ -1,29 +1,7 @@
 ```jsp
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
-<!DOCTYPE html>
-<html lang="ko">
-
-<head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>주문 완료</title>
-
-    <!-- 공통 CSS -->
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/default.css">
-
-    <!-- 주문 전용 CSS -->
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/style_order.css">
-
-</head>
-
-<body class="order-complete-page">
-
-    <main>
+<jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
         <!-- 주문 완료 제목 -->
         <div id="title">
@@ -165,9 +143,4 @@
 
         </div>
 
-    </main>
-
-</body>
-
-</html>
-```
+		<jsp:include page="/WEB-INF/views/common/footer.jsp"/>

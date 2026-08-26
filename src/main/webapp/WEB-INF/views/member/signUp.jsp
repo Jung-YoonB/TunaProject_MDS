@@ -1,18 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
-<!DOCTYPE html>
-<html lang="ko">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원가입</title>
-
-    <link rel="stylesheet" href="/css/default.css">
-    <link rel="stylesheet" href="/css/style_member.css">
-</head>
-
-<body>
 
     <main>
 
@@ -156,7 +143,4 @@
             <button type="button">기존 회원 로그인</button>
         </div>
 
-    </main>
-
-</body>
-</html>
+		<jsp:include page="/WEB-INF/views/common/footer.jsp"/>
