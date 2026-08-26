@@ -3,10 +3,14 @@ package com.kh.sajotuna.mds.product.model.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.kh.sajotuna.mds.product.model.dto.detail.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.ReviewDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.ReviewImagesDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.CategoryDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
