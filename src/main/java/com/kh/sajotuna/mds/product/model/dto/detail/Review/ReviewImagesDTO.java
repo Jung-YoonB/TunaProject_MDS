@@ -1,4 +1,4 @@
-package com.kh.sajotuna.mds.product.model.dto.detail;
+package com.kh.sajotuna.mds.product.model.dto.detail.Review;
 
 import lombok.*;
 

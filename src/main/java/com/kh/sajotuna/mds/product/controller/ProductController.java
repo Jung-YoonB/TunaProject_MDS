@@ -1,7 +1,11 @@
 package com.kh.sajotuna.mds.product.controller;
 
-import com.kh.sajotuna.mds.product.model.dto.detail.ReviewDTO;
+import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewDTO;
+import com.kh.sajotuna.mds.util.SessionConst;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,13 +14,13 @@ import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
 import com.kh.sajotuna.mds.product.model.service.ProductService;
 import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/mds")
+@Transactional
 public class ProductController {
 
 	private final ProductService service;
@@ -34,17 +38,48 @@ public class ProductController {
 	@GetMapping("/detail/{productId}")
 	public String detailPage(@PathVariable Long productId) {
 		System.out.println("컨트롤러 productId :: " + productId);
-		
+
 		DetailPageDTO detail = service.detailPage(productId);
 		System.out.println("컨트롤러 detail :: " + detail);
 		return"redirect:home/home";
 	}
 
+	@GetMapping("/coupon/{couponId}")
+	public String getCoupon(HttpSession session, Model model, @PathVariable Long couponId) {
+		MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_MEMBER);
+		if (member == null) {
+			model.addAttribute("message", "로그인이 필요합니다.");
+			System.out.println(model.getAttribute("message"));
+			return "redirect:/member/login";
+		}
+		String message = service.getCoupons(member.getMemberId(), couponId);
+		System.out.println("message:: " + message);
+		return"redirect:home/home";
+	}
+
 	@GetMapping("/review/{productId}")
-	public String reviewPage(@PathVariable Long productId, Model model) {
-		List<ReviewDTO> reviewList = service.getReviewList(productId);
+	public String reviewPage(@PathVariable Long productId, Model model, HttpSession session) {
+		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
+		Long memberId  = null;
+		if(user != null) {
+			memberId = user.getMemberId();
+		}
+		List<ReviewDTO> reviewList = service.getReviewList(productId, memberId);
 		model.addAttribute("reviewList", reviewList);
 		System.out.println("reviewList :: " + reviewList);
 		return"redirect:home/home";
+	}
+
+	@GetMapping("/review/like/{reviewId}")
+	public String reviewLike(@PathVariable Long reviewId, HttpSession session) {
+		Long memberId  = null;
+		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
+		if(user != null) {
+			memberId = user.getMemberId();
+		}
+		String result = service.increaseReviewLike(reviewId, memberId);
+
+		System.out.println("result :: " + result);
+		return result;
 	}
 }
