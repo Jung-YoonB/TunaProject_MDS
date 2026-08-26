@@ -3,6 +3,7 @@
 
 
 <!DOCTYPE html>
+<html lang="ko">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,7 @@
 	<link rel="stylesheet" href="/css/style_order.css">
 	<link rel="stylesheet" href="/css/style_home.css">
 	<link rel="stylesheet" href="/css/style_myPage.css">
+	<link rel="stylesheet" href="/css/style_productdetail.css">
 </head>
 <body>
 	<header id="site-header">

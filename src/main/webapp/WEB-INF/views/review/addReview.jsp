@@ -3,8 +3,6 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<link rel="stylesheet" href="${pageContext.request.contextPath}/css/style_addreview.css">
-
 	<form id="review-form" action="${pageContext.request.contextPath}/review/write" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="memberId" value="${member.memberId}">
 		<input type="hidden" name="odId" value="${orderDetail.odId}">
