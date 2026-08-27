@@ -32,8 +32,7 @@
 	</main>
 
 	<!-- Order/Delivery/OrderDetail/ProductOption 테이블 연동 필요. 현재는 테스트용 예시 주문 3건 하드코딩.
-		 수량(qty)은 OrderDetail.qty, 옵션명(optionName)과 금액(price)은 ProductOption.option_name,
-		 option_price에서 가져와야 함(현재는 임의값) -->
+		 수량(qty)은 OrderDetail.qty, 금액(price)은 ProductOption.option_price에서 가져와야 함(현재는 임의값) -->
 	<script>
 	(function () {
 		var STEP_LABELS = ['주문완료', '배송준비중', '배송중', '배송완료'];
@@ -41,9 +40,9 @@
 		var STATUS_BADGE_LABEL = { preparing: '배송준비중', shipped: '배송중', delivered: '배송완료', canceled: '주문취소' };
 
 		var ORDERS = [
-			{ orderId: '20260815-001', orderDate: '2026.08.15', productName: '프리미엄 한우 선물세트', optionName: '1++ 등급 / 1kg', qty: 1, price: 129000, status: 'preparing' },
-			{ orderId: '20260812-003', orderDate: '2026.08.12', productName: '전통 과일 선물세트', optionName: '중과 5호 / 3kg', qty: 2, price: 118000, status: 'shipped' },
-			{ orderId: '20260805-007', orderDate: '2026.08.05', productName: '프리미엄 견과 선물세트', optionName: '혼합 선물세트 / 1.5kg', qty: 1, price: 75000, status: 'delivered' }
+			{ orderId: '20260815-001', orderDate: '2026.08.15', productName: '프리미엄 한우 선물세트', qty: 1, price: 129000, status: 'preparing' },
+			{ orderId: '20260812-003', orderDate: '2026.08.12', productName: '전통 과일 선물세트', qty: 2, price: 118000, status: 'shipped' },
+			{ orderId: '20260805-007', orderDate: '2026.08.05', productName: '프리미엄 견과 선물세트', qty: 1, price: 75000, status: 'delivered' }
 		];
 
 		var REVIEW_WRITER_URL = '/temp/reviewWriter.html';
@@ -102,7 +101,6 @@
 						'<div class="item-thumb"></div>' +
 						'<div class="order-info">' +
 							'<h3 class="product-name">' + order.productName + '</h3>' +
-							'<p class="product-option">' + order.optionName + '</p>' +
 							'<p class="product-detail">수량: ' + order.qty + '개 | 금액: ' + formatWon(order.price) + '</p>' +
 						'</div>' +
 						'<span class="status-badge status-' + order.status + '">' + STATUS_BADGE_LABEL[order.status] + '</span>' +
