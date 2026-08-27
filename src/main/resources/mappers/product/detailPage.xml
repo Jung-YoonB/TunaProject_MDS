@@ -24,6 +24,13 @@
 	from productimage 
 	where product_id = #{productId} and product_title_image = 1
 	</select>
+
+	<select id="getDetailContents" resultType="String" parameterType="Long">
+		select product_image_save_name as images
+		from productimage
+		where product_id = #{productId} and product_title_image = 2
+	</select>
+
 	
 	<select id="getOptionList" resultType="OptionDTO" parameterType="Long">
 	select o.option_id, o.option_name, o.option_price as price
@@ -31,4 +38,73 @@
 	join product p on od.product_id = p.product_id
 	where p.product_id = #{productId}
 	</select>
+
+	<select id="getCoupons" resultType="CouponDTO" >
+		select coupon_id, coupon_name, coupon_text, to_char(CREATED_AT, 'YYYY-MM-DD') as created_at,
+		to_char(DEADLINE, 'YYYY-MM-DD') as deadline
+		from COUPON
+	</select>
+
+	<select id="couponCheck" resultType="int">
+		select count(*) from COUPONHISTORY where MEMBER_ID = #{memberId} and COUPON_ID = #{couponId}
+	</select>
+
+	<insert id="insertCoupon">
+		insert into COUPONHISTORY (chist_id, member_id, coupon_id, type, created_at)
+		values (SEQ_CHIST_ID.nextval,#{memberId}, #{couponId}, 'ISSUE', sysdate)
+	</insert>
+
+	<select id="getReviewList" resultType="ReviewDTO">
+		select r.REVIEW_ID, r.SCORE, r.REVIEW_TEXT, to_char(r.WRITE_DATE, 'YYYY-MM-DD'),
+		po.OPTION_NAME, p.PRODUCT_NAME, po.OPTION_PRICE, m.NICKNAME, orderd.QTY, r.LIKE_COUNT,
+		CASE
+		WHEN rl.MEMBER_ID IS NOT NULL THEN 1 ELSE 0 END AS isLiked
+
+		from review r join OPTIONDETAIL od on r.OD_ID = od.OPTION_ID
+		join PRODUCTOPTION po on po.OPTION_ID = od.OPTION_ID
+		join product p on p.PRODUCT_ID = od.PRODUCT_ID
+		join member m on m.MEMBER_ID = r.MEMBER_ID
+		join productorder pr on pr.MEMBER_ID = m.MEMBER_ID
+		join orderdetail orderd on orderd.ORDER_ID = pr.ORDER_ID
+		LEFT JOIN
+		REVIEWLIKE rl
+		ON r.REVIEW_ID = rl.REVIEW_ID
+		AND rl.MEMBER_ID = #{memberId}
+		where p.PRODUCT_ID = #{productId}
+	</select>
+
+	<select id="getReviewImages" resultType="ReviewImagesDTO" >
+		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_images
+		from REVIEWIMAGE ri join REVIEW r on ri.REVIEW_ID = r.REVIEW_ID
+		where r.REVIEW_ID in <foreach collection="list" item="reviewId" open="(" separator=", " close=")">
+		#{reviewId}
+	</foreach>
+	</select>
+
+	<update id="updateLikeCount" parameterType="Long">
+		update REVIEW set LIKE_COUNT = LIKE_COUNT+1 where REVIEW_ID = #{reviewId}
+	</update>
+
+	<insert id="insertReviewLike">
+		insert into REVIEWLIKE values (SEQ_REVIEW_LIKE_ID.nextval, #{reviewId}, #{memberId})
+	</insert>
+
+	<select id="checkLike" resultType="Long">
+		select like_id from REVIEWLIKE where review_id = #{reviewId}
+		<if test="memberId != null">
+			and MEMBER_ID = #{memberId}
+		</if>
+	</select>
+
+	<update id="updateLikeDiscount" parameterType="Long">
+		update REVIEW set LIKE_COUNT = LIKE_COUNT-1 where REVIEW_ID = #{reviewId}
+	</update>
+
+	<delete id="deleteReviewLike">
+		delete REVIEWLIKE where review_id = #{reviewId}
+		<if test="memberId != null">
+			and MEMBER_ID = #{memberId}
+		</if>
+
+	</delete>
 </mapper>
