@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/css/style_member.css">
 </head>
 
-<body>
+<body class="login-page">
 
     <main>
         <!-- 로그인 제목 -->
@@ -25,6 +25,7 @@
 		</c:if>
 
         <form action="/member/login" method="post">
+			<input type="hidden" name="redirectURL" value="${param.redirectURL}">
             <!-- 아이디 -->
             <div class="login-field">
                 <label for="login_id">아이디</label>

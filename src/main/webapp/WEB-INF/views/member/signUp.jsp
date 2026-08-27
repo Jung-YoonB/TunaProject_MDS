@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="/css/style_member.css">
 </head>
 
-<body>
+<body  class="signup-page">
 
     <main>
 

@@ -25,14 +25,13 @@ import com.kh.sajotuna.mds.util.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/member")
+@RequiredArgsConstructor
 public class MemberController {
 	private final MemberService service;
-	public MemberController (MemberService service) {
-		this.service = service;
-	}
 	
 	// GET: 화면 요청 / 데이터 조회
 	@GetMapping("/signUp")
@@ -207,6 +206,9 @@ public class MemberController {
 		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_SESSION)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
+			if (redirectURL != null && !redirectURL.isBlank()) {
+	            redirectAttr.addAttribute("redirectURL", redirectURL);
+	        }
 			return "redirect:/member/login";
 		}
 		
