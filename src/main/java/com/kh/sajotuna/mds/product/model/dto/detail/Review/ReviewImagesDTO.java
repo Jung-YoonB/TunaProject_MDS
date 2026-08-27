@@ -10,5 +10,4 @@ import lombok.*;
 public class ReviewImagesDTO {
     private Long reviewId;
     private String  reviewImage;
-
 }

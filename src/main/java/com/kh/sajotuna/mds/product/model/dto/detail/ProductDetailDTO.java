@@ -13,13 +13,16 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductDetailDTO {
-	private Long productId;
-	private String productTitle;
-	private String productName;
-	private String productContent;
-	private int price;
-	private String thumbnail;
-	private List<String> image;
-	private List<String> detailContents;
+	private Long productId;		//상품 id
+	private String productTitle;	//상품 이름
+	private String productName;		//상품 상세 이름?
+	private String productContent;	//상품 설명
+	private int price;				//가격
+	private double avgScore;		//평균 평점
+	private int reviewCount;		//리뷰 수
+	private int wishCount;			//상품 찜 횟수
+	private String thumbnail;		//상품 썸네일 (대표이미지)
+	private List<String> image;		//상품 이미지
+	private List<String> detailContents;	//상품 설명 이미지
 	
 }
