@@ -6,7 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
+import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
@@ -99,8 +99,8 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
-	public List<CouponDTO> listCoupon(Long memberId) {
-		List<CouponDTO> couponList = mapper.selectCouponsByMemberId(memberId);
+	public List<MypageCouponDTO> listCoupon(Long memberId) {
+		List<MypageCouponDTO> couponList = mapper.selectCouponsByMemberId(memberId);
 		
 		return couponList;
 	}
