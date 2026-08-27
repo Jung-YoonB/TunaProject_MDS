@@ -18,4 +18,6 @@ public class OptionDTO {
 	private Long optionId;
 	private String optionName;
 	private int price;
+	private Long popId;
+	private int stock;
 }

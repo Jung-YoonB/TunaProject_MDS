@@ -7,9 +7,9 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Header 영역</title>
+	<title>메종 드 사조</title>
 	
-	<link rel="stylesheet" href="/css/common.css">
+	 <link rel="stylesheet" href="/css/common.css">
 	<link rel="stylesheet" href="/css/style.css">
 	<link rel="stylesheet" href="/css/style_member.css">
 	<link rel="stylesheet" href="/css/style_order.css">
@@ -37,7 +37,7 @@
 		</div>
 	
 		<div class="icon">
-			<a class="icon-item" href="<c:url value='/member/mypage'/>">
+			<a class="icon-item" href="<c:url value='/member/myPage'/>">
 				<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 					<path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
 				</svg>
@@ -72,7 +72,11 @@
 		</div>
 	
 	</header>
+<<<<<<< HEAD
+	<main>
+=======
 
 	<script src="/js/common/header.js"></script>
 
 	<main>
+>>>>>>> Product_branch

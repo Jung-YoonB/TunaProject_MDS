@@ -27,7 +27,7 @@ public class ReviewController {
 
 	@GetMapping("/write")
 	public String writeForm(@RequestParam Long odId, HttpSession session, Model model, RedirectAttributes redirectAttr) {
-		Long memberId = (Long) session.getAttribute(SessionConst.LOGIN_MEMBER_ID);
+		Long memberId = (Long) session.getAttribute(SessionConst.LOGIN_MEMBER);
 		if (memberId == null) {
 			redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 			return "redirect:/member/login";
@@ -51,7 +51,7 @@ public class ReviewController {
 						@RequestParam(name = "reviewImages", required = false) List<MultipartFile> reviewImages,
 						HttpSession session,
 						RedirectAttributes redirectAttr) {
-		Long memberId = (Long) session.getAttribute(SessionConst.LOGIN_MEMBER_ID);
+		Long memberId = (Long) session.getAttribute(SessionConst.LOGIN_MEMBER);
 		if (memberId == null) {
 			redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 			return "redirect:/member/login";

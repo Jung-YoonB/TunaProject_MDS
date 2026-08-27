@@ -39,8 +39,14 @@ public class MemberDTO {
 	private String role;
 	private Integer memberStatus;
 	private Integer point;
-	private Integer couponQty;
 	
 	private String birthStr;
 	private String createdAtStr;
+	
+	private Long issue;
+	
+	public MemberDTO(Long memberId, String role) {
+		this.memberId = memberId;
+		this.role = role;
+	}
 }

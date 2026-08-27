@@ -1,8 +1,14 @@
 package com.kh.sajotuna.mds.member.model.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 
+import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 
 @Mapper
 public interface MemberMapper {
@@ -30,4 +36,19 @@ public interface MemberMapper {
 	
 	// 멤버 아이디를 통한 회원 조회
 	MemberDTO selectByMemberId(Long memberId);
+	
+	// 멤버 아이디를 통한 보유 쿠폰 조회
+	List<MypageCouponDTO> selectCouponsByMemberId(Long memberId);
+	
+	// 멤버 아이디를 통한 찜 목록 조회
+	List<MyPageWishDTO> selectWishesByMemberId(Long memberId);
+	
+	// 멤버 아이디를 통한 장바구니 조회
+	List<MyPageCartDTO> selectCartsByMemberId(Long memberId);
+	
+	// 멤버 아이디를 통한 배송데이터 조회
+	List<MyPageDeliveryDTO> selectDeliveriesByMemberId(Long memberId);
+	
+	// 오더 아이디를 통한 대표 상품정보 조회
+	MyPageDeliveryDTO selectProductByOrderId(Long orderId);
 }

@@ -1,10 +1,16 @@
 package com.kh.sajotuna.mds.member.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -73,14 +79,15 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
-	public Long login(String loginId, String loginPw) throws IllegalStateException{
+	public MemberDTO login(String loginId, String loginPw) throws IllegalStateException{
 
 		MemberDTO member = mapper.selectByLoginId(loginId);
 		if (member == null || !passwordEncoder.matches(loginPw, member.getLoginPw())) {
 			throw new IllegalStateException("아이디 또는 비밀번호가 일치하지 않습니다.");
 		}
-		Long memberId = member.getMemberId();
-		return memberId;
+		
+		MemberDTO sessionMember = new MemberDTO(member.getMemberId(),member.getRole());
+		return sessionMember;
 	}
 
 
@@ -91,5 +98,47 @@ public class MemberServiceImpl implements MemberService{
 		return member;
 	}
 
+	@Override
+	public List<MypageCouponDTO> listCoupon(Long memberId) {
+		List<MypageCouponDTO> couponList = mapper.selectCouponsByMemberId(memberId);
+		
+		return couponList;
+	}
+
+	@Override
+	public List<MyPageWishDTO> listWish(Long memberId) {
+		List<MyPageWishDTO> wishList = mapper.selectWishesByMemberId(memberId);
+		
+		return wishList;
+	}
+	
+	@Override
+	public List<MyPageCartDTO> listCart(Long memberId) {
+		List<MyPageCartDTO> cartList = mapper.selectCartsByMemberId(memberId);
+		
+		return cartList;
+	}
+
+	@Override
+	public List<MyPageDeliveryDTO> listDelivery(Long memberId) {
+		List<MyPageDeliveryDTO> deliveryList = mapper.selectDeliveriesByMemberId(memberId);
+		
+		for(MyPageDeliveryDTO list : deliveryList) {
+			MyPageDeliveryDTO productInfo = mapper.selectProductByOrderId(list.getOrderId());
+			if (productInfo != null) {
+				list.setProductName(productInfo.getProductName());
+				list.setProductImagePath(productInfo.getProductImagePath());
+				list.setProductImageSaveName(productInfo.getProductImageSaveName());
+			} else { // 대표 상품 정보가 누락되거나 문제가 생겨 null로 들어올 때를 대비 
+				list.setProductName("상품 정보 없음");
+				list.setProductImagePath("/upload/product/");
+				list.setProductImageSaveName(""); // TODO: 상품 이미지 없을 때를 대비한 no-image.png 만들면 추후 수정
+			}
+		}
+		
+		return deliveryList;
+	}
+
+	
 }
 
