@@ -13,13 +13,12 @@
     <link rel="stylesheet" href="/css/style_member.css">
 </head>
 
-<body>
+<body class="signup-page">
 
     <main>
 
         <!-- 회원가입 제목 -->
         <div id="title">회원가입</div>
-		
 		<c:if test="${not empty error}">
 		    <div class="error-message">
 		        ${error}
@@ -28,7 +27,6 @@
 		
         <form id="SignUpForm" action="/member/signUp" method="post">
 		<input type="hidden" name="role" value="USER">
-			
             <!-- 이름 -->
             <div id="Name">
                 <label for="member_name">이름</label>
@@ -84,7 +82,7 @@
 
             <!-- 아이디 -->
             <div id="Username">
-                <label for="login_id">아이디</label>
+                <label for="loginId">아이디</label>
 
                 <div class="id-input-box">
                     <input type="text"
@@ -102,13 +100,14 @@
 
             <!-- 비밀번호 -->
             <div id="Password">
-                <label for="login_pw">비밀번호</label>
+                <label for="loginPw">비밀번호</label>
 
                 <input type="password"
                        id="login_pw"
                        name="loginPw"
                        class="signup-input"
                        placeholder="비밀번호를 입력해주세요">
+                <span id="pwRegCheckMsg"></span>
             </div>
 			<p id="pw-reg-check-notice"></p>
 
@@ -121,6 +120,7 @@
                        name="login_pw_confirm"
                        class="signup-input"
                        placeholder="비밀번호를 다시 입력해주세요">
+                <span id="pwCheckMsg"></span>
             </div>
 			<p id="pw-check-notice"></p>
 
@@ -187,6 +187,8 @@
         </div>
 
     </main>
-<script src="/js/member.js"></script>
+
+    <script src="/js/member.js"></script>
+
 </body>
 </html>
