@@ -84,4 +84,54 @@ document.addEventListener('DOMContentLoaded', function () {
     quantityInput.addEventListener('blur',   function () { update(true);  });
 
     update(true);
+
+    // 상품 상세 탭 (상품 상세 / 배송안내 / 교환·환불안내 / 리뷰)
+    const tabButtons = document.querySelectorAll('.tab-menu-item');
+    const tabPanels  = document.querySelectorAll('.tab-panel');
+
+    tabButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            const target = button.dataset.tabTarget;
+
+            tabButtons.forEach(function (btn) {
+                const isActive = btn === button;
+                btn.classList.toggle('is-active', isActive);
+                btn.setAttribute('aria-selected', isActive);
+            });
+
+            tabPanels.forEach(function (panel) {
+                panel.classList.toggle('is-active', panel.dataset.tabPanel === target);
+            });
+        });
+    });
+
+    // 찜 버튼
+    // TODO: 백엔드 연동 후 서버 응답(찜 여부)에 따라 초기 is-active 상태 반영 + 클릭 시 찜 등록/삭제 API 연동
+    // 지금은 서버 반영 전까지 화면에서만 개수를 낙관적으로 +-1 (새로고침하면 서버 값으로 원복됨)
+    const wishButton = document.getElementById('wish-button');
+    const wishCount  = document.getElementById('wish-count');
+
+    wishButton.addEventListener('click', function () {
+        const liked = wishButton.classList.toggle('is-active');
+        wishButton.textContent = liked ? '♥' : '♡';
+
+        if (wishCount) {
+            const count = parseInt(wishCount.textContent, 10) || 0;
+            wishCount.textContent = liked ? count + 1 : count - 1;
+        }
+    });
+
+    // 서브 이미지 클릭 -> 메인 이미지 교체
+    const mainImage = document.getElementById('product-main-image');
+    const subImages  = document.querySelectorAll('.product-sub-image');
+
+    subImages.forEach(function (subImage) {
+        subImage.addEventListener('click', function () {
+            mainImage.src = subImage.src;
+            mainImage.alt = subImage.alt;
+
+            subImages.forEach(function (img) { img.classList.remove('is-active'); });
+            subImage.classList.add('is-active');
+        });
+    });
 });
