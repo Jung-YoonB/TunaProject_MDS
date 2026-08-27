@@ -15,7 +15,6 @@ import lombok.ToString;
 @Setter
 public class MainPageDTO {
 
-	private List<BannerDTO> banner;
 	private List<ProductListDTO> product;
-	private List<CategoryDTO> category;
+	private List<BannerDTO> banner;
 }

@@ -1,110 +1,132 @@
 <!DOCTYPE html>
 <html lang="ko">
-	<head>
-	    <meta charset="UTF-8">
-	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	    <title>주문 배송 페이지</title>
-		<link rel="stylesheet" href="../css/default.css">
-	</head>
-	
-	<body>
-		<header>
-			<div id="logo_img">로고(이미지/메인 페이지 이동)</div>
-			<div id="search_box">검색창</div>
-			<div class="icon">마이페이지, 찜, 장바구니(아이콘)</div>
-			<div class="sign">로그인(로그인창 이동), 회원가입(회원가입창 이동)</div>
-		</header>
-		<main class="order-history" id="order-history-container" data-member-id="회원세션ID">
-			
-			<!-- 글자 영역(Header) -->
-			<header class="page-header">
-			<h2>주문/배송 내역</h2>
-			</header>
-			
-			<!-- 상단 영역 -->
-			<nav class="status-filter" aria-label="주문 상태 필터">
-				<ul>
-					<li><button type="button" class="active" data-status="all">전체</button></li>
-					<li><button type="button" data-status="preparing">배송준비중</button></li>
-					<li><button type="button" data-status="shipped">배송중</button></li>
-					<li><button type="button" data-status="delivered">배송완료</button></li>
-					<li><button type="button" data-status="canceled">주문취소</button></li>
-				</ul>
-			</nav>
-			
-			<!-- 중간 영역 -->
-			<section class="order-list">
-				<article class="order-card" id="order-card-{Order.order_id}" data-order-id="{Order.order_id}" data-delivery-id="{Delivery.delivery_id}">
-					<!--상품 정보-->
-					<div class="order-header">
-						<span class="order-date">{Order.order-date}</span>
-						<span class="order-number">주문번호<strong>{Order.order-id}</strong></span>
-					</div>
-					<div class="order-body">
-						<div class="product-info">
-							<h3 class="product-name">{Product.product-name}</h3>
-							<p class="product-detail">{OrderDetail.qty}개 / {OrderDetail.price_fix}원</p>
-						</div>
-						<!--배송 상태 및 표시선-->
-						<div class="delivery-status">
-							<p class="status-text">{배송중}</p>
-							<div class="status-progress-bar2" aria-hidden="true">
-								<div class="progress-track"></div>
-								<div class="progress-fill"></div>
-							</div>
-						</div>
-					</div>
-					
-					<!--하단 액션 버튼-->
-					<div class="order-action">
-						<button type="button" class="track-delivery-btn" data-tracking-no="{Delivery.delivry_no}">배송조회</button>
-						<button type="button" class="write-review-btn" data-product-id="{OrderDetail.product_id}">리뷰작성</button>
-					</div>
-				</article>
-			</section>
-			
-			<!-- 하단 영역: 페이지 번호 -->
-			<nav class="pagination" aria-label="페이지 탐색">
-				<button type="button" class="btn-prev">← 이전</button>
-				<ol>
-					<li><button type="button" aria-current="page">1</button></li>
-					<li><button type="button">2</button></li>
-					<li><button type="button">3</button></li>
-					<li><button type="button">4</button></li>
-					<li><button type="button">5</button></li>
-				</ol>
-				<button type="button" class="btn-next">다음 →</button>
-			</nav>
-		</main>
-		
-		<footer class="site-footer">
-			<!-- 상단: 회사 정보 및 nav -->
-			<div class="footer-top">
-				<!-- 좌측: 회사 정보 -->
-				<div class="company-info">
-					<h2>Masion De SAJO</h2>
-					<address>
-						<p>주소지</p>
-						<p>우편번호</p>
-						<p>고객센터번호</p>
-					</address>
-				</div>
-				<!-- 우측: 약관 및 고객센터 메뉴 -->
-				<nav class="footer-nav">
-					<ul>
-						<li><a href="#">이용약관</a></li>
-						<li><a href="#">개인정보처리방침</a></li>
-						<li><a href="#">사업자정보</a></li>
-						<li><a href="#">고객센터</a></li>
-					</ul>
-				</nav>
-			</div>
-			<!-- 구분선 -->
-			<hr class="footer-divider">
-			<!-- 하단: 저작권 정보 -->
-			<div class="footer-bottom">
-				<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
-			</div>
-		</footer>
-	</body>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>주문/배송내역</title>
+	<link rel="stylesheet" href="/css/default.css">
+	<link rel="stylesheet" href="/css/style_order.css">
+</head>
+
+<body class="order-delivery-page">
+
+	<main>
+
+		<h1 class="page-title">주문/배송내역</h1>
+
+		<nav class="status-filter" id="order-status-filter" aria-label="주문 상태 필터">
+			<button type="button" class="is-active" data-status="all">전체</button>
+			<button type="button" data-status="preparing">배송준비중</button>
+			<button type="button" data-status="shipped">배송중</button>
+			<button type="button" data-status="delivered">배송완료</button>
+		</nav>
+
+		<section class="order-list" id="order-list" aria-label="주문 목록"></section>
+
+		<p class="order-empty" id="order-empty" hidden>주문/배송내역이 없습니다.</p>
+
+		<div class="order-back">
+			<a class="btn-back-mypage" href="/member/mypage">마이페이지로 돌아가기</a>
+		</div>
+
+	</main>
+
+	<!-- Order/Delivery/OrderDetail/ProductOption 테이블 연동 필요. 현재는 테스트용 예시 주문 3건 하드코딩.
+		 수량(qty)은 OrderDetail.qty, 금액(price)은 ProductOption.option_price에서 가져와야 함(현재는 임의값) -->
+	<script>
+	(function () {
+		var STEP_LABELS = ['주문완료', '배송준비중', '배송중', '배송완료'];
+		var STATUS_STEP_INDEX = { preparing: 1, shipped: 2, delivered: 3, canceled: 1 };
+		var STATUS_BADGE_LABEL = { preparing: '배송준비중', shipped: '배송중', delivered: '배송완료', canceled: '주문취소' };
+
+		var ORDERS = [
+			{ orderId: '20260815-001', orderDate: '2026.08.15', productName: '프리미엄 한우 선물세트', qty: 1, price: 129000, status: 'preparing' },
+			{ orderId: '20260812-003', orderDate: '2026.08.12', productName: '전통 과일 선물세트', qty: 2, price: 118000, status: 'shipped' },
+			{ orderId: '20260805-007', orderDate: '2026.08.05', productName: '프리미엄 견과 선물세트', qty: 1, price: 75000, status: 'delivered' }
+		];
+
+		var REVIEW_WRITER_URL = '/temp/reviewWriter.html';
+
+		var filterBar = document.getElementById('order-status-filter');
+		var listEl = document.getElementById('order-list');
+		var emptyEl = document.getElementById('order-empty');
+		var currentFilter = 'all';
+
+		function formatWon(n) {
+			return n.toLocaleString('ko-KR') + '원';
+		}
+
+		function buildProgress(status) {
+			var currentIndex = STATUS_STEP_INDEX[status];
+			var html = '';
+			STEP_LABELS.forEach(function (label, i) {
+				var isTerminalComplete = (i === currentIndex && currentIndex === STEP_LABELS.length - 1);
+				var stepClass;
+				if (i < currentIndex || isTerminalComplete) {
+					stepClass = 'is-complete';
+				} else if (i === currentIndex) {
+					stepClass = 'is-current status-' + status;
+				} else {
+					stepClass = 'is-upcoming';
+				}
+				html += '<div class="progress-step ' + stepClass + '">' +
+							'<span class="step-icon">' + (stepClass.indexOf('is-complete') === 0 ? '✓' : '') + '</span>' +
+							'<span class="step-label">' + label + '</span>' +
+						'</div>';
+				if (i < STEP_LABELS.length - 1) {
+					var lineClass = i < currentIndex ? 'is-complete' : '';
+					html += '<div class="progress-line ' + lineClass + '"></div>';
+				}
+			});
+			return html;
+		}
+
+		function render() {
+			var filtered = currentFilter === 'all' ? ORDERS : ORDERS.filter(function (o) { return o.status === currentFilter; });
+			var isEmpty = filtered.length === 0;
+			listEl.hidden = isEmpty;
+			emptyEl.hidden = !isEmpty;
+			if (isEmpty) return;
+
+			listEl.innerHTML = '';
+			filtered.forEach(function (order) {
+				var card = document.createElement('article');
+				card.className = 'order-card';
+				card.innerHTML =
+					'<div class="order-header">' +
+						'<span class="order-number">주문번호 <strong>' + order.orderId + '</strong></span>' +
+						'<span class="order-date">주문일 ' + order.orderDate + '</span>' +
+					'</div>' +
+					'<div class="order-body">' +
+						'<div class="item-thumb"></div>' +
+						'<div class="order-info">' +
+							'<h3 class="product-name">' + order.productName + '</h3>' +
+							'<p class="product-detail">수량: ' + order.qty + '개 | 금액: ' + formatWon(order.price) + '</p>' +
+						'</div>' +
+						'<span class="status-badge status-' + order.status + '">' + STATUS_BADGE_LABEL[order.status] + '</span>' +
+					'</div>' +
+					'<div class="order-progress">' + buildProgress(order.status) + '</div>' +
+					'<div class="order-actions">' +
+						'<button type="button" class="btn-track">배송조회</button>' +
+						(order.status === 'preparing' ? '<button type="button" class="btn-cancel">주문취소</button>' : '') +
+						(order.status === 'delivered' ? '<a class="btn-review" href="' + REVIEW_WRITER_URL + '">리뷰작성</a>' : '') +
+					'</div>';
+				listEl.appendChild(card);
+			});
+		}
+
+		filterBar.addEventListener('click', function (e) {
+			var btn = e.target.closest('button[data-status]');
+			if (!btn) return;
+			currentFilter = btn.dataset.status;
+			filterBar.querySelectorAll('button').forEach(function (b) { b.classList.remove('is-active'); });
+			btn.classList.add('is-active');
+			render();
+		});
+
+		render();
+	})();
+	</script>
+
+</body>
 </html>
