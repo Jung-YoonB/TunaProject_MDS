@@ -13,7 +13,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @Getter
 @Setter
-public class MypageCouponDTO {
+
+public class MyPageCouponDTO {
 
 	private Long couponId;
 	private String couponName;

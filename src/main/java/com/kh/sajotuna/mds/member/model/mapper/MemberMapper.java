@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
+import com.kh.sajotuna.mds.coupon.model.dto.MyPageCouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
@@ -38,7 +38,7 @@ public interface MemberMapper {
 	MemberDTO selectByMemberId(Long memberId);
 	
 	// 멤버 아이디를 통한 보유 쿠폰 조회
-	List<MypageCouponDTO> selectCouponsByMemberId(Long memberId);
+	List<MyPageCouponDTO> selectCouponsByMemberId(Long memberId);
 	
 	// 멤버 아이디를 통한 찜 목록 조회
 	List<MyPageWishDTO> selectWishesByMemberId(Long memberId);

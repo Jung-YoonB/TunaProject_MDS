@@ -56,7 +56,7 @@
 		WHERE M.MEMBER_ID = #{memberId}
   	</select>
   	
-  	<select id="selectCouponsByMemberId" parameterType="long" resultType="CouponDTO">
+  	<select id="selectCouponsByMemberId" parameterType="long" resultType="MyPageCouponDTO">
 		SELECT C.COUPON_ID, C.COUPON_NAME, C.COUPON_VALUE, C.COUPON_TEXT, C.CREATED_AT, C.DEADLINE,
 			TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR,
 			TO_CHAR(C.DEADLINE, 'YYYY-MM-DD') AS DEAD_LINE_STR

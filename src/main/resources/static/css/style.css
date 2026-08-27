@@ -2,12 +2,11 @@
 
 /* ===== Golden Summer Fields palette ===== */
 :root {
-	--gsf-sage: #ccd5ae;
-	--gsf-sage-dark: #adb594;
+	--gsf-sage: #b7c79a;
 	--gsf-sage-light: #dce3c4;
+	--gsf-cream: #fbf3de;
 	--gsf-tan: #f0dfc0;
-	--gsf-caramel: #d4a373;
-	--gsf-ink: #3f4a33;
+	--gsf-caramel: #d3a06c;
 }
 
 /* ===== Page scaffold (footer pinned to bottom on short pages) ===== */
@@ -32,7 +31,7 @@ main {
 	row-gap: 8px;
 	align-items: center;
 	padding: 16px 40px;
-	background-color: var(--gsf-sage);
+	background-color: var(--gsf-cream);
 	border-bottom: 1px solid var(--gsf-tan);
 }
 
@@ -61,10 +60,6 @@ main {
 	display: flex;
 	justify-content: center;
 }
-#search_box form {
-	width: 100%;
-	max-width: 520px;
-}
 .search-input {
 	width: 100%;
 	max-width: 520px;
@@ -82,7 +77,7 @@ main {
 }
 .search-input:focus {
 	border-color: var(--gsf-caramel);
-	box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2);
+	box-shadow: 0 0 0 3px rgba(211, 160, 108, 0.2);
 }
 
 /* ===== Icon row (마이페이지 / 찜 / 장바구니) ===== */
@@ -95,27 +90,12 @@ main {
 	gap: 28px;
 }
 .icon-item {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 4px;
 	color: #555;
 	text-decoration: none;
-}
-.icon-badge {
-	position: absolute;
-	top: -6px;
-	right: -8px;
-	min-width: 16px;
-	height: 16px;
-	padding: 0 4px;
-	border-radius: 999px;
-	background-color: var(--gsf-caramel);
-	color: #fff;
-	font-size: 10px;
-	line-height: 16px;
-	text-align: center;
 }
 .icon-item:hover {
 	color: var(--gsf-caramel);
@@ -162,7 +142,7 @@ main {
 /* ===== Footer ===== */
 .site-footer {
 	padding: 12px 40px;
-	background-color: var(--gsf-sage);
+	background-color: var(--gsf-cream);
 }
 .footer-top {
 	display: flex;
@@ -186,7 +166,7 @@ main {
 .company-info address p {
 	margin: 0;
 	font-size: 12px;
-	color: var(--gsf-ink);
+	color: #777;
 	line-height: 1.4;
 }
 .footer-nav ul {
@@ -200,7 +180,7 @@ main {
 }
 .footer-nav a {
 	font-size: 13px;
-	color: var(--gsf-ink);
+	color: #555;
 	text-decoration: none;
 }
 .footer-nav a:hover {
@@ -209,11 +189,11 @@ main {
 }
 .footer-divider {
 	border: none;
-	border-top: 1px solid var(--gsf-sage-dark);
+	border-top: 1px solid var(--gsf-tan);
 	margin: 8px 0;
 }
 .copyright {
 	margin: 0;
 	font-size: 12px;
-	color: var(--gsf-ink);
+	color: #999;
 }

@@ -2,10 +2,10 @@ package com.kh.sajotuna.mds.member.service;
 
 import java.util.List;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
+import com.kh.sajotuna.mds.coupon.model.dto.MyPageCouponDTO;
+import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
-import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 
 public interface MemberService {
@@ -32,7 +32,7 @@ public interface MemberService {
 	MemberDTO getMemberByMemberId(Long memberId);
 	
 	// 멤버id로 보유 쿠폰 검색
-	List<MypageCouponDTO> listCoupon(Long memberId);
+	List<MyPageCouponDTO> listCoupon(Long memberId);
 	
 	// 멤버id로 찜하기 검색
 	List<MyPageWishDTO> listWish(Long memberId);

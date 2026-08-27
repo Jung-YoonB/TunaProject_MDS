@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
+import com.kh.sajotuna.mds.coupon.model.dto.MyPageCouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
@@ -68,7 +68,8 @@ public class MemberController {
 				
 		if(member.getRole().equals("USER")) {
 			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
-			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<MypageCouponDTO>)model.getAttribute("couponList")); // 추적용 출력
+			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<MyPageCouponDTO>)model.getAttribute("couponList")); // 추적용 출력
+
 			return "member/usercouponView";
 		} else {
 			return "member/admincouponView"; // 주소 나중에 확인 + 조회 기능 구현

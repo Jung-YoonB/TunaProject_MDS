@@ -53,7 +53,7 @@
 	    </div>
 	
 	    <div id="EditMember">
-	        <a href="${pageContext.request.contextPath}/member/updateInfo">정보 수정</a>
+	        <button type="button">정보 수정</button>
 	    </div>
 	</div>
 	
