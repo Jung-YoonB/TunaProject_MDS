@@ -36,6 +36,8 @@ public class MemberDTO {
 	private String phone;
 	private String role;
 	private Integer memberStatus;
+	private Integer point;
+	private Integer couponQty;
 	
 	private String birthStr;
 	private String createdAtStr;

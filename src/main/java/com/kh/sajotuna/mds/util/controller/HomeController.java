@@ -8,8 +8,7 @@ public class HomeController {
 	
 	@GetMapping("/")
 	public String home() {
-		// webapp/WEB-INK/views/home/index.jsp
-		// TODO : jsp 업로드 후 네이밍 맞춰 경로 변경
-		return "home/index";
+		// webapp/WEB-INK/views/home/home.jsp
+		return "product/productDetail";
 	}
 }

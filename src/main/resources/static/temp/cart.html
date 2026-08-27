@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>장바구니</title>
+	<link rel="stylesheet" href="/css/common.css">
+	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/css/style_member.css">
+	<link rel="stylesheet" href="/css/style_order.css">
+	<link rel="stylesheet" href="/css/style_home.css">
+	<link rel="stylesheet" href="/css/style_myPage.css">
+	<link rel="stylesheet" href="/css/style_search.css">
+	<link rel="stylesheet" href="/css/style_cart.css">
+</head>
+<body>
+	<header id="site-header">
+		<div id="logo_img"><a href="/">Masion De Sajo</a></div>
+		<div id="search_box">
+			<form id="headerSearchForm" action="/search" method="get">
+				<input type="search" id="search_input" name="keyword" class="search-input"
+					   placeholder="상품을 검색해주세요" aria-label="상품 검색" autocomplete="off">
+			</form>
+		</div>
+		<div class="icon">
+			<a class="icon-item" href="/member/mypage">
+				<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
+				</svg>
+				<span class="icon-label">마이페이지</span>
+			</a>
+			<a class="icon-item" href="/wish">
+				<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
+				</svg>
+				<span class="icon-badge" id="wishBadge" hidden>0</span>
+				<span class="icon-label">찜</span>
+			</a>
+			<a class="icon-item" href="/cart">
+				<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+					<path d="M3 6h18"/>
+					<path d="M16 10a4 4 0 0 1-8 0"/>
+				</svg>
+				<span class="icon-badge" id="cartBadge" hidden>0</span>
+				<span class="icon-label">장바구니</span>
+			</a>
+		</div>
+		<div class="sign">
+			<a href="/member/login">로그인</a>
+			<span class="sign-divider" aria-hidden="true">|</span>
+			<a href="/member/signUp">회원가입</a>
+		</div>
+	</header>
+
+	<!-- 이 배지 갱신 스크립트는 header.jsp의 공용 스크립트를 정적 파일용으로 옮겨온 것 (실제 사이트에서는 header.jsp가 담당) -->
+	<script>
+		(function () {
+			var cartBadge = document.getElementById('cartBadge');
+			var wishBadge = document.getElementById('wishBadge');
+			function getCartItems() {
+				try { var items = JSON.parse(localStorage.getItem('cartItems') || '[]'); return Array.isArray(items) ? items : []; } catch (e) { return []; }
+			}
+			function getWishList() {
+				try { return JSON.parse(localStorage.getItem('wishItems') || '[]'); } catch (e) { return []; }
+			}
+			function renderBadges() {
+				var cartCount = getCartItems().reduce(function (sum, item) { return sum + (item.qty || 0); }, 0);
+				cartBadge.textContent = cartCount;
+				cartBadge.hidden = cartCount <= 0;
+				var wishCount = getWishList().length;
+				wishBadge.textContent = wishCount;
+				wishBadge.hidden = wishCount <= 0;
+			}
+			window.refreshCartBadge = renderBadges;
+			renderBadges();
+		})();
+	</script>
+
+	<main>
+		<div class="cart-container" id="cart-container">
+			<h2 class="page-title">장바구니</h2>
+
+			<div class="cart-controls" id="cart-controls">
+				<label class="checkbox-label">
+					<input type="checkbox" id="check-all">
+					<span>전체 선택</span>
+				</label>
+				<button type="button" id="delete-btn">선택상품 삭제</button>
+			</div>
+
+			<section class="cart-itemlist" id="cart-itemlist" aria-label="장바구니 상품 목록"></section>
+
+			<section class="cart-summary-box" id="cart-summary-box">
+				<h4>결제 예상 금액</h4>
+				<div class="summary-detail">
+					<div class="summary-row">
+						<span>상품 금액</span>
+						<span id="total-price">0원</span>
+					</div>
+					<div class="summary-row">
+						<span>배송비</span>
+						<span id="delivery-fee">0원</span>
+					</div>
+				</div>
+				<div class="summary-total">
+					<span>총 결제금액</span>
+					<strong id="summary-final">0원</strong>
+				</div>
+			</section>
+
+			<p class="cart-warning" id="cart-warning" hidden>상품을 하나 이상 선택해 주세요.</p>
+
+			<div class="cart-action" id="cart-action">
+				<a class="btn-outline" href="/temp/home.html">계속 쇼핑하기</a>
+				<button type="button" class="btn-solid" id="btn-checkout">주문하기</button>
+			</div>
+
+			<div class="cart-empty" id="cart-empty" hidden>
+				<p class="cart-empty-title">장바구니에 담긴 상품이 없습니다.</p>
+				<p class="cart-empty-desc">마음에 드는 상품을 담아보세요.</p>
+				<a class="btn-solid" href="/temp/home.html">상품 보러가기</a>
+			</div>
+		</div>
+
+		<!-- 장바구니는 localStorage(cartItems) 임시 구현. 실제로는 Cart 테이블(pop_id 기준) 연동 필요.
+			 옵션명은 ProductOption.option_name, 가격은 ProductOption.option_price에서 가져와야 함(현재는 임의값) -->
+		<script>
+		(function () {
+			var DEFAULT_ITEMS = [
+				{ productId: '1', name: '프리미엄 한우 선물세트', optionName: '1++ 등급 / 1kg', price: 129000, qty: 1 },
+				{ productId: '2', name: '전통 과일 선물세트', optionName: '중과 5호 / 3kg', price: 59000, qty: 2 }
+			];
+			var SHIPPING_FEE = 3000;
+
+			function getKey(item) { return item.productId + '::' + (item.optionName || '기본 옵션'); }
+
+			var checkedState = {};
+
+			function getCartItems() {
+				try { var items = JSON.parse(localStorage.getItem('cartItems') || '[]'); return Array.isArray(items) ? items : []; } catch (e) { return []; }
+			}
+			function saveCartItems(items) {
+				localStorage.setItem('cartItems', JSON.stringify(items));
+				if (typeof window.refreshCartBadge === 'function') window.refreshCartBadge();
+			}
+
+			var items = getCartItems();
+			if (items.length === 0) { items = DEFAULT_ITEMS.slice(); saveCartItems(items); }
+			items.forEach(function (item) { checkedState[getKey(item)] = true; });
+
+			var cartControls = document.getElementById('cart-controls');
+			var cartItemList = document.getElementById('cart-itemlist');
+			var cartSummaryBox = document.getElementById('cart-summary-box');
+			var cartAction = document.getElementById('cart-action');
+			var cartEmpty = document.getElementById('cart-empty');
+			var cartWarning = document.getElementById('cart-warning');
+			var checkAll = document.getElementById('check-all');
+
+			function formatWon(n) { return n.toLocaleString('ko-KR') + '원'; }
+
+			function captureCheckedState() {
+				cartItemList.querySelectorAll('.cart-item').forEach(function (row) {
+					checkedState[row.dataset.cartKey] = row.querySelector('.item-checkbox').checked;
+				});
+			}
+
+			function render() {
+				captureCheckedState();
+				items = getCartItems();
+				var isEmpty = items.length === 0;
+				cartControls.hidden = isEmpty;
+				cartItemList.hidden = isEmpty;
+				cartSummaryBox.hidden = isEmpty;
+				cartAction.hidden = isEmpty;
+				cartWarning.hidden = true;
+				cartEmpty.hidden = !isEmpty;
+				if (isEmpty) return;
+
+				cartItemList.innerHTML = '';
+				items.forEach(function (item) {
+					var key = getKey(item);
+					var checked = checkedState[key] !== false;
+					var row = document.createElement('article');
+					row.className = 'cart-item';
+					row.dataset.productId = item.productId;
+					row.dataset.cartKey = key;
+					row.innerHTML =
+						'<input type="checkbox" class="item-checkbox"' + (checked ? ' checked' : '') + '>' +
+						'<div class="item-thumbnail"></div>' +
+						'<div class="item-info">' +
+							'<h3 class="item-title"></h3>' +
+							'<p class="item-option"></p>' +
+							'<div class="item-price-info"><span class="price-final"></span></div>' +
+						'</div>' +
+						'<div class="item-control">' +
+							'<div class="qty-control">' +
+								'<button type="button" class="btn-qty-decrease" aria-label="수량 감소">-</button>' +
+								'<input type="number" class="input-qty" min="1" readonly>' +
+								'<button type="button" class="btn-qty-increase" aria-label="수량 증가">+</button>' +
+							'</div>' +
+							'<button type="button" class="delete-item-btn">삭제</button>' +
+						'</div>';
+					row.querySelector('.item-title').textContent = item.name;
+					row.querySelector('.item-option').textContent = item.optionName || '기본 옵션';
+					row.querySelector('.price-final').textContent = formatWon(item.price);
+					row.querySelector('.input-qty').value = item.qty;
+					cartItemList.appendChild(row);
+				});
+
+				syncCheckAll();
+				updateSummary();
+			}
+
+			function syncCheckAll() {
+				var boxes = cartItemList.querySelectorAll('.item-checkbox');
+				checkAll.checked = boxes.length > 0 && Array.prototype.every.call(boxes, function (b) { return b.checked; });
+			}
+
+			function updateSummary() {
+				var itemsTotal = 0;
+				cartItemList.querySelectorAll('.cart-item').forEach(function (row) {
+					if (!row.querySelector('.item-checkbox').checked) return;
+					var item = items.filter(function (i) { return getKey(i) === row.dataset.cartKey; })[0];
+					if (item) itemsTotal += item.price * item.qty;
+				});
+				var fee = itemsTotal > 0 ? SHIPPING_FEE : 0;
+				document.getElementById('total-price').textContent = formatWon(itemsTotal);
+				document.getElementById('delivery-fee').textContent = formatWon(fee);
+				document.getElementById('summary-final').textContent = formatWon(itemsTotal + fee);
+			}
+
+			cartItemList.addEventListener('click', function (e) {
+				var row = e.target.closest('.cart-item');
+				if (!row) return;
+				var key = row.dataset.cartKey;
+				if (e.target.classList.contains('btn-qty-increase') || e.target.classList.contains('btn-qty-decrease')) {
+					var item = items.filter(function (i) { return getKey(i) === key; })[0];
+					if (!item) return;
+					item.qty = e.target.classList.contains('btn-qty-increase') ? item.qty + 1 : Math.max(1, item.qty - 1);
+					saveCartItems(items);
+					render();
+				}
+				if (e.target.classList.contains('delete-item-btn')) {
+					items = items.filter(function (i) { return getKey(i) !== key; });
+					saveCartItems(items);
+					render();
+				}
+			});
+
+			cartItemList.addEventListener('change', function (e) {
+				if (e.target.classList.contains('item-checkbox')) { syncCheckAll(); updateSummary(); }
+			});
+
+			checkAll.addEventListener('change', function () {
+				cartItemList.querySelectorAll('.item-checkbox').forEach(function (b) { b.checked = checkAll.checked; });
+				updateSummary();
+			});
+
+			document.getElementById('delete-btn').addEventListener('click', function () {
+				var keepKeys = [];
+				cartItemList.querySelectorAll('.cart-item').forEach(function (row) {
+					if (!row.querySelector('.item-checkbox').checked) keepKeys.push(row.dataset.cartKey);
+				});
+				items = items.filter(function (i) { return keepKeys.indexOf(getKey(i)) !== -1; });
+				saveCartItems(items);
+				render();
+			});
+
+			document.getElementById('btn-checkout').addEventListener('click', function () {
+				var anyChecked = Array.prototype.some.call(cartItemList.querySelectorAll('.item-checkbox'), function (b) { return b.checked; });
+				cartWarning.hidden = anyChecked;
+				if (anyChecked) {
+					window.location.href = '/temp/Payment.html';
+				}
+			});
+
+			render();
+		})();
+		</script>
+	</main>
+
+	<footer class="site-footer">
+		<div class="footer-top">
+			<div class="company-info">
+				<h2 class="footer-brand">Masion De SAJO</h2>
+				<address>
+					<p>주소지</p>
+					<p>우편번호</p>
+					<p>고객센터번호</p>
+				</address>
+			</div>
+			<nav class="footer-nav">
+				<ul>
+					<li><a href="#">이용약관</a></li>
+					<li><a href="#">개인정보처리방침</a></li>
+					<li><a href="#">사업자정보</a></li>
+					<li><a href="#">고객센터</a></li>
+				</ul>
+			</nav>
+		</div>
+		<hr class="footer-divider">
+		<div class="footer-bottom">
+			<p class="copyright">&copy; 2024 Masion De SAJO. All rights reserved.</p>
+		</div>
+	</footer>
+</body>
+</html>
