@@ -12,14 +12,14 @@
     <link rel="stylesheet" href="/css/style_member.css">
 </head>
 
-<body>
+<body class="signup-page">
 
     <main>
 
         <!-- 회원가입 제목 -->
         <div id="title">회원가입</div>
 
-        <form>
+        <form id="signUpForm">
 
             <!-- 이름 -->
             <div id="Name">
@@ -60,72 +60,97 @@
             <!-- 닉네임 -->
             <div id="Nickname">
                 <label for="nickname">닉네임</label>
-                <input type="text"
-                       id="nickname"
-                       name="nickname"
-                       class="signup-input"
-                       placeholder="닉네임을 입력해주세요">
+
+                <div class="id-input-box">
+                    <input type="text"
+                           id="nickname"
+                           name="nickname"
+                           class="signup-input"
+                           placeholder="닉네임을 입력해주세요">
+
+                    <button type="button" id="nicknameCheckBtn" class="dup-check-btn">
+                        중복확인
+                    </button>
+                </div>
+                <span id="nicknameCheckMsg"></span>
             </div>
 
             <!-- 아이디 -->
             <div id="Username">
-                <label for="login_id">아이디</label>
+                <label for="loginId">아이디</label>
 
                 <div class="id-input-box">
                     <input type="text"
-                           id="login_id"
+                           id="loginId"
                            name="login_id"
                            class="signup-input"
                            placeholder="아이디를 입력해주세요">
 
-                    <button type="button" id="CheckId">
+                    <button type="button" id="idCheckBtn" class="dup-check-btn">
                         중복확인
                     </button>
                 </div>
+                <span id="idCheckMsg"></span>
             </div>
 
             <!-- 비밀번호 -->
             <div id="Password">
-                <label for="login_pw">비밀번호</label>
+                <label for="loginPw">비밀번호</label>
 
                 <input type="password"
-                       id="login_pw"
+                       id="loginPw"
                        name="login_pw"
                        class="signup-input"
                        placeholder="비밀번호를 입력해주세요">
+                <span id="pwRegCheckMsg"></span>
             </div>
 
             <!-- 비밀번호 확인 -->
             <div id="ConfirmPassword">
-                <label for="login_pw_confirm">비밀번호 확인</label>
+                <label for="loginPwConfirm">비밀번호 확인</label>
 
                 <input type="password"
-                       id="login_pw_confirm"
+                       id="loginPwConfirm"
                        name="login_pw_confirm"
                        class="signup-input"
                        placeholder="비밀번호를 다시 입력해주세요">
+                <span id="pwCheckMsg"></span>
             </div>
 
             <!-- 휴대폰 번호 -->
             <div id="PhoneNumber">
                 <label for="phone">휴대폰 번호</label>
 
-                <input type="tel"
-                       id="phone"
-                       name="phone"
-                       class="signup-input"
-                       placeholder="휴대폰 번호를 입력해주세요">
+                <div class="id-input-box">
+                    <input type="tel"
+                           id="phone"
+                           name="phone"
+                           class="signup-input"
+                           placeholder="휴대폰 번호를 입력해주세요">
+
+                    <button type="button" id="phoneCheckBtn" class="dup-check-btn">
+                        중복확인
+                    </button>
+                </div>
+                <span id="phoneCheckMsg"></span>
             </div>
 
             <!-- 이메일 -->
             <div id="Email">
                 <label for="email">이메일</label>
 
-                <input type="email"
-                       id="email"
-                       name="email"
-                       class="signup-input"
-                       placeholder="이메일을 입력해주세요">
+                <div class="id-input-box">
+                    <input type="email"
+                           id="email"
+                           name="email"
+                           class="signup-input"
+                           placeholder="이메일을 입력해주세요">
+
+                    <button type="button" id="emailCheckBtn" class="dup-check-btn">
+                        중복확인
+                    </button>
+                </div>
+                <span id="emailCheckMsg"></span>
             </div>
 
             <!-- 개인정보 동의 -->
@@ -157,6 +182,8 @@
         </div>
 
     </main>
+
+    <script src="/js/member.js"></script>
 
 </body>
 </html>
