@@ -117,7 +117,7 @@
 		WHERE p.PRODUCT_ID = #{productId}
 	</select>
 	<select id="getReviewImages" resultType="ReviewImagesDTO" >
-		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_images
+		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_image
 		from REVIEWIMAGE ri join REVIEW r on ri.REVIEW_ID = r.REVIEW_ID
 		where r.REVIEW_ID in <foreach collection="list" item="reviewId" open="(" separator=", " close=")">
 		#{reviewId}
