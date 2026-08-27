@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 쿠폰</title>
+
+    <style>
+        /* 전체 페이지 */
+        body {
+            margin: 0;
+            background-color: #f8f6f2;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        /* 전체 영역 */
+        main {
+            width: 800px;
+            margin: 50px auto;
+            padding: 40px;
+            background-color: white;
+            border: 1px solid #e5e0d8;
+            border-radius: 12px;
+            box-sizing: border-box;
+        }
+
+        /* 제목 */
+        #title {
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* 쿠폰 요약 */
+        #CouponSummary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .summary-box {
+            padding: 18px 10px;
+            background-color: #faf9f7;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-title {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .summary-value {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* 쿠폰 검색 */
+        #SearchCoupons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        #coupon-search {
+            flex: 1;
+            height: 42px;
+            padding: 0 12px;
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        #coupon-search:focus {
+            border-color: #aaa;
+        }
+
+        #search-button {
+            width: 80px;
+            height: 42px;
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        #search-button:hover {
+            background-color: #faf9f7;
+        }
+
+        /* 쿠폰 목록 */
+        #CouponList h2,
+        #ExpiredCouponList h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        /* 쿠폰 카드 */
+        .coupon-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+            padding: 20px;
+            border: 1px solid #e3ded7;
+            border-radius: 10px;
+            background-color: white;
+            box-sizing: border-box;
+        }
+
+        /* 쿠폰 기본 정보 */
+        .coupon-info {
+            flex: 1;
+        }
+
+        .coupon-name {
+            margin-bottom: 7px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .coupon-description {
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .coupon-deadline {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* 할인율 */
+        .coupon-discount {
+            min-width: 70px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* 쿠폰 상태 */
+        .coupon-status {
+            min-width: 55px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .active {
+            background-color: #eee7dd;
+            color: #806746;
+        }
+
+        .expired {
+            background-color: #eee;
+            color: #999;
+        }
+
+        /* 쿠폰 사용 버튼 */
+        .coupon-use {
+            width: 55px;
+            height: 35px;
+            border: 1px solid #b59b7b;
+            border-radius: 6px;
+            background-color: white;
+            color: #806746;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .coupon-use:hover {
+            background-color: #f8f6f2;
+        }
+
+        /* 사용 불가 */
+        .coupon-use:disabled {
+            border-color: #ddd;
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: default;
+        }
+
+        /* 만료 쿠폰 */
+        .expired-card {
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main>
+
+        <!-- 제목 -->
+        <div id="title">내 쿠폰</div>
+
+        <!-- 쿠폰 요약 -->
+        <div id="CouponSummary">
+
+            <div class="summary-box">
+                <span class="summary-title">보유쿠폰</span>
+                <span class="summary-value">5</span>
+            </div>
+
+            <div class="summary-box">
+                <span class="summary-title">사용가능</span>
+                <span class="summary-value">2</span>
+            </div>
+
+            <div class="summary-box">
+                <span class="summary-title">사용완료</span>
+                <span class="summary-value">1</span>
+            </div>
+
+            <div class="summary-box">
+                <span class="summary-title">만료쿠폰</span>
+                <span class="summary-value">2</span>
+            </div>
+
+        </div>
+
+        <!-- 쿠폰 검색 -->
+        <div id="SearchCoupons">
+
+            <input
+                type="text"
+                id="coupon-search"
+                placeholder="쿠폰 이름을 검색해주세요">
+
+            <button type="button" id="search-button">
+                검색
+            </button>
+
+        </div>
+
+
+        <!-- 사용 가능한 쿠폰 -->
+        <div id="CouponList">
+
+            <h2>사용 가능한 쿠폰</h2>
+
+            <!-- 여름 특별 쿠폰 -->
+            <div class="coupon-card">
+
+                <div class="coupon-info">
+
+                    <div class="coupon-name">
+                        여름특별쿠폰
+                    </div>
+
+                    <div class="coupon-description">
+                        여름 시즌 특별 할인 쿠폰
+                    </div>
+
+                    <div class="coupon-deadline">
+                        사용기한 : 2026.08.31
+                    </div>
+
+                </div>
+
+                <div class="coupon-discount">
+                    10%
+                </div>
+
+                <div class="coupon-status active">
+                    사용가능
+                </div>
+
+                <button
+                    type="button"
+                    class="coupon-use">
+                    사용
+                </button>
+
+            </div>
+
+
+            <!-- 신규회원 쿠폰 -->
+            <div class="coupon-card">
+
+                <div class="coupon-info">
+
+                    <div class="coupon-name">
+                        신규회원 환영 쿠폰
+                    </div>
+
+                    <div class="coupon-description">
+                        신규 가입 회원 전용 할인 쿠폰
+                    </div>
+
+                    <div class="coupon-deadline">
+                        사용기한 : 2026.09.15
+                    </div>
+
+                </div>
+
+                <div class="coupon-discount">
+                    15%
+                </div>
+
+                <div class="coupon-status active">
+                    사용가능
+                </div>
+
+                <button
+                    type="button"
+                    class="coupon-use">
+                    사용
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- 만료된 쿠폰 -->
+        <div id="ExpiredCouponList">
+
+            <h2>만료된 쿠폰</h2>
+
+            <!-- 주말 할인 쿠폰 -->
+            <div class="coupon-card expired-card">
+
+                <div class="coupon-info">
+
+                    <div class="coupon-name">
+                        주말할인쿠폰
+                    </div>
+
+                    <div class="coupon-description">
+                        주말에 사용할 수 있는 할인 쿠폰
+                    </div>
+
+                    <div class="coupon-deadline">
+                        사용기한 : 2026.08.25
+                    </div>
+
+                </div>
+
+                <div class="coupon-discount">
+                    20%
+                </div>
+
+                <div class="coupon-status expired">
+                    만료
+                </div>
+
+                <button
+                    type="button"
+                    class="coupon-use"
+                    disabled>
+                    사용불가
+                </button>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

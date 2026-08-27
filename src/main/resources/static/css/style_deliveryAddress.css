@@ -1,0 +1,120 @@
+body {
+            margin: 0;
+            background-color: #f8f8f8;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        /* 전체 영역 */
+        main {
+            width: 600px;
+            margin: 50px auto;
+            padding: 40px;
+            background-color: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        /* 제목 */
+        #title {
+            margin-bottom: 30px;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        /* 배송지 입력 영역 */
+        #DeliveryForm {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 입력 항목 */
+        .form-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-item label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .form-item input {
+            height: 42px;
+            padding: 0 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .form-item input:focus {
+            border-color: #999;
+        }
+
+        /* 주소 입력 */
+        .address-search {
+            display: flex;
+            gap: 8px;
+        }
+
+        .address-search input {
+            flex: 1;
+        }
+
+        .address-search button {
+            width: 90px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        /* 기본 배송지 */
+        #default-address {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        #default-address input {
+            width: 16px;
+            height: 16px;
+        }
+
+        #default-address label {
+            font-size: 14px;
+        }
+
+        /* 버튼 영역 */
+        #ButtonArea {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        #ButtonArea button {
+            flex: 1;
+            height: 45px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* 취소 */
+        #cancel-button {
+            border: 1px solid #d9d9d9;
+            background-color: white;
+            color: #333;
+        }
+
+        /* 배송지 추가 */
+        #add-button {
+            border: none;
+            background-color: #333;
+            color: white;
+        }
