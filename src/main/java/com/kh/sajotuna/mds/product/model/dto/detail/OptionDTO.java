@@ -12,7 +12,6 @@ import lombok.ToString;
 @Setter
 @ToString
 public class OptionDTO {
-
 	private Long optionId;
 	private String optionName;
 	private int price;
