@@ -500,3 +500,316 @@
 .order-complete-page #OrderHistory button:hover {
     background-color: #f8f6f2;
 }
+
+
+/* ================================
+   주문/배송내역 페이지
+================================ */
+
+.order-delivery-page {
+    background-color: #f6efe4;
+    min-height: 100vh;
+}
+
+.order-delivery-page main {
+    width: 800px;
+    margin: 0 auto;
+    padding: 50px 0 80px;
+}
+
+.order-delivery-page .page-title {
+    margin: 0 0 24px;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    color: #222;
+}
+
+/* 상태 필터 탭 */
+.order-delivery-page .status-filter {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.order-delivery-page .status-filter button {
+    padding: 10px 20px;
+    border: 1px solid #e5e0d8;
+    border-radius: 999px;
+    background-color: #fff;
+    color: #777;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.order-delivery-page .status-filter button:hover {
+    border-color: #d8c3a5;
+}
+
+.order-delivery-page .status-filter button.is-active {
+    background-color: #e9dcc6;
+    border-color: #e9dcc6;
+    color: #5c4a2f;
+    font-weight: 700;
+}
+
+/* 주문 목록 */
+.order-delivery-page .order-list[hidden] {
+    display: none;
+}
+
+.order-delivery-page .order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.order-delivery-page .order-card {
+    padding: 20px 24px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.order-delivery-page .order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #999;
+}
+
+.order-delivery-page .order-number strong {
+    margin-left: 4px;
+    color: #555;
+}
+
+.order-delivery-page .order-body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.order-delivery-page .item-thumb {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    background-color: #f0ece3;
+    border-radius: 6px;
+}
+
+.order-delivery-page .order-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.order-delivery-page .product-name {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+}
+
+.order-delivery-page .product-detail {
+    margin: 0;
+    font-size: 13px;
+    color: #888;
+}
+
+/* 배송 상태 배지 */
+.order-delivery-page .status-badge {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.order-delivery-page .status-badge.status-preparing {
+    background-color: #fbe3d3;
+    color: #c1592f;
+}
+
+.order-delivery-page .status-badge.status-shipped {
+    background-color: #dce8fb;
+    color: #2f6fd9;
+}
+
+.order-delivery-page .status-badge.status-delivered {
+    background-color: #dcf1e2;
+    color: #2f9d5c;
+}
+
+.order-delivery-page .status-badge.status-canceled {
+    background-color: #eee;
+    color: #888;
+}
+
+/* 배송 진행 단계 */
+.order-delivery-page .order-progress {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.order-delivery-page .progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 90px;
+    flex-shrink: 0;
+}
+
+.order-delivery-page .step-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 11px;
+    border: 2px solid #ddd;
+    background-color: #fff;
+    color: transparent;
+}
+
+.order-delivery-page .progress-step.is-complete .step-icon {
+    background-color: #222;
+    border-color: #222;
+    color: #fff;
+}
+
+.order-delivery-page .progress-step.is-current .step-icon {
+    border-width: 6px;
+}
+
+.order-delivery-page .progress-step.is-current.status-preparing .step-icon {
+    border-color: #e5484d;
+}
+
+.order-delivery-page .progress-step.is-current.status-shipped .step-icon {
+    border-color: #2f6fd9;
+}
+
+.order-delivery-page .step-label {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.order-delivery-page .progress-step.is-complete .step-label {
+    color: #333;
+}
+
+.order-delivery-page .progress-step.is-current.status-preparing .step-label {
+    color: #e5484d;
+    font-weight: 700;
+}
+
+.order-delivery-page .progress-step.is-current.status-shipped .step-label {
+    color: #2f6fd9;
+    font-weight: 700;
+}
+
+.order-delivery-page .progress-line {
+    flex: 1;
+    height: 0;
+    margin-top: 11px;
+    border-top: 2px dashed #ddd;
+}
+
+.order-delivery-page .progress-line.is-complete {
+    border-top-style: solid;
+    border-top-color: #222;
+}
+
+/* 카드 하단 액션 버튼 */
+.order-delivery-page .order-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.order-delivery-page .order-actions button,
+.order-delivery-page .order-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.order-delivery-page .btn-track {
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #555;
+}
+
+.order-delivery-page .btn-track:hover {
+    border-color: #bbb;
+}
+
+.order-delivery-page .btn-cancel {
+    border: 1px solid #e5b0ac;
+    background-color: #fff;
+    color: #c0392b;
+}
+
+.order-delivery-page .btn-cancel:hover {
+    background-color: #fdf1f0;
+}
+
+.order-delivery-page .btn-review {
+    border: none;
+    background-color: #e9dcc6;
+    color: #5c4a2f;
+    font-weight: 700;
+}
+
+.order-delivery-page .btn-review:hover {
+    background-color: #ddc9a3;
+    text-decoration: none;
+}
+
+/* 빈 상태 */
+.order-delivery-page .order-empty[hidden] {
+    display: none;
+}
+
+.order-delivery-page .order-empty {
+    padding: 80px 20px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+/* 마이페이지로 돌아가기 */
+.order-delivery-page .order-back {
+    margin-top: 32px;
+    text-align: center;
+}
+
+.order-delivery-page .btn-back-mypage {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    padding: 0 28px;
+    border: 1px solid #d8d3cc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #555;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.order-delivery-page .btn-back-mypage:hover {
+    background-color: #f8f6f2;
+    text-decoration: none;
+}
