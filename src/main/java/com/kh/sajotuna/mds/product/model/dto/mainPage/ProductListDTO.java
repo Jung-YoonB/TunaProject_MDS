@@ -12,7 +12,10 @@ import lombok.ToString;
 public class ProductListDTO {
 	private Long productId;
 	private String productTitle;
+	private int wishCount;
+	private String titleImage;
 	private int price;
+	private String categoryNames;
+	private String tagData;
 	private double score;
-	private String thumbnail;
 }
