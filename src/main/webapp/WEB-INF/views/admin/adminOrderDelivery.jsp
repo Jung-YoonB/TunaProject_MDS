@@ -1,3 +1,6 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -9,10 +12,12 @@
     <title>주문/배송 관리</title>
 
     <!-- 공통 CSS -->
-    <link rel="stylesheet" href="/css/default.css">
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/default.css">
 
     <!-- 관리자 주문/배송 관리 전용 CSS -->
-    <link rel="stylesheet" href="/css/style_admin_order.css">
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/style_admin_order.css">
 
 </head>
 
@@ -113,7 +118,7 @@
 
     </main>
 
-    <!-- TODO(data binding): ProductOrder/Delivery/OrderDetail/Product/Member 테이블 연동 필요.
+    <%-- TODO(data binding): ProductOrder/Delivery/OrderDetail/Product/Member 테이블 연동 필요.
          현재는 테스트용 예시 주문 18건을 하드코딩.
          - orderId: ProductOrder.order_id (실제 PK는 NUMBER 시퀀스. 'YYYYMMDD-NNN' 표기는
            프론트 목업 전용 표시 형식이며 실제 바인딩 시 별도 포맷팅 로직 필요)
@@ -138,7 +143,7 @@
            COUNT(*) 집계 쿼리 결과. 현재는 고정 목업 수치이며 표에 보이는 표본 건수와 무관
          - 저장 버튼: 현재는 시각적 확인만 수행(no-op). 실제로는 PUT/POST로
            Delivery.delivery_status, Delivery.tracking_no 갱신 필요
-         - 페이지네이션: 정적 목업. 실제로는 페이징 쿼리 필요 -->
+         - 페이지네이션: 정적 목업. 실제로는 페이징 쿼리 필요 --%>
     <script>
     (function () {
         var STATUS_LABEL = {

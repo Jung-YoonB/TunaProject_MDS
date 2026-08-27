@@ -1,52 +1,34 @@
-<%@ page language="java"
-    contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-
 <!-- 회원가입 제목 -->
-
 <div id="title">회원가입</div>
-
-
 <form>
 
     <!-- 이름 -->
-
     <div id="Name">
-
         <label for="member_name">이름</label>
-
         <input type="text"
                id="member_name"
                name="member_name"
                class="signup-input"
                placeholder="이름을 입력해주세요">
-
     </div>
 
-
     <!-- 생년월일 -->
-
     <div id="Birth">
-
         <label for="birth">생년월일</label>
-
         <input type="date"
                id="birth"
                name="birth"
                class="signup-input">
-
     </div>
 
-
     <!-- 성별 -->
-
     <div id="Gender">
-
         <span>성별</span>
-
         <input type="radio"
                id="gender-male"
                name="gender"
@@ -60,14 +42,10 @@
                value="F">
 
         <label for="gender-female">여성</label>
-
     </div>
 
-
     <!-- 닉네임 -->
-
     <div id="Nickname">
-
         <label for="nickname">닉네임</label>
 
         <input type="text"
@@ -83,7 +61,6 @@
 
 
     <!-- 아이디 -->
-
     <div id="Username">
 
         <label for="login_id">아이디</label>

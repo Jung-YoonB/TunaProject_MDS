@@ -5,14 +5,20 @@
 
         <!-- 로그인 제목 -->
         <div id="title">로그인</div>
+		
+		<c:if test="${not empty error}">
+		    <div class="error-message">
+		        ${error}
+		    </div>
+		</c:if>
 
-        <form>
+        <form action="/member/login" method="post">
             <!-- 아이디 -->
             <div class="login-field">
                 <label for="login_id">아이디</label>
                 <input type="text"
                        id="login_id"
-                       name="login_id"
+                       name="loginId"
                        class="login-input"
                        placeholder="아이디를 입력해주세요">
             </div>
@@ -22,7 +28,7 @@
                 <label for="login_pw">비밀번호</label>
                 <input type="password"
                        id="login_pw"
-                       name="login_pw"
+                       name="loginPw"
                        class="login-input"
                        placeholder="비밀번호를 입력해주세요">
             </div>
