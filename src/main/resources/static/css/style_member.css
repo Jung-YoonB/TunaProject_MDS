@@ -160,7 +160,8 @@ body {
     flex: 1;
 }
 
-.dup-check-btn {
+.dup-check-btn,
+.CheckBox {
     width: 90px;
     height: 45px;
     border: 1px solid #b59b7b;
@@ -172,22 +173,27 @@ body {
     cursor: pointer;
 }
 
-.dup-check-btn:hover {
+.dup-check-btn:hover,
+.CheckBox:hover {
     background-color: #f8f6f2;
 }
 
 .msg-success,
-.msg-error {
+.msg-error,
+.success-message,
+.error-message {
     display: block;
     margin-top: 6px;
     font-size: 12px;
 }
 
-.msg-success {
+.msg-success,
+.success-message {
     color: #2f9d5c;
 }
 
-.msg-error {
+.msg-error,
+.error-message {
     color: #c0392b;
 }
 
