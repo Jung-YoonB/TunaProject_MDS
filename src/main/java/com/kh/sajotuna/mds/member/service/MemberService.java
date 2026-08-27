@@ -3,10 +3,10 @@ package com.kh.sajotuna.mds.member.service;
 import java.util.List;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
-import com.kh.sajotuna.mds.member.model.dto.CartDTO;
-import com.kh.sajotuna.mds.member.model.dto.DeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.WishDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 
 public interface MemberService {
 
@@ -35,11 +35,11 @@ public interface MemberService {
 	List<CouponDTO> listCoupon(Long memberId);
 	
 	// 멤버id로 찜하기 검색
-	List<WishDTO> listWish(Long memberId);
+	List<MyPageWishDTO> listWish(Long memberId);
 	
 	// 멤버id로 장바구니 검색
-	List<CartDTO> listCart(Long memberId);
+	List<MyPageCartDTO> listCart(Long memberId);
 	
 	// 멤버id로 배송데이터 검색
-	List<DeliveryDTO> listDelivery(Long memberId);
+	List<MyPageDeliveryDTO> listDelivery(Long memberId);
 }

@@ -1,7 +1,5 @@
 package com.kh.sajotuna.mds.member.model.dto;
 
-import java.time.LocalDate;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +11,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Getter
 @Setter
-public class WishDTO {
+public class MyPageWishDTO {
 	
 	
 	// 위시 테이블
@@ -24,6 +22,7 @@ public class WishDTO {
 	
 	// 프로덕트 이미지 테이블
 	private String productImagePath;
+	private String productImageSaveName;
 	
 	// 리뷰 평점 순 정렬용 (옵션별 리뷰를 상품별 리뷰로 통틀어서 평균 냄) 
 	private Long reviewAvg;

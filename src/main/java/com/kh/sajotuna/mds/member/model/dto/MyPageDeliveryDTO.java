@@ -15,7 +15,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Getter
 @Setter
-public class DeliveryDTO {
+public class MyPageDeliveryDTO {
 
 	// 딜리버리 테이블
 	private Long deliveryId;
@@ -37,4 +37,5 @@ public class DeliveryDTO {
 	// 대표 상품 정보
 	private String productName;
 	private String productImagePath; 
+	private String productImageSaveName;
 }

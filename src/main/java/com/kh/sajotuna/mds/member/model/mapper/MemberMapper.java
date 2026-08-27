@@ -5,10 +5,10 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
-import com.kh.sajotuna.mds.member.model.dto.CartDTO;
-import com.kh.sajotuna.mds.member.model.dto.DeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.WishDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 
 @Mapper
 public interface MemberMapper {
@@ -41,14 +41,14 @@ public interface MemberMapper {
 	List<CouponDTO> selectCouponsByMemberId(Long memberId);
 	
 	// 멤버 아이디를 통한 찜 목록 조회
-	List<WishDTO> selectWishesByMemberId(Long memberId);
+	List<MyPageWishDTO> selectWishesByMemberId(Long memberId);
 	
 	// 멤버 아이디를 통한 장바구니 조회
-	List<CartDTO> selectCartsByMemberId(Long memberId);
+	List<MyPageCartDTO> selectCartsByMemberId(Long memberId);
 	
 	// 멤버 아이디를 통한 배송데이터 조회
-	List<DeliveryDTO> selectDeliveriesByMemberId(Long memberId);
+	List<MyPageDeliveryDTO> selectDeliveriesByMemberId(Long memberId);
 	
 	// 오더 아이디를 통한 대표 상품정보 조회
-	DeliveryDTO selectProductByOrderId(Long orderId);
+	MyPageDeliveryDTO selectProductByOrderId(Long orderId);
 }

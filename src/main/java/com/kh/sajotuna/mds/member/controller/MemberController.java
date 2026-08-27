@@ -14,9 +14,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
-import com.kh.sajotuna.mds.member.model.dto.CartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.WishDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
 import com.kh.sajotuna.mds.util.SessionConst;
 import com.kh.sajotuna.mds.util.dto.ApiResponse;
@@ -46,8 +47,6 @@ public class MemberController {
 	
 	@GetMapping("/myPage")
 	public String myPageForm(HttpSession session, Model model) {
-		
-		System.out.println("=== 마이페이지 컨트롤러 진입 성공 ===");
 		
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 		model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
@@ -84,7 +83,7 @@ public class MemberController {
 		
 		if(member.getRole().equals("USER")) {
 			model.addAttribute("wishList", (service.listWish(member.getMemberId())));
-			System.out.println("찜하기용 모델로 저장" + (List<WishDTO>)model.getAttribute("wishList")); // 추적용 출력
+			System.out.println("찜하기용 모델로 저장" + (List<MyPageWishDTO>)model.getAttribute("wishList")); // 추적용 출력
 			return "member/wish"; 
 		}  else {
 			return "member/admin"; // 관리자용 주소 나중에 확인
@@ -97,11 +96,10 @@ public class MemberController {
 	public String cartForm(HttpSession session, Model model) {
 		
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-		
-		
+				
 		if(member.getRole().equals("USER")) {
 			model.addAttribute("cartList", (service.listCart(member.getMemberId())));
-			System.out.println("장바구니용 모델로 저장" + (List<CartDTO>)model.getAttribute("cartList")); // 추적용 출력
+			System.out.println("장바구니용 모델로 저장" + (List<MyPageCartDTO>)model.getAttribute("cartList")); // 추적용 출력
 			return "member/cart"; 
 		}  else {
 			return "member/admin..."; // 관리자용 주소 나중에 확인
@@ -117,7 +115,8 @@ public class MemberController {
 		
 		
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("DeliveryList", (service.listDelivery(member.getMemberId())));
+			model.addAttribute("deliveryList", (service.listDelivery(member.getMemberId())));
+			System.out.println("배송관리 모델로 저장" + (List<MyPageDeliveryDTO>)model.getAttribute("deliveryList")); // 추적용 출력
 			return "member/orderDelivery"; 
 		}  else {
 			return "member/adminOrderDelivery"; 
@@ -223,7 +222,7 @@ public class MemberController {
 		if(session != null) {
 			session.invalidate();
 		}
-		
+		System.out.println("로그아웃 완료");
 		return "redirect:/";
 	}
 }

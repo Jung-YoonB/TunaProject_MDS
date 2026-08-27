@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.sajotuna.mds.coupon.model.dto.CouponDTO;
-import com.kh.sajotuna.mds.member.model.dto.CartDTO;
-import com.kh.sajotuna.mds.member.model.dto.DeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.WishDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -106,30 +106,33 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
-	public List<WishDTO> listWish(Long memberId) {
-		List<WishDTO> wishList = mapper.selectWishesByMemberId(memberId);
+	public List<MyPageWishDTO> listWish(Long memberId) {
+		List<MyPageWishDTO> wishList = mapper.selectWishesByMemberId(memberId);
 		
 		return wishList;
 	}
 	
 	@Override
-	public List<CartDTO> listCart(Long memberId) {
-		List<CartDTO> cartList = mapper.selectCartsByMemberId(memberId);
+	public List<MyPageCartDTO> listCart(Long memberId) {
+		List<MyPageCartDTO> cartList = mapper.selectCartsByMemberId(memberId);
 		
 		return cartList;
 	}
 
 	@Override
-	public List<DeliveryDTO> listDelivery(Long memberId) {
-		List<DeliveryDTO> deliveryList = mapper.selectDeliveriesByMemberId(memberId);
+	public List<MyPageDeliveryDTO> listDelivery(Long memberId) {
+		List<MyPageDeliveryDTO> deliveryList = mapper.selectDeliveriesByMemberId(memberId);
 		
-		for(DeliveryDTO list : deliveryList) {
-			DeliveryDTO productInfo = mapper.selectProductByOrderId(list.getOrderId());
+		for(MyPageDeliveryDTO list : deliveryList) {
+			MyPageDeliveryDTO productInfo = mapper.selectProductByOrderId(list.getOrderId());
 			if (productInfo != null) {
 				list.setProductName(productInfo.getProductName());
 				list.setProductImagePath(productInfo.getProductImagePath());
-			} else {
-				//TODO : 만약 상품 정보가 null일 경우 대비
+				list.setProductImageSaveName(productInfo.getProductImageSaveName());
+			} else { // 대표 상품 정보가 누락되거나 문제가 생겨 null로 들어올 때를 대비 
+				list.setProductName("상품 정보 없음");
+				list.setProductImagePath("/upload/product/");
+				list.setProductImageSaveName(""); // TODO: 상품 이미지 없을 때를 대비한 no-image.png 만들면 추후 수정
 			}
 		}
 		
