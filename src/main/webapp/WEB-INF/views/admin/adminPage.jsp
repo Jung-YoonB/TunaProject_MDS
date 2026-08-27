@@ -1,3 +1,6 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -9,10 +12,12 @@
     <title>관리자 마이페이지</title>
 
     <!-- 공통 CSS -->
-    <link rel="stylesheet" href="/css/default.css">
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/default.css">
 
     <!-- 관리자 마이페이지 전용 CSS -->
-    <link rel="stylesheet" href="/css/style_admin_mypage.css">
+    <link rel="stylesheet"
+          href="${pageContext.request.contextPath}/css/style_admin_mypage.css">
 
 </head>
 
@@ -61,7 +66,7 @@
                 <li>
                     <!-- 상품 관리: 관리자 상품 "목록" 화면은 아직 없어, 가장 가까운 기존 화면인
                          상품 등록 폼으로 연결 -->
-                    <a class="quick-menu-tile" href="/temp/registerProduct.html">
+                    <a class="quick-menu-tile" href="<c:url value='/temp/registerProduct.html'/>">
                         <span class="quick-menu-icon">
                             <svg viewBox="0 0 24 24" focusable="false">
                                 <path d="M4 7l8-4 8 4v10l-8 4-8-4V7z"/>
@@ -73,7 +78,7 @@
                     </a>
                 </li>
                 <li>
-                    <a class="quick-menu-tile" href="/temp/adminOrderDelivery.html">
+                    <a class="quick-menu-tile" href="<c:url value='/temp/adminOrderDelivery.html'/>">
                         <span class="quick-menu-icon">
                             <svg viewBox="0 0 24 24" focusable="false">
                                 <path d="M3 7h11v8H3z"/>
@@ -86,7 +91,7 @@
                     </a>
                 </li>
                 <li>
-                    <a class="quick-menu-tile" href="/temp/couponView.html">
+                    <a class="quick-menu-tile" href="<c:url value='/temp/couponView.html'/>">
                         <span class="quick-menu-icon">
                             <svg viewBox="0 0 24 24" focusable="false">
                                 <path d="M12.59 3.41 20 10.83a2 2 0 0 1 0 2.83l-6.34 6.34a2 2 0 0 1-2.83 0L3 12.17V5a2 2 0 0 1 2-2h7.59a2 2 0 0 1 1.41.41Z"/>
@@ -122,8 +127,8 @@
                         </svg>
                     </button>
                     <ul class="accordion-panel" hidden>
-                        <li><a href="/temp/registerProduct.html">상품등록</a></li>
-                        <li><a href="/temp/adminOrderDelivery.html">주문 배송 관리</a></li>
+                        <li><a href="<c:url value='/temp/registerProduct.html'/>">상품등록</a></li>
+                        <li><a href="<c:url value='/temp/adminOrderDelivery.html'/>">주문 배송 관리</a></li>
                     </ul>
                 </li>
                 <li class="accordion-item">
@@ -134,7 +139,7 @@
                         </svg>
                     </button>
                     <ul class="accordion-panel" hidden>
-                        <li><a href="/temp/couponView.html">쿠폰 조회 및 등록</a></li>
+                        <li><a href="<c:url value='/temp/couponView.html'/>">쿠폰 조회 및 등록</a></li>
                     </ul>
                 </li>
                 <li class="accordion-item">
@@ -155,7 +160,7 @@
 
     </main>
 
-    <!-- TODO(data binding): Member 테이블 연동 필요.
+    <%-- TODO(data binding): Member 테이블 연동 필요.
          현재는 로그인 세션 없이 관리자 1인 목업 값을 하드코딩.
          - 프로필 카드는 "이름"과 "아이디" 2개 항목만 표시함(닉네임/이메일/휴대폰 번호는 제거).
            이름: Member.member_name, 아이디: Member.login_id
@@ -171,7 +176,7 @@
            연결됨 — 목업 아님. "문의내역" 상위탭의 하위탭(문의사항 처리/공지 작성)은 대응 화면이
            프로젝트에 없어 href="#" 임시 처리(추후 실제 화면/컨트롤러 구현 필요).
          - 이전에 있던 "관리자 권한 정보"/"계정 관리"(로그아웃 포함)/"관리자 최근 활동 내역" 카드는
-           사용자 요청에 따라 이번 레이아웃 개편에서 완전히 제거됨. -->
+           사용자 요청에 따라 이번 레이아웃 개편에서 완전히 제거됨. --%>
     <script>
     (function () {
         // TODO(data binding): memberName/loginId만 Member 테이블에 실제 컬럼이 존재함.
