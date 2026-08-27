@@ -160,7 +160,7 @@ body {
     flex: 1;
 }
 
-#CheckId {
+.CheckBox {
     width: 90px;
     height: 45px;
     border: 1px solid #b59b7b;
