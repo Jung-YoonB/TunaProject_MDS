@@ -612,6 +612,12 @@
     color: #222;
 }
 
+.order-delivery-page .product-option {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: #888;
+}
+
 .order-delivery-page .product-detail {
     margin: 0;
     font-size: 13px;
