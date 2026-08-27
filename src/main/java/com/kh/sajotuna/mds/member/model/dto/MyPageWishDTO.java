@@ -1,5 +1,7 @@
 package com.kh.sajotuna.mds.member.model.dto;
 
+import org.apache.ibatis.type.Alias;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +13,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Getter
 @Setter
+@Alias("MyPageWishDTO")
 public class MyPageWishDTO {
 	
 	
