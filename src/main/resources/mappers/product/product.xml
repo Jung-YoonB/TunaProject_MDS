@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.kh.sajotuna.mds.product.model.mapper.ProductMapper">
+
+	<select id="getList" resultType="ProductListDTO">
+    SELECT 
+    P.PRODUCT_ID,            
+    P.PRODUCT_TITLE,
+    COUNT(DISTINCT W.WISH_ID), 
+    PI.PRODUCT_IMAGE_SAVE_NAME AS TITLE_IMAGE, 
+    MIN(PO.OPTION_PRICE) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS PRICE,
+    NVL((SELECT ROUND(AVG(R.SCORE), 1) FROM REVIEW R 
+    JOIN OPTIONDETAIL SUB_OD ON R.OD_ID = SUB_OD.POP_ID 
+        WHERE SUB_OD.PRODUCT_ID = P.PRODUCT_ID
+    ), 0.0) AS SCORE
+FROM PRODUCT P 
+JOIN CATEGORYDETAIL CD ON P.PRODUCT_ID = CD.PRODUCT_ID
+JOIN CATEGORY C ON CD.CATEGORY_ID = C.CATEGORY_ID
+JOIN OPTIONDETAIL OD ON P.PRODUCT_ID = OD.PRODUCT_ID
+JOIN PRODUCTOPTION PO ON OD.OPTION_ID = PO.OPTION_ID
+LEFT JOIN PRODUCTIMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID AND PI.PRODUCT_TITLE_IMAGE = 0
+LEFT JOIN WISH W ON P.PRODUCT_ID = W.PRODUCT_ID
+GROUP BY 
+    P.PRODUCT_ID,            
+    P.PRODUCT_TITLE,
+    PI.PRODUCT_IMAGE_SAVE_NAME
+ORDER BY COUNT(DISTINCT W.WISH_ID) DESC
+	</select>
+	
+	<select id="bannerList" resultType="BannerDTO">
+	select product_image_save_name
+	from productimage
+	where productimage.product_title_image = 0
+	</select>
+	
+	<select id="categoryList" resultType="CategoryDTO">
+		select category_name from category
+	</select>
+</mapper>
