@@ -72,11 +72,7 @@
 		</div>
 	
 	</header>
-<<<<<<< HEAD
-	<main>
-=======
 
 	<script src="/js/common/header.js"></script>
 
 	<main>
->>>>>>> Product_branch

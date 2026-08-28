@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.review.model.dto.ReviewWriteInfoDTO;
 import com.kh.sajotuna.mds.review.model.service.ReviewService;
 import com.kh.sajotuna.mds.util.SessionConst;
@@ -27,7 +28,8 @@ public class ReviewController {
 
 	@GetMapping("/write")
 	public String writeForm(@RequestParam Long odId, HttpSession session, Model model, RedirectAttributes redirectAttr) {
-		Long memberId = (Long) session.getAttribute(SessionConst.LOGIN_MEMBER);
+		MemberDTO loginMember = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+		Long memberId = (loginMember != null) ? loginMember.getMemberId() : null;
 		if (memberId == null) {
 			redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 			return "redirect:/member/login";
@@ -51,7 +53,8 @@ public class ReviewController {
 						@RequestParam(name = "reviewImages", required = false) List<MultipartFile> reviewImages,
 						HttpSession session,
 						RedirectAttributes redirectAttr) {
-		Long memberId = (Long) session.getAttribute(SessionConst.LOGIN_MEMBER);
+		MemberDTO loginMember = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+		Long memberId = (loginMember != null) ? loginMember.getMemberId() : null;
 		if (memberId == null) {
 			redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 			return "redirect:/member/login";
