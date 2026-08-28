@@ -64,9 +64,7 @@
             <h2 class="section-title">빠른 메뉴</h2>
             <ul class="quick-menu-grid">
                 <li>
-                    <!-- 상품 관리: 관리자 상품 "목록" 화면은 아직 없어, 가장 가까운 기존 화면인
-                         상품 등록 폼으로 연결 -->
-                    <a class="quick-menu-tile" href="<c:url value='/temp/registerProduct.html'/>">
+                    <a class="quick-menu-tile" href="<c:url value='/admin/product/add'/>">
                         <span class="quick-menu-icon">
                             <svg viewBox="0 0 24 24" focusable="false">
                                 <path d="M4 7l8-4 8 4v10l-8 4-8-4V7z"/>
@@ -78,7 +76,7 @@
                     </a>
                 </li>
                 <li>
-                    <a class="quick-menu-tile" href="<c:url value='/temp/adminOrderDelivery.html'/>">
+                    <a class="quick-menu-tile" href="<c:url value='/admin/order'/>">
                         <span class="quick-menu-icon">
                             <svg viewBox="0 0 24 24" focusable="false">
                                 <path d="M3 7h11v8H3z"/>
@@ -91,7 +89,7 @@
                     </a>
                 </li>
                 <li>
-                    <a class="quick-menu-tile" href="<c:url value='/temp/couponView.html'/>">
+                    <a class="quick-menu-tile" href="<c:url value='/admin/coupon'/>">
                         <span class="quick-menu-icon">
                             <svg viewBox="0 0 24 24" focusable="false">
                                 <path d="M12.59 3.41 20 10.83a2 2 0 0 1 0 2.83l-6.34 6.34a2 2 0 0 1-2.83 0L3 12.17V5a2 2 0 0 1 2-2h7.59a2 2 0 0 1 1.41.41Z"/>
@@ -127,8 +125,8 @@
                         </svg>
                     </button>
                     <ul class="accordion-panel" hidden>
-                        <li><a href="<c:url value='/temp/registerProduct.html'/>">상품등록</a></li>
-                        <li><a href="<c:url value='/temp/adminOrderDelivery.html'/>">주문 배송 관리</a></li>
+                        <li><a href="<c:url value='/admin/product/add'/>">상품등록</a></li>
+                        <li><a href="<c:url value='/admin/order'/>">주문 배송 관리</a></li>
                     </ul>
                 </li>
                 <li class="accordion-item">
@@ -139,7 +137,7 @@
                         </svg>
                     </button>
                     <ul class="accordion-panel" hidden>
-                        <li><a href="<c:url value='/temp/couponView.html'/>">쿠폰 조회 및 등록</a></li>
+                        <li><a href="<c:url value='/admin/coupon'/>">쿠폰 조회 및 등록</a></li>
                     </ul>
                 </li>
                 <li class="accordion-item">
@@ -167,9 +165,9 @@
            (role='ADMIN'인 로그인 세션의 Member row 1건 기준으로 바인딩 필요).
            표시값은 실제 인물명이 아닌 "관리자"로 일반화했고, 아이디는 실제 시드 계정 값인 "admin"과
            일치시킴 — 실제 자격증명(비밀번호 등)은 화면에 노출하지 않음.
-         - 빠른 메뉴(4타일): 주문·배송 관리/쿠폰 관리는 이미 존재하는 형제 화면(정적 프로토타입)에
-           연결됨 — 목업 아님. 상품 관리는 대응하는 "목록" 화면이 아직 없어 가장 가까운 기존 화면인
-           상품 등록 폼(registerProduct.html)으로 연결. 문의 내역은 대응 화면이 없어 href="#" 처리.
+         - 빠른 메뉴(4타일): 상품 관리/주문·배송 관리/쿠폰 관리는 admin 패키지 컨트롤러(/admin/product/add,
+           /admin/order, /admin/coupon)로 연결됨 — resources/static/temp/*.html 정적 프로토타입은 더 이상
+           사용하지 않음. 문의 내역은 대응 화면이 없어 href="#" 처리.
          - 일반 메뉴(아코디언): 상위탭은 펼침/접힘 제목일 뿐 그 자체는 페이지로 이동하지 않으며,
            실제 페이지 이동은 하위탭에서만 발생함. "상품관리" 상위탭의 하위탭(상품등록/주문 배송
            관리)과 "쿠폰 조회 및 등록" 상위탭의 하위탭(쿠폰 조회 및 등록 1건)은 각각 기존 화면으로

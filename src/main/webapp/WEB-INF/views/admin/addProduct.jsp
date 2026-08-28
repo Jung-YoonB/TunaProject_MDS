@@ -88,6 +88,7 @@
                     <input
                         type="text"
                         name="productName"
+                        id="productNameInput"
                         placeholder="상품명을 입력해 주세요"
                     >
                 </div>
@@ -106,7 +107,30 @@
                     <input
                         type="number"
                         name="price"
+                        id="priceInput"
                         placeholder="판매가격을 입력해 주세요"
+                        min="0"
+                    >
+                </div>
+            </div>
+
+
+            <!-- 임시: 재고 입력 필드 (원래 addProduct.jsp에는 없던 필드.
+                 PRODUCT 테이블엔 가격/재고 컬럼이 없고 PRODUCTOPTION(옵션)에 있어서,
+                 상품 등록 시 이 값으로 "기본 옵션" 1개를 자동 생성해 가격/재고를 담는다) -->
+            <div class="form-row">
+                <label>
+                    재고
+                    <span class="required">*</span>
+                </label>
+
+                <div class="input-area">
+                    <input
+                        type="number"
+                        name="stock"
+                        id="stockInput"
+                        placeholder="재고 수량을 입력해 주세요"
+                        min="0"
                     >
                 </div>
             </div>
@@ -121,12 +145,11 @@
                 </label>
 
                 <div class="input-area">
-                    <select name="category">
+                    <select name="category" id="categorySelect">
                         <option value="">카테고리를 선택해 주세요</option>
-                        <option value="holiday">명절선물</option>
-                        <option value="parents">부모님 선물</option>
-                        <option value="birthday">생일 선물</option>
-                        <option value="thanks">감사 선물</option>
+                        <c:forEach items="${categoryList}" var="category">
+                            <option value="${category.categoryId}">${category.categoryName}</option>
+                        </c:forEach>
                     </select>
                 </div>
             </div>
@@ -156,55 +179,17 @@
 
                         <div class="tag-list" id="existingTagList">
 
-                            <div
-                                class="product-tag"
-                                data-tag-name="1만원대 선물"
-                                data-tag-color="#FFD1DC"
-                                style="background-color:#FFD1DC"
-                            >
-                                <span>1만원대 선물</span>
-                                <button type="button" class="tag-remove">×</button>
-                            </div>
-
-                            <div
-                                class="product-tag"
-                                data-tag-name="2만원대 선물"
-                                data-tag-color="#FFE5CC"
-                                style="background-color:#FFE5CC"
-                            >
-                                <span>2만원대 선물</span>
-                                <button type="button" class="tag-remove">×</button>
-                            </div>
-
-                            <div
-                                class="product-tag"
-                                data-tag-name="3만원대 선물"
-                                data-tag-color="#D0F0C0"
-                                style="background-color:#D0F0C0"
-                            >
-                                <span>3만원대 선물</span>
-                                <button type="button" class="tag-remove">×</button>
-                            </div>
-
-                            <div
-                                class="product-tag"
-                                data-tag-name="5만원대 선물"
-                                data-tag-color="#D4E6F1"
-                                style="background-color:#D4E6F1"
-                            >
-                                <span>5만원대 선물</span>
-                                <button type="button" class="tag-remove">×</button>
-                            </div>
-
-                            <div
-                                class="product-tag"
-                                data-tag-name="20대에게 인기 선물"
-                                data-tag-color="#E8DAEF"
-                                style="background-color:#E8DAEF"
-                            >
-                                <span>20대에게 인기 선물</span>
-                                <button type="button" class="tag-remove">×</button>
-                            </div>
+                            <c:forEach items="${tagList}" var="tag">
+                                <div
+                                    class="product-tag"
+                                    data-tag-name="${tag.tagName}"
+                                    data-tag-color="${tag.tagColor}"
+                                    style="background-color:${tag.tagColor}"
+                                >
+                                    <span>${tag.tagName}</span>
+                                    <button type="button" class="tag-remove">×</button>
+                                </div>
+                            </c:forEach>
 
                         </div>
                     </div>
@@ -284,54 +269,51 @@
             </div>
 
 
-            <!-- 추가 이미지 -->
+            <!-- 추가 이미지 (개수 제한 없음 - "+ 이미지 추가" 타일로 계속 첨부 가능) -->
 
             <div class="sub-image-area">
 
                 <div class="sub-image-title">
                     <strong>추가 이미지</strong>
-                    <span>최대 6장</span>
+                    <span id="subImageCount">0장</span>
                 </div>
 
-                <div class="sub-image-grid">
+                <div class="sub-image-grid" id="subImageGrid">
 
-                    <label class="sub-image-box" for="sub-image-1">
+                    <label class="sub-image-box" id="subImageAddTile">
                         <span>＋</span>
-                        <small>이미지 1</small>
+                        <small>이미지 추가</small>
                     </label>
-                    <input type="file" id="sub-image-1" name="subImages" accept="image/*" hidden>
-
-                    <label class="sub-image-box" for="sub-image-2">
-                        <span>＋</span>
-                        <small>이미지 2</small>
-                    </label>
-                    <input type="file" id="sub-image-2" name="subImages" accept="image/*" hidden>
-
-                    <label class="sub-image-box" for="sub-image-3">
-                        <span>＋</span>
-                        <small>이미지 3</small>
-                    </label>
-                    <input type="file" id="sub-image-3" name="subImages" accept="image/*" hidden>
-
-                    <label class="sub-image-box" for="sub-image-4">
-                        <span>＋</span>
-                        <small>이미지 4</small>
-                    </label>
-                    <input type="file" id="sub-image-4" name="subImages" accept="image/*" hidden>
-
-                    <label class="sub-image-box" for="sub-image-5">
-                        <span>＋</span>
-                        <small>이미지 5</small>
-                    </label>
-                    <input type="file" id="sub-image-5" name="subImages" accept="image/*" hidden>
-
-                    <label class="sub-image-box" for="sub-image-6">
-                        <span>＋</span>
-                        <small>이미지 6</small>
-                    </label>
-                    <input type="file" id="sub-image-6" name="subImages" accept="image/*" hidden>
 
                 </div>
+
+                <input type="file" id="subImageInput" accept="image/*" multiple hidden>
+
+            </div>
+
+
+            <!-- 임시: 설명 이미지 업로드 영역 (원래 addProduct.jsp에는 없던 영역.
+                 PRODUCTIMAGE.PRODUCT_TITLE_IMAGE가 0(대표)/1(서브)/2(설명) 세 종류를
+                 지원하도록 스키마는 열려 있으나, 이 화면엔 대표/추가 이미지만 있어서 추가함) -->
+
+            <div class="sub-image-area">
+
+                <div class="sub-image-title">
+                    <strong>설명 이미지</strong>
+                    <span id="descImageCount">0장</span>
+                </div>
+
+                <div class="sub-image-grid" id="descImageGrid">
+
+                    <label class="sub-image-box" id="descImageAddTile">
+                        <span>＋</span>
+                        <small>이미지 추가</small>
+                    </label>
+
+                </div>
+
+                <input type="file" id="descImageInput" accept="image/*" multiple hidden>
+
             </div>
 
         </div>
@@ -967,6 +949,92 @@ textarea.addEventListener("input", function(){
 
 
 /* ==================================================
+   추가 이미지 / 설명 이미지 (개수 제한 없는 동적 업로드)
+   ================================================== */
+
+let subImageFiles = [];
+let descImageFiles = [];
+
+function createImageSlot(file, onRemove){
+
+    const box = document.createElement("div");
+    box.className = "sub-image-box sub-image-preview";
+    box.style.position = "relative";
+    box.style.overflow = "hidden";
+
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    img.alt = file.name;
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "cover";
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "tag-remove sub-image-remove";
+    removeButton.textContent = "×";
+    removeButton.style.position = "absolute";
+    removeButton.style.top = "4px";
+    removeButton.style.right = "4px";
+    removeButton.addEventListener("click", function(event){
+        event.preventDefault();
+        event.stopPropagation();
+        onRemove();
+    });
+
+    box.appendChild(img);
+    box.appendChild(removeButton);
+
+    return box;
+}
+
+function renderImageList(files, gridEl, addTileEl, countEl){
+
+    gridEl.querySelectorAll(".sub-image-preview img").forEach(function(img){
+        URL.revokeObjectURL(img.src);
+    });
+
+    gridEl.querySelectorAll(".sub-image-preview").forEach(function(el){
+        el.remove();
+    });
+
+    files.forEach(function(file, index){
+        const slot = createImageSlot(file, function(){
+            files.splice(index, 1);
+            renderImageList(files, gridEl, addTileEl, countEl);
+        });
+        gridEl.insertBefore(slot, addTileEl);
+    });
+
+    countEl.textContent = files.length + "장";
+}
+
+function setupImageUploader(addTileId, inputId, gridId, countId, filesArray){
+
+    const addTile = document.getElementById(addTileId);
+    const input = document.getElementById(inputId);
+    const grid = document.getElementById(gridId);
+    const count = document.getElementById(countId);
+
+    addTile.addEventListener("click", function(event){
+        event.preventDefault();
+        input.click();
+    });
+
+    input.addEventListener("change", function(event){
+        for(const file of event.target.files){
+            filesArray.push(file);
+        }
+        event.target.value = "";
+        renderImageList(filesArray, grid, addTile, count);
+    });
+}
+
+setupImageUploader("subImageAddTile", "subImageInput", "subImageGrid", "subImageCount", subImageFiles);
+setupImageUploader("descImageAddTile", "descImageInput", "descImageGrid", "descImageCount", descImageFiles);
+
+
+/* ==================================================
    취소
    ================================================== */
 
@@ -980,7 +1048,7 @@ document
 
 
 /* ==================================================
-   상품 등록 테스트
+   상품 등록
    ================================================== */
 
 document
@@ -989,6 +1057,40 @@ document
 
 
 function registerProduct(){
+
+    const productName = document.getElementById("productNameInput").value.trim();
+    const price = document.getElementById("priceInput").value;
+    const stock = document.getElementById("stockInput").value;
+    const categoryId = document.getElementById("categorySelect").value;
+    const productContent = document.getElementById("productContent").value;
+    const mainImageInput = document.getElementById("main-image");
+
+    if(!productName){
+        alert("상품명을 입력해 주세요.");
+        return;
+    }
+    if(!price){
+        alert("판매가격을 입력해 주세요.");
+        return;
+    }
+    if(!stock){
+        alert("재고를 입력해 주세요.");
+        return;
+    }
+    if(!categoryId){
+        alert("카테고리를 선택해 주세요.");
+        return;
+    }
+    if(!mainImageInput.files[0]){
+        alert("대표 이미지를 등록해 주세요.");
+        return;
+    }
+    if(!productContent.trim()){
+        // PRODUCT_CONTENT는 NOT NULL 컬럼이고, Oracle은 빈 문자열을 NULL로 취급해서
+        // 비워둔 채 등록하면 DB 제약조건 위반으로 실패한다.
+        alert("상품 설명을 입력해 주세요.");
+        return;
+    }
 
     const tagData = [];
 
@@ -1011,30 +1113,43 @@ function registerProduct(){
         }
     });
 
+    const formData = new FormData();
+    formData.append("productName", productName);
+    formData.append("price", price);
+    formData.append("stock", stock);
+    formData.append("categoryId", categoryId);
+    formData.append("productContent", productContent);
+    formData.append("tagsJson", JSON.stringify(tagData));
+    formData.append("mainImage", mainImageInput.files[0]);
 
-    console.log(
-        "선택된 상품 태그:",
-        tagData
-    );
-
-
-    let result = "";
-
-    tagData.forEach(function(tag){
-
-        result +=
-            tag.tagName +
-            " (" +
-            tag.tagColor +
-            ")\n";
+    subImageFiles.forEach(function(file){
+        formData.append("subImages", file);
     });
 
+    descImageFiles.forEach(function(file){
+        formData.append("descriptionImages", file);
+    });
 
-    alert(
-        "상품 등록 기능 테스트입니다.\n\n" +
-        "선택된 태그:\n" +
-        (result ? result : "없음")
-    );
+    const registerButton = document.getElementById("registerButton");
+    registerButton.disabled = true;
+
+    fetch("<c:url value='/admin/product/add'/>", {
+        method: "POST",
+        body: formData
+    })
+        .then(function(response){ return response.json(); })
+        .then(function(result){
+            alert(result.message || (result.success ? "상품이 등록되었습니다." : "상품 등록에 실패했습니다."));
+            if(result.success){
+                location.href = "<c:url value='/admin/product/add'/>";
+            }
+        })
+        .catch(function(){
+            alert("상품 등록 중 오류가 발생했습니다.");
+        })
+        .finally(function(){
+            registerButton.disabled = false;
+        });
 }
 
 

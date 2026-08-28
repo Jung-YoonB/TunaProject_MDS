@@ -118,32 +118,10 @@
 
     </main>
 
-    <%-- TODO(data binding): ProductOrder/Delivery/OrderDetail/Product/Member 테이블 연동 필요.
-         현재는 테스트용 예시 주문 18건을 하드코딩.
-         - orderId: ProductOrder.order_id (실제 PK는 NUMBER 시퀀스. 'YYYYMMDD-NNN' 표기는
-           프론트 목업 전용 표시 형식이며 실제 바인딩 시 별도 포맷팅 로직 필요)
-         - orderDate: ProductOrder.order_date
-         - ordererName: Member.member_name / Member.nickname
-         - productName, qty: Product.product_name, OrderDetail.qty
-           (한 주문에 상품이 여러 건일 수 있으나 목업은 대표 상품 1건만 표시)
-         - paymentAmount: ProductOrder.total_price
-         - orderStatus(주문 상태 필터): ProductOrder.order_status
-           (payment_waiting/payment_completed/preparing/shipped/delivered/canceled.
-            cart 상태는 아직 주문이 확정되지 않은 상태이므로 관리자 화면 필터에서 제외)
-         - deliveryStatus(진행 현황 드롭다운): Delivery.delivery_status
-           (preparing/shipped/out_for_delivery/delivered/canceled — order_status와는
-            별개의 테이블/enum이므로 혼동하지 않도록 주의)
-         - trackingNo: Delivery.tracking_no
-         - paymentStatus(결제 상태 필터 + 표 내 결제 상태 배지): DB에 별도 컬럼 없음.
-           order_status에서 파생한 목업 전용 값(payment_waiting→결제대기, 그 외→결제완료)이며
-           실제로는 재설계 필요
-         - 저장 시 확인 팝업: window.confirm()으로만 처리하는 프론트 전용 목업. 실제로는
-           서버 응답/실패 처리까지 포함한 별도 확인 UX 설계 필요
-         - 대시보드 요약 카운트(신규 주문/배송 준비중/배송중/취소·환불): 실제로는 상태별
-           COUNT(*) 집계 쿼리 결과. 현재는 고정 목업 수치이며 표에 보이는 표본 건수와 무관
-         - 저장 버튼: 현재는 시각적 확인만 수행(no-op). 실제로는 PUT/POST로
-           Delivery.delivery_status, Delivery.tracking_no 갱신 필요
-         - 페이지네이션: 정적 목업. 실제로는 페이징 쿼리 필요 --%>
+    <%-- 데이터 연동 완료: GET /admin/order/list (주문 목록 + 요약 카운트), POST /admin/order/delivery/{orderId}
+         (배송 상태/송장번호 저장). 대표 상품/건수는 ORDERDETAIL 중 가장 먼저 담긴 1건 기준이며,
+         orderId는 주문 PK(NUMBER)를 그대로 표시한다(목업의 'YYYYMMDD-NNN' 표기는 사용하지 않음).
+         조회 기간/검색어 필터는 기존처럼 프론트에서 클라이언트 필터링한다. --%>
     <script>
     (function () {
         var STATUS_LABEL = {
@@ -155,30 +133,8 @@
         };
         var STATUS_ORDER = ['preparing', 'shipped', 'out_for_delivery', 'delivered', 'canceled'];
 
-        var ORDERS = [
-            { orderId: '20260915-001', orderDateISO: '2026-09-15', orderDateDisplay: '2026.09.15 09:12', ordererName: '홍길동', productName: '프리미엄 한우 선물세트', qty: 1, paymentAmount: 129000, orderStatus: 'payment_completed', deliveryStatus: 'preparing', trackingNo: '' },
-            { orderId: '20260914-002', orderDateISO: '2026-09-14', orderDateDisplay: '2026.09.14 14:05', ordererName: '김민지', productName: '전통 과일 선물세트', qty: 2, paymentAmount: 118000, orderStatus: 'preparing', deliveryStatus: 'preparing', trackingNo: '' },
-            { orderId: '20260913-003', orderDateISO: '2026-09-13', orderDateDisplay: '2026.09.13 11:47', ordererName: '이수정', productName: '프리미엄 견과 선물세트', qty: 1, paymentAmount: 75000, orderStatus: 'shipped', deliveryStatus: 'shipped', trackingNo: '6123456789' },
-            { orderId: '20260912-004', orderDateISO: '2026-09-12', orderDateDisplay: '2026.09.12 16:30', ordererName: '박지훈', productName: '코코도르 그란데 디퓨저', qty: 1, paymentAmount: 25800, orderStatus: 'shipped', deliveryStatus: 'shipped', trackingNo: '6123456790' },
-            { orderId: '20260911-005', orderDateISO: '2026-09-11', orderDateDisplay: '2026.09.11 10:05', ordererName: '최윤아', productName: '놋향 방짜유기 수저세트', qty: 2, paymentAmount: 85800, orderStatus: 'shipped', deliveryStatus: 'out_for_delivery', trackingNo: '9988776655' },
-            { orderId: '20260910-006', orderDateISO: '2026-09-10', orderDateDisplay: '2026.09.10 13:20', ordererName: '정하늘', productName: '프리미엄 한우 선물세트', qty: 1, paymentAmount: 129000, orderStatus: 'shipped', deliveryStatus: 'out_for_delivery', trackingNo: '9988776656' },
-            { orderId: '20260909-007', orderDateISO: '2026-09-09', orderDateDisplay: '2026.09.09 09:55', ordererName: '오세훈', productName: '전통 과일 선물세트', qty: 1, paymentAmount: 59000, orderStatus: 'delivered', deliveryStatus: 'delivered', trackingNo: '5566778899' },
-            { orderId: '20260908-008', orderDateISO: '2026-09-08', orderDateDisplay: '2026.09.08 15:10', ordererName: '강수진', productName: '프리미엄 견과 선물세트', qty: 2, paymentAmount: 150000, orderStatus: 'delivered', deliveryStatus: 'delivered', trackingNo: '5566778900' },
-            { orderId: '20260907-009', orderDateISO: '2026-09-07', orderDateDisplay: '2026.09.07 12:00', ordererName: '윤도현', productName: '코코도르 그란데 디퓨저', qty: 1, paymentAmount: 25800, orderStatus: 'delivered', deliveryStatus: 'delivered', trackingNo: '5566778901' },
-            { orderId: '20260906-010', orderDateISO: '2026-09-06', orderDateDisplay: '2026.09.06 17:42', ordererName: '한지민', productName: '놋향 방짜유기 수저세트', qty: 1, paymentAmount: 42900, orderStatus: 'delivered', deliveryStatus: 'delivered', trackingNo: '5566778902' },
-            { orderId: '20260905-011', orderDateISO: '2026-09-05', orderDateDisplay: '2026.09.05 08:30', ordererName: '서동현', productName: '프리미엄 한우 선물세트', qty: 2, paymentAmount: 258000, orderStatus: 'delivered', deliveryStatus: 'delivered', trackingNo: '5566778903' },
-            { orderId: '20260904-012', orderDateISO: '2026-09-04', orderDateDisplay: '2026.09.04 11:15', ordererName: '임서연', productName: '전통 과일 선물세트', qty: 1, paymentAmount: 59000, orderStatus: 'canceled', deliveryStatus: 'canceled', trackingNo: '' },
-            { orderId: '20260903-013', orderDateISO: '2026-09-03', orderDateDisplay: '2026.09.03 14:48', ordererName: '조현우', productName: '프리미엄 견과 선물세트', qty: 1, paymentAmount: 75000, orderStatus: 'canceled', deliveryStatus: 'canceled', trackingNo: '' },
-            { orderId: '20260902-014', orderDateISO: '2026-09-02', orderDateDisplay: '2026.09.02 10:22', ordererName: '배수아', productName: '코코도르 그란데 디퓨저', qty: 2, paymentAmount: 51600, orderStatus: 'payment_completed', deliveryStatus: 'preparing', trackingNo: '' },
-            { orderId: '20260901-015', orderDateISO: '2026-09-01', orderDateDisplay: '2026.09.01 09:05', ordererName: '남궁민', productName: '놋향 방짜유기 수저세트', qty: 1, paymentAmount: 42900, orderStatus: 'preparing', deliveryStatus: 'preparing', trackingNo: '' },
-            { orderId: '20260831-016', orderDateISO: '2026-08-31', orderDateDisplay: '2026.08.31 16:00', ordererName: '유지혜', productName: '프리미엄 한우 선물세트', qty: 1, paymentAmount: 129000, orderStatus: 'shipped', deliveryStatus: 'shipped', trackingNo: '6123456791' },
-            { orderId: '20260830-017', orderDateISO: '2026-08-30', orderDateDisplay: '2026.08.30 13:33', ordererName: '문가영', productName: '전통 과일 선물세트', qty: 3, paymentAmount: 177000, orderStatus: 'shipped', deliveryStatus: 'out_for_delivery', trackingNo: '9988776657' },
-            { orderId: '20260829-018', orderDateISO: '2026-08-29', orderDateDisplay: '2026.08.29 09:47', ordererName: '신동엽', productName: '프리미엄 견과 선물세트', qty: 1, paymentAmount: 75000, orderStatus: 'payment_waiting', deliveryStatus: 'preparing', trackingNo: '' }
-        ];
-
-        // 대시보드 요약치는 ORDERS 표본(18건)과는 독립된 전체 집계 목업 값.
-        // 실제로는 상태별 COUNT(*) 집계 쿼리 결과.
-        var SUMMARY_COUNTS = { newOrders: 12, preparing: 45, shipped: 128, canceled: 3 };
+        var ORDERS = [];
+        var SUMMARY_COUNTS = { newOrders: 0, preparing: 0, shipped: 0, canceled: 0 };
 
         var startDateInput = document.getElementById('start-date');
         var endDateInput = document.getElementById('end-date');
@@ -189,10 +145,10 @@
         var listEl = document.getElementById('order-list');
 
         function formatWon(n) {
-            return n.toLocaleString('ko-KR') + '원';
+            return (n || 0).toLocaleString('ko-KR') + '원';
         }
 
-        // TODO(data binding): DB에 결제 상태 전용 컬럼이 없어 order_status에서 파생한 목업 전용 값.
+        // DB에 결제 상태 전용 컬럼이 없어 order_status에서 파생
         function getPaymentStatus(order) {
             return order.orderStatus === 'payment_waiting' ? 'payment_waiting' : 'payment_completed';
         }
@@ -222,13 +178,23 @@
                 if (start && o.orderDateISO < start) return false;
                 if (end && o.orderDateISO > end) return false;
                 if (keyword &&
-                    o.orderId.toLowerCase().indexOf(keyword) === -1 &&
-                    o.ordererName.toLowerCase().indexOf(keyword) === -1 &&
-                    o.productName.toLowerCase().indexOf(keyword) === -1) return false;
+                    String(o.orderId).toLowerCase().indexOf(keyword) === -1 &&
+                    (o.ordererName || '').toLowerCase().indexOf(keyword) === -1 &&
+                    (o.productName || '').toLowerCase().indexOf(keyword) === -1) return false;
                 if (statusFilter !== 'all' && o.orderStatus !== statusFilter) return false;
                 if (paymentFilter !== 'all' && getPaymentStatus(o) !== paymentFilter) return false;
                 return true;
             });
+        }
+
+        // 회원 이름/상품명은 실제 사용자 입력값이라 innerHTML에 그대로 넣으면 XSS 위험이 있어 이스케이프한다
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         function renderSummary() {
@@ -250,15 +216,52 @@
                 return '<tr data-order-id="' + o.orderId + '" data-delivery-status="' + o.deliveryStatus + '">' +
                             '<td>' + o.orderId + '</td>' +
                             '<td>' + o.orderDateDisplay + '</td>' +
-                            '<td>' + o.ordererName + '</td>' +
-                            '<td class="product-info-cell">' + o.productName + ' (' + o.qty + '개)</td>' +
+                            '<td>' + escapeHtml(o.ordererName) + '</td>' +
+                            '<td class="product-info-cell">' + escapeHtml(o.productName) + ' (' + o.qty + '개)' +
+                                (o.productCount > 1 ? ' 외 ' + (o.productCount - 1) + '건' : '') + '</td>' +
                             '<td>' + formatWon(o.paymentAmount) + '</td>' +
                             '<td>' + buildPaymentStatusBadge(o) + '</td>' +
                             '<td><select class="delivery-status-select status-' + o.deliveryStatus + '">' + buildDeliveryStatusOptions(o.deliveryStatus) + '</select></td>' +
-                            '<td><input type="text" class="tracking-input" value="' + o.trackingNo + '" placeholder="송장번호 입력"></td>' +
+                            '<td><input type="text" class="tracking-input" value="' + escapeHtml(o.trackingNo || '') + '" placeholder="송장번호 입력"></td>' +
                             '<td><button type="button" class="btn-save-row">저장</button></td>' +
                         '</tr>';
             }).join('');
+        }
+
+        // 서버에서 받은 주문 목록(DB 값은 대문자: PAYMENT_COMPLETED 등)을
+        // 기존 필터/렌더 로직이 기대하는 소문자 키 값으로 변환
+        function normalizeOrder(o) {
+            return {
+                orderId: o.orderId,
+                orderDateISO: o.orderDateISO,
+                orderDateDisplay: o.orderDateDisplay,
+                ordererName: o.ordererName,
+                productName: o.productName,
+                qty: o.qty,
+                productCount: o.productCount,
+                paymentAmount: o.paymentAmount,
+                orderStatus: (o.orderStatus || '').toLowerCase(),
+                deliveryStatus: (o.deliveryStatus || 'preparing').toLowerCase(),
+                trackingNo: o.trackingNo
+            };
+        }
+
+        function loadOrders() {
+            fetch('<c:url value="/admin/order/list"/>')
+                .then(function (response) { return response.json(); })
+                .then(function (result) {
+                    if (!result.success) {
+                        alert(result.message || '주문 목록을 불러오지 못했습니다.');
+                        return;
+                    }
+                    ORDERS = (result.data.orders || []).map(normalizeOrder);
+                    SUMMARY_COUNTS = result.data.summary || SUMMARY_COUNTS;
+                    renderSummary();
+                    render();
+                })
+                .catch(function () {
+                    alert('주문 목록을 불러오는 중 오류가 발생했습니다.');
+                });
         }
 
         searchForm.addEventListener('submit', function (e) {
@@ -278,35 +281,64 @@
             }
         });
 
-        // TODO(data binding): 실제로는 여기서 Delivery.delivery_status/tracking_no를
-        // 갱신하는 API(PUT/POST)를 호출해야 함. 현재는 시각적 확인만 수행.
         listEl.addEventListener('click', function (e) {
             if (!e.target.classList.contains('btn-save-row')) return;
             var btn = e.target;
             var row = btn.closest('tr');
+            var orderId = row.dataset.orderId;
             var select = row.querySelector('.delivery-status-select');
+            var trackingInput = row.querySelector('.tracking-input');
             var newLabel = select.options[select.selectedIndex].textContent;
+            var originalStatus = row.dataset.deliveryStatus;
 
-            if (!window.confirm("정말로 '" + newLabel + "'으로 변경하시겠습니까?")) {
-                var originalStatus = row.dataset.deliveryStatus;
+            function revertSelect() {
                 select.value = originalStatus;
                 STATUS_ORDER.forEach(function (status) { select.classList.remove('status-' + status); });
                 select.classList.add('status-' + originalStatus);
+            }
+
+            if (!window.confirm("정말로 '" + newLabel + "'으로 변경하시겠습니까?")) {
+                revertSelect();
                 return;
             }
 
-            row.dataset.deliveryStatus = select.value;
-            var originalText = btn.textContent;
-            btn.textContent = '저장완료';
-            btn.classList.add('is-saved');
-            setTimeout(function () {
-                btn.textContent = originalText;
-                btn.classList.remove('is-saved');
-            }, 1000);
+            btn.disabled = true;
+
+            fetch('<c:url value="/admin/order/delivery/"/>' + orderId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    deliveryStatus: select.value.toUpperCase(),
+                    trackingNo: trackingInput.value
+                })
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (result) {
+                    if (!result.success) {
+                        alert(result.message || '저장에 실패했습니다.');
+                        revertSelect();
+                        return;
+                    }
+
+                    row.dataset.deliveryStatus = select.value;
+                    var originalText = btn.textContent;
+                    btn.textContent = '저장완료';
+                    btn.classList.add('is-saved');
+                    setTimeout(function () {
+                        btn.textContent = originalText;
+                        btn.classList.remove('is-saved');
+                    }, 1000);
+                })
+                .catch(function () {
+                    alert('저장 중 오류가 발생했습니다.');
+                    revertSelect();
+                })
+                .finally(function () {
+                    btn.disabled = false;
+                });
         });
 
-        renderSummary();
-        render();
+        loadOrders();
     })();
     </script>
 

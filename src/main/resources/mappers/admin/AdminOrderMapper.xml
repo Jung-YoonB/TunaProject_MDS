@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.sajotuna.mds.admin.model.mapper.AdminOrderMapper">
+
+	<!-- 주문 목록: 대표 상품(가장 먼저 담긴 ORDERDETAIL) 1건 + 상품 건수 + 배송 정보를 함께 조회.
+	     CART 상태는 아직 확정되지 않은 주문이므로 관리자 화면에서 제외 -->
+	<select id="selectOrderList" resultType="AdminOrderListItemDTO">
+		SELECT
+			po.ORDER_ID AS orderId,
+			TO_CHAR(po.ORDER_DATE, 'YYYY-MM-DD') AS orderDateISO,
+			TO_CHAR(po.ORDER_DATE, 'YYYY.MM.DD HH24:MI') AS orderDateDisplay,
+			m.MEMBER_NAME AS ordererName,
+			rep.PRODUCT_NAME AS productName,
+			rep.QTY AS qty,
+			cnt.PRODUCT_COUNT AS productCount,
+			po.TOTAL_PRICE AS paymentAmount,
+			po.ORDER_STATUS AS orderStatus,
+			d.DELIVERY_STATUS AS deliveryStatus,
+			d.TRACKING_NO AS trackingNo
+		FROM PRODUCTORDER po
+		JOIN MEMBER m ON m.MEMBER_ID = po.MEMBER_ID
+		LEFT JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
+		LEFT JOIN (
+			SELECT od.ORDER_ID, p.PRODUCT_NAME, od.QTY,
+				ROW_NUMBER() OVER (PARTITION BY od.ORDER_ID ORDER BY od.OD_ID) AS rn
+			FROM ORDERDETAIL od
+			JOIN OPTIONDETAIL opd ON opd.POP_ID = od.POP_ID
+			JOIN PRODUCT p ON p.PRODUCT_ID = opd.PRODUCT_ID
+		) rep ON rep.ORDER_ID = po.ORDER_ID AND rep.rn = 1
+		LEFT JOIN (
+			SELECT ORDER_ID, COUNT(*) AS PRODUCT_COUNT
+			FROM ORDERDETAIL
+			GROUP BY ORDER_ID
+		) cnt ON cnt.ORDER_ID = po.ORDER_ID
+		WHERE po.ORDER_STATUS != 'CART'
+		ORDER BY po.ORDER_DATE DESC, po.ORDER_ID DESC
+	</select>
+
+	<!-- 대시보드 요약 카운트: 신규주문=결제대기/결제완료, 배송준비중/배송중/취소환불은 DELIVERY.DELIVERY_STATUS 기준 -->
+	<select id="selectSummary" resultType="AdminOrderSummaryDTO">
+		SELECT
+			NVL(SUM(CASE WHEN po.ORDER_STATUS IN ('PAYMENT_WAITING', 'PAYMENT_COMPLETED') THEN 1 ELSE 0 END), 0) AS newOrders,
+			NVL(SUM(CASE WHEN d.DELIVERY_STATUS = 'PREPARING' THEN 1 ELSE 0 END), 0) AS preparing,
+			NVL(SUM(CASE WHEN d.DELIVERY_STATUS IN ('SHIPPED', 'OUT_FOR_DELIVERY') THEN 1 ELSE 0 END), 0) AS shipped,
+			NVL(SUM(CASE WHEN d.DELIVERY_STATUS = 'CANCELED' THEN 1 ELSE 0 END), 0) AS canceled
+		FROM PRODUCTORDER po
+		LEFT JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
+		WHERE po.ORDER_STATUS != 'CART'
+	</select>
+
+	<update id="updateDeliveryStatus">
+		UPDATE DELIVERY
+		SET DELIVERY_STATUS = #{deliveryStatus},
+			TRACKING_NO = #{trackingNo}
+		WHERE ORDER_ID = #{orderId}
+	</update>
+
+</mapper>
