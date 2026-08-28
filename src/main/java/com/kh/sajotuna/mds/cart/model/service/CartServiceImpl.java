@@ -1,0 +1,47 @@
+package com.kh.sajotuna.mds.cart.model.service;
+
+import com.kh.sajotuna.mds.cart.model.dto.CartDTO;
+import com.kh.sajotuna.mds.cart.model.dto.CartListDTO;
+import com.kh.sajotuna.mds.cart.model.dto.ResponseCartListDTO;
+import com.kh.sajotuna.mds.cart.model.dto.findInfoDTO;
+import com.kh.sajotuna.mds.cart.model.mapper.CartMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class CartServiceImpl implements CartService{
+    private final CartMapper mapper;
+    @Override
+    public String insertCartInfo(CartDTO cart) {
+        int result = 0;
+        System.out.println(cart);
+
+        findInfoDTO findInfo = new  findInfoDTO(cart.getMemberId(), cart.getPopId());
+        int checkCart = mapper.findCartById(findInfo);
+        if(checkCart == 1) {
+            return "이미 장바구니에 있는 상품입니다.";
+        }else {
+             result = mapper.insertCart(cart);
+        }
+       return result > 0 ? "상품이 장바구니에 등록되었습니다." : "오류가 발생하였습니다. 다시 시도해주세요";
+    }
+
+    @Override
+    public ResponseCartListDTO getCartList(Long memberId) {
+        int cartListPrice = 0;
+
+        List<CartListDTO> getCartList =  mapper.getCartList(memberId);
+        System.out.println("getCartList :: " + getCartList);
+
+        for(CartListDTO list : getCartList) {
+            cartListPrice+=list.getTotalPrice();
+        }
+
+        return new ResponseCartListDTO(getCartList,cartListPrice);
+    }
+}

@@ -21,7 +21,6 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/mds")
-@Transactional
 public class ProductController {
 
 	private final ProductService service;
@@ -47,13 +46,14 @@ public class ProductController {
 
 	@GetMapping("/coupon/{couponId}")
 	public String getCoupon(HttpSession session, Model model, @PathVariable Long couponId) {
-		MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_MEMBER);
-		if (member == null) {
+		MemberDTO user = (MemberDTO)session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+		if (user.getMemberId() == null) {
 			model.addAttribute("message", "로그인이 필요합니다.");
 			System.out.println(model.getAttribute("message"));
 			return "redirect:/member/login";
 		}
-		String message = service.getCoupons(member.getMemberId(), couponId);
+		String message = service.getCoupons(user.getMemberId(), couponId);
 		System.out.println("message:: " + message);
 		return"redirect:home/home";
 	}
@@ -62,7 +62,7 @@ public class ProductController {
 	public String reviewPage(@PathVariable Long productId, Model model, HttpSession session) {
 		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
 		Long memberId  = null;
-		if(user != null) {
+		if(user.getMemberId() != null) {
 			memberId = user.getMemberId();
 		}
 		List<ReviewDTO> reviewList = service.getReviewList(productId, memberId);
@@ -75,7 +75,7 @@ public class ProductController {
 	public String reviewLike(@PathVariable Long reviewId, HttpSession session) {
 		Long memberId  = null;
 		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
-		if(user != null) {
+		if(user.getMemberId() != null) {
 			memberId = user.getMemberId();
 		}
 		String result = service.increaseReviewLike(reviewId, memberId);
