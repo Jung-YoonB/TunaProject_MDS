@@ -3,6 +3,7 @@ package com.kh.sajotuna.mds.product.model.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.kh.sajotuna.mds.product.model.dto.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +27,9 @@ public class ProductServiceImpl implements ProductService{
 	private final ProductMapper mapper;
 	
 	@Override
-	public MainPageDTO getList() {
+	public MainPageDTO getList(SearchDTO search) {
 		
-		List<ProductListDTO> list = mapper.getList();
+		List<ProductListDTO> list = mapper.getList(search);
 		List<BannerDTO> bannerList = mapper.bannerList();
 		MainPageDTO dto = new MainPageDTO(list, bannerList);
 		System.out.println("product list:: " + list.toString());
