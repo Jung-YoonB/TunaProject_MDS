@@ -1,7 +1,7 @@
 package com.kh.sajotuna.mds.product.controller;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.product.model.dto.SearchDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewDTO;
 import com.kh.sajotuna.mds.util.SessionConst;
 import jakarta.servlet.http.HttpSession;

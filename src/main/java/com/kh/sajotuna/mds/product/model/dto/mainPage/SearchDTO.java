@@ -1,4 +1,4 @@
-package com.kh.sajotuna.mds.product.model.dto;
+package com.kh.sajotuna.mds.product.model.dto.mainPage;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

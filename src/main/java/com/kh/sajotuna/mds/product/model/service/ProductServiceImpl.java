@@ -3,7 +3,7 @@ package com.kh.sajotuna.mds.product.model.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.kh.sajotuna.mds.product.model.dto.SearchDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
