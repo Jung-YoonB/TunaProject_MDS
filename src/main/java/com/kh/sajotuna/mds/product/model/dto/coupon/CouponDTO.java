@@ -1,5 +1,7 @@
 package com.kh.sajotuna.mds.product.model.dto.coupon;
 
+import org.apache.ibatis.type.Alias;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Alias("CouponDTO")
 public class CouponDTO {
     private Long couponId;
     private String couponName;

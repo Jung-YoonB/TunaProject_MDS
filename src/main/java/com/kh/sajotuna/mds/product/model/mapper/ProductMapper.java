@@ -2,21 +2,22 @@ package com.kh.sajotuna.mds.product.model.mapper;
 
 import java.util.List;
 
-import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewImagesDTO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
-import org.apache.ibatis.annotations.Param;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
+import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
+import com.kh.sajotuna.mds.review.model.dto.ReviewImagesDTO;
 
 @Mapper
 public interface ProductMapper {
 	//상품 리스트
-	List<ProductListDTO> getList();
+	List<ProductListDTO> getList(SearchDTO search);
 	
 	List<BannerDTO> bannerList();
 

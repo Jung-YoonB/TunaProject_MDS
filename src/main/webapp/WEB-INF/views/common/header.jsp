@@ -18,6 +18,8 @@
 	<link rel="stylesheet" href="/css/style_search.css">
 	<link rel="stylesheet" href="/css/style_cart.css">
 	<link rel="stylesheet" href="/css/style_wish.css">
+	<link rel="stylesheet" href="/css/style_addreview.css">
+	<link rel="stylesheet" href="/css/style_productdetail.css">
 </head>
 <body>
 	<header id="site-header">
@@ -70,11 +72,7 @@
 		</div>
 	
 	</header>
-<<<<<<< HEAD
-	<main>
-=======
 
 	<script src="/js/common/header.js"></script>
 
 	<main>
->>>>>>> Product_branch
