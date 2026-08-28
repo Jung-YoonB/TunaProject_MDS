@@ -6,5 +6,9 @@ public interface AdminOrderService {
 
 	AdminOrderListResponseDTO getOrderList();
 
-	void updateDeliveryStatus(Long orderId, String deliveryStatus, String trackingNo);
+	void updateDeliveryStatus(Long orderId, String deliveryStatus, String trackingNo, String company);
+
+	void confirmPayment(Long orderId);
+
+	void completeCancel(Long orderId);
 }

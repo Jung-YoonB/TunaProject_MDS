@@ -50,12 +50,47 @@ public class AdminOrderController {
 		}
 
 		try {
-			service.updateDeliveryStatus(orderId, request.getDeliveryStatus(), request.getTrackingNo());
+			service.updateDeliveryStatus(orderId, request.getDeliveryStatus(), request.getTrackingNo(),
+					request.getCompany());
 		} catch (IllegalStateException e) {
 			return ApiResponse.fail(e.getMessage());
 		}
 
 		return ApiResponse.success("배송 정보가 저장되었습니다.", null);
+	}
+
+	@PostMapping("/payment/{orderId}")
+	@ResponseBody
+	public ApiResponse<Void> confirmPayment(HttpSession session, @PathVariable Long orderId) {
+		String failMessage = checkAdminApi(session);
+		if (failMessage != null) {
+			return ApiResponse.fail(failMessage);
+		}
+
+		try {
+			service.confirmPayment(orderId);
+		} catch (IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
+
+		return ApiResponse.success("결제 완료 처리되었습니다.", null);
+	}
+
+	@PostMapping("/cancel-complete/{orderId}")
+	@ResponseBody
+	public ApiResponse<Void> completeCancel(HttpSession session, @PathVariable Long orderId) {
+		String failMessage = checkAdminApi(session);
+		if (failMessage != null) {
+			return ApiResponse.fail(failMessage);
+		}
+
+		try {
+			service.completeCancel(orderId);
+		} catch (IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
+
+		return ApiResponse.success("취소/환불 처리가 완료되었습니다.", null);
 	}
 
 	private String checkAdminPage(HttpSession session) {

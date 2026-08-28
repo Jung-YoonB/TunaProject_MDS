@@ -26,4 +26,5 @@ public class AdminOrderListItemDTO {
 	private String orderStatus; // DB 값 그대로(대문자): PAYMENT_WAITING 등
 	private String deliveryStatus; // DB 값 그대로(대문자): PREPARING 등, 배송 정보 없으면 null
 	private String trackingNo;
+	private String company; // 택배사, 배송 시작 전이면 null
 }

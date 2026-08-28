@@ -7,14 +7,17 @@
 
 	<select id="selectAllCoupons" resultType="AdminCouponDTO">
 		SELECT
-			COUPON_ID AS couponId,
-			COUPON_NAME AS couponName,
-			COUPON_VALUE AS couponValue,
-			COUPON_TEXT AS couponText,
-			CREATED_AT AS createdAt,
-			DEADLINE AS deadline
-		FROM COUPON
-		ORDER BY COUPON_ID DESC
+			c.COUPON_ID AS couponId,
+			c.COUPON_NAME AS couponName,
+			c.COUPON_VALUE AS couponValue,
+			c.COUPON_TEXT AS couponText,
+			c.CREATED_AT AS createdAt,
+			c.DEADLINE AS deadline,
+			CASE WHEN EXISTS (
+				SELECT 1 FROM COUPONHISTORY ch WHERE ch.COUPON_ID = c.COUPON_ID
+			) THEN 1 ELSE 0 END AS hasHistory
+		FROM COUPON c
+		ORDER BY c.COUPON_ID DESC
 	</select>
 
 	<insert id="insertCoupon" parameterType="AdminCouponDTO">

@@ -21,4 +21,5 @@ public class AdminCouponDTO {
 	private String couponText;
 	private LocalDate createdAt;
 	private LocalDate deadline;
+	private boolean hasHistory; // COUPONHISTORY에 발급 이력이 있으면 true (있으면 삭제 불가)
 }

@@ -9,7 +9,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>메종 드 사조</title>
 	
-	 <link rel="stylesheet" href="/css/common.css">
+	<link rel="stylesheet" href="/css/default.css">
 	<link rel="stylesheet" href="/css/style.css">
 	<link rel="stylesheet" href="/css/style_member.css">
 	<link rel="stylesheet" href="/css/style_order.css">
@@ -26,7 +26,7 @@
 	<link rel="stylesheet" href="/css/style_admin_order.css">
 	<link rel="stylesheet" href="/css/style_admincouponView.css">
 </head>
-<body>
+<body data-logged-in="${not empty sessionScope.loginMemberId}" data-home-url="<c:url value='/'/>">
 	<header id="site-header">
 	
 		<div id="logo_img">
@@ -78,6 +78,7 @@
 	
 	</header>
 
-	<script src="/js/common/header.js"></script>
+	<script src="<c:url value='/js/common/cartWishService.js'/>"></script>
+	<script src="<c:url value='/js/views/header.js'/>"></script>
 
 	<main>

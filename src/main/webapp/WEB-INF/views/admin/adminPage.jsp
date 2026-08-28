@@ -1,29 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<!DOCTYPE html>
-<html lang="ko">
+<jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<head>
+<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin_mypage.css 포함)를 로드하므로 별도 link 불필요 --%>
+<div class="admin-mypage-page">
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>관리자 마이페이지</title>
-
-    <!-- 공통 CSS -->
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/default.css">
-
-    <!-- 관리자 마이페이지 전용 CSS -->
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/style_admin_mypage.css">
-
-</head>
-
-<body class="admin-mypage-page">
-
-    <main>
+    <%-- header.jsp가 이미 <main>을 열어서 폭 제약이 없으므로, 원래 main 태그가 담당하던
+         가운데 정렬/최대폭(720px)은 이 내부 wrapper(.page-content)가 대신 담당한다 --%>
+    <div class="page-content">
 
         <h1 class="page-title">관리자 마이페이지</h1>
         <p class="page-subtitle">관리자 계정 정보를 관리합니다.</p>
@@ -156,7 +141,9 @@
             </ul>
         </section>
 
-    </main>
+    </div>
+
+</div>
 
     <%-- TODO(data binding): Member 테이블 연동 필요.
          현재는 로그인 세션 없이 관리자 1인 목업 값을 하드코딩.
@@ -211,6 +198,4 @@
     })();
     </script>
 
-</body>
-
-</html>
+<jsp:include page="/WEB-INF/views/common/footer.jsp"/>

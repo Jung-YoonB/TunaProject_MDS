@@ -10,4 +10,5 @@ import lombok.Setter;
 public class DeliveryUpdateRequestDTO {
 	private String deliveryStatus;
 	private String trackingNo;
+	private String company;
 }

@@ -2,17 +2,14 @@
         box-sizing: border-box;
     }
 
-    body {
-        margin: 0;
+    /* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+       다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .home-page로 스코프할 것 */
+    .home-page {
+        width: 1200px;
+        margin: 0 auto;
         background-color: #ffffff;
         color: #222;
         font-family: Arial, sans-serif;
-    }
-
-    /* MAIN */
-    main {
-        width: 1200px;
-        margin: 0 auto;
     }
 
     /* BANNER */

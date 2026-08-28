@@ -5,58 +5,12 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<div class="header-right">
-
-            <div class="icon">
-
-                <a href="#" class="icon-item">
-                    <svg class="icon-svg" viewBox="0 0 24 24">
-                        <circle cx="12" cy="8" r="4"></circle>
-                        <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path>
-                    </svg>
-                    <span>마이페이지</span>
-                </a>
-
-                <a href="#" class="icon-item">
-                    <svg class="icon-svg" viewBox="0 0 24 24">
-                        <path d="M20.8 8.8c0 5.5-8.8 11.2-8.8 11.2S3.2 14.3 3.2 8.8A4.8 4.8 0 0 1 12 6.1a4.8 4.8 0 0 1 8.8 2.7Z"></path>
-                    </svg>
-                    <span>찜</span>
-                </a>
-
-                <a href="#" class="icon-item">
-                    <svg class="icon-svg" viewBox="0 0 24 24">
-                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
-                        <path d="M3 6h18"></path>
-                        <path d="M16 10a4 4 0 0 1-8 0"></path>
-                    </svg>
-                    <span>장바구니</span>
-                </a>
-
-            </div>
-
-            <div class="sign">
-                <a href="#">로그인</a>
-                <span class="sign-divider">|</span>
-                <a href="#">회원가입</a>
-            </div>
-
-        </div>
-    </div>
-
-    <nav class="category-nav">
-        <a href="#">전체상품</a>
-        <a href="#">가격별</a>
-        <a href="#">연령별</a>
-        <a href="#">상황별</a>
-        <a href="#">명절선물</a>
-    </nav>
-</header>
-
+<%-- header.jsp가 실제 헤더(아이콘/로그인/nav)를 이미 렌더링하므로,
+     이 페이지가 header.jsp로 옮겨가기 전 쓰던 구버전 커스텀 헤더 마크업은 중복이라 삭제함 --%>
 
 <!-- ================= MAIN ================= -->
 
-<main class="product-register">
+<div class="product-register">
 
     <div class="page-title">
         <span class="eyebrow">PRODUCT MANAGEMENT</span>
@@ -369,48 +323,9 @@
 
     </div>
 
-</main>
+</div>
 
-
-<!-- ================= FOOTER ================= -->
-
-<footer class="site-footer">
-
-    <div class="footer-top">
-
-        <div class="company-info">
-
-            <h2>Masion De SAJO</h2>
-
-            <address>
-                <p>서울특별시 강남구 테헤란로 14길</p>
-                <p>우편번호 06234</p>
-                <p>고객센터 1544-9970</p>
-            </address>
-
-        </div>
-
-        <nav class="footer-nav">
-
-            <ul>
-                <li><a href="#">이용약관</a></li>
-                <li><a href="#">개인정보처리방침</a></li>
-                <li><a href="#">사업자정보</a></li>
-                <li><a href="#">고객센터</a></li>
-            </ul>
-
-        </nav>
-
-    </div>
-
-    <hr class="footer-divider">
-
-    <div class="footer-bottom">
-        <p>© 2026 Masion De SAJO. All rights reserved.</p>
-    </div>
-
-</footer>
-
+<%-- footer.jsp가 실제 푸터를 파일 맨 아래에서 렌더링하므로, 구버전 커스텀 푸터 마크업은 중복이라 삭제함 --%>
 
 <!-- ================= TAG MODAL ================= -->
 

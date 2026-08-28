@@ -3,6 +3,11 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
+<%-- header.jsp가 모든 CSS를 전역으로 로드하므로, 이 페이지의 배경/폭 스타일이 다른 페이지의
+     공용 <body>/<main>에 새지 않도록 이 wrapper 안에서만 적용되게 스코프한다 --%>
+<div class="product-detail-page">
+<div class="product-detail-page-card">
+
     <!-- 상품 카테고리 -->
     <div id="product-category">결혼·집들이</div>
 
@@ -193,6 +198,9 @@
         </div>
     </div>
 
-<script src="/js/product/productdetail.js"></script>
+</div>
+</div>
+
+<script src="<c:url value='/js/views/productdetail.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

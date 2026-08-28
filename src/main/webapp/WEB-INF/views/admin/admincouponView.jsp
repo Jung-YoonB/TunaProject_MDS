@@ -2,6 +2,12 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
+
+<%-- header.jsp가 모든 CSS를 전역으로 로드하므로, 이 페이지의 배경/폭 스타일이 다른 페이지의
+     공용 <body>/<main>에 새지 않도록 이 wrapper 안에서만 적용되게 스코프한다 --%>
+<div class="admin-coupon-view-page">
+<div class="admin-coupon-view-page-card">
+
 <div id="title">
             쿠폰관리
         </div>
@@ -97,6 +103,9 @@
 
         </div>
 
+</div>
+</div>
+
 <script>
 (function () {
 
@@ -117,13 +126,16 @@
 
     function buildCard(coupon) {
         var card = document.createElement("div");
-        card.className = "coupon-card";
+        card.className = "coupon-card" + (coupon.hasHistory ? " has-history" : "");
         card.dataset.couponId = coupon.couponId;
 
         card.innerHTML =
             '<input type="checkbox" class="coupon-check" name="coupon" value="' + coupon.couponId + '">' +
             '<div class="coupon-info">' +
-                '<div class="coupon-name"></div>' +
+                '<div class="coupon-name-row">' +
+                    '<span class="coupon-name"></span>' +
+                    (coupon.hasHistory ? '<span class="history-badge" title="발급 이력이 있어 삭제할 수 없습니다">발급 이력 있음</span>' : '') +
+                '</div>' +
                 '<div class="coupon-description"></div>' +
                 '<div class="coupon-deadline"></div>' +
             '</div>' +

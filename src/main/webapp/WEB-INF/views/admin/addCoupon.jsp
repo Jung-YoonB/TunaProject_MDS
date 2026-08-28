@@ -3,6 +3,11 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
+<%-- header.jsp가 모든 CSS를 전역으로 로드하므로, 이 페이지의 배경/폭 스타일이 다른 페이지의
+     공용 <body>/<main>에 새지 않도록 이 wrapper 안에서만 적용되게 스코프한다 --%>
+<div class="add-coupon-page">
+<div class="add-coupon-page-card">
+
         <!-- 제목 -->
         <div id="title">쿠폰 신규 등록</div>
 
@@ -68,8 +73,10 @@
             쿠폰 발급
         </button>
 
-    </main>
+</div>
+</div>
 
+    <%-- header.jsp가 연 <main>은 여기서 안 닫음 — footer.jsp의 </main>이 닫아준다 --%>
 
     <script>
         // 오늘 날짜

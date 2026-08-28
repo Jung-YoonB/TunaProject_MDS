@@ -76,6 +76,6 @@
 		</div>
 	</form>
 
-<script src="/js/review/addreview.js"></script>
+<script src="<c:url value='/js/views/addreview.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>
