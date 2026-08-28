@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
+import com.kh.sajotuna.mds.order.model.dto.CheckoutDTO;
 import com.kh.sajotuna.mds.order.model.dto.OrderItemDTO;
 import com.kh.sajotuna.mds.order.model.dto.PaymentViewDTO;
 import com.kh.sajotuna.mds.order.service.OrderService;
@@ -34,7 +35,7 @@ public class OrderController {
 			@ModelAttribute OrderItemDTO orderItem,
 			RedirectAttributes redirectAttr) {
 
-		PaymentViewDTO pvData =null;
+		PaymentViewDTO pvData = null;
 		// 세션의 정보에서 memberId를 받아 회원 정보 받아오기
 		MemberDTO loginMember = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
 		
@@ -49,5 +50,20 @@ public class OrderController {
 		}
 		model.addAttribute("pvData", pvData);
 		return "order/payment";
+	}
+	
+	@PostMapping("/checkout")
+	public String checkout(HttpSession session, @ModelAttribute CheckoutDTO checkoutData, RedirectAttributes redirectAttr) {
+	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	    
+	    if (member == null) {
+	        return "redirect:/member/login";
+	    }
+	    
+	    checkoutData.setMemberId(member.getMemberId());
+	    CheckoutDTO resultData = service.checkout(checkoutData);
+	    
+	    redirectAttr.addFlashAttribute("checkoutData", resultData);
+	    return "redirect:/order/completed"; // 결제 완료 페이지로 리다이렉트
 	}
 }

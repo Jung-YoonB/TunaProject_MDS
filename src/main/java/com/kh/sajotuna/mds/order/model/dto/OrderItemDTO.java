@@ -26,4 +26,9 @@ public class OrderItemDTO {
 	
 	// 상품 테이블
 	private String productName;
+	
+	// 결제와 검증용
+	private Long orderId;
+	private Long priceFix;
+	private Long gradeDisAmount;
 }

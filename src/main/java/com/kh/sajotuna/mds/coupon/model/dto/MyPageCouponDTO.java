@@ -23,6 +23,8 @@ public class MyPageCouponDTO {
 	private LocalDate createdAt;
 	private LocalDate deadLine;
 	
+	private Long chistId;
+	
 	private String createdAtStr;
 	private String deadLineStr;
 }
