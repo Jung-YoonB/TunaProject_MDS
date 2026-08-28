@@ -1,6 +1,7 @@
 package com.kh.sajotuna.mds.product.controller;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.product.model.dto.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewDTO;
 import com.kh.sajotuna.mds.util.SessionConst;
 import jakarta.servlet.http.HttpSession;
@@ -26,9 +27,9 @@ public class ProductController {
 	private final ProductService service;
 	
 	@GetMapping("/list")
-	public String getList(Model model) {
+	public String getList(Model model, SearchDTO searchDTO) {
 		
-		MainPageDTO list = service.getList();
+		MainPageDTO list = service.getList(searchDTO);
 		
 		model.addAttribute("productList", list);
 		System.out.println("컨트롤러 :: " + list);

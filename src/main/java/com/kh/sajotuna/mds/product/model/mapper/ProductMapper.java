@@ -2,6 +2,7 @@ package com.kh.sajotuna.mds.product.model.mapper;
 
 import java.util.List;
 
+import com.kh.sajotuna.mds.product.model.dto.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewImagesDTO;
@@ -16,7 +17,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ProductMapper {
 	//상품 리스트
-	List<ProductListDTO> getList();
+	List<ProductListDTO> getList(SearchDTO search);
 	
 	List<BannerDTO> bannerList();
 
