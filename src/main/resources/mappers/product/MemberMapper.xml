@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.kh.sajotuna.mds.member.model.mapper.MemberMapper">
+	
+	<insert id="insertMember" parameterType="MemberDTO">
+		<selectKey
+			keyProperty="memberId" resultType="long" order="BEFORE">
+			SELECT SEQ_MEMBER_ID.NEXTVAL FROM DUAL
+		</selectKey>
+  		INSERT INTO MEMBER (MEMBER_ID, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME, EMAIL, PHONE, ROLE)
+  		VALUES (#{memberId}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname}, #{email}, #{phone}, #{role})
+ 	</insert>
+ 	
+ 	<insert id="insertPoint" parameterType="long">
+  		INSERT INTO MEMBERPOINT (POINT_ID, MEMBER_ID)
+  		VALUES (SEQ_POINT_ID.NEXTVAL, #{memberId})
+ 	</insert>
+  
+  	<select id="countByLoginId" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE LOGIN_ID = #{loginId}  
+  	</select>
+  	
+  	<select id="countByNickname" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE NICKNAME = #{nickname}  
+  	</select>
+  	
+  	<select id="countByEmail" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE EMAIL = #{email}  
+  	</select>
+  	
+  	<select id="countByPhone" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE PHONE = #{phone}  
+  	</select>
+  	
+  	<select id="selectByLoginId" parameterType="String" resultType="MemberDTO">
+		SELECT MEMBER_ID, GRADE_ID, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
+			EMAIL, CREATED_AT, PHONE, ROLE, MEMBER_STATUS,
+			TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
+			TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR 
+		FROM MEMBER 
+		WHERE LOGIN_ID = #{loginId}
+  	</select>
+  	
+  	<select id="selectByMemberId" parameterType="long" resultType="MemberDTO">
+		SELECT M.MEMBER_ID, GRADE_ID, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
+			EMAIL, M.CREATED_AT, PHONE, ROLE, MEMBER_STATUS, P.POINT,
+			TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
+			TO_CHAR(M.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR, 
+			(SELECT COUNT(*)
+				FROM COUPONHISTORY H
+				WHERE M.MEMBER_ID = H.MEMBER_ID AND H.TYPE='ISSUE') AS ISSUE
+		FROM MEMBER M LEFT JOIN MEMBERPOINT P ON M.MEMBER_ID = P.MEMBER_ID
+		WHERE M.MEMBER_ID = #{memberId}
+  	</select>
+  	
+  	<select id="selectCouponsByMemberId" parameterType="long" resultType="MyPageCouponDTO">
+		SELECT C.COUPON_ID, C.COUPON_NAME, C.COUPON_VALUE, C.COUPON_TEXT, C.CREATED_AT, C.DEADLINE,
+			TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR,
+			TO_CHAR(C.DEADLINE, 'YYYY-MM-DD') AS DEAD_LINE_STR
+		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
+		WHERE CH.MEMBER_ID = #{memberId} AND CH.TYPE='ISSUE'
+  	</select>
+  	
+  	<select id="selectWishesByMemberId" parameterType="long" resultType="MyPageWishDTO">
+    	SELECT 
+        	(SELECT COUNT(*) FROM WISH WHERE PRODUCT_ID = P.PRODUCT_ID) AS COUNT_WISH,
+        	P.PRODUCT_NAME, PI.PRODUCT_IMAGE_PATH, PI.PRODUCT_IMAGE_SAVE_NAME,
+        	(SELECT NVL(ROUND(AVG(R.SCORE), 1), 0) 
+        		FROM OPTIONDETAIL POP JOIN ORDERDETAIL OD ON POP.POP_ID = OD.POP_ID
+           		JOIN REVIEW R ON OD.OD_ID = R.OD_ID
+        		WHERE POP.PRODUCT_ID = P.PRODUCT_ID) AS REVIEW_AVG
+    	FROM WISH W	JOIN PRODUCT P ON W.PRODUCT_ID = P.PRODUCT_ID
+    		JOIN PRODUCTIMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID
+  		WHERE W.MEMBER_ID = #{memberId} AND PI.PRODUCT_TITLE_IMAGE = 0
+	</select>
+  	
+  	<select id="selectCartsByMemberId" parameterType="long" resultType="MyPageCartDTO">
+  		SELECT C.CART_ID, C.QTY, PO.OPTION_ID, PO.OPTION_NAME, PO.OPTION_PRICE, PO.OPTION_STOCK, P.PRODUCT_ID, P.PRODUCT_NAME,
+  				PI.PRODUCT_IMAGE_PATH, PI.PRODUCT_IMAGE_SAVE_NAME
+  		FROM CART C JOIN OPTIONDETAIL POP ON C.POP_ID = POP.POP_ID
+  			JOIN PRODUCTOPTION PO ON POP.OPTION_ID = PO.OPTION_ID
+  			JOIN PRODUCT P ON POP.PRODUCT_ID = P.PRODUCT_ID
+  			JOIN PRODUCTIMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID  
+  		WHERE C.MEMBER_ID = #{memberId} AND PI.PRODUCT_TITLE_IMAGE = 0
+  	</select>
+  	
+  	<select id="selectDeliveriesByMemberId" parameterType="long" resultType="MyPageDeliveryDTO">
+  		SELECT D.DELIVERY_ID, D.COMPANY, D.TRACKING_NO, D.DELIVERY_STATUS, PO.DETAIL_ADDRESS_FIX,
+	 		PO.ADDRESS_NAME_FIX, PO.ORDER_ID, PO.TOTAL_PRICE, PO.ORDER_STATUS, PO.ORDER_DATE,
+  			TO_CHAR(PO.ORDER_DATE, 'YYYY-MM-DD') AS ORDER_DATE_STR
+  		FROM  DELIVERY D JOIN PRODUCTORDER PO ON D.ORDER_ID = PO.ORDER_ID
+  		WHERE PO.MEMBER_ID = #{memberId}
+  		ORDER BY PO.ORDER_DATE DESC
+  	</select>
+  	
+  	<select id="selectProductByOrderId" parameterType="long" resultType="MyPageDeliveryDTO">
+  		SELECT P.PRODUCT_NAME, PI.PRODUCT_IMAGE_PATH, PI.PRODUCT_IMAGE_SAVE_NAME
+  		FROM  PRODUCTORDER PO JOIN ORDERDETAIL OD ON PO.ORDER_ID = OD.ORDER_ID
+  		JOIN OPTIONDETAIL POP ON OD.POP_ID = POP.POP_ID
+  		JOIN PRODUCT P ON POP.PRODUCT_ID = P.PRODUCT_ID
+  		JOIN PRODUCTIMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID
+  		WHERE PO.ORDER_ID = #{orderId} AND PI.PRODUCT_TITLE_IMAGE = 0
+  		FETCH FIRST 1 ROWS ONLY
+  	</select>
+</mapper>

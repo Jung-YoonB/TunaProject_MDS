@@ -45,8 +45,9 @@ public class MemberDTO {
 	
 	private Long issue;
 	
-	public MemberDTO(Long memberId, String role) {
+	public MemberDTO(Long memberId, String memberName, String role) {
 		this.memberId = memberId;
+		this.memberName = memberName;
 		this.role = role;
 	}
 }

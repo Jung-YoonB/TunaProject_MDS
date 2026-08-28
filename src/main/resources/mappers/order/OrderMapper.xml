@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.kh.sajotuna.mds.order.model.mapper.OrderMapper">
+
+	<select id="selectByMemberIdForPay" parameterType="long" resultType="PaymentViewDTO">
+		SELECT M.MEMBER_NAME, M.POINT, G.GRADE_NAME, G.DISCOUNT_RATE, DA.ADDRESS_NAME, DA.DETAIL_ADDRESS
+		FROM MEMBER M JOIN GRADE G ON M.GRADE_ID = G.GRADE_ID
+			LEFT JOIN  DELIVERYADDRESS DA ON M.MEMBER_ID = DA.MEMBER_ID AND UPPER(DA.IS_DEFAULT) = 'Y'
+		WHERE M.MEMBER_ID = #{memberId}
+  	</select>
+
+	<select id="selectCartIds" parameterType="list" resultType="OrderItemDTO">
+		SELECT C.POP_ID, C.QTY, PO.OPTION_NAME, PO.OPTION_PRICE, P.PRODUCT_NAME
+		FROM CART C JOIN OPTIONDETAIL POP ON C.POP_ID = POP.POP_ID
+			JOIN PRODUCTOPTION PO ON POP.OPTION_ID = PO.OPTION_ID
+			JOIN PRODUCT P ON POP.PRODUCT_ID = P.PRODUCT_ID
+		WHERE C.CART_ID IN
+		<foreach collection="cartIds" item="item" open="(" separator="," close=")">
+   			 #{item}
+		</foreach>
+	</select>
+	
+	<select id="selectPopId" parameterType="long" resultType="OrderItemDTO">
+		SELECT POP.POP_ID, PO.OPTION_NAME, PO.OPTION_PRICE, P.PRODUCT_NAME
+		FROM OPTIONDETAIL POP JOIN PRODUCTOPTION PO ON POP.OPTION_ID = PO.OPTION_ID
+			JOIN PRODUCT P ON POP.PRODUCT_ID = P.PRODUCT_ID
+		WHERE POP.POP_ID = #{popId}
+	</select>
+	
+</mapper>

@@ -86,7 +86,8 @@ public class MemberServiceImpl implements MemberService{
 			throw new IllegalStateException("아이디 또는 비밀번호가 일치하지 않습니다.");
 		}
 		
-		MemberDTO sessionMember = new MemberDTO(member.getMemberId(),member.getRole());
+		MemberDTO sessionMember = new MemberDTO(member.getMemberId(),
+				member.getMemberName(), member.getRole());
 		return sessionMember;
 	}
 

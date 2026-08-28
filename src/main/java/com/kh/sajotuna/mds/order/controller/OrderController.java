@@ -4,14 +4,17 @@ import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
 import com.kh.sajotuna.mds.order.model.dto.OrderItemDTO;
+import com.kh.sajotuna.mds.order.model.dto.PaymentViewDTO;
+import com.kh.sajotuna.mds.order.service.OrderService;
 import com.kh.sajotuna.mds.util.SessionConst;
 
 import jakarta.servlet.http.HttpSession;
@@ -23,43 +26,28 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
 	
 	private final  MemberService memberService;
-
-	@GetMapping("/cartPayment")
+	private final  OrderService service;
+	
+	@PostMapping("/payment")
 	public String paymentForm(HttpSession session, Model model,
-			@RequestParam(value = "cartIds", required = false) List<Long> cartIds) {
+			@RequestParam(value = "cartId", required = false) List<Long> cartIds,
+			@ModelAttribute OrderItemDTO orderItem,
+			RedirectAttributes redirectAttr) {
 
+		PaymentViewDTO pvData =null;
 		// 세션의 정보에서 memberId를 받아 회원 정보 받아오기
-
 		MemberDTO loginMember = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
-		MemberDTO member = memberService.getMemberByMemberId(loginMember.getMemberId());
-	
-		//jsp 에서 name = "cartIds" 로 값이 전달 된다고 가정, 카트 테이블에 사려는 개수도 저장될테니 아이디만 받는걸로
 		
-		// 회원 정보와 구매하려는 정보 저장하기
-		model.addAttribute("member", member);
-		model.addAttribute("cartIds", cartIds);
-
+		if (cartIds != null && !cartIds.isEmpty()) { // 장바구니로 넘어온 경우
+			pvData = service.cartPrepare(loginMember.getMemberId(), cartIds);
+			
+		} else if (orderItem.getPopId() != null) { // 바로구매로 넘어온 경우
+			pvData = service.directPrepare(loginMember.getMemberId(), orderItem);
+		} else { // 장바구니가 0 인채로 넘어왔거나 이상한 접근
+			redirectAttr.addFlashAttribute("error", "장바구니에 담은게 없거나 잘못된 접근입니다.");
+			return "redirect:/aa/cart"; // 카트 주소 생기면 수정
+		}
+		model.addAttribute("pvData", pvData);
 		return "order/payment";
-		// 로그인 된 멤버의 회원 정보와 구매하려는 장바구니id들 전달
 	}
-	
-	@GetMapping("/directPayment")
-	public String directPaymentForm(HttpSession session, Model model,
-			@ModelAttribute OrderItemDTO orderItem ) {
-		
-		// 세션의 정보에서 memberId를 받아 회원 정보 받아오기
-
-		MemberDTO loginMember = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
-		MemberDTO member = memberService.getMemberByMemberId(loginMember.getMemberId());	
-		
-		//jsp 에서 구매할 옵션id, 수량 넘어온다고 가정 
-		
-		// 회원 정보와 구매하려는 정보 저장하기
-		model.addAttribute("member", member);
-		model.addAttribute("orderItem", orderItem);
-
-		return "order/payment";
-		// 로그인 된 멤버의 회원 정보와 구매하려는 바로구매할 옵션id와 수량 전달
-	}
-	
 }
