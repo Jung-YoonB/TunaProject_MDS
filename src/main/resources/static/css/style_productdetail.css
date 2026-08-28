@@ -1,0 +1,395 @@
+/* 전체 페이지 */
+body {
+    margin: 0;
+    background-color: #f8f8f8;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+/* 전체 영역 */
+main {
+    width: 1100px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+/* 카테고리 */
+#product-category {
+    margin-bottom: 15px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* 상품 이동 경로 */
+#breadcrumb {
+    margin-bottom: 30px;
+    font-size: 13px;
+    color: #888;
+}
+
+/* 상품 메인 영역 */
+#product-area {
+    display: flex;
+    gap: 45px;
+}
+
+/* 이미지 영역 */
+#product-images {
+    width: 500px;
+}
+
+/* 메인 이미지 */
+#product-main-image {
+    display: block;
+    width: 500px;
+    height: 500px;
+    object-fit: cover;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+/* 서브 이미지 (등록된 개수만큼 나오는데, 줄바꿈하면 마지막 줄 정렬이 어긋나서
+   한 줄 가로 스크롤로 처리 - 개수가 몇 개든 항상 정렬이 맞음 */
+#product-sub-images {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 10px;
+    margin-top: 12px;
+    padding-bottom: 4px;
+}
+
+.product-sub-image {
+    display: block;
+    flex: 0 0 80px;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.product-sub-image.is-active {
+    border: 2px solid #222;
+}
+
+/* 상품 정보 */
+#product-info {
+    flex: 1;
+}
+
+/* 상품 제목 */
+.product-title {
+    margin: 0 0 15px;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+/* 상품 설명 */
+.product-description {
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #777;
+}
+
+/* 리뷰 / 찜 */
+#product-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    font-size: 13px;
+}
+
+.product-stat {
+    padding: 7px 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #fafafa;
+}
+
+/* 가격 영역 */
+#price-info {
+    padding: 20px 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.price-row:last-child {
+    margin-bottom: 0;
+}
+
+.price-label {
+    font-size: 14px;
+    color: #666;
+}
+
+/* 등급 배지 */
+.grade-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    font-size: 11px;
+    font-weight: bold;
+    color: #666;
+    vertical-align: middle;
+}
+
+.original-price {
+    font-size: 15px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.discount-rate {
+    margin-right: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #e64545;
+}
+
+.sale-price {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 필드 라벨 (옵션 / 수량 공용) */
+.field-title {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* 옵션 */
+#option-area {
+    margin-top: 25px;
+}
+
+#product-option {
+    width: 100%;
+    height: 45px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+#product-option option:disabled {
+    color: #bbb;
+}
+
+/* 수량 */
+#quantity-area {
+    margin-top: 20px;
+}
+
+#product-quantity {
+    width: 100px;
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+#product-quantity:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* 배송 안내 */
+#delivery-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #666;
+}
+
+/* 총 상품 금액 */
+#total-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+}
+
+.total-label {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+#total-product-price {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+/* 버튼 */
+#product-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.product-btn {
+    height: 50px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#wish-button {
+    width: 55px;
+}
+
+#wish-button.is-active {
+    color: #e64545;
+    border-color: #e64545;
+}
+
+#cart-button {
+    flex: 1;
+}
+
+#buy-button {
+    flex: 1;
+    background-color: #222;
+    color: white;
+    border-color: #222;
+}
+
+/* 비활성화 상태 */
+.product-btn:disabled {
+    background-color: #eee;
+    border-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+#buy-button:disabled {
+    background-color: #eee;
+    border-color: #ddd;
+    color: #aaa;
+}
+
+/* 상품 상세 탭 */
+#product-detail-tabs {
+    margin-top: 50px;
+}
+
+.tab-menu {
+    display: flex;
+    border-top: 1px solid #222;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab-menu-item {
+    flex: 1;
+    padding: 16px 0;
+    border: none;
+    background-color: white;
+    font-size: 15px;
+    color: #999;
+    cursor: pointer;
+}
+
+.tab-menu-item.is-active {
+    color: #222;
+    font-weight: bold;
+    border-bottom: 2px solid #222;
+    margin-bottom: -1px;
+}
+
+.tab-panel {
+    display: none;
+    padding: 30px 10px;
+}
+
+.tab-panel.is-active {
+    display: block;
+}
+
+.tab-content-text {
+    margin: 0 0 10px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #555;
+}
+
+.tab-content-image {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* 리뷰 */
+.review-item {
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-item-header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.review-writer {
+    font-weight: bold;
+}
+
+.review-score {
+    color: #e64545;
+}
+
+.review-date {
+    color: #999;
+}
+
+.review-images {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.review-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.review-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+}

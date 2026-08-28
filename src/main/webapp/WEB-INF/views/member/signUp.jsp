@@ -1,22 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<!DOCTYPE html>
-<html lang="ko">
+<jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원가입</title>
+<link rel="stylesheet" href="/css/default.css">
+<link rel="stylesheet" href="/css/style_member.css">
 
-    <link rel="stylesheet" href="/css/default.css">
-    <link rel="stylesheet" href="/css/style_member.css">
-</head>
-
-<body  class="signup-page">
+<body class="signup-page">
 
     <main>
-
         <!-- 회원가입 제목 -->
         <div id="title">회원가입</div>
 		
@@ -27,7 +19,7 @@
 		</c:if>
 		
         <form id="SignUpForm" action="/member/signUp" method="post">
-		<input type="hidden" name="role" value="USER">
+            <input type="hidden" name="role" value="USER">
 			
             <!-- 이름 -->
             <div id="Name">
@@ -51,11 +43,10 @@
             <!-- 성별 -->
             <div id="Gender">
                 <span>성별</span>
-
                 <input type="radio"
                        id="gender-male"
                        name="gender"
-                       value="M" checked>
+                       value="M">
                 <label for="gender-male">남성</label>
 
                 <input type="radio"
@@ -68,102 +59,75 @@
             <!-- 닉네임 -->
             <div id="Nickname">
                 <label for="nickname">닉네임</label>
-				
-				<div class="id-input-box">
-                	<input type="text"
-                       	id="nickname"
-                      	 name="nickname"
-                      	 class="signup-input"
-                      	 placeholder="닉네임을 입력해주세요">
-					<button type="button" id="CheckNickname" class="CheckBox">
-				       중복확인
-					</button>
-				</div>
+                <input type="text"
+                       id="nickname"
+                       name="nickname"
+                       class="signup-input"
+                       placeholder="닉네임을 입력해주세요">
+                <p id="nickname-message" class="check-message"></p>
             </div>
-			<p id="nickname-check-notice"></p>
 
             <!-- 아이디 -->
             <div id="Username">
                 <label for="login_id">아이디</label>
-
                 <div class="id-input-box">
                     <input type="text"
                            id="login_id"
                            name="loginId"
                            class="signup-input"
                            placeholder="아이디를 입력해주세요">
-
-                    <button type="button" id="CheckId" class="CheckBox">
-                        중복확인
-                    </button>
+                    <button type="button" id="CheckId">중복확인</button>
                 </div>
-				<p id="id-check-notice"></p>
+                <p id="id-message" class="check-message"></p>
             </div>
 
             <!-- 비밀번호 -->
             <div id="Password">
                 <label for="login_pw">비밀번호</label>
-
                 <input type="password"
                        id="login_pw"
                        name="loginPw"
                        class="signup-input"
                        placeholder="비밀번호를 입력해주세요">
+                <p id="pw-reg-check-notice"></p>
             </div>
-			<p id="pw-reg-check-notice"></p>
 
             <!-- 비밀번호 확인 -->
             <div id="ConfirmPassword">
                 <label for="login_pw_confirm">비밀번호 확인</label>
-
                 <input type="password"
                        id="login_pw_confirm"
                        name="login_pw_confirm"
                        class="signup-input"
                        placeholder="비밀번호를 다시 입력해주세요">
+                <p id="pw-check-notice" class="check-message"></p>
             </div>
-			<p id="pw-check-notice"></p>
 
             <!-- 휴대폰 번호 -->
             <div id="PhoneNumber">
                 <label for="phone">휴대폰 번호</label>
-
-				<div class="id-input-box">
-                	<input type="tel"
-                    	   id="phone"
-                    	   name="phone"
-                   	    class="signup-input"
-                   	    placeholder="휴대폰 번호를 입력해주세요">
-					<button type="button" id="CheckPhone" class="CheckBox">
-						   중복확인
-					</button>
-				</div>
+                <input type="tel"
+                       id="phone"
+                       name="phone"
+                       class="signup-input"
+                       placeholder="휴대폰 번호를 입력해주세요">
             </div>
-			<p id="phone-check-notice"></p>
 
             <!-- 이메일 -->
             <div id="Email">
                 <label for="email">이메일</label>
-	
-				<div class="id-input-box">
-               		<input type="email"
-                 	      id="email"
-           		          name="email"
-                	      class="signup-input"
-                    	  placeholder="이메일을 입력해주세요">
-					<button type="button" id="CheckEmail" class="CheckBox">
-							중복확인
-					</button>
-				</div>	   
+                <input type="email"
+                       id="email"
+                       name="email"
+                       class="signup-input"
+                       placeholder="이메일을 입력해주세요">
             </div>
-			<p id="email-check-notice"></p>
 
             <!-- 개인정보 동의 -->
             <div id="PrivacyBox">
                 <input type="checkbox"
                        id="privacy_agree"
                        name="privacy_agree">
-
                 <label for="privacy_agree">
                     개인정보 수집 및 이용에 동의합니다.
                 </label>
@@ -178,15 +142,15 @@
             <div id="SignUp">
                 <button type="submit">회원가입</button>
             </div>
-
         </form>
 
         <!-- 기존 회원 로그인 -->
         <div id="Login">
-            <button type="button">기존 회원 로그인</button>
+            <button type="button" onclick="location.href='/member/login'">기존 회원 로그인</button>
         </div>
-
     </main>
-<script src="/js/member.js"></script>
+
+    <script src="/js/member.js"></script>
+    <jsp:include page="/WEB-INF/views/common/footer.jsp"/>
 </body>
 </html>

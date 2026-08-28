@@ -6,11 +6,42 @@
 <mapper namespace="com.kh.sajotuna.mds.product.model.mapper.ProductMapper">
 
 	<select id="productDetail" resultType="ProductDetailDTO" parameterType="Long">
-		select p.product_id, p.product_title, p.product_name, p.product_content, MIN(PO.OPTION_PRICE) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS PRICE
-		from product p join optiondetail o on p.product_id = o.product_id
-        join productoption po on po.option_id = o.option_id
-		where p.product_id = #{productId} and p.status = 'ON_SALE'
-        GROUP BY  p.product_id, p.product_title, p.product_name, p.product_content
+		SELECT
+		p.product_id,
+		p.product_title,
+		p.product_name,
+		p.product_content,
+		MIN(PO.OPTION_PRICE) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS PRICE,
+		NVL(( SELECT ROUND(AVG(R.SCORE), 1)
+		FROM REVIEW R
+		JOIN ORDERDETAIL OD_SUB ON R.OD_ID = OD_SUB.OD_ID
+		JOIN OPTIONDETAIL SUB_OD ON OD_SUB.POP_ID = SUB_OD.POP_ID
+		WHERE SUB_OD.PRODUCT_ID = p.product_id
+		), 0.0) AS avg_score,
+
+		(
+		SELECT COUNT(R.REVIEW_ID)
+		FROM REVIEW R
+		JOIN ORDERDETAIL OD_SUB ON R.OD_ID = OD_SUB.OD_ID
+		JOIN OPTIONDETAIL SUB_OD ON OD_SUB.POP_ID = SUB_OD.POP_ID
+		WHERE SUB_OD.PRODUCT_ID = p.product_id
+		) AS review_count,
+
+		(
+		SELECT COUNT(W.WISH_ID)
+		FROM WISH W
+		WHERE W.PRODUCT_ID = p.product_id
+		) AS wish_count
+
+		FROM product p
+		JOIN optiondetail o ON p.product_id = o.product_id
+		JOIN productoption po ON po.option_id = o.option_id
+		WHERE p.product_id = #{productId} AND p.status = 'ON_SALE'
+		GROUP BY
+		p.product_id,
+		p.product_title,
+		p.product_name,
+		p.product_content
 	</select>
 	
 	<select id="getThumbnail" resultType="String" parameterType="Long">
@@ -33,10 +64,10 @@
 
 	
 	<select id="getOptionList" resultType="OptionDTO" parameterType="Long">
-	select o.option_id, o.option_name, o.option_price as price
-	from productoption o join optiondetail od on o.option_id = od.option_id
-	join product p on od.product_id = p.product_id
-	where p.product_id = #{productId}
+		select o.option_id, o.option_name, o.option_price as price, od.POP_ID, o.OPTION_STOCK as stock
+		from productoption o join optiondetail od on o.option_id = od.option_id
+		join product p on od.product_id = p.product_id
+		where p.product_id = #{productId}
 	</select>
 
 	<select id="getCoupons" resultType="CouponDTO" >
@@ -55,26 +86,38 @@
 	</insert>
 
 	<select id="getReviewList" resultType="ReviewDTO">
-		select r.REVIEW_ID, r.SCORE, r.REVIEW_TEXT, to_char(r.WRITE_DATE, 'YYYY-MM-DD'),
-		po.OPTION_NAME, p.PRODUCT_NAME, po.OPTION_PRICE, m.NICKNAME, orderd.QTY, r.LIKE_COUNT,
-		CASE
-		WHEN rl.MEMBER_ID IS NOT NULL THEN 1 ELSE 0 END AS isLiked
+		SELECT
+		r.REVIEW_ID,
+		r.SCORE,
+		r.REVIEW_TEXT,
+		TO_CHAR(r.WRITE_DATE, 'YYYY-MM-DD') AS writeDate,
+		po.OPTION_NAME,
+		p.PRODUCT_NAME,
+		po.OPTION_PRICE,
+		m.NICKNAME,
+		orderd.QTY,
+		r.LIKE_COUNT,
+		CASE WHEN rl.MEMBER_ID IS NOT NULL THEN 1 ELSE 0 END AS is_liked
 
-		from review r join OPTIONDETAIL od on r.OD_ID = od.OPTION_ID
-		join PRODUCTOPTION po on po.OPTION_ID = od.OPTION_ID
-		join product p on p.PRODUCT_ID = od.PRODUCT_ID
-		join member m on m.MEMBER_ID = r.MEMBER_ID
-		join productorder pr on pr.MEMBER_ID = m.MEMBER_ID
-		join orderdetail orderd on orderd.ORDER_ID = pr.ORDER_ID
-		LEFT JOIN
-		REVIEWLIKE rl
+		FROM review r
+
+		JOIN orderdetail orderd ON r.OD_ID = orderd.OD_ID
+
+		JOIN OPTIONDETAIL od ON orderd.POP_ID = od.POP_ID
+
+		JOIN PRODUCTOPTION po ON po.OPTION_ID = od.OPTION_ID
+		JOIN product p ON p.PRODUCT_ID = od.PRODUCT_ID
+
+		JOIN member m ON m.MEMBER_ID = r.MEMBER_ID
+
+		LEFT JOIN REVIEWLIKE rl
 		ON r.REVIEW_ID = rl.REVIEW_ID
 		AND rl.MEMBER_ID = #{memberId}
-		where p.PRODUCT_ID = #{productId}
-	</select>
 
+		WHERE p.PRODUCT_ID = #{productId}
+	</select>
 	<select id="getReviewImages" resultType="ReviewImagesDTO" >
-		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_images
+		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_image
 		from REVIEWIMAGE ri join REVIEW r on ri.REVIEW_ID = r.REVIEW_ID
 		where r.REVIEW_ID in <foreach collection="list" item="reviewId" open="(" separator=", " close=")">
 		#{reviewId}
