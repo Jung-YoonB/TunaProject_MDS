@@ -10,13 +10,14 @@ import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
 import com.kh.sajotuna.mds.review.model.dto.ReviewImagesDTO;
 
 @Mapper
 public interface ProductMapper {
 	//상품 리스트
-	List<ProductListDTO> getList();
+	List<ProductListDTO> getList(SearchDTO search);
 	
 	List<BannerDTO> bannerList();
 

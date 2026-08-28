@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.service.ProductService;
 import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
 import com.kh.sajotuna.mds.util.SessionConst;
@@ -29,9 +30,9 @@ public class ProductController {
 	private final ProductService service;
 	
 	@GetMapping("/list")
-	public String getList(Model model) {
+	public String getList(Model model, SearchDTO searchDTO) {
 		
-		MainPageDTO list = service.getList();
+		MainPageDTO list = service.getList(searchDTO);
 		
 		model.addAttribute("productList", list);
 		System.out.println("컨트롤러 :: " + list);
