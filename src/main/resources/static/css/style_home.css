@@ -1,117 +1,397 @@
-    * {
-        box-sizing: border-box;
-    }
+:root {
+    --gsf-ivory: #fefae0;
+    --gsf-beige: #e9edc9;
+    --gsf-peach: #faedcd;
+    --gsf-text: #51483b;
+    --gsf-subtext: #8d8475;
+}
 
-    /* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
-       다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .home-page로 스코프할 것 */
-    .home-page {
-        width: 1200px;
-        margin: 0 auto;
-        background-color: #ffffff;
-        color: #222;
-        font-family: Arial, sans-serif;
-    }
+/* home.jsp가 <main> 바로 아래에 섹션을 직접 두므로, 각 섹션 id는 이 페이지에서만 쓰인다.
+   섹션 자체는 투명하게 두고 콘텐츠 카드(.home-container)만 가운데 정렬해서, 카드 바깥
+   좌우 여백에는 body의 고정 산수화 배경이 그대로 비쳐 보이도록 한다. */
+.home-container {
+    width: min(1200px, 100% - 80px);
+    margin: 0 auto;
+}
 
-    /* BANNER */
-    #banner {
-        width: 100%;
-        height: 300px;
-        margin-top: 30px;
-        border: 1px solid #e5e5e5;
-        background-color: #fafafa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #999;
-        font-size: 16px;
-    }
+/* BANNER */
+#banner {
+    background-color: transparent;
+    padding: 32px 0;
+}
 
-    /* CATEGORY */
-    #category {
-        margin-top: 45px;
-    }
-	
-    #category-title {
-        margin-bottom: 25px;
-        font-size: 20px;
-        font-weight: bold;
-    }
-	
-    #category-list {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 30px 35px;
-    }
+#banner .home-container {
+    background-color: var(--gsf-ivory);
+    border-radius: 24px;
+    padding: 32px 40px;
+}
 
-    .category-item {
-        text-align: center;
-        cursor: pointer;
-    }
+.banner-slider {
+    position: relative;
+}
 
-    /* 이미지 들어갈 영역 */
-    .category-img {
-        width: 100%;
-        height: 150px;
-        border: 1px solid #e5e5e5;
-        background-color: #fafafa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #aaa;
-        font-size: 13px;
-    }
+.banner-slide {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .8s ease;
+}
 
-    .category-name {
-        margin-top: 12px;
-        font-size: 14px;
-        color: #333;
-    }
+.banner-slide.is-active {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto;
+}
 
-    /* PRODUCT */
-    #product {
-        margin-top: 60px;
-        padding-bottom: 80px;
-    }
+.banner-dots {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+}
 
-    #product-title {
-        margin-bottom: 25px;
-        font-size: 20px;
-        font-weight: bold;
-    }
+.banner-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(81, 72, 59, .25);
+    cursor: pointer;
+    transition: background-color .2s ease, width .2s ease;
+}
 
-    #product-list {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 25px;
-    }
+.banner-dot.is-active {
+    width: 20px;
+    border-radius: 4px;
+    background-color: var(--gsf-caramel);
+}
 
-    .product-card {
-        border: 1px solid #e5e5e5;
-        background-color: white;
-        overflow: hidden;
-    }
+.banner-content {
+    flex: 1;
+    min-width: 0;
+}
 
-    .product-img {
-        width: 100%;
-        height: 250px;
-        background-color: #fafafa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #aaa;
-        font-size: 13px;
-    }
+.banner-subtitle {
+    margin: 0 0 12px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--gsf-subtext);
+}
 
-    .product-info {
-        padding: 18px;
-    }
+.banner-content h1 {
+    margin: 0 0 20px;
+    font-size: 40px;
+    line-height: 1.35;
+    font-weight: 700;
+    color: var(--gsf-text);
+}
 
-    .product-name {
-        margin-bottom: 10px;
-        font-size: 15px;
-        font-weight: bold;
-    }
+.banner-description {
+    margin: 0 0 32px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--gsf-subtext);
+}
 
-    .product-price {
-        font-size: 14px;
-    }
+.banner-button {
+    display: inline-block;
+    padding: 14px 32px;
+    border-radius: 999px;
+    background-color: var(--gsf-sage);
+    color: var(--gsf-text);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color .2s ease, color .2s ease;
+}
+
+.banner-button:hover {
+    background-color: var(--gsf-caramel);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.banner-image {
+    flex: 1;
+    min-width: 0;
+    aspect-ratio: 16 / 9;
+    border-radius: 20px;
+    background-image: linear-gradient(135deg, var(--gsf-sage-light), var(--gsf-peach));
+}
+
+.banner-image-alt {
+    background-image: linear-gradient(135deg, var(--gsf-peach), var(--gsf-tan));
+}
+
+.banner-image-warm {
+    background-image: linear-gradient(135deg, var(--gsf-tan), var(--gsf-caramel));
+}
+
+/* SECTION HEADER (선물 카테고리 / 인기 선물 공통) */
+.section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 25px;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gsf-text);
+}
+
+.section-more {
+    font-size: 13px;
+    color: var(--gsf-subtext);
+    text-decoration: none;
+}
+
+.section-more:hover {
+    color: var(--gsf-caramel);
+    text-decoration: none;
+}
+
+/* CATEGORY - 섹션 자체는 투명, .home-container에만 흰 배경을 줘서
+   콘텐츠 바깥 좌우 여백에는 body의 고정 산수화 장식이 계속 비쳐 보이도록 함 */
+#category {
+    background-color: transparent;
+    padding-top: 20px;
+}
+
+#category .home-container {
+    background-color: #ffffff;
+    padding: 40px 40px 0;
+}
+
+#category-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 32px 24px;
+}
+
+.category-item {
+    text-align: center;
+    cursor: default;
+}
+
+.category-icon {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background-color: var(--gsf-beige);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color .2s ease;
+}
+
+/* 카테고리 원형 배경 - 세이지/피치 2톤 번갈아 표시 */
+.category-item:nth-child(odd) .category-icon {
+    background-color: var(--gsf-sage-light);
+}
+
+.category-item:nth-child(even) .category-icon {
+    background-color: var(--gsf-peach);
+}
+
+.category-item:hover .category-icon {
+    background-color: var(--gsf-sage);
+}
+
+.category-icon-svg {
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: var(--gsf-ink);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.category-name {
+    display: block;
+    font-size: 14px;
+    color: var(--gsf-text);
+    white-space: nowrap;
+}
+
+/* PRODUCT - 카테고리와 마찬가지로 .home-container에만 흰 배경을 줘서 좌우 여백을 비워둠 */
+#product {
+    background-color: transparent;
+}
+
+#product .home-container {
+    background-color: #ffffff;
+    padding: 40px 40px 90px;
+}
+
+#product-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.product-card {
+    position: relative;
+    border: 1px solid var(--gsf-border);
+    border-radius: 16px;
+    background-color: #ffffff;
+    overflow: hidden;
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+
+.product-card:hover {
+    box-shadow: 0 12px 24px rgba(81, 72, 59, .12);
+    transform: translateY(-2px);
+}
+
+.product-img {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-image: linear-gradient(135deg, var(--gsf-peach), var(--gsf-sage-light));
+}
+
+.product-img-alt {
+    background-image: linear-gradient(135deg, var(--gsf-sage-light), var(--gsf-tan));
+}
+
+.product-badge {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background-color: var(--gsf-sage-dark);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+}
+
+.product-like {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, .85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gsf-text);
+    cursor: pointer;
+}
+
+.product-like:hover {
+    color: var(--gsf-caramel);
+}
+
+.product-like-svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.product-info {
+    padding: 18px;
+}
+
+.product-name {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gsf-text);
+}
+
+.product-description {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--gsf-subtext);
+}
+
+.product-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.product-price {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--gsf-text);
+}
+
+.product-cart {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--gsf-beige);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gsf-ink);
+    cursor: pointer;
+    transition: background-color .2s ease;
+}
+
+.product-cart:hover {
+    background-color: var(--gsf-sage);
+}
+
+.product-cart-svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.product-rating {
+    font-size: 12px;
+    color: var(--gsf-subtext);
+}
+
+/* 배경 산수화 - 원본 이미지 한 장을 헤더 아래~배너~카테고리 상단까지 원본 비율 그대로 표시.
+   이미지 하단은 흰색으로 자연스럽게 페이드아웃되어 카테고리/상품 섹션의 흰 배경과 이어짐.
+   * body:has(#banner) 대신 body.home-hero 클래스를 사용한다 - 다른 페이지의 :has() 규칙과
+   * 공존할 때 background-size 계산이 깨지는 브라우저 버그성 충돌이 있어서, 페이지별로
+   * 안전하게 분리했다. HomeController가 bodyClass="home-hero" 모델 속성을 내려준다. */
+body.home-hero {
+    /* 산수화 이미지 하단부 톤과 맞춘 한지 색상 - 이미지가 끝난 뒤 좌우 여백을 채움 */
+    background-color: #a9a6a2;
+    background-repeat: no-repeat, no-repeat;
+    background-position: top center, top center;
+    background-size: 100% auto, 100% auto;
+    /* 스크롤해도 그림이 화면에 고정되어 움직이지 않도록 */
+    background-attachment: fixed, fixed;
+    background-image:
+        linear-gradient(to bottom, rgba(169, 166, 162, 0) 75%, #a9a6a2 100%),
+        url('/img/home/hero-bg.jpg');
+}
