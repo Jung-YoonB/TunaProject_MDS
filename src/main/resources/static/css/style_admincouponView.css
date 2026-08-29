@@ -1,8 +1,12 @@
-body {
-            margin: 0;
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .admin-coupon-view-page로 스코프할 것.
+   원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, 바깥 배경은 .admin-coupon-view-page에,
+   흰 카드는 그 안의 .admin-coupon-view-page-card에 나눠 담는다 */
+        .admin-coupon-view-page {
             background-color: #f8f6f2;
-            font-family: Arial, sans-serif;
-            color: #333;
+            min-height: 100vh;
+            padding: 50px 0;
+            box-sizing: border-box;
         }
 
 
@@ -10,9 +14,9 @@ body {
            전체 영역
         ================================= */
 
-        main {
+        .admin-coupon-view-page-card {
             width: 800px;
-            margin: 50px auto;
+            margin: 0 auto;
             padding: 40px;
 
             background-color: white;
@@ -27,7 +31,7 @@ body {
            제목
         ================================= */
 
-        #title {
+        .admin-coupon-view-page #title {
             margin-bottom: 30px;
 
             font-size: 28px;
@@ -255,11 +259,33 @@ body {
             flex: 1;
         }
 
-        .coupon-name {
-            margin-bottom: 7px;
+        /* 발급 이력이 있는 쿠폰(삭제 불가)은 카드 왼쪽에 색 띠를 둬서 목록에서 바로 구분되게 함 */
+        .coupon-card.has-history {
+            border-left: 4px solid #c1592f;
+            background-color: #fdf8f4;
+        }
 
+        .coupon-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 7px;
+        }
+
+        .coupon-name {
             font-size: 16px;
             font-weight: bold;
+        }
+
+        .history-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background-color: #fbe3d3;
+            color: #c1592f;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
         }
 
         .coupon-description {
@@ -357,7 +383,7 @@ body {
 
         @media (max-width: 850px) {
 
-            main {
+            .admin-coupon-view-page-card {
                 width: calc(100% - 30px);
 
                 margin: 30px auto;
