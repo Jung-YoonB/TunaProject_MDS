@@ -48,15 +48,16 @@ public class MemberController {
 	public String myPageForm(HttpSession session, Model model) {
 		
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-		model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
-		System.out.println("마이페이지용 모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
 				
-		if(member.getRole().equals("USER")) {
+		if("ADMIN".equals(member.getRole())) {
+			return "admin/adminPage";
+		} else {
+			model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
+			System.out.println("마이페이지용 모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
 			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
 			return "member/myPage";
-		} else {
-			return "admin/adminPage";
 		}
+		// 관리자 페이지에서는 로그인 시 세션에 저장하는 데이터만 요구하니 따로 조회해오지 않음
 		// 유저는 loginMember 에 유저DTO, couponList에 List<CouponDTO> 가 모델에 저장되고 넘어감
 	}
 	
@@ -143,6 +144,7 @@ public class MemberController {
 		try {
 				service.signUp(member);
 		} catch(IllegalStateException e) {
+			e.printStackTrace();
 			redirectAttr.addFlashAttribute("error", e.getMessage());
 			return "redirect:/member/signUp";
 		}
@@ -205,6 +207,7 @@ public class MemberController {
 		session.setAttribute(SessionConst.LOGIN_SESSION, member );
 		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_SESSION)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
+			e.printStackTrace();
 			redirectAttr.addFlashAttribute("error", e.getMessage());
 			if (redirectURL != null && !redirectURL.isBlank()) {
 	            redirectAttr.addAttribute("redirectURL", redirectURL);

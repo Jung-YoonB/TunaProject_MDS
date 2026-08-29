@@ -53,7 +53,8 @@ public class OrderController {
 	}
 	
 	@PostMapping("/checkout")
-	public String checkout(HttpSession session, @ModelAttribute CheckoutDTO checkoutData, RedirectAttributes redirectAttr) {
+	public String checkout(HttpSession session, @ModelAttribute CheckoutDTO checkoutData,
+			RedirectAttributes redirectAttr) {
 	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
 	    
 	    if (member == null) {
@@ -61,9 +62,16 @@ public class OrderController {
 	    }
 	    
 	    checkoutData.setMemberId(member.getMemberId());
-	    CheckoutDTO resultData = service.checkout(checkoutData);
 	    
+	    try {
+	    CheckoutDTO resultData = service.checkout(checkoutData);
 	    redirectAttr.addFlashAttribute("checkoutData", resultData);
 	    return "redirect:/order/completed"; // 결제 완료 페이지로 리다이렉트
+	    } catch(Exception e) {
+	    	e.printStackTrace();
+	    	redirectAttr.addFlashAttribute("error", e.getMessage());
+			return "redirect:/order/payment";
+	    }
+	   
 	}
 }

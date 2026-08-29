@@ -83,5 +83,5 @@
 		INSERT INTO POINTHISTORY (PHIST_ID, MEMBER_ID, ORDER_ID, TYPE, AMOUNT, BALANCE)
 		VALUES (SEQ_PHIST_ID.NEXTVAL, #{memberId}, #{orderId}, 'EARN', #{earnPoint}, #{balance})
 	</insert>
-
+ 
 </mapper>
