@@ -26,8 +26,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderController {
 	
-	private final  MemberService memberService;
-	private final  OrderService service;
+	private final MemberService memberService;
+	private final OrderService service;
 	
 	@PostMapping("/payment")
 	public String paymentForm(HttpSession session, Model model,

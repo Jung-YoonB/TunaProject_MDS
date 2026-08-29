@@ -28,11 +28,14 @@ public interface OrderMapper {
 	List<OrderItemDTO> selectItems(@Param("itemList") List<OrderItemDTO> itemList);
 	
 	// 쿠폰히스토리id로 쿠폰 할인율 받아오기
-	double selectByChistId(@Param("memberId") Long memberId,@Param("chistId") Long chistId);
+	Double selectByChistId(@Param("memberId") Long memberId,@Param("chistId") Long chistId);
 	
 	// 검증한 데이터로 productorder테이블에 입력
 	int insertProductOrder(CheckoutDTO verifiedData);
 	
+	// 구매한 양만큼 보유량 수정
+	int updateProductStock(OrderItemDTO item);
+		
 	// 검증한 데이터로 orderdetail테이블에 입력
 	int insertOrderDetail(OrderItemDTO item);
 	
@@ -47,4 +50,7 @@ public interface OrderMapper {
 	
 	// 포인트 적립 이력 기록
 	int insertPointHistoryEarn(CheckoutDTO verifiedData);
+	
+	// 결제 후 장바구니에서 제거
+	int deleteCartItems(@Param("memberId") Long memberId,@Param("cartIds") List<Long> cartIds);
 }

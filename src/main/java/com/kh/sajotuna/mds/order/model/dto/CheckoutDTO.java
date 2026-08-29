@@ -21,17 +21,19 @@ public class CheckoutDTO {
 	private Long memberId;
 	private Long orderId;
 	private long totalPrice;
-	private double discountRate;
+	private Double discountRate;
 	private Long point;
 	private Integer usedPoint;
-	private int balance;
-	private int earnPoint;
+	private long balance;
+	private long earnPoint;
 	private Long paymentId;
+	private Double couponValue;
 	private String addressNameFix;
 	private String detailAddressFix;
 	private Long couponId;
 	private Long chistId;
-	private double couponValue;
+	private Long stock;
 	
 	private List<OrderItemDTO> itemList;
+	private List<Long> cartIds;
 }
