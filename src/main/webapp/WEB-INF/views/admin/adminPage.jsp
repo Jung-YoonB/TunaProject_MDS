@@ -103,37 +103,28 @@
             <h2 class="section-title">일반 메뉴</h2>
             <ul class="accordion" id="general-menu-accordion">
                 <li class="accordion-item">
-                    <button type="button" class="accordion-header" aria-expanded="false">
+                    <div class="accordion-header">
                         <span>상품관리</span>
-                        <svg class="accordion-chevron" viewBox="0 0 24 24" focusable="false">
-                            <path d="M6 9l6 6 6-6"/>
-                        </svg>
-                    </button>
-                    <ul class="accordion-panel" hidden>
+                    </div>
+                    <ul class="accordion-panel">
                         <li><a href="<c:url value='/admin/product/add'/>">상품등록</a></li>
                         <li><a href="<c:url value='/admin/order'/>">주문 배송 관리</a></li>
                     </ul>
                 </li>
                 <li class="accordion-item">
-                    <button type="button" class="accordion-header" aria-expanded="false">
+                    <div class="accordion-header">
                         <span>쿠폰 조회 및 등록</span>
-                        <svg class="accordion-chevron" viewBox="0 0 24 24" focusable="false">
-                            <path d="M6 9l6 6 6-6"/>
-                        </svg>
-                    </button>
-                    <ul class="accordion-panel" hidden>
+                    </div>
+                    <ul class="accordion-panel">
                         <li><a href="<c:url value='/admin/coupon'/>">쿠폰 조회 및 등록</a></li>
                     </ul>
                 </li>
                 <li class="accordion-item">
                     <!-- 문의사항 처리 / 공지 작성: 대응 화면이 아직 없어 미구현 상태(href="#") -->
-                    <button type="button" class="accordion-header" aria-expanded="false">
+                    <div class="accordion-header">
                         <span>문의내역</span>
-                        <svg class="accordion-chevron" viewBox="0 0 24 24" focusable="false">
-                            <path d="M6 9l6 6 6-6"/>
-                        </svg>
-                    </button>
-                    <ul class="accordion-panel" hidden>
+                    </div>
+                    <ul class="accordion-panel">
                         <li><a href="#">문의사항 처리</a></li>
                         <li><a href="#">공지 작성</a></li>
                     </ul>
@@ -155,10 +146,11 @@
          - 빠른 메뉴(4타일): 상품 관리/주문·배송 관리/쿠폰 관리는 admin 패키지 컨트롤러(/admin/product/add,
            /admin/order, /admin/coupon)로 연결됨 — resources/static/temp/*.html 정적 프로토타입은 더 이상
            사용하지 않음. 문의 내역은 대응 화면이 없어 href="#" 처리.
-         - 일반 메뉴(아코디언): 상위탭은 펼침/접힘 제목일 뿐 그 자체는 페이지로 이동하지 않으며,
-           실제 페이지 이동은 하위탭에서만 발생함. "상품관리" 상위탭의 하위탭(상품등록/주문 배송
-           관리)과 "쿠폰 조회 및 등록" 상위탭의 하위탭(쿠폰 조회 및 등록 1건)은 각각 기존 화면으로
-           연결됨 — 목업 아님. "문의내역" 상위탭의 하위탭(문의사항 처리/공지 작성)은 대응 화면이
+         - 일반 메뉴: 상위 그룹 제목은 페이지로 이동하지 않는 단순 레이블이고(펼침/접힘 없이 하위
+           목록이 항상 노출됨 — 원래 아코디언이었으나 사용자 요청으로 상시 노출로 변경함),
+           실제 페이지 이동은 하위 항목에서만 발생함. "상품관리" 그룹의 하위 항목(상품등록/주문 배송
+           관리)과 "쿠폰 조회 및 등록" 그룹의 하위 항목(쿠폰 조회 및 등록 1건)은 각각 기존 화면으로
+           연결됨 — 목업 아님. "문의내역" 그룹의 하위 항목(문의사항 처리/공지 작성)은 대응 화면이
            프로젝트에 없어 href="#" 임시 처리(추후 실제 화면/컨트롤러 구현 필요).
          - 이전에 있던 "관리자 권한 정보"/"계정 관리"(로그아웃 포함)/"관리자 최근 활동 내역" 카드는
            사용자 요청에 따라 이번 레이아웃 개편에서 완전히 제거됨. --%>
@@ -182,16 +174,6 @@
         // 대응 화면이 없는 placeholder 링크(href="#")는 클릭해도 페이지 이동/점프가 없도록 처리
         document.querySelectorAll('a[href="#"]').forEach(function (a) {
             a.addEventListener('click', function (e) { e.preventDefault(); });
-        });
-
-        // 일반 메뉴 아코디언: 상위탭 클릭 시 하위탭 목록 펼침/접힘
-        document.querySelectorAll('.accordion-header[aria-expanded]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var expanded = btn.getAttribute('aria-expanded') === 'true';
-                btn.setAttribute('aria-expanded', String(!expanded));
-                var panel = btn.nextElementSibling;
-                if (panel) panel.hidden = expanded;
-            });
         });
 
         render();

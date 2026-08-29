@@ -32,13 +32,15 @@
     // 주문번호 정렬 방향. 서버가 기본으로 오름차순(ASC)으로 내려주므로 초기값도 그에 맞춘다
     var sortDirection = 'asc';
 
-    // 페이지네이션: 서버 페이징 없이(지금 데이터 규모에선 불필요) 이미 불러온 전체 목록을
-    // 필터링/정렬한 결과를 클라이언트에서 PAGE_SIZE만큼 잘라서 보여준다
-    var PAGE_SIZE = 10;
-    var currentPage = 1;
-    var paginationPrevBtn = document.getElementById('pagination-prev');
-    var paginationNextBtn = document.getElementById('pagination-next');
-    var paginationListEl = document.getElementById('pagination-list');
+    // 페이지네이션(공용 로직은 static/js/common/pagination.js) - onPageChange는 아래 render를
+    // 참조하는데, 함수 선언은 호이스팅되므로 이 시점에 먼저 참조해도 문제없다
+    var paginator = Pagination.create({
+        pageSize: 10,
+        prevButton: document.getElementById('pagination-prev'),
+        nextButton: document.getElementById('pagination-next'),
+        listElement: document.getElementById('pagination-list'),
+        onPageChange: render
+    });
 
     var modal = document.getElementById('delivery-info-modal');
     var modalStatusLabel = document.getElementById('modal-target-status-label');
@@ -158,34 +160,6 @@
         return buildEditableCells(o);
     }
 
-    // 현재 페이지에 맞춰 목록을 자르고, 유효 범위를 벗어난 currentPage는 마지막 페이지로 당겨온다
-    // (예: 3페이지 보다가 검색해서 결과가 1페이지 분량으로 줄어든 경우)
-    function paginate(list) {
-        var totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
-        if (currentPage > totalPages) currentPage = totalPages;
-        var start = (currentPage - 1) * PAGE_SIZE;
-        return { pageItems: list.slice(start, start + PAGE_SIZE), totalPages: totalPages };
-    }
-
-    // 페이지 번호 버튼을 currentPage 중심으로 최대 5개까지만 보여준다(목업이 1~5였던 것과 동일한 폭)
-    function renderPagination(totalPages) {
-        var windowSize = 5;
-        var startPage = Math.max(1, currentPage - Math.floor(windowSize / 2));
-        var endPage = Math.min(totalPages, startPage + windowSize - 1);
-        startPage = Math.max(1, endPage - windowSize + 1);
-
-        var buttons = [];
-        for (var p = startPage; p <= endPage; p++) {
-            var isActive = p === currentPage;
-            buttons.push('<li><button type="button" data-page="' + p + '"' +
-                (isActive ? ' class="is-active" aria-current="page"' : '') + '>' + p + '</button></li>');
-        }
-        paginationListEl.innerHTML = buttons.join('');
-
-        paginationPrevBtn.disabled = currentPage <= 1;
-        paginationNextBtn.disabled = currentPage >= totalPages;
-    }
-
     function render() {
         var filtered = Service.filterOrders(ORDERS, currentFilters());
 
@@ -193,8 +167,8 @@
             return sortDirection === 'asc' ? a.orderId - b.orderId : b.orderId - a.orderId;
         });
 
-        var paged = paginate(filtered);
-        renderPagination(paged.totalPages);
+        var paged = paginator.paginate(filtered);
+        paginator.render(paged.totalPages);
 
         if (paged.pageItems.length === 0) {
             listEl.innerHTML = '<tr class="no-result"><td colspan="9">조건에 맞는 주문이 없습니다.</td></tr>';
@@ -216,7 +190,7 @@
 
     // 검색/필터/정렬이 바뀌면 지금 보던 페이지 번호는 더 이상 의미가 없으므로 1페이지로 되돌린다
     function renderFromFirstPage() {
-        currentPage = 1;
+        paginator.resetToFirstPage();
         render();
     }
 
@@ -265,25 +239,6 @@
         sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
         sortArrowEl.textContent = sortDirection === 'asc' ? '▲' : '▼';
         renderFromFirstPage();
-    });
-
-    paginationPrevBtn.addEventListener('click', function () {
-        if (currentPage > 1) {
-            currentPage -= 1;
-            render();
-        }
-    });
-
-    paginationNextBtn.addEventListener('click', function () {
-        currentPage += 1;
-        render();
-    });
-
-    paginationListEl.addEventListener('click', function (e) {
-        var btn = e.target.closest('button[data-page]');
-        if (!btn) return;
-        currentPage = Number(btn.dataset.page);
-        render();
     });
 
     listEl.addEventListener('click', function (e) {

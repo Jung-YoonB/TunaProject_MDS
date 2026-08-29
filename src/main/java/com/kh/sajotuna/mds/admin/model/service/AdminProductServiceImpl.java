@@ -2,18 +2,19 @@ package com.kh.sajotuna.mds.admin.model.service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.kh.sajotuna.mds.admin.model.dto.CategoryOptionDTO;
 import com.kh.sajotuna.mds.admin.model.dto.ProductImageInsertDTO;
-import com.kh.sajotuna.mds.admin.model.dto.ProductInsertDTO;
-import com.kh.sajotuna.mds.admin.model.dto.ProductOptionInsertDTO;
 import com.kh.sajotuna.mds.admin.model.dto.TagOptionDTO;
 import com.kh.sajotuna.mds.admin.model.mapper.AdminProductMapper;
+import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.CategoryDTO;
 import com.kh.sajotuna.mds.util.FileUploadUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,9 @@ public class AdminProductServiceImpl implements AdminProductService {
 	private static final int TITLE_IMAGE_SUB = 1;
 	private static final int TITLE_IMAGE_DESCRIPTION = 2;
 
+	// 화면 안내 문구(JPG/PNG/WEBP)와 동일한 기준으로 서버에서도 실제 업로드되는 파일 종류를 제한
+	private static final Set<String> ALLOWED_IMAGE_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+
 	private final AdminProductMapper mapper;
 	private final ObjectMapper objectMapper;
 
@@ -36,7 +40,7 @@ public class AdminProductServiceImpl implements AdminProductService {
 	private String uploadDir;
 
 	@Override
-	public List<CategoryOptionDTO> getCategories() {
+	public List<CategoryDTO> getCategories() {
 		return mapper.selectAllCategories();
 	}
 
@@ -47,43 +51,83 @@ public class AdminProductServiceImpl implements AdminProductService {
 
 	@Override
 	@Transactional
-	public void registerProduct(String productName, int price, int stock, Long categoryId, String productContent,
-			String tagsJson, MultipartFile mainImage, List<MultipartFile> subImages,
-			List<MultipartFile> descriptionImages) {
+	public void registerProduct(String productTitle, String productName, String optionName, int price, int stock,
+			Long categoryId, String productContent, String tagsJson, MultipartFile mainImage,
+			List<MultipartFile> subImages, List<MultipartFile> descriptionImages) {
 
 		if (mainImage == null || mainImage.isEmpty()) {
 			throw new IllegalStateException("대표 이미지는 필수입니다.");
 		}
-		// PRODUCT_TITLE/PRODUCT_NAME/PRODUCT_CONTENT는 NOT NULL 컬럼이고, Oracle은 빈 문자열을 NULL로
-		// 취급하므로 여기서 막지 않으면 DB 제약조건 위반(ORA-01400)이 그대로 노출된다
-		if (productName == null || productName.isBlank()) {
-			throw new IllegalStateException("상품명은 필수입니다.");
+		if (descriptionImages == null || descriptionImages.stream().allMatch(MultipartFile::isEmpty)) {
+			throw new IllegalStateException("설명 이미지는 최소 1장 이상 등록해야 합니다.");
 		}
-		if (productContent == null || productContent.isBlank()) {
-			throw new IllegalStateException("상품 설명은 필수입니다.");
+		// PRODUCT_TITLE/PRODUCT_NAME/PRODUCT_CONTENT/OPTION_NAME은 NOT NULL 컬럼이고, Oracle은 빈 문자열을 NULL로
+		// 취급하므로 여기서 막지 않으면 DB 제약조건 위반(ORA-01400)이 그대로 노출된다
+		requireNonBlank(productTitle, "상품 게시글 제목은 필수입니다.");
+		requireNonBlank(productName, "상품명은 필수입니다.");
+		requireNonBlank(optionName, "옵션명은 필수입니다.");
+		requireNonBlank(productContent, "상품 설명은 필수입니다.");
+		if (price < 0) {
+			throw new IllegalStateException("판매가격은 0 이상이어야 합니다.");
+		}
+		if (stock < 0) {
+			throw new IllegalStateException("재고는 0 이상이어야 합니다.");
+		}
+		if (categoryId == null) {
+			throw new IllegalStateException("카테고리를 선택해 주세요.");
 		}
 
-		ProductInsertDTO product = new ProductInsertDTO();
+		// 실제로 디스크에 쓰기 전에 전부 검사해서, 뒤쪽 이미지가 부적합할 때
+		// 앞쪽 이미지만 파일로 남는(트랜잭션 롤백은 DB에만 적용되고 파일엔 안 적용됨) 상황을 방지
+		checkImageType(mainImage);
+		checkImageTypes(subImages);
+		checkImageTypes(descriptionImages);
+
+		ProductDetailDTO product = new ProductDetailDTO();
+		product.setProductTitle(productTitle);
 		product.setProductName(productName);
 		product.setProductContent(productContent);
 		mapper.insertProduct(product);
 
-		ProductOptionInsertDTO option = new ProductOptionInsertDTO();
-		option.setOptionName(productName);
+		OptionDTO option = new OptionDTO();
+		option.setOptionName(optionName);
 		option.setPrice(price);
 		option.setStock(stock);
 		mapper.insertProductOption(option);
 		mapper.insertOptionDetail(product.getProductId(), option.getOptionId());
 
-		if (categoryId != null) {
-			mapper.insertCategoryDetail(product.getProductId(), categoryId);
-		}
+		mapper.insertCategoryDetail(product.getProductId(), categoryId);
 
 		saveImage(product.getProductId(), mainImage, TITLE_IMAGE_MAIN);
 		saveImages(product.getProductId(), subImages, TITLE_IMAGE_SUB);
 		saveImages(product.getProductId(), descriptionImages, TITLE_IMAGE_DESCRIPTION);
 
 		registerTags(product.getProductId(), tagsJson);
+	}
+
+	private void requireNonBlank(String value, String message) {
+		if (value == null || value.isBlank()) {
+			throw new IllegalStateException(message);
+		}
+	}
+
+	private void checkImageTypes(List<MultipartFile> files) {
+		if (files == null) {
+			return;
+		}
+		for (MultipartFile file : files) {
+			checkImageType(file);
+		}
+	}
+
+	private void checkImageType(MultipartFile file) {
+		if (file == null || file.isEmpty()) {
+			return;
+		}
+		String contentType = file.getContentType();
+		if (contentType == null || !ALLOWED_IMAGE_CONTENT_TYPES.contains(contentType)) {
+			throw new IllegalStateException("이미지는 JPG, PNG, WEBP 파일만 등록할 수 있습니다.");
+		}
 	}
 
 	private void saveImages(Long productId, List<MultipartFile> files, int titleImageType) {

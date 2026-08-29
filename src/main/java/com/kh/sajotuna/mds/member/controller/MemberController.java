@@ -1,5 +1,7 @@
 package com.kh.sajotuna.mds.member.controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -41,7 +43,10 @@ public class MemberController {
 	}
 	
 	@GetMapping("/login")
-	public String loginForm() {
+	public String loginForm(@RequestParam(required = false) String redirectURL, Model model) {
+		if (isSafeRedirect(redirectURL)) {
+			model.addAttribute("redirectURL", redirectURL);
+		}
 		return "member/login";
 	}
 	
@@ -206,14 +211,25 @@ public class MemberController {
 		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_SESSION)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
+			// 로그인 실패 후 재시도할 수 있게, 원래 가려던 곳도 같이 들고 돌아간다
+			if (isSafeRedirect(redirectURL)) {
+				return "redirect:/member/login?redirectURL=" + URLEncoder.encode(redirectURL, StandardCharsets.UTF_8);
+			}
 			return "redirect:/member/login";
 		}
-		
-		if (redirectURL != null && !redirectURL.isBlank()) {
+
+		if (isSafeRedirect(redirectURL)) {
 			return "redirect:" + redirectURL;
 		}
-		
+
 		return "redirect:/";
+	}
+
+	// 오픈 리다이렉트 방지: 우리 사이트 내부 경로("/"로 시작하되 "//"는 아닌 것)만 리다이렉트 대상으로 허용.
+	// "\"도 막아야 함 - 브라우저(특히 Chromium 계열)가 Location 헤더의 백슬래시를 슬래시로 정규화해서,
+	// "/\evil.com"처럼 "/"로 시작하지만 "//"는 아닌 값도 "//evil.com"(프로토콜 상대 URL)으로 취급될 수 있음
+	private boolean isSafeRedirect(String url) {
+		return url != null && !url.isBlank() && url.startsWith("/") && !url.startsWith("//") && !url.contains("\\");
 	}
 	
 	@GetMapping("/logout")
