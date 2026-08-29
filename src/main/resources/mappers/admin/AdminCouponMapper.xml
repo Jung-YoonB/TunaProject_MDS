@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.sajotuna.mds.admin.model.mapper.AdminCouponMapper">
+
+	<select id="selectAllCoupons" resultType="AdminCouponDTO">
+		SELECT
+			c.COUPON_ID AS couponId,
+			c.COUPON_NAME AS couponName,
+			c.COUPON_VALUE AS couponValue,
+			c.COUPON_TEXT AS couponText,
+			c.CREATED_AT AS createdAt,
+			c.DEADLINE AS deadline,
+			CASE WHEN EXISTS (
+				SELECT 1 FROM COUPONHISTORY ch WHERE ch.COUPON_ID = c.COUPON_ID
+			) THEN 1 ELSE 0 END AS hasHistory
+		FROM COUPON c
+		ORDER BY c.COUPON_ID DESC
+	</select>
+
+	<insert id="insertCoupon" parameterType="AdminCouponDTO">
+		<selectKey keyProperty="couponId" resultType="long" order="BEFORE">
+			SELECT SEQ_COUPON_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO COUPON (COUPON_ID, COUPON_NAME, COUPON_VALUE, COUPON_TEXT, CREATED_AT, DEADLINE)
+		VALUES (#{couponId}, #{couponName}, #{couponValue}, #{couponText}, #{createdAt}, #{deadline})
+	</insert>
+
+	<select id="selectCouponIdsWithHistory" resultType="long">
+		SELECT DISTINCT COUPON_ID
+		FROM COUPONHISTORY
+		WHERE COUPON_ID IN
+		<foreach item="id" collection="couponIds" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</select>
+
+	<delete id="deleteCoupons">
+		DELETE FROM COUPON
+		WHERE COUPON_ID IN
+		<foreach item="id" collection="couponIds" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

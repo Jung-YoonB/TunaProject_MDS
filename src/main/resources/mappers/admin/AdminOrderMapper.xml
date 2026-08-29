@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.sajotuna.mds.admin.model.mapper.AdminOrderMapper">
+
+	<!-- 주문 목록: 대표 상품(가장 먼저 담긴 ORDERDETAIL) 1건 + 상품 건수 + 배송 정보를 함께 조회.
+	     CART 상태는 아직 확정되지 않은 주문이므로 관리자 화면에서 제외 -->
+	<select id="selectOrderList" resultType="AdminOrderListItemDTO">
+		SELECT
+			po.ORDER_ID AS orderId,
+			TO_CHAR(po.ORDER_DATE, 'YYYY-MM-DD') AS orderDateISO,
+			TO_CHAR(po.ORDER_DATE, 'YYYY.MM.DD HH24:MI') AS orderDateDisplay,
+			m.MEMBER_NAME AS ordererName,
+			rep.PRODUCT_NAME AS productName,
+			rep.QTY AS qty,
+			cnt.PRODUCT_COUNT AS productCount,
+			po.TOTAL_PRICE AS paymentAmount,
+			po.ORDER_STATUS AS orderStatus,
+			d.DELIVERY_STATUS AS deliveryStatus,
+			d.TRACKING_NO AS trackingNo,
+			d.COMPANY AS company
+		FROM PRODUCTORDER po
+		JOIN MEMBER m ON m.MEMBER_ID = po.MEMBER_ID
+		LEFT JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
+		LEFT JOIN (
+			SELECT od.ORDER_ID, p.PRODUCT_NAME, od.QTY,
+				ROW_NUMBER() OVER (PARTITION BY od.ORDER_ID ORDER BY od.OD_ID) AS rn
+			FROM ORDERDETAIL od
+			JOIN OPTIONDETAIL opd ON opd.POP_ID = od.POP_ID
+			JOIN PRODUCT p ON p.PRODUCT_ID = opd.PRODUCT_ID
+		) rep ON rep.ORDER_ID = po.ORDER_ID AND rep.rn = 1
+		LEFT JOIN (
+			SELECT ORDER_ID, COUNT(*) AS PRODUCT_COUNT
+			FROM ORDERDETAIL
+			GROUP BY ORDER_ID
+		) cnt ON cnt.ORDER_ID = po.ORDER_ID
+		WHERE po.ORDER_STATUS != 'CART'
+		ORDER BY po.ORDER_ID ASC
+	</select>
+
+	<!-- 대시보드 요약 카운트: 신규주문=결제대기/결제완료, 배송준비중/배송중/취소환불은 DELIVERY.DELIVERY_STATUS 기준.
+	     신규주문 조건에 DELIVERY_STATUS != 'CANCELED'를 추가한 이유: 취소/환불은 2단계(대기중/완료)로 처리되는데,
+	     배송 시작 전(DELIVERY 행이 없던 시점)에 바로 취소/환불한 주문은 ORDER_STATUS가 PAYMENT_COMPLETED에
+	     그대로 머무는 "대기중" 상태라서, 이 조건이 없으면 신규주문과 취소/환불 카드에 동시에 잡힘 -->
+	<select id="selectSummary" resultType="AdminOrderSummaryDTO">
+		SELECT
+			NVL(SUM(CASE WHEN po.ORDER_STATUS IN ('PAYMENT_WAITING', 'PAYMENT_COMPLETED')
+				AND (d.DELIVERY_STATUS IS NULL OR d.DELIVERY_STATUS != 'CANCELED') THEN 1 ELSE 0 END), 0) AS newOrders,
+			NVL(SUM(CASE WHEN d.DELIVERY_STATUS = 'PREPARING' THEN 1 ELSE 0 END), 0) AS preparing,
+			NVL(SUM(CASE WHEN d.DELIVERY_STATUS IN ('SHIPPED', 'OUT_FOR_DELIVERY') THEN 1 ELSE 0 END), 0) AS shipped,
+			NVL(SUM(CASE WHEN d.DELIVERY_STATUS = 'CANCELED' THEN 1 ELSE 0 END), 0) AS canceled
+		FROM PRODUCTORDER po
+		LEFT JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
+		WHERE po.ORDER_STATUS != 'CART'
+	</select>
+
+	<!-- 배송 상태 변경 전 현재 상태를 확인하기 위한 스냅샷 (역행 방지, 결제대기 주문 차단용) -->
+	<select id="selectStatusSnapshot" resultType="OrderStatusSnapshotDTO">
+		SELECT po.ORDER_STATUS AS orderStatus, d.DELIVERY_STATUS AS deliveryStatus
+		FROM PRODUCTORDER po
+		LEFT JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
+		WHERE po.ORDER_ID = #{orderId}
+	</select>
+
+	<update id="updateDeliveryStatus">
+		UPDATE DELIVERY
+		SET DELIVERY_STATUS = #{deliveryStatus},
+			TRACKING_NO = #{trackingNo},
+			COMPANY = #{company}
+		WHERE ORDER_ID = #{orderId}
+	</update>
+
+	<!-- 체크아웃 플로우가 아직 없어서 결제 완료 시점에 DELIVERY 행이 안 만들어짐 -> 관리자가 배송준비중으로
+	     처음 상태를 바꿀 때 이 INSERT로 행을 만든다. 그 이후 상태 변경은 항상 updateDeliveryStatus(UPDATE)만 씀 -->
+	<insert id="insertDelivery">
+		INSERT INTO DELIVERY (DELIVERY_ID, ORDER_ID, COMPANY, TRACKING_NO, DELIVERY_STATUS)
+		VALUES (SEQ_DELIVERY_ID.NEXTVAL, #{orderId}, #{company}, #{trackingNo}, #{deliveryStatus})
+	</insert>
+
+	<!-- PRODUCTORDER.ORDER_STATUS와 DELIVERY.DELIVERY_STATUS를 동기화하기 위한 UPDATE.
+	     결제 전 단계(CART/PAYMENT_WAITING)는 배송 상태 변경 대상이 아니므로 건드리지 않음 -->
+	<update id="updateOrderStatus">
+		UPDATE PRODUCTORDER
+		SET ORDER_STATUS = #{orderStatus}
+		WHERE ORDER_ID = #{orderId}
+		  AND ORDER_STATUS NOT IN ('CART', 'PAYMENT_WAITING')
+	</update>
+
+	<!-- 결제 대기 -> 결제 완료 처리. WHERE절에 현재 상태 조건을 넣어서 이미 처리된 주문에 대한 중복 처리를 막음 -->
+	<update id="confirmPayment">
+		UPDATE PRODUCTORDER
+		SET ORDER_STATUS = 'PAYMENT_COMPLETED'
+		WHERE ORDER_ID = #{orderId}
+		  AND ORDER_STATUS = 'PAYMENT_WAITING'
+	</update>
+
+</mapper>

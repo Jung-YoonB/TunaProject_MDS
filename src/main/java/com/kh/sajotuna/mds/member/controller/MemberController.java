@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
+import com.kh.sajotuna.mds.coupon.model.dto.MyPageCouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
@@ -25,14 +25,13 @@ import com.kh.sajotuna.mds.util.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/member")
+@RequiredArgsConstructor
 public class MemberController {
 	private final MemberService service;
-	public MemberController (MemberService service) {
-		this.service = service;
-	}
 	
 	// GET: 화면 요청 / 데이터 조회
 	@GetMapping("/signUp")
@@ -56,7 +55,7 @@ public class MemberController {
 			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
 			return "member/myPage";
 		} else {
-			return "member/adminMyPage"; // 추후 기능 구현
+			return "admin/adminPage";
 		}
 		// 유저는 loginMember 에 유저DTO, couponList에 List<CouponDTO> 가 모델에 저장되고 넘어감
 	}
@@ -68,10 +67,11 @@ public class MemberController {
 				
 		if(member.getRole().equals("USER")) {
 			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
-			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<MypageCouponDTO>)model.getAttribute("couponList")); // 추적용 출력
+			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<MyPageCouponDTO>)model.getAttribute("couponList")); // 추적용 출력
+
 			return "member/usercouponView";
 		} else {
-			return "member/admincouponView"; // 주소 나중에 확인 + 조회 기능 구현
+			return "admin/admincouponView";
 		}
 		// 유저는 couponList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
 	}
@@ -86,7 +86,7 @@ public class MemberController {
 			System.out.println("찜하기용 모델로 저장" + (List<MyPageWishDTO>)model.getAttribute("wishList")); // 추적용 출력
 			return "member/wish"; 
 		}  else {
-			return "member/admin"; // 관리자용 주소 나중에 확인
+			return "admin/adminPage"; // 관리자용 찜 화면이 없어 대시보드로
 		} 
 		
 		// 유저는 wishList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
@@ -102,7 +102,7 @@ public class MemberController {
 			System.out.println("장바구니용 모델로 저장" + (List<MyPageCartDTO>)model.getAttribute("cartList")); // 추적용 출력
 			return "member/cart"; 
 		}  else {
-			return "member/admin..."; // 관리자용 주소 나중에 확인
+			return "admin/adminPage"; // 관리자용 장바구니 화면이 없어 대시보드로
 		} 
 		// 유저는 cartList에 List<CartDTO> 가 모델에 최신화 되어 넘어감
 	}
@@ -119,7 +119,7 @@ public class MemberController {
 			System.out.println("배송관리 모델로 저장" + (List<MyPageDeliveryDTO>)model.getAttribute("deliveryList")); // 추적용 출력
 			return "member/orderDelivery"; 
 		}  else {
-			return "member/adminOrderDelivery"; 
+			return "admin/adminOrderDelivery";
 		} 
 		
 		// 유저는 cartList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
@@ -206,6 +206,9 @@ public class MemberController {
 		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_SESSION)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
 			redirectAttr.addFlashAttribute("error", e.getMessage());
+			if (redirectURL != null && !redirectURL.isBlank()) {
+	            redirectAttr.addAttribute("redirectURL", redirectURL);
+	        }
 			return "redirect:/member/login";
 		}
 		

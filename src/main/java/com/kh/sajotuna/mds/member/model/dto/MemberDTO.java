@@ -2,6 +2,7 @@ package com.kh.sajotuna.mds.member.model.dto;
 
 import java.time.LocalDate;
 
+import org.apache.ibatis.type.Alias;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.validation.constraints.Pattern;
@@ -16,6 +17,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Getter
 @Setter
+@Alias("MemberDTO")
 public class MemberDTO {
 
 	private Long memberId;
@@ -43,8 +45,9 @@ public class MemberDTO {
 	
 	private Long issue;
 	
-	public MemberDTO(Long memberId, String role) {
+	public MemberDTO(Long memberId, String memberName, String role) {
 		this.memberId = memberId;
+		this.memberName = memberName;
 		this.role = role;
 	}
 }

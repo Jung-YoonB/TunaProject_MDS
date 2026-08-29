@@ -3,6 +3,11 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
+<%-- header.jsp가 모든 CSS를 전역으로 로드하므로, 이 페이지의 배경/폭 스타일이 다른 페이지의
+     공용 <body>/<main>에 새지 않도록 이 wrapper 안에서만 적용되게 스코프한다 --%>
+<div class="product-detail-page">
+<div class="product-detail-page-card">
+
     <!-- 상품 카테고리 -->
     <div id="product-category">결혼·집들이</div>
 
@@ -145,13 +150,9 @@
         </div>
 
         <%-- 상품 상세: 등록 시 입력한 content 텍스트 먼저, 그 다음 상세 이미지(PRODUCT_TITLE_IMAGE = 2) 출력 --%>
-        <%--
-             백엔드 확인 필요: ProductDetailDTO 에 detailImage(List<String>, PRODUCT_TITLE_IMAGE=2 이미지 파일명) 필드 추가 필요.
-             productContent 는 앞서 전달한 typo(productContnet) 수정도 같이 필요.
-        --%>
         <div class="tab-panel is-active" data-tab-panel="info">
             <p class="tab-content-text">${detail.product.productContent}</p>
-            <c:forEach items="${detail.product.detailImage}" var="img">
+            <c:forEach items="${detail.product.detailContents}" var="img">
                 <img class="tab-content-image" src="/upload/product/${img}" alt="상품 상세 이미지">
             </c:forEach>
         </div>
@@ -169,24 +170,26 @@
         </div>
 
         <%--
-             백엔드 확인 필요: DetailPageDTO 에 reviews(List<ReviewDTO>) 필드 추가 필요.
-             REVIEW.OD_ID -> ORDERDETAIL.OD_ID -> ORDERDETAIL.POP_ID -> OPTIONDETAIL.POP_ID -> PRODUCT_ID 로 조인해서
-             해당 상품 리뷰만 조회해야 함 (product.xml의 기존 리뷰 조인은 REVIEW.OD_ID를 OPTIONDETAIL.POP_ID에 바로 붙여서 잘못됨, 참고만)
+             백엔드 확인 필요: detailPage() 컨트롤러에서 이미 있는 ProductServiceImpl.getReviewList(productId, memberId)를
+             한 번 더 호출해서 model.addAttribute("reviewList", ...) 로 얹어주면 됨 (DetailPageDTO에 새 필드 추가할 필요 없음,
+             /mds/review/{productId} 에서 이미 하는 것과 동일한 패턴).
+             단, detailPage.xml의 getReviewList 쿼리 자체에 조인 버그 있음 (r.OD_ID = od.OPTION_ID 비교, member의 전체
+             주문/주문상세를 다 끌어옴) - 이건 리뷰탭 데이터 정확도에 영향을 주니 같이 확인 필요.
         --%>
         <div class="tab-panel" data-tab-panel="review">
-            <c:if test="${empty detail.reviews}">
+            <c:if test="${empty reviewList}">
                 <p class="tab-content-text">아직 작성된 리뷰가 없습니다.</p>
             </c:if>
-            <c:forEach items="${detail.reviews}" var="review">
+            <c:forEach items="${reviewList}" var="review">
                 <div class="review-item">
                     <div class="review-item-header">
-                        <span class="review-writer">${review.writerNicname}</span>
+                        <span class="review-writer">${review.nickname}</span>
                         <span class="review-score">★ ${review.score}</span>
-                        <span class="review-date">${review.writeDateStr}</span>
+                        <span class="review-date">${review.writeDate}</span>
                     </div>
                     <div class="review-images">
                         <c:forEach items="${review.reviewImages}" var="reviewImg">
-                            <img class="review-image" src="${reviewImg.reviewImagePath}${reviewImg.reviewImageSaveName}" alt="리뷰 이미지">
+                            <img class="review-image" src="${reviewImg.reviewImagePath}${reviewImg.reviewImage}" alt="리뷰 이미지">
                         </c:forEach>
                     </div>
                     <p class="review-text">${review.reviewText}</p>
@@ -195,6 +198,9 @@
         </div>
     </div>
 
-<script src="/js/product/productdetail.js"></script>
+</div>
+</div>
+
+<script src="<c:url value='/js/views/productdetail.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

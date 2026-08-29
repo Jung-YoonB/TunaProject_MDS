@@ -6,7 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
+import com.kh.sajotuna.mds.coupon.model.dto.MyPageCouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
@@ -86,7 +86,8 @@ public class MemberServiceImpl implements MemberService{
 			throw new IllegalStateException("아이디 또는 비밀번호가 일치하지 않습니다.");
 		}
 		
-		MemberDTO sessionMember = new MemberDTO(member.getMemberId(),member.getRole());
+		MemberDTO sessionMember = new MemberDTO(member.getMemberId(),
+				member.getMemberName(), member.getRole());
 		return sessionMember;
 	}
 
@@ -99,8 +100,9 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
-	public List<MypageCouponDTO> listCoupon(Long memberId) {
-		List<MypageCouponDTO> couponList = mapper.selectCouponsByMemberId(memberId);
+	public List<MyPageCouponDTO> listCoupon(Long memberId) {
+		List<MyPageCouponDTO> couponList = mapper.selectCouponsByMemberId(memberId);
+
 		
 		return couponList;
 	}

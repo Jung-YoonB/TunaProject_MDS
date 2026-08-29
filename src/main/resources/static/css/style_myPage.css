@@ -2,20 +2,23 @@
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .member-mypage-page로 스코프할 것 */
+.member-mypage-page {
     background-color: #f7f7f7;
+    min-height: 100vh;
     font-family: Arial, sans-serif;
     color: #333;
 }
 
-main {
+.member-mypage-page-content {
     width: 900px;
-    margin: 50px auto;
+    margin: 0 auto;
+    padding: 50px 0;
 }
 
 /* 제목 */
-#title {
+.member-mypage-page #title {
     background-color: white;
     border: 1px solid #ddd;
     padding: 25px;
@@ -66,14 +69,10 @@ main {
     text-align: right;
 }
 
-#EditMember button,
-#EditMember a {
-    display: inline-block;
+#EditMember button {
     padding: 10px 20px;
     border: 1px solid #ccc;
     background-color: white;
-    color: #333;
-    text-decoration: none;
     cursor: pointer;
 }
 
@@ -151,6 +150,6 @@ main {
 }
 
 /* 마우스 효과 */
-.quick-menu-item:hover, .menu-item:hover, button:hover, #EditMember a:hover {
+.quick-menu-item:hover, .menu-item:hover, button:hover {
     background-color: #f5f5f5;
 }
