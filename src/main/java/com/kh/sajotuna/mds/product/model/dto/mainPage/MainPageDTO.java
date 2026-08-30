@@ -2,6 +2,8 @@ package com.kh.sajotuna.mds.product.model.dto.mainPage;
 
 import java.util.List;
 
+import org.apache.ibatis.type.Alias;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +15,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 @Setter
+@Alias("MainPageDTO")
 public class MainPageDTO {
 
 	private List<ProductListDTO> product;

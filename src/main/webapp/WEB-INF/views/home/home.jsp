@@ -3,6 +3,10 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
+<%-- header.jsp가 모든 CSS를 전역으로 로드하므로, 이 페이지의 배경/폭 스타일이 다른 페이지의
+     공용 <body>/<main>에 새지 않도록 이 wrapper 안에서만 적용되게 스코프한다 --%>
+<div class="home-page">
+
     <!-- 배너 -->
     <div id="banner">배너 이미지</div>
     <!-- 선물 카테고리 -->
@@ -124,4 +128,7 @@
             </div>
         </div>
     </div>
+
+</div>
+
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.sajotuna.mds.admin.model.mapper.AdminProductMapper">
+
+	<!-- CategoryDTO(product.model.dto.mainPage)는 CATEGORY 테이블을 참조하는 DTO라 admin 전용
+	     CategoryOptionDTO 대신 이걸 그대로 씀 -->
+	<select id="selectAllCategories" resultType="CategoryDTO">
+		SELECT CATEGORY_ID AS categoryId, CATEGORY_NAME AS categoryName
+		FROM CATEGORY
+		ORDER BY CATEGORY_ID
+	</select>
+
+	<select id="selectAllTags" resultType="TagOptionDTO">
+		SELECT TAG_ID AS tagId, TAG_NAME AS tagName, TAG_COLOR AS tagColor
+		FROM TAG
+		ORDER BY TAG_ID
+	</select>
+
+	<!-- ProductDetailDTO(product.model.dto.detail)는 PRODUCT 테이블을 참조하는 DTO라 admin 전용
+	     ProductInsertDTO 대신 이걸 그대로 씀 (등록 시엔 이 중 4개 필드만 채워서 넘어옴) -->
+	<insert id="insertProduct" parameterType="ProductDetailDTO">
+		<selectKey keyProperty="productId" resultType="long" order="BEFORE">
+			SELECT SEQ_PRODUCT_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO PRODUCT (PRODUCT_ID, PRODUCT_TITLE, PRODUCT_NAME, PRODUCT_CONTENT, STATUS)
+		VALUES (#{productId}, #{productTitle}, #{productName}, #{productContent}, 'ON_SALE')
+	</insert>
+
+	<!-- OptionDTO(product.model.dto.detail)는 PRODUCTOPTION 테이블을 참조하는 DTO라 admin 전용
+	     ProductOptionInsertDTO 대신 이걸 그대로 씀 (popId는 여기서 안 채움) -->
+	<insert id="insertProductOption" parameterType="OptionDTO">
+		<selectKey keyProperty="optionId" resultType="long" order="BEFORE">
+			SELECT SEQ_OPTION_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO PRODUCTOPTION (OPTION_ID, OPTION_NAME, OPTION_PRICE, OPTION_STOCK)
+		VALUES (#{optionId}, #{optionName}, #{price}, #{stock})
+	</insert>
+
+	<insert id="insertOptionDetail">
+		INSERT INTO OPTIONDETAIL (POP_ID, PRODUCT_ID, OPTION_ID)
+		VALUES (SEQ_POP_ID.NEXTVAL, #{productId}, #{optionId})
+	</insert>
+
+	<insert id="insertCategoryDetail">
+		INSERT INTO CATEGORYDETAIL (CD_ID, CATEGORY_ID, PRODUCT_ID)
+		VALUES (SEQ_CD_ID.NEXTVAL, #{categoryId}, #{productId})
+	</insert>
+
+	<insert id="insertProductImage" parameterType="ProductImageInsertDTO">
+		INSERT INTO PRODUCTIMAGE
+			(PRODUCT_IMAGE_ID, PRODUCT_ID, PRODUCT_IMAGE_ORIGINAL_NAME, PRODUCT_IMAGE_SAVE_NAME, PRODUCT_IMAGE_PATH, PRODUCT_TITLE_IMAGE)
+		VALUES
+			(SEQ_PRODUCT_IMAGE_ID.NEXTVAL, #{productId}, #{originalName}, #{saveName}, #{path}, #{titleImageType})
+	</insert>
+
+	<select id="findTagByName" resultType="TagOptionDTO" parameterType="String">
+		SELECT TAG_ID AS tagId, TAG_NAME AS tagName, TAG_COLOR AS tagColor
+		FROM TAG
+		WHERE TAG_NAME = #{tagName}
+	</select>
+
+	<insert id="insertTag" parameterType="TagOptionDTO">
+		<selectKey keyProperty="tagId" resultType="long" order="BEFORE">
+			SELECT SEQ_TAG_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR)
+		VALUES (#{tagId}, #{tagName}, #{tagColor})
+	</insert>
+
+	<insert id="insertTagDetail">
+		INSERT INTO TAGDETAIL (TD_ID, PRODUCT_ID, TAG_ID)
+		VALUES (SEQ_TD_ID.NEXTVAL, #{productId}, #{tagId})
+	</insert>
+
+</mapper>

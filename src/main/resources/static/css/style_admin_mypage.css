@@ -9,7 +9,7 @@
     min-height: 100vh;
 }
 
-.admin-mypage-page main {
+.admin-mypage-page .page-content {
     width: 720px;
     margin: 0 auto;
     padding: 40px 0 80px;
@@ -146,7 +146,7 @@
 
 .admin-mypage-page .quick-menu-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 16px;
     padding: 0;
     margin: 0;
@@ -200,7 +200,7 @@
     color: #333;
 }
 
-/* ---- 일반 메뉴 (아코디언) ---- */
+/* ---- 일반 메뉴 ---- */
 .admin-mypage-page .general-menu-section {
     margin-top: 24px;
 }
@@ -227,45 +227,16 @@
     width: 100%;
     padding: 16px 20px;
     background-color: #ccd5ae;
-    border: none;
     font-family: inherit;
     font-size: 14px;
     font-weight: 700;
     color: #222;
     text-align: left;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.admin-mypage-page .accordion-header:hover,
-.admin-mypage-page .accordion-header:focus {
-    background-color: #adb594;
-    text-decoration: none;
-}
-
-.admin-mypage-page .accordion-chevron {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-    fill: none;
-    stroke: #3f4a33;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: transform .15s;
-}
-
-.admin-mypage-page .accordion-header[aria-expanded="true"] .accordion-chevron {
-    transform: rotate(180deg);
 }
 
 .admin-mypage-page .accordion-panel {
     padding: 0;
     background-color: #f0dfc0;
-}
-
-.admin-mypage-page .accordion-panel[hidden] {
-    display: none;
 }
 
 .admin-mypage-page .accordion-panel li {

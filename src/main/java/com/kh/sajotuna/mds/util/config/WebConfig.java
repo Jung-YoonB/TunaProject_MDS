@@ -28,7 +28,7 @@ public class WebConfig implements WebMvcConfigurer{
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(new LoginInterceptor())
 			// 로그인 없이 접속 시도 시 로그인 요청
-				.addPathPatterns("/member/myPage", "/member/usercouponView", "/member/wish", "/member/cart", "/member/userOrderDelivery");
+				.addPathPatterns("/member/myPage", "/member/couponView", "/member/wish", "/member/cart", "/member/orderDelivery");
 	}
 
 	
