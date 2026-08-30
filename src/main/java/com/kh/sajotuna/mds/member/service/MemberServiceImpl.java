@@ -141,6 +141,46 @@ public class MemberServiceImpl implements MemberService{
 		return deliveryList;
 	}
 
+	@Override
+	public boolean nicknameUpdate(Long memberId, String nickname) {
+		return mapper.updateNickname(memberId, nickname) < 0;
+	}
+	
+	@Override
+	public boolean phoneUpdate(Long memberId, String phone) {
+	    return mapper.updatePhone(memberId, phone) > 0;
+	}
+
+	@Override
+	public boolean emailUpdate(Long memberId, String email) {
+	    return mapper.updateEmail(memberId, email) > 0;
+	}
+
+	@Override
+	public boolean nameUpdate(Long memberId, String memberName) {
+	    return mapper.updateName(memberId, memberName) > 0;
+	}
+
+	@Override
+	public boolean birthUpdate(Long memberId, String birth) {
+	    return mapper.updateBirth(memberId, birth) > 0;
+	}
+
+	@Override
+	public boolean genderUpdate(Long memberId, String gender) {
+	    return mapper.updateGender(memberId, gender) > 0;
+	}
+
+	@Override
+	public boolean passwordUpdate(Long memberId, String newPassword) {
+		String encodePw = passwordEncoder.encode(newPassword);
+	    return mapper.updatePassword(memberId, encodePw) > 0;
+	}
+	
+	@Override
+	public boolean withdrawMember(Long memberId) {
+	    return mapper.withdrawMember(memberId) > 0;
+	}
 	
 }
 

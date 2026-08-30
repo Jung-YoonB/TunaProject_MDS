@@ -231,4 +231,123 @@ public class MemberController {
 		System.out.println("로그아웃 완료");
 		return "redirect:/";
 	}
+	
+	@GetMapping("/updateInfo")
+	public String updateInfoForm(HttpSession session, Model model) {
+		
+		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		
+		if("ADMIN".equals(member.getRole())) {
+			return "admin/adminPage";  // 관리자 데이터 수정은 미구현
+		} else {
+			model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
+			System.out.println("회원 정보 수정용 모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
+			return "member/userUpdateInfo";
+		}
+		// 관리자 상태 수정은 미구현
+		// 유저는 loginMember 에 유저DTO가 모델에 저장되고 넘어감
+	}
+	
+	@PostMapping("/updateNickname")
+	@ResponseBody
+	public ApiResponse<Boolean> updateNickname(HttpSession session, String nickname) {
+		
+		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		boolean isUpdate = service.nicknameUpdate(member.getMemberId(), nickname);
+		
+		String message = isUpdate ? "정보 변경에 실패했습니다." : "정보 변경에 성공하셨습니다.";
+		
+		return ApiResponse.success(message, isUpdate);
+	}
+	
+	@PostMapping("/updatePhone")
+	@ResponseBody
+	public ApiResponse<Boolean> updatePhone(HttpSession session, String phone) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.phoneUpdate(member.getMemberId(), phone);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updateEmail")
+	@ResponseBody
+	public ApiResponse<Boolean> updateEmail(HttpSession session, String email) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.emailUpdate(member.getMemberId(), email);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updateName")
+	@ResponseBody
+	public ApiResponse<Boolean> updateName(HttpSession session, String memberName) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.nameUpdate(member.getMemberId(), memberName);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updateBirth")
+	@ResponseBody
+	public ApiResponse<Boolean> updateBirth(HttpSession session, String birth) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.birthUpdate(member.getMemberId(), birth);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updateGender")
+	@ResponseBody
+	public ApiResponse<Boolean> updateGender(HttpSession session, String gender) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.genderUpdate(member.getMemberId(), gender);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updatePassword")
+	@ResponseBody
+	public ApiResponse<Boolean> updatePassword(HttpSession session, String newPassword) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.passwordUpdate(member.getMemberId(), newPassword);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+	
+	@PostMapping("/withdraw")
+	@ResponseBody
+	public ApiResponse<Boolean> withdraw(HttpSession session) {
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    
+	    if (member == null) {
+	        return ApiResponse.fail("로그인 정보가 없습니다.");
+	    }
+	    
+	    boolean isWithdrawn = service.withdrawMember(member.getMemberId());
+	    
+	    if (isWithdrawn) {
+	        session.invalidate(); // 탈퇴 성공 시 세션 무효화
+	        return ApiResponse.success("회원 탈퇴가 완료되었습니다.", true);
+	    } else {
+	        return ApiResponse.fail("회원 탈퇴에 실패했습니다.");
+	    }
+	}
 }

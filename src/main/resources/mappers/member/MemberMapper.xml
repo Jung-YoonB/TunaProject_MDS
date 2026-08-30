@@ -106,4 +106,36 @@
   		WHERE PO.ORDER_ID = #{orderId} AND PI.PRODUCT_TITLE_IMAGE = 0
   		FETCH FIRST 1 ROWS ONLY
   	</select>
+  	
+  	<update id="updateNickname" parameterType="String">
+  		UPDATE MEMBER SET NICKNAME = #{nickname} WHERE MEMBER_ID = #{memberId}
+  	</update>
+  	
+  	<update id="updatePhone" parameterType="map">
+  	  UPDATE MEMBER SET PHONE = #{phone} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updateEmail" parameterType="map">
+    	UPDATE MEMBER SET EMAIL = #{email} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updateName" parameterType="map">
+    	UPDATE MEMBER SET MEMBER_NAME = #{memberName} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updateBirth" parameterType="map">
+    	UPDATE MEMBER SET BIRTH = #{birth} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updateGender" parameterType="map">
+    	UPDATE MEMBER SET GENDER = #{gender} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updatePassword" parameterType="map">
+    	UPDATE MEMBER SET LOGIN_PW = #{newPassword} WHERE MEMBER_ID = #{memberId}
+	</update>
+	
+	<update id="withdrawMember" parameterType="long">
+    	UPDATE MEMBER SET MEMBER_STATUS = 0 WHERE MEMBER_ID = #{memberId}
+	</update>
 </mapper>
