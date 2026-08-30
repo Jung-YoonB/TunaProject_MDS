@@ -31,13 +31,14 @@
 	</select>
 	
 	<select id="selectByMemberIdForCheckout" parameterType="long" resultType="CheckoutDTO">
-		SELECT M.MEMBER_ID, M.POINT, G.DISCOUNT_RATE
+		SELECT M.MEMBER_ID, MP.POINT, G.DISCOUNT_RATE
 		FROM MEMBER M JOIN GRADE G ON M.GRADE_ID = G.GRADE_ID
+			JOIN MEMBERPOINT MP ON M.MEMBER_ID = MP.MEMBER_ID
 		WHERE M.MEMBER_ID = #{memberId}
   	</select>
   	
   	<select id="selectItems" parameterType="list" resultType="OrderItemDTO">
-		SELECT POP.POP_ID, PO.OPTION_NAME, PO.OPTION_PRICE, P.PRODUCT_NAME
+		SELECT POP.POP_ID, PO.OPTION_NAME, PO.OPTION_PRICE, PO.OPTION_STOCK, P.PRODUCT_NAME
 		FROM OPTIONDETAIL POP JOIN PRODUCTOPTION PO ON POP.OPTION_ID = PO.OPTION_ID
 			JOIN PRODUCT P ON POP.PRODUCT_ID = P.PRODUCT_ID
 		WHERE POP.POP_ID IN
@@ -46,7 +47,7 @@
 		</foreach>
 	</select>
 	
-	<select id="selectByChistId" resultType="double">
+	<select id="selectByChistId" resultType="Double">
 		SELECT COUPON_VALUE
 		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
 		WHERE CH.MEMBER_ID = #{memberId} AND CH.CHIST_ID = #{chistId} AND CH.TYPE='ISSUE'
@@ -58,11 +59,18 @@
 			SELECT SEQ_ORDER_ID.NEXTVAL FROM DUAL
 		</selectKey>
 		INSERT INTO PRODUCTORDER(ORDER_ID, MEMBER_ID, TOTAL_PRICE, ORDER_STATUS, USED_POINT, PAYMENT_ID, ADDRESS_NAME_FIX, DETAIL_ADDRESS_FIX)
-		VALUES (#{orderId},#{memberId},#{totalPrice},'PAYMENT COMPLETED', #{usedPoint}, #{paymentId}, #{addressNameFix}, #{detailAddressFix})
+		VALUES (#{orderId},#{memberId},#{totalPrice},'PAYMENT_COMPLETED', #{usedPoint}, #{paymentId}, #{addressNameFix}, #{detailAddressFix})
 	</insert>
 	
+	<update id="updateProductStock">
+    	UPDATE PRODUCTOPTION
+     	SET OPTION_STOCK = OPTION_STOCK - #{qty}
+     	WHERE OPTION_ID IN (SELECT OPTION_ID FROM OPTIONDETAIL WHERE POP_ID = #{popId})
+       				AND OPTION_STOCK >= #{qty}  <!-- 동시 주문 시 재고가 마이너스로 내려가지 않도록 차단 -->
+	</update>
+	
 	<insert id="insertOrderDetail" parameterType="OrderItemDTO">
-    	INSERT INTO ORDER_DETAIL (OD_ID, ORDER_ID, POP_ID, QTY, PRICE_FIX, GRADE_DIS_AMOUNT)
+    	INSERT INTO ORDERDETAIL (OD_ID, ORDER_ID, POP_ID, QTY, PRICE_FIX, GRADE_DIS_AMOUNT)
     	VALUES (SEQ_OD_ID.NEXTVAL, #{orderId}, #{popId}, #{qty}, #{priceFix}, #{gradeDisAmount})
 	</insert>
 	
@@ -83,5 +91,28 @@
 		INSERT INTO POINTHISTORY (PHIST_ID, MEMBER_ID, ORDER_ID, TYPE, AMOUNT, BALANCE)
 		VALUES (SEQ_PHIST_ID.NEXTVAL, #{memberId}, #{orderId}, 'EARN', #{earnPoint}, #{balance})
 	</insert>
-
+	
+	<update id="updateTotalAmount">
+		UPDATE MEMBER SET TOTAL_AMOUNT = TOTAL_AMOUNT + #{totalPrice} WHERE MEMBER_ID = #{memberId} 
+	</update>
+	
+	<update id="updateMemberGrade">
+    	UPDATE MEMBER M
+    	SET M.GRADE_ID = (
+        	SELECT G.GRADE_ID 
+        	FROM GRADE G 
+        	WHERE M.TOTAL_AMOUNT BETWEEN G.MIN_VAL AND G.MAX_VAL
+    		)
+    	WHERE M.MEMBER_ID = #{memberId}
+	</update>
+	
+	<delete id="deleteCartItems">
+    	DELETE FROM CART
+    	WHERE MEMBER_ID = #{memberId}
+      AND CART_ID IN
+    <foreach collection="cartIds" item="cartId" open="(" separator="," close=")">
+        #{cartId}
+    </foreach>
+	</delete>
+ 
 </mapper>

@@ -23,6 +23,7 @@ public class OrderItemDTO {
 	// 옵션 테이블
 	private String optionName;
 	private Long optionPrice;
+	private Long optionStock;
 	
 	// 상품 테이블
 	private String productName;
