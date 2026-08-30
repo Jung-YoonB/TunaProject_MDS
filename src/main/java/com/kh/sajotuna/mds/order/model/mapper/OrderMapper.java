@@ -51,6 +51,12 @@ public interface OrderMapper {
 	// 포인트 적립 이력 기록
 	int insertPointHistoryEarn(CheckoutDTO verifiedData);
 	
+	// 누적구매금액 업데이트
+	int updateTotalAmount(@Param("memberId") Long memberId, @Param("totalPrice") long totalPrice);
+	
+	// 누적구매금액에 따른 회원 등급 재조정
+	int updateMemberGrade(Long memberId);
+	
 	// 결제 후 장바구니에서 제거
 	int deleteCartItems(@Param("memberId") Long memberId,@Param("cartIds") List<Long> cartIds);
 }

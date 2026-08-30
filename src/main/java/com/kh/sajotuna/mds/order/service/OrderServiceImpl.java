@@ -74,7 +74,13 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	@Transactional
 	public CheckoutDTO checkout(CheckoutDTO checkoutInputData) {
-
+	
+	// sql 조회 전 사용한 포인트 1000 이상인지 체크
+	if (checkoutInputData.getUsedPoint() != null && checkoutInputData.getUsedPoint() != 0
+			&& checkoutInputData.getUsedPoint() < 1000) {  // 뷰에서 넘겨줄 데이터에 따라 null이나 0 조건 하나 삭제
+		throw new IllegalArgumentException("포인트는 1000 이상부터 사용할 수 있습니다.");
+	}
+		
 	// 회원 정보 조회
 	CheckoutDTO verifiedData = mapper.selectByMemberIdForCheckout(checkoutInputData.getMemberId());
 
@@ -140,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
 	verifiedData.setPaymentId(checkoutInputData.getPaymentId());
 	verifiedData.setAddressNameFix(checkoutInputData.getAddressNameFix());
 	verifiedData.setDetailAddressFix(checkoutInputData.getDetailAddressFix());
-
+	verifiedData.setClientPaidAmount(checkoutInputData.getClientPaidAmount());
 
 	// 총 가격 계산
 	long totalPrice = 0L;
@@ -148,18 +154,27 @@ public class OrderServiceImpl implements OrderService {
 	for (OrderItemDTO item : itemList) {
 		totalPrice += item.getOptionPrice() * item.getQty();
 	}
-
+	System.out.println("" + totalPrice);
+	
 	// 쿠폰 할인
 	totalPrice = (long) (totalPrice	* (1.0 - verifiedData.getCouponValue()));
-
+	System.out.println("" + totalPrice + ", " + verifiedData.getCouponValue());
+	
 	// 회원 등급 할인
 	totalPrice = (long) (totalPrice	* (1.0 - verifiedData.getDiscountRate()));
-
+	System.out.println("" + totalPrice + ", " + verifiedData.getDiscountRate());
+	
 	// 포인트 사용
 	totalPrice -= usedPoint;
-
+	System.out.println("" + totalPrice + ", " + usedPoint);
+	
 	if (totalPrice < 0) {
 		throw new IllegalArgumentException("사용 포인트가 결제 금액보다 많습니다.");
+	}
+	
+	// 클라이언트가 결제한 금액과 최종 계산된 비용 확인
+		if (totalPrice != verifiedData.getClientPaidAmount()) {
+		throw new IllegalArgumentException("결제한 금액과 지불할 금액이 같지 않습니다.");
 	}
 
 	verifiedData.setTotalPrice(totalPrice);
@@ -227,6 +242,21 @@ public class OrderServiceImpl implements OrderService {
 	if (result == 0) {
 		throw new RuntimeException("포인트 업데이트에 실패했습니다.");
 	}
+	
+	// 회원 누적구매금액 업데이트
+	result = mapper.updateTotalAmount(verifiedData.getMemberId(), totalPrice);
+
+		if (result == 0) {
+			throw new RuntimeException("누적 구매금액 업데이트에 실패했습니다.");
+		}
+	
+	// 회원 누적구매금액 업데이트
+	result = mapper.updateMemberGrade(verifiedData.getMemberId());
+
+		if (result == 0) {
+			throw new RuntimeException("회원 등급 업데이트에 실패했습니다.");
+		}
+	
 
 	// 장바구니 상품 삭제
 	if (checkoutInputData.getCartIds() != null	&& !checkoutInputData.getCartIds().isEmpty()) {

@@ -27,6 +27,7 @@ public class CheckoutDTO {
 	private long balance;
 	private long earnPoint;
 	private Long paymentId;
+	private Long clientPaidAmount;
 	private Double couponValue;
 	private String addressNameFix;
 	private String detailAddressFix;
