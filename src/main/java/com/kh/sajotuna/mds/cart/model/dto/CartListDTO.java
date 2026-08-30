@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CartListDTO {
     private Long cartId;
-    private String nickname;
+    private Long memberId;
     private String productTitle;
     private String optionName;
     private int optionPrice;

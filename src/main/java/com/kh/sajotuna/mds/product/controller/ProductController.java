@@ -2,11 +2,10 @@ package com.kh.sajotuna.mds.product.controller;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewListDTO;
 import com.kh.sajotuna.mds.util.SessionConst;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -65,7 +64,7 @@ public class ProductController {
 		if(user.getMemberId() != null) {
 			memberId = user.getMemberId();
 		}
-		List<ReviewDTO> reviewList = service.getReviewList(productId, memberId);
+		List<ReviewListDTO> reviewList = service.getReviewList(productId, memberId);
 		model.addAttribute("reviewList", reviewList);
 		System.out.println("reviewList :: " + reviewList);
 		return"redirect:home/home";

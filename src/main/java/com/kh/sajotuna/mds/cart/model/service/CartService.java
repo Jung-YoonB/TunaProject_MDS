@@ -10,6 +10,6 @@ import java.util.List;
 public interface CartService {
 
     String insertCartInfo(CartDTO cart);
-
     ResponseCartListDTO getCartList(Long memberId);
+    String removeCart(Long memberId, Long popId);
 }

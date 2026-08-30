@@ -14,12 +14,15 @@
     </select>
 
     <select id="getCartList" resultType="CartListDTO" parameterType="Long" >
-        select c.CART_ID, m.NICKNAME, p.PRODUCT_TITLE, po.OPTION_NAME,
+        select c.CART_ID, c.member_id, p.PRODUCT_TITLE, po.OPTION_NAME,
         po.OPTION_PRICE, c.QTY,OPTION_PRICE * c.QTY as total_price
-        from cart c join member m on m.MEMBER_ID = c.MEMBER_ID
-        join OPTIONDETAIL od on od.POP_ID = c.POP_ID
+        from cart c join OPTIONDETAIL od on od.POP_ID = c.POP_ID
         join PRODUCTOPTION po on po.OPTION_ID = od.OPTION_ID
         join product p on p.product_id = od.product_id
-        where m.MEMBER_ID = #{memberId}
+        where c.MEMBER_ID = #{memberId}
     </select>
+
+    <delete id="removeCart">
+        delete from cart where member_id = #{memberId} and POP_ID = #{popId}
+    </delete>
 </mapper>

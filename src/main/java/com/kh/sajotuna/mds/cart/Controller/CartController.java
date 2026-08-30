@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class CartController {
     private final CartService service;
 
-    @GetMapping("/add-cart")
+    @PostMapping("/add-cart")
     public String insertCart( CartDTO cart, HttpSession session, Model model) {
 
         MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
@@ -49,6 +50,16 @@ public class CartController {
         ResponseCartListDTO cartList = service.getCartList(member.getMemberId());
         model.addAttribute("cartList", cartList);
         System.out.println("cartList :: " + cartList);
+        return "redirect:home/home";
+    }
+
+    @GetMapping("/remove-cart")
+    public String removeCart(HttpSession session, Model model, Long popId) {
+        System.out.println("pop_id :: " + popId);
+        MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+        String message = service.removeCart(member.getMemberId(), popId);
+        System.out.println("message :: " + message);
+        model.addAttribute("message", message);
         return "redirect:home/home";
     }
 }

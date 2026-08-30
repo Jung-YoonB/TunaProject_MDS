@@ -9,7 +9,7 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReviewDTO {
+public class ReviewListDTO {
     private Long reviewId;  //리뷰 아이디
     private String reviewText;  //내용
     private String writeDate;   //작성일

@@ -44,4 +44,16 @@ public class CartServiceImpl implements CartService{
 
         return new ResponseCartListDTO(getCartList,cartListPrice);
     }
+
+    @Override
+    public String removeCart(Long memberId, Long popId) {
+        int result = 0;
+        result+= mapper.removeCart(memberId,popId);
+        System.out.println("result :: " + result);
+        if(result>0) {
+            return "장바구니 목록에서 제외되었습니다.";
+        }else {
+            return "장바구니 제외에 실패했습니다.";
+        }
+    }
 }

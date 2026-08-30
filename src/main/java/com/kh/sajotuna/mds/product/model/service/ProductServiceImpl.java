@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewListDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewImagesDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
@@ -74,18 +74,18 @@ public class ProductServiceImpl implements ProductService{
 	}
 
 	@Override
-	public List<ReviewDTO> getReviewList(Long productId, Long memberId) {
+	public List<ReviewListDTO> getReviewList(Long productId, Long memberId) {
 
-		List<ReviewDTO> reviewList = mapper.getReviewList(productId, memberId);
+		List<ReviewListDTO> reviewList = mapper.getReviewList(productId, memberId);
 		List<Long> reviewIds = new ArrayList<>();
 		List<ReviewImagesDTO> images = new  ArrayList<>();
 
-		for(ReviewDTO review : reviewList) {
+		for(ReviewListDTO review : reviewList) {
 			reviewIds.add(review.getReviewId());
 		}
 		List<ReviewImagesDTO> reviewImages = mapper.getReviewImages(reviewIds);
 
-		for(ReviewDTO review : reviewList) {
+		for(ReviewListDTO review : reviewList) {
 			for(ReviewImagesDTO image : reviewImages) {
 				if(review.getReviewId().equals(image.getReviewId())) {
 					images.add(image);
