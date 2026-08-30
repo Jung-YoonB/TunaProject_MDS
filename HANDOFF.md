@@ -994,3 +994,315 @@ API로: 301자 쿠폰설명 거부, 정확히 300자는 성공 확인(테스트 
   src/main/webapp/WEB-INF/views/product/wish.jsp                                 (오해 소지 있는 주석 정리)
   src/main/java/com/kh/sajotuna/mds/member/controller/MemberController.java     (복붙 오류 주석 5곳 수정)
 ```
+
+---
+
+## 3-30. 2026-08-30: 유저 주문 배송 확인 기능 구현
+
+PROJECT_AUDIT.md에 이미 기록돼있던 `/member/orderDelivery` 관련 버그 3개(뷰 이름 불일치, DELIVERY INNER JOIN, N+1 쿼리)를 실제로 고치면서 "유저 주문/배송내역 확인" 기능을 처음부터 완성. admin의 주문/배송 관리 기능(이미 완성됨)을 참고해서 ORDER_STATUS/DELIVERY_STATUS 값과 흐름은 새로 정의하지 않고 그대로 읽기 전용으로 재사용.
+
+### 구현
+1. **뷰 이름 버그 수정** — `MemberController.userOrderDeliveryForm()`이 반환하던 `"member/orderDelivery"`를 실제 파일 위치인 `"order/userOderDelivery"`로 수정(파일을 옮기는 대신 뷰 이름을 맞춤).
+2. **`userOderDelivery.jsp`를 독립 HTML 목업 → header/footer include 패턴으로 전면 재작성** — `wish.jsp`/`cart.jsp`와 같은 구조로 전환하고, `deliveryList` 모델을 JSTL(`<c:forEach>`)로 직접 렌더링하는 SSR 방식 채택. 이 페이지는 컨트롤러가 애초에 `Model`에 데이터를 채워서 뷰만 리턴하는 구조(admin처럼 JSON API+fetch가 아님)라, 서버 통신 로직이 필요 없어서 `static/js/views/userOrderDelivery.js`는 상태 필터 탭 인터랙션(이미 렌더링된 `.order-card`를 `data-status`로 보이기/숨기기)만 담당하는 순수 DOM 스크립트로 작성 — 별도 `xxxService.js`(비즈니스 로직) 파일은 만들지 않음(addReview.js/productDetail.js와 같은 "인터랙션만 있는 경우" 패턴).
+3. **`selectDeliveriesByMemberId` 쿼리 재작성** (`MemberMapper.xml`):
+   - DELIVERY를 LEFT JOIN으로 변경(버그 7 수정) — 체크아웃 미구현으로 아직 DELIVERY 행이 없는 결제완료 주문도 이제 목록에 나타남. `AdminOrderMapper.selectSummary`와 동일 패턴.
+   - `WHERE PO.ORDER_STATUS != 'CART'` 추가 — LEFT JOIN으로 바꾸면서 자칫 장바구니에 담겨있기만 한(아직 주문 아닌) 항목까지 새로 노출될 뻔한 것을 admin 쿼리와 동일한 조건으로 막음.
+   - 대표 상품(가장 먼저 담긴 ORDERDETAIL) 1건 + 상품 건수를 `ROW_NUMBER() OVER (PARTITION BY od.ORDER_ID ORDER BY od.OD_ID)` + `COUNT(*) OVER (PARTITION BY od.ORDER_ID)`로 서브쿼리 하나에서 함께 조회 — `AdminOrderMapper.selectOrderList`와 같은 패턴이지만, admin은 대표상품/건수를 서브쿼리 2개로 나눠서 조인하는 반면 이번엔 윈도우 함수 하나로 합쳐서 더 단순화함. `MemberServiceImpl.listDelivery()`의 N+1 반복 조회 루프(`selectProductByOrderId`를 주문마다 호출) 제거(버그 9 수정), 이제 안 쓰는 `selectProductByOrderId`는 Mapper 인터페이스/XML에서 삭제.
+   - 대표 상품의 이미지도 `PRODUCTIMAGE`를 서브쿼리 안에서 조회하는데, 찜/장바구니 쿼리가 겪고 있는 것과 같은 INNER JOIN 함정(대표이미지 미등록 상품이면 통째로 안 보임)을 새로 만들지 않도록 스칼라 서브쿼리로 작성(이미지 없으면 그냥 NULL, ROW_NUMBER 매칭에 영향 안 줌).
+   - 대표 상품/이미지가 없는 경우(주문 상세 데이터 누락 등) 대비 `NVL`로 기본값 처리 — 이 과정에서 `MemberServiceImpl.java:134`에 있던 `/upload/product/`(s 빠진 오타) 하드코딩 기본값도 자연스럽게 제거하고 SQL의 `NVL(..., '/uploads/product/')`로 옮기면서 오타 수정(버그 12의 이 부분만 수정, `productDetail.jsp` 3곳은 범위 밖이라 안 건드림).
+4. **`MyPageDeliveryDTO`에 `qty`/`productCount` 필드 추가** — "상품명 외 N건" 표시용(admin의 `AdminOrderListItemDTO`와 동일한 필드 이름/역할).
+5. **화면 설계**: 필터 탭(전체/배송준비중/배송중/배송완료/취소환불), 주문 카드(대표 상품 이미지+이름+"외 N건", 결제금액, 상태 배지, 4단계 진행바, 택배사/송장번호(있을 때만), 배송지). admin의 `STATUS_SEQUENCE`(배송준비중→배송중→배송출발→배송완료, 취소는 배송완료 전이면 언제든 도달 가능한 별도 종료 상태)와 `cancelStage`(취소/환불 대기중 vs 완료, `DELIVERY_STATUS`/`ORDER_STATUS` 두 컬럼으로 구분) 개념을 그대로 읽기 전용으로 재사용. DELIVERY 행이 아직 없는(결제완료, 배송준비중 전) 주문은 "배송준비중" 필터 버킷에 넣되 배지는 "결제완료"로 구분 표시, 진행바는 전부 미도달 상태로 표시.
+   - **원래 목업에 있던 배송조회/주문취소/리뷰작성 버튼은 전부 제거함** — 이번 기능은 "확인"(읽기 전용) 범위이고, 세 버튼 모두 대응하는 실제 백엔드 흐름이 없어서(배송조회는 외부 택배사 연동 미구현, 주문취소는 유저용 취소 API 없음, 리뷰작성은 임시 html로 링크된 상태) 동작 안 하는 버튼을 그대로 두는 대신 범위에 맞게 제거하는 쪽을 택함.
+6. **CSS 스코프 수정** (`style_order.css`) — `.order-delivery-page main { width:800px; ... }`가 이 페이지를 header/footer include 방식으로 바꾸면서 더 이상 안 맞게 됨(이제 `<main>`이 조상이지 후손이 아님, 3-5/3-6에서 admin 페이지들에 적용했던 것과 동일한 문제) → `.order-delivery-page .page-content`로 이동. 배송출발(`OUT_FOR_DELIVERY`) 단계의 진행바 강조색이 원래 목업엔 없어서(4단계 중 배송중/배송완료만 있었음) 새로 추가. 상품 썸네일에 실제 `<img>`를 넣기 위한 스타일, 택배사/송장번호·배송지 텍스트 스타일 추가. 더 이상 렌더링하지 않는 버튼(배송조회/주문취소/리뷰작성)용 CSS는 제거.
+
+### 실제 검증 (서버 8797 + 라이브 DB, jshell+ojdbc11)
+회원가입 API로 신규 테스트 유저 생성(`delvtest`) → 로그인 → 테스트 주문 7건을 상태별로 직접 INSERT(① CART, ② 결제완료+DELIVERY행 없음, ③ PREPARING, ④ SHIPPED+택배정보+2개 품목, ⑤ DELIVERED, ⑥ 취소대기, ⑦ 취소완료) → `/member/orderDelivery` 실제 호출해서 렌더링된 HTML 확인:
+- CART 주문은 목록에서 정상적으로 빠짐(장바구니 항목이 주문으로 새는 것 방지 확인).
+- DELIVERY 행 없는 결제완료 주문이 이제 목록에 정상적으로 나타남(버그 7 재현 후 수정 확인 — 이게 이번 작업의 핵심 검증 포인트).
+- SHIPPED 다품목 주문의 "외 1건" 텍스트, 택배사/송장번호 표시 정상.
+- 취소대기("취소/환불 대기중")와 취소완료("취소/환불 완료") 배지가 `DELIVERY_STATUS`/`ORDER_STATUS` 조합으로 정확히 구분됨.
+- 4단계 진행바가 각 상태에서 정확한 단계까지 체크(✓) 표시됨(DELIVERED는 4단계 전부 체크).
+- 응답에 `page-content` 클래스, `site-footer` 정상 1회 등장 확인(헤더/푸터 정상 연결).
+- 검증 후 테스트 주문 7건 + ORDERDETAIL/DELIVERY(CASCADE) + 테스트 유저 1명 전부 ID 기준으로 삭제, 잔존 0건 확인 완료.
+- **브라우저에서 필터 탭 클릭 등 실제 인터랙션 테스트는 못 함**(브라우저 도구 없음) — 로직 자체는 기존에 검증된 `wish.jsp` 필터 패턴과 동일해서 위험은 낮지만, 화면에서 한 번 클릭해서 확인 필요.
+
+### 3-30-1. 추가 수정: 마이페이지에서 진입 경로가 없던 것 연결
+
+사용자님이 화면 확인 중 `/member/myPage`에서 "주문·배송 조회"를 눌러도 아무 반응이 없다고 지적 — `myPage.jsp`가 원래 완전 정적 목업이라 "주문·배송 조회" 타일 2곳(빠른 메뉴, 내 선물 관리)이 `<div>`로만 되어있고 링크가 아예 없었음(다른 타일들도 마찬가지지만, 이번에 완성한 기능으로 가는 경로이므로 이 2곳만 범위 내로 판단해 연결). `<div class="quick-menu-item">`/`<div class="menu-item">`를 `<a href="<c:url value='/member/orderDelivery'/>">`로 교체 — `default.css`에 이미 `a { text-decoration:none; color:#333 }` 전역 리셋이 있어서 스타일 변화 없이 그대로 링크만 추가됨. 로그인 세션으로 직접 클릭 경로 재현해서 정상 이동 확인. 나머지 타일(리뷰작성/문의사항/장바구니/찜 등)은 이번 기능과 무관해서 그대로 둠.
+
+### 3-30-2. 추가 수정: 화면 확인 피드백 3건 반영
+
+사용자님이 화면(배송중 카드) 스크린샷 보내면서 3가지 요청: (1) 필터 탭에 "배송출발" 없음 (2) 배송완료 주문에 리뷰 작성 버튼 필요 (3) 상품 이미지 없을 때 조그맣게 안내 문구 표시.
+
+1. **필터 탭에 "배송출발" 추가** — 기존엔 `SHIPPED`/`OUT_FOR_DELIVERY`를 필터 단계에서 "배송중" 하나로 묶었었는데(대시보드 요약 카운트 기준을 그대로 따랐던 것), 사용자 화면에서는 진행바에 이미 배송출발이 별도 단계로 보이는데 필터에서만 못 고르는 게 어색해서 별도 탭(`data-status="out_for_delivery"`)으로 분리. 상태 배지 CSS(`.status-badge.status-out_for_delivery`)도 새로 추가.
+2. **배송완료 주문에 리뷰 작성 버튼 연결** — 실제 리뷰 작성 라우트(`GET /review/write?odId=`)가 `OD_ID`(ORDERDETAIL PK) 기준으로 동작하고(`ReviewServiceImpl.getWriteInfo`가 배송완료 여부/중복작성 여부를 서버에서 재검증), 대표 상품의 `OD_ID`가 기존 쿼리엔 없었어서 `MyPageDeliveryDTO.odId` 필드와 `selectDeliveriesByMemberId`의 대표상품 서브쿼리에 `od.OD_ID`를 추가로 노출. `deliveryStatus == 'DELIVERED'`인 카드에만 "리뷰 작성" 버튼 노출, 클릭 시 `/review/write?odId={대표 od_id}`로 이동. (이미 리뷰를 작성한 경우 등은 `ReviewController`가 자체적으로 홈으로 리다이렉트 + 에러 메시지 처리하므로 이 페이지에서 별도 방어 안 함 — 기존 프로젝트 관례 그대로 재사용.) 주문에 상품이 여러 개("외 N건")면 대표 상품 1건만 리뷰 작성 대상이 됨 — 이번 범위에선 그 이상은 다루지 않음.
+3. **상품 이미지 없을 때 안내 문구 표시** — 대표 상품 이미지가 없으면(대표 상품 자체가 없거나, 있어도 대표이미지 미등록) `<img>` 대신 "상품 이미지가 없습니다" 작은 텍스트(9px)를 썸네일 박스 안에 표시. 실제로는 시드 데이터의 모든 상품에 대표이미지가 있어서 이 케이스가 잘 안 나오길래, 검증할 때 `ORDERDETAIL` 없는 주문을 하나 추가로 만들어서(대표 상품 자체가 없는 극단 케이스) 렌더링 확인함.
+
+### 3-30-3. 추가 수정: 1차 UI 개선 (썸네일 크기, 배송정보 라벨링)
+
+3-30-2 반영 후 사용자님이 스크린샷으로 이어서 지적: (1) 배송출발 상태 확인할 테스트 데이터가 없음 (2) 썸네일이 작아서 "상품 이미지가 없습니다" 텍스트가 밀림 (3) 택배사/송장번호/배송지 정보가 너무 축약돼서 나옴.
+
+1. **`.item-thumb` 56px → 80px로 확대**, no-image 텍스트도 9px → 11px로 같이 키움.
+2. **택배/배송지 정보를 라벨 붙인 줄 단위로 재구성** — 기존 `CJ Logistics / 123456789012`, `Home - Test Address 4` 한 줄짜리 표기를 `.delivery-info` 안에 `.info-row` 두 줄로 분리: "택배사 : CJ Logistics | 송장번호 : 123456789012", "배송지 : Home - Test Address 4". 라벨(`.info-label`)만 굵게, 구분자(`.info-divider`)는 연한 회색으로 톤다운.
+3. 검증용으로 `OUT_FOR_DELIVERY` 상태 테스트 주문(78번)을 추가로 넣어서 배송출발 배지/진행바가 정상 표시되는 것 확인.
+
+### 3-30-4. 서버 사이드 페이징 추가
+
+사용자님이 "지금은 괜찮지만 나중에 주문이 쌓이면 문제될 것 같다"며 페이징 요청 → 지금까지는 `listDelivery(memberId)`가 회원의 전체 주문을 한 번에 불러온 뒤 상태 필터도 클라이언트 JS(`userOrderDelivery.js`)에서 `data-status` 보이기/숨기기로 처리하고 있었음(admin 쪽 문서에도 "나중에 서버사이드로 바꿀 필요" 라고 이미 적혀있던 것과 동일한 종류의 부채). 이번엔 처음부터 페이지+상태필터 둘 다 서버에서 처리하도록 다시 설계함.
+
+- **API 시그니처 변경**: `GET /member/orderDelivery`가 `status`(기본값 `all`)/`page`(기본값 `1`) 쿼리 파라미터를 받음. `MemberService.listDelivery(memberId, status, page)` / 신규 `totalDeliveryPages(memberId, status)` 추가.
+- **`MemberMapper.xml`**: 상태 필터 조건을 `<sql id="deliveryStatusFilter">` 공용 조각으로 빼서 `selectDeliveriesByMemberId`(페이지 조회, `OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY`)와 신규 `countDeliveriesByMemberId`(총 건수) 양쪽에서 재사용. 페이지 크기는 `MemberServiceImpl.DELIVERY_PAGE_SIZE = 10`으로 고정.
+- **필터 탭이 클라이언트 JS 토글 버튼 → 서버 왕복 링크로 전환**: `<button data-status>` → `<a href="?status=xxx&page=1">`로 교체(필터 바꾸면 1페이지로 리셋). 이제 필터링 자체가 SQL WHERE에서 일어나므로, 페이지네이션과 필터가 항상 정확하게 맞물림(전에 클라이언트 필터 방식이었다면 페이징 도입 시 "이 페이지엔 없지만 다른 페이지엔 있는" 상태 카운트 불일치 문제가 생겼을 것).
+- **페이지네이션 위젯 추가** — 이전/다음 + 현재 페이지 기준 5개 창(window) 숫자 링크. 윈도우 계산(`pageWindowStart/End`)은 컨트롤러에서 계산해서 모델로 넘김(EL엔 Math 함수가 없어서 JSTL로 직접 계산하기 애매함 — 순수 화면 표시용 계산이라 서비스 레이어 아니라 컨트롤러에 둠). `totalPages <= 1`이면 위젯 자체를 안 보여줌.
+- **`static/js/views/userOrderDelivery.js` 삭제** — 필터링이 서버로 넘어가면서 이 페이지에 남은 JS 인터랙션이 없어짐(더 이상 쓸모없는 파일이라 제거, JSP의 `<script>` 참조도 같이 제거).
+- CSS: 필터 탭 선택자를 `button` → `a`로 교체, 신규 `.pagination`/`.page-link` 스타일 추가.
+
+### 검증
+서버에 테스트 주문을 12건까지 늘려서(페이지당 10건 기준으로 2페이지 발생) 확인: 1페이지 10건+"다음" 링크, 2페이지 2건+"이전" 링크 정상 동작. `status=preparing` 필터 단독으로도 정확한 건수만 나오는 것, 필터+페이지 조합(`?status=xxx&page=N`)이 함께 정상 동작하는 것, `totalPages=1`일 때 페이지네이션 위젯이 아예 안 뜨는 것까지 확인 후 테스트 데이터 정리.
+
+### 신규/수정 파일
+```
+삭제:
+  src/main/resources/static/js/views/userOrderDelivery.js
+
+수정:
+  src/main/java/com/kh/sajotuna/mds/member/controller/MemberController.java      (status/page 파라미터, 페이지네이션 윈도우 계산)
+  src/main/java/com/kh/sajotuna/mds/member/service/MemberService.java            (listDelivery 시그니처 변경, totalDeliveryPages 추가)
+  src/main/java/com/kh/sajotuna/mds/member/service/MemberServiceImpl.java        (DELIVERY_PAGE_SIZE, offset 계산)
+  src/main/java/com/kh/sajotuna/mds/member/model/mapper/MemberMapper.java        (@Param 기반 시그니처, countDeliveriesByMemberId 추가)
+  src/main/resources/mappers/MemberMapper.xml                                    (deliveryStatusFilter sql 조각, OFFSET/FETCH, count 쿼리)
+  src/main/webapp/WEB-INF/views/order/userOderDelivery.jsp                       (필터 탭 링크화, 페이지네이션 위젯 추가)
+  src/main/resources/static/css/style_order.css                                 (필터 탭 a로 변경, .pagination 스타일 추가)
+```
+
+### 3-30-5. 리뷰 작성 완료 상태 반영
+
+사용자님이 "리뷰 작성하고 나서 완료 상태 처리도 되어있는지" 확인 요청 → 확인해보니 3-30-2에서 "리뷰 작성" 버튼만 연결했을 뿐, 이미 리뷰를 작성한 주문인지 여부는 반영이 안 돼서 리뷰 작성 후에도 계속 "리뷰 작성" 버튼이 뜨는 상태였음(클릭하면 `ReviewController`가 자체적으로 막긴 하지만 화면에서 미리 구분은 안 됐음) → 이번에 구현.
+
+- `MyPageDeliveryDTO.hasReview`(boolean) 필드 추가. `selectDeliveriesByMemberId`에 `CASE WHEN EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = rep.OD_ID) THEN 1 ELSE 0 END AS HAS_REVIEW` 추가 — `AdminCouponMapper.selectCouponList`의 `hasHistory` EXISTS 패턴과 동일하게 재사용(이 프로젝트에서 이미 검증된 boolean 매핑 방식).
+- `userOderDelivery.jsp`: `item.hasReview`가 true면 "리뷰 작성" 버튼 대신 읽기 전용 배지("리뷰 작성 완료")로 교체.
+- **실제 리뷰 작성 흐름으로 라이브 검증**: 테스트 계정으로 배송완료 주문에 진짜 `POST /review/write`를 호출해서 리뷰 등록 → 배송 목록 화면이 "리뷰 작성 완료" 배지로 즉시 바뀌는 것 확인 → 같은 주문에 리뷰 재작성 시도 시 `ReviewController`가 여전히 정상적으로 막는 것도 확인 → 검증에 쓴 REVIEW 행은 실제 상품 상세 페이지에 공개로 노출되는 데이터라 다른 테스트 데이터보다 먼저 즉시 삭제.
+
+### 3-30-6. 리뷰 작성 완료 후 원래 페이지로 복귀 (returnUrl)
+
+사용자님이 직접 화면에서 리뷰를 작성해보고 지적: 리뷰 등록 성공하면 `ReviewController.write()`가 항상 `redirect:/`(메인페이지)로 보내서, 배송 목록 페이지에서 "리뷰 작성"으로 들어간 경우에도 메인으로 튕겨나감 → 원래 있던 페이지(필터/페이지 상태 포함)로 돌아가게 수정.
+
+- **오픈 리다이렉트 방지 패턴은 새로 만들지 않고 `MemberController.isSafeRedirect()`(로그인 후 원래 가려던 페이지로 돌아가는 데 이미 쓰던 것 — "/"로 시작하되 "//"/역슬래시는 거부)를 `ReviewController`에도 동일하게 복제**해서 씀. 별도 공용 유틸로 뽑진 않음(사용처가 두 컨트롤러뿐이라 굳이 분리 안 함).
+- `GET /review/write`와 `POST /review/write` 둘 다 `returnUrl` 파라미터를 받음. GET은 안전하면 `addReview.jsp`에 숨은 필드로 심어서 폼 제출 시 그대로 따라가게 하고, POST는 성공 시 `returnUrl`(안전하면)로, 실패(중복작성 등) 시엔 재시도 URL에 `returnUrl`을 다시 붙여서 이어감. 둘 다 안전하지 않거나 없으면 기존처럼 `/`로 폴백.
+- `userOderDelivery.jsp`의 "리뷰 작성" 링크가 `returnUrl=/member/orderDelivery?status={현재 필터}&page={현재 페이지}`를 같이 넘겨서, 리뷰 작성 후 정확히 보던 필터/페이지로 돌아옴.
+- **라이브 검증**: (1) 배송 목록 → 리뷰 작성 → 등록 → `Location` 헤더가 `/`가 아니라 `returnUrl`로 지정한 배송 목록 URL인 것 확인 (2) `returnUrl=https://evil.com`, `returnUrl=//evil.com`(오픈 리다이렉트 시도) 둘 다 거부되고 `/`로 폴백되는 것 확인.
+
+### 3-30-7. "마이페이지로 돌아가기" 링크 404 수정
+
+사용자님이 리뷰 작성 후 "마이페이지로 돌아가기"를 눌렀다가 에러("527 오류"로 리포트됨) 재현 → 실제로는 500/527이 아니라 **404**였고(스택트레이스 안의 줄 번호 527을 에러 코드로 오인한 것), 원인은 `userOderDelivery.jsp`의 링크가 `/member/mypage`(소문자)인데 실제 라우트는 `/member/myPage`(대문자 P)라서 안 맞았던 것 — PROJECT_AUDIT.md 버그 10번에 이미 기록돼있던 사이트 전역 이슈의 한 인스턴스. 이 파일이 이번 세션에서 직접 작성한 것이라 범위 내로 보고 `/member/myPage`로 수정. 다른 페이지들의 동일 오타는 그대로 남아있음(PROJECT_AUDIT.md 참고).
+
+### 3-30-8. 마이페이지(`member/myPage.jsp`) 데이터 바인딩 + admin 형식으로 UI 통일
+
+사용자님이 마이페이지 스크린샷 보내면서 지적: (1) 회원 정보가 "이름값"/"닉네임값" 같은 플레이스홀더 그대로 나옴 (2) 빠른메뉴/하위 메뉴들을 admin 마이페이지 형식으로 통일해달라 → 확인해보니 컨트롤러(`MemberController.myPageForm()`)는 이미 실제 `MemberDTO`(`loginMember`)와 `couponList`를 모델에 채워서 넘기고 있었는데, JSP가 그 데이터를 전혀 안 쓰고 완전히 정적인 목업 텍스트만 렌더링하고 있었음(3-30 작업 시작 전부터 있던 상태, 이번 세션에서 손 안 댄 부분).
+
+- **데이터 바인딩**: `member/myPage.jsp`를 `${loginMember.xxx}` 기반 실데이터 렌더링으로 전면 교체. 등급은 `MemberDTO`에 `GRADE_ID`만 있고 이름이 없어서, `MemberMapper.xml`의 `selectByMemberId`에 `GRADE` 테이블 LEFT JOIN을 추가하고 `MemberDTO.gradeName` 필드를 새로 만들어서 "BRONZE" 같은 실제 등급명이 나오게 함. 쿠폰 개수도 하드코딩된 "5장" 대신 `${couponList.size()}`(Jakarta EL 5.0의 메서드 호출 문법)로 실제 개수 표시.
+- **UI를 admin/adminPage.jsp 형식으로 통일**: `#MemberInfo`(회색 배경 div들)를 admin과 동일한 `.card.profile-card`(아바타+이름+등급배지+닉네임 헤더 + `.info-list`의 라벨/값 행) 구조로 교체. "빠른 메뉴"/"내 선물 관리"/"고객센터" 3개 섹션 전부 admin의 `.quick-menu-grid`/`.quick-menu-tile`(아이콘+라벨 카드) 패턴으로 통일 — 기존엔 3개 섹션이 서로 다른 시각 스타일(단순 사각형 버튼 vs 설명문구 포함 카드)이라 사용자님이 "안 헷갈리게" 요청한 부분을 해결. 아이콘은 admin의 기존 SVG(주문·배송, 문의) 일부를 재사용하고, 장바구니/찜 아이콘은 `header.jsp`의 기존 하트/카트 아이콘 path를 그대로 재사용해서 사이트 전체 아이콘 언어를 통일함. `href="#"`(대응 화면 없음) 클릭 시 페이지 점프 방지 스크립트도 admin과 동일하게 적용.
+- **실제로 동작하는 링크만 연결**: 주문·배송 조회(`/member/orderDelivery`), 주문 취소/환불(→ 유저용 취소 신청 화면이 없어서 가장 가까운 실제 화면인 `/member/orderDelivery?status=canceled`로 연결, 읽기 전용 확인 용도), 쿠폰 상세(`/member/couponView`). 나머지(리뷰 작성/문의사항/문의내역/공지사항)는 대응 화면이 프로젝트에 아예 없어서 admin과 동일하게 `href="#"` 비활성 처리.
+- **`/member/cart`, `/member/wish` 링크는 시도했다가 되돌림** — 실제로 눌러보니 컨트롤러 매핑 자체는 있지만 리턴하는 뷰 이름(`member/cart`)에 대응하는 JSP 파일이 없어서(PROJECT_AUDIT.md 버그 9번, product 패키지 담당 영역) 404가 남 → 새로 깨진 링크를 노출하지 않기 위해 두 타일 다 임시로 `href="#"` 처리하고 주석으로 이유/복구 방법을 남겨둠. **버그 9번 관련 참고: 실제로는 500이 아니라 404였음(Spring Boot 3.x가 JSP 뷰 리졸브 실패를 404로 처리) — PROJECT_AUDIT.md에도 정정 기록함.**
+- **CSS 전면 교체** — `style_myPage.css`를 `style_admin_mypage.css`와 동일한 선택자 구조(`.card`, `.profile-card-top`, `.info-list`/`.info-row`, `.quick-menu-grid`/`.quick-menu-tile`)로 다시 작성하되 `.member-mypage-page`로 스코프. admin은 5개 타일 고정폭 그리드(`repeat(5, 1fr)`)를 쓰지만, 회원 페이지는 섹션마다 타일 개수가 다를 수 있어(4개/4개/3개) `repeat(auto-fit, minmax(150px, 1fr))`로 유연하게 처리해 3개짜리 고객센터 섹션에서 빈 칸이 안 생기게 함.
+- **정보 수정 버튼은 그대로 둠** — `/member/updateInfo`는 원래부터 대응 컨트롤러가 없는 404(PROJECT_AUDIT.md 버그 10번, 이번 세션 시작 전부터 있던 문제)라 새로 만든 문제가 아니고, 회원정보 수정 기능 자체를 새로 구현하는 건 이번 요청 범위 밖이라 링크만 유지하고 손대지 않음.
+
+### 검증
+테스트 계정으로 로그인 후 `/member/myPage` 실제 응답 확인: `loginMember`의 이름/등급(BRONZE)/아이디/휴대폰/이메일/포인트가 전부 실제 DB 값으로 렌더링됨, 쿠폰 개수 0장 정상 표시, 모든 타일 href 확인(`orderDelivery`/`orderDelivery?status=canceled`/`couponView`는 200, `cart`/`wish`는 프로젝트의 기존 버그로 404라 이번엔 `#`로 비활성화해서 노출 안 함).
+
+### 신규/수정 파일
+```
+수정:
+  src/main/java/com/kh/sajotuna/mds/member/model/dto/MemberDTO.java   (gradeName 필드 추가)
+  src/main/resources/mappers/MemberMapper.xml                        (selectByMemberId에 GRADE LEFT JOIN)
+  src/main/webapp/WEB-INF/views/member/myPage.jsp                    (실데이터 바인딩 + admin 형식 UI로 전면 재작성)
+  src/main/resources/static/css/style_myPage.css                     (style_admin_mypage.css 패턴으로 전면 재작성)
+```
+
+### 3-30-9. 마이페이지 하위 섹션을 리스트 형식으로 재조정 + 실데이터 배지
+
+3-30-8 직후 사용자님이 디자인 시안(스크린샷)을 보내며 정정: "빠른 메뉴"는 그대로 두고, 그 아래(내 선물 관리~고객센터)는 아이콘 타일 그리드가 아니라 **제목+설명+배지+화살표(›)로 구성된 리스트 행** 형식이어야 한다고 요청.
+
+- **"내 선물 관리" → "주문관리"로 재구성**: 시안에 맞춰 항목을 주문/배송조회, 주문취소/환불 2개로 정리(장바구니/찜 항목은 시안에 없었고, 어차피 헤더 아이콘으로 이미 접근 가능해서 제거 — 위 PROJECT_AUDIT.md 참고 항목의 `/member/cart`,`/member/wish` 404 이슈도 이걸로 자연히 회피됨).
+- **"리뷰 작성"을 별도 섹션으로 분리**: 설명 문구 + "작성 가능한 리뷰 N개" CTA 배지(배송완료 필터로 연결).
+- **"고객센터"도 동일한 리스트 행 형식으로 통일**(문의사항/문의내역/공지사항, 전부 대응 화면 없어 `href="#"`).
+- **배지 숫자는 실제 데이터로 계산**: `MemberMapper`에 `countActiveDeliveries`(배송완료/취소환불 이전 단계인 진행중 주문 수 - "주문/배송 조회" 배지)와 `countReviewableOrderDetails`(배송완료된 주문 상세 중 리뷰 미작성 건수 - "리뷰 작성" 배지) 신규 추가. 대표 상품 1건이 아니라 `ORDERDETAIL` 전체 기준으로 세야 "몇 개 리뷰를 쓸 수 있는지"가 정확해서, 리뷰 카운트는 대표상품 서브쿼리가 아니라 `ORDERDETAIL`을 직접 조인해서 계산.
+- 신규 CSS(`.list-card`/`.list-row`/`.list-row-title`/`.list-row-desc`/`.list-row-badge`/`.list-row-chevron`, `.review-cta-card`/`.review-cta-badge`)는 admin에 없는 새 컴포넌트라 이번에 새로 디자인(시안 그대로: 흰 카드 안에 구분선으로 나뉜 행, 우측 정렬 배지+화살표).
+
+### 검증
+테스트 계정으로 실제 값 확인: "주문/배송 조회" 배지 9(진행중 주문 개수와 일치), "작성 가능한 리뷰 0개"(배송완료 주문에 이미 리뷰가 있어서 0이 정확한 값), 리스트 행 3개 섹션 모두 제목/설명/화살표 정상 렌더링.
+
+### 신규/수정 파일
+```
+수정:
+  src/main/java/com/kh/sajotuna/mds/member/model/mapper/MemberMapper.java   (countActiveDeliveries, countReviewableOrderDetails 추가)
+  src/main/java/com/kh/sajotuna/mds/member/service/MemberService.java       (〃)
+  src/main/java/com/kh/sajotuna/mds/member/service/MemberServiceImpl.java   (〃)
+  src/main/java/com/kh/sajotuna/mds/member/controller/MemberController.java (activeOrderCount/reviewableCount 모델 추가)
+  src/main/resources/mappers/MemberMapper.xml                               (신규 count 쿼리 2개)
+  src/main/webapp/WEB-INF/views/member/myPage.jsp                          (주문관리/리뷰작성/고객센터를 리스트 행 형식으로 재작성)
+  src/main/resources/static/css/style_myPage.css                          (.list-row/.review-cta 등 신규 스타일)
+```
+
+### 3-30-10. "내가 쓴 리뷰" 조회/삭제 기능 신규 구현
+
+사용자님이 마이페이지 "리뷰 작성" 섹션에서 본인이 쓴 리뷰를 조회/삭제할 수 있게 해달라고 요청 → 리뷰 도메인에 이런 기능 자체가 아예 없어서 새로 구현.
+
+- **`ReviewMapper`에 4개 메서드 추가**: `selectMyReviews`(내 리뷰 목록, product 상세 화면의 `getReviewList`와 동일한 조인 패턴 + 상품 대표이미지 LEFT JOIN 추가), `selectReviewImagesByReviewIds`(N+1 방지용 배치 이미지 조회), `selectReviewImageSaveNamesByReviewId`(삭제 시 디스크에서 같이 지울 파일명 조회), `deleteReview`(`WHERE REVIEW_ID=? AND MEMBER_ID=?`로 소유권 검증까지 WHERE절에서 처리 - admin의 `confirmPayment` 등과 동일한 관례). `REVIEWIMAGE`는 `REVIEW` 삭제 시 FK `ON DELETE CASCADE`라 DB 행은 자동 정리되지만, 실제 업로드 파일은 별도로 지워야 해서 삭제 전에 파일명을 먼저 조회해두고 DB 삭제 성공(영향 행 1건) 확인 후 물리 파일 삭제.
+- **`ReviewServiceImpl.listMyReviews()`** 작성 시, `ProductServiceImpl`에 있는 것으로 이미 알려진 버그(리뷰 이미지 리스트를 반복문 밖에서 한 번만 만들어서 모든 리뷰가 공유해버리는 문제, PROJECT_AUDIT.md 버그 2번)를 반복하지 않도록 `Map<reviewId, List<ReviewImagesDTO>>`로 리뷰별로 새 리스트를 만들어서 정확히 배정.
+- **신규 화면 `GET /review/myReviews`**(`review/myReviews.jsp`) — 상품 썸네일(없으면 "상품 이미지가 없습니다" 안내), 별점(★ 5개 중 채워진 개수), 리뷰 본문, 첨부 사진(있으면), 작성일, 삭제 버튼(confirm 확인 후 폼 제출)을 카드 목록으로 표시. **신규 엔드포인트 `POST /review/delete/{reviewId}`**로 삭제 처리 후 flash 메시지와 함께 목록으로 리다이렉트.
+- 마이페이지의 "리뷰 작성" CTA 카드에 "내가 쓴 리뷰 조회·삭제 ›" 링크 추가해서 진입 경로 연결.
+- 신규 CSS `style_myReviews.css`(기존 `.order-card`/`.list-card` 시각 언어와 통일: 흰 카드, 구분선, 크림톤 배지).
+
+### 검증
+테스트 계정으로 실제 흐름 확인: 목록 조회(기존 테스트 리뷰 1건 정상 표시) → `POST /review/delete/{id}` 실제 호출 → 목록에서 사라지고 "아직 작성한 리뷰가 없습니다" 빈 상태로 전환 확인 → 존재하지 않는/본인 소유가 아닌 리뷰 ID로 삭제 시도 시 "본인이 작성한 리뷰만 삭제할 수 있습니다" 에러로 정상 차단되는 것 확인. 마이페이지 → "내가 쓴 리뷰" 링크 연결도 확인.
+
+### 신규/수정 파일
+```
+신규:
+  src/main/webapp/WEB-INF/views/review/myReviews.jsp
+  src/main/resources/static/css/style_myReviews.css
+
+수정:
+  src/main/java/com/kh/sajotuna/mds/review/model/dto/ReviewDTO.java          (productImagePath/productImageSaveName 필드 추가)
+  src/main/java/com/kh/sajotuna/mds/review/model/mapper/ReviewMapper.java    (selectMyReviews 등 4개 메서드)
+  src/main/resources/mappers/review/ReviewMapper.xml                        (〃)
+  src/main/java/com/kh/sajotuna/mds/review/model/service/ReviewService.java (listMyReviews/deleteReview 추가)
+  src/main/java/com/kh/sajotuna/mds/review/model/service/ReviewServiceImpl.java (〃, 이미지 배치 조회 + 파일 삭제)
+  src/main/java/com/kh/sajotuna/mds/review/controller/ReviewController.java (GET /myReviews, POST /delete/{reviewId})
+  src/main/webapp/WEB-INF/views/member/myPage.jsp                           ("내가 쓴 리뷰" 링크 추가)
+  src/main/resources/static/css/style_myPage.css                           (.review-cta-link 스타일)
+  src/main/webapp/WEB-INF/views/common/header.jsp                          (style_myReviews.css 링크 추가)
+```
+
+### 3-30-11. 리뷰 삭제 후 재작성 허용 여부 — 논의만 하고 보류
+
+3-30-10 직후 사용자님이 "삭제했더니 다시 리뷰 작성이 가능해지는건 버그 같다"고 지적. 검토해보니 스키마(REVIEW 테이블에 어떤 형태로든 흔적)를 안 남기고는 "예전에 썼었다가 지웠다"는 사실을 영구히 기억할 방법이 논리적으로 없음 — 두 가지 대안(① `IS_DELETED` 컬럼 추가 후 소프트 삭제로 전환 ② 스키마 무변경, `REVIEW_TEXT`만 비우기)을 제시했고, 사용자님은 ①(새 컬럼 추가)을 선호했지만 **"월요일에 팀원들과 논의해보고 결정하겠다"며 실제 스키마 변경은 이번엔 보류**하기로 함.
+
+- **실제로 한 것**: 라이브 DB에 `ALTER TABLE`을 실행하려고 스크립트까지 준비했었으나 사용자님 지시로 실행하지 않고 삭제함 — **DB 스키마도, 애플리케이션 코드도 이번엔 전혀 안 건드림.**
+- 3-30-10에서 구현한 "내가 쓴 리뷰" 삭제 기능은 원래 방식(REVIEW 행 실제 DELETE, 재작성 허용) 그대로 유지 상태.
+- 방식 ②(스키마 무변경)를 택하더라도 상품 상세 페이지 평균 별점/리뷰 개수 집계(product 패키지, 제 담당 영역 밖)에 "빈 리뷰가 별점으로 카운트되는" 부작용이 있다는 점은 사용자님도 인지하고 있음.
+- 자세한 트레이드오프와 다음에 이어서 진행할 방향은 `PROJECT_AUDIT.md`의 "정책적 고려가 필요한 부분" 11번 항목에 기록해둠 — 팀 논의 후 방향이 정해지면 그 항목부터 이어서 진행하면 됨.
+
+### 3-30-12. 빠른 메뉴에도 알림 배지 추가
+
+사용자님이 처음 시안 스크린샷엔 빠른 메뉴 타일에도 배지가 있었는데 실제 구현엔 빠져있다고 지적. 3-30-9에서 이미 계산해둔 `activeOrderCount`/`reviewableCount` 모델을 그대로 재사용해서, "주문·배송 조회"/"리뷰 작성" 타일 우상단에 작은 원형 배지(`quick-menu-badge`, 0이면 안 보임)를 추가. "문의사항"/"문의내역"은 대응 데이터가 없어 배지 없이 그대로 둠. 실제 값(진행중 주문 9, 작성 가능한 리뷰 1)으로 정상 렌더링 확인.
+
+### 3-30-13. "내가 쓴 리뷰"에 페이징 추가 + 썸네일 크기 통일
+
+사용자님 요청 2건: (1) 이 목록에도 페이징 추가 (2) 썸네일 크기를 주문·배송 페이지(80px)와 통일.
+
+- 배송 목록 페이지(3-30-4)와 동일한 패턴으로 서버 사이드 페이징 적용: `ReviewMapper.selectMyReviews`에 `OFFSET/FETCH` + `countMyReviews` 신규 추가, `ReviewService.listMyReviews(memberId, page)`/`totalMyReviewPages(memberId)`, 컨트롤러의 페이지 윈도우 계산(5개 창)까지 동일한 구조로 재사용. 페이지 크기는 10건 고정.
+- `style_myReviews.css`의 `.review-thumb`을 64px → 80px로 맞춤(`.item-thumb`과 동일 규격), no-image 텍스트도 같이 11px로 조정.
+- 테스트 리뷰 11건을 추가로 만들어서(총 12건) 1페이지 10건+"다음", 2페이지 2건+"이전"이 정상 동작하는 것 확인 후 전부 정리(`REVIEW.FK_REVIEW_OD`엔 CASCADE가 없어서 주문 삭제 전에 리뷰부터 먼저 지워야 한다는 것도 이번에 확인).
+
+### 3-30-14. 쿠폰 뷰(`/member/couponView`) 실데이터 연동 + CSS 신규 작성
+
+마이페이지에서 "쿠폰" 행을 눌러서 들어가는 `/member/couponView` 화면도 사용자님이 확인해보니 여전히 정적 목업(하드코딩된 쿠폰 3장) + CSS 자체가 안 먹은 상태(글자만 있고 스타일 없음)였음.
+
+- **CSS 원인 진단 정정(중요)**: 처음엔 `usercouponView.jsp` 자체 `<link href=".../style_coupon.css">`가 가리키는 `style_coupon.css` 파일이 아예 없다고 판단해서 새로 작성했는데, **사용자님이 확인 후 정정** — 이 화면 전용으로 이미 잘 디자인된 `style_usercouponView.css`가 실제로 존재하고 있었음(`.coupon-page`/`#CouponSummary`/`.coupon-card` 등 원래 정적 목업과 정확히 맞는 선택자). 다만 (a) JSP 자신의 `<link>`가 엉뚱하게 존재하지도 않는 `style_coupon.css`를 가리키고 있었고 (b) `header.jsp`의 전역 CSS 목록에도 등록이 안 돼서 **완전히 고아 파일**이었던 것 — 검색을 `style_coupon.css`로만 좁게 해서 이 프로젝트 관례(`style_<JSP파일명>.css`)를 따르는 실제 파일을 못 찾은 게 제 실수. **어느 CSS(새로 만든 `style_coupon.css`+재작성 마크업 vs 기존 `style_usercouponView.css`+그에 맞는 마크업)로 최종 확정할지는 사용자님이 디자인 검토 후 알려주기로 함 — 결정 전까지 추가 코드 변경 보류.** 자세한 내용은 `PROJECT_AUDIT.md` 정책 항목 2번 참고.
+- **부수 발견한 진짜 원인 버그**: `MemberMapper.selectCouponsByMemberId`의 SQL은 `resultType="CouponDTO"`(product 패키지의 통합 쿠폰 DTO)를 쓰는데, Java 쪽 인터페이스(`MemberMapper`/`MemberService`/`MemberServiceImpl`/`MemberController`)는 전부 `coupon` 패키지의 별도 클래스인 `List<MypageCouponDTO>`로 선언되어 있던 **타입 불일치**. 제네릭 소거 덕분에 컴파일 에러도, 런타임 캐스팅 에러도 안 났지만(모델에 그대로 통째로 넘기기만 해서), 실제 런타임 객체는 `CouponDTO`인데 필드명이 다름(예: `deadLineStr` vs 실제 `deadlineStr`) — 이 화면이 실데이터 연동을 시도했다면 계속 빈 값만 나왔을 것. `MypageCouponDTO`를 전부 `CouponDTO`로 교체하고, 사용처 0건 확인 후 `MypageCouponDTO.java` 삭제.
+- **화면 재작성**: `couponList`(실제 `CouponDTO` 목록)를 JSTL로 바인딩. 쿠폰 사용/만료 여부를 구분할 별도 컬럼이 없어서(체크아웃 미구현으로 `COUPONHISTORY.TYPE`의 'USE'/'EXPIRE'는 프로젝트 전체에서 한 번도 안 쓰임 - 'ISSUE'만 사용) `deadlineStr`(YYYY-MM-DD)과 컨트롤러가 넘겨주는 `todayStr`을 문자열로 비교해서 사용가능/만료만 판단. 원래 목업에 있던 "사용완료" 항목은 판단할 근거 자체가 없어서 이번엔 빼고 보유쿠폰/사용가능/만료쿠폰 3개로 정리.
+- 할인율(`couponValue`, BigDecimal 0.1=10%)을 `${coupon.couponValue * 100}`로 퍼센트 변환해서 표시. 검색창은 서버 왕복 없이 클라이언트 JS(`static/js/views/usercouponView.js`, 순수 이름 필터)로 처리 — 데이터 양이 적어 서버사이드로 갈 필요 없다고 판단.
+- "사용" 버튼은 체크아웃/쿠폰적용 플로우 자체가 프로젝트에 없어서 여전히 시각적 버튼만 있고 실제 동작은 연결 안 함(만료 쿠폰은 disabled 처리).
+
+### 검증
+실제 COUPON 시드 데이터 중 사용가능 2장(그 중 1장은 마감일이 오늘이라 "오늘까지는 사용가능" 경계값 케이스) + 만료 1장을 테스트 계정에 발급해서 확인: 보유쿠폰 3/사용가능 2/만료쿠폰 1 집계 정확, 할인율 %가 정확히 변환(0.1→10%, 0.2→20%)되는 것, CSS/JS 정상 로드(200), 헤더/푸터 정상 연결(`site-footer` 1회) 확인. **다만 이건 제가 새로 만든 `style_coupon.css` 기준 검증이고, CSS를 어느 쪽으로 최종 확정할지는 위 정정 내용대로 아직 미정 — 방향 정해지면 그에 맞춰 재검증 필요. 테스트 발급 쿠폰은 화면 확인용으로 남겨둠(정리 필요).**
+
+### 신규/수정 파일
+```
+신규:
+  src/main/resources/static/css/style_coupon.css
+  src/main/resources/static/js/views/usercouponView.js
+
+삭제:
+  src/main/java/com/kh/sajotuna/mds/coupon/model/dto/MypageCouponDTO.java
+
+수정:
+  src/main/java/com/kh/sajotuna/mds/member/model/mapper/MemberMapper.java   (CouponDTO로 교체)
+  src/main/java/com/kh/sajotuna/mds/member/service/MemberService.java      (〃)
+  src/main/java/com/kh/sajotuna/mds/member/service/MemberServiceImpl.java  (〃)
+  src/main/java/com/kh/sajotuna/mds/member/controller/MemberController.java (〃, todayStr 모델 추가)
+  src/main/webapp/WEB-INF/views/member/usercouponView.jsp                  (실데이터 바인딩으로 전면 재작성)
+  src/main/webapp/WEB-INF/views/common/header.jsp                         (style_coupon.css 링크 추가)
+```
+
+### 3-30-15. 쿠폰 뷰 디자인 확정: admin 형식 통일 + 만료 섹션 제거 + 페이징
+
+사용자님이 디자인 검토 후 방향 확정: 제가 새로 만든 `style_coupon.css` 쪽으로 가되(기존 고아 파일 `style_usercouponView.css`는 그대로 안 씀), admin 쿠폰 뷰(`admincouponView.jsp`/`style_admincouponView.css`) 형식과 더 통일하고, 만료 쿠폰은 유저에게 아예 안 보여주고 "사용 가능한 보유 쿠폰"만 노출하는 방향 + 페이징 추가.
+
+- **레이아웃을 admin과 동일한 2단 구조로 교체**: `.coupon-view-page`(바깥 배경 #f8f6f2) + `.coupon-view-page-card`(안쪽 흰 카드, width 800px, border-radius 12px) — 기존에 섹션마다 개별 카드를 쓰던 제 원래 스타일(myPage/orderDelivery와 같은 방식) 대신, admin 쿠폰 뷰처럼 큰 카드 하나 안에 전부 담는 방식으로 통일. 쿠폰 카드/할인율/버튼 색상·크기도 admin 쪽(`#806746`, `#b59b7b` 톤)에 맞춤.
+- **만료 쿠폰 섹션 + 사용가능/만료쿠폰 요약 박스 완전 제거** — `selectCouponsByMemberId` SQL 자체에 `C.DEADLINE >= TRUNC(SYSDATE)` 조건을 추가해서 서버에서부터 만료 쿠폰을 아예 조회하지 않음(화면에서 숨기는 게 아니라 쿼리 단계에서 제외). 요약도 "보유쿠폰" 카운트 하나로 단순화(= 사용 가능한 쿠폰 개수와 동일한 의미가 됨) — admin의 "등록된 쿠폰 (N)" 헤더 패턴 그대로 재사용.
+- **페이징 추가**: 배송/리뷰 목록과 동일한 서버사이드 방식(페이지당 10건, OFFSET/FETCH, 5개 창 페이지네이션). `MemberMapper`에 `countCouponsByMemberId` 신규 추가.
+- **부수 정리**: `MemberService.listCoupon()`이 원래 마이페이지의 "보유 쿠폰 N장" 배지에도 쓰이고 있었는데, 이 배지는 전체 리스트가 아니라 개수만 필요해서 별도 `countCoupons()` 메서드로 분리(마이페이지가 페이지당 10건으로 잘린 리스트의 `.size()`를 쓰다가 배지 숫자가 최대 10에서 멈추는 버그가 될 뻔한 것을 미리 방지). `myPage.jsp`의 `${couponList.size()}` → `${couponCount}`로 교체.
+
+### 검증
+테스트 계정에 사용 가능한 쿠폰을 12장까지 늘려서 1페이지(10장+다음), 2페이지(2장+이전) 정상 동작 확인. 만료 쿠폰(테스트로 넣었던 것)이 화면 어디에도 안 나오는 것(HTML에 "만료"/"사용가능"/"summary-box" 문자열 자체가 0건), 마이페이지의 "보유 쿠폰" 배지도 새 `countCoupons()` 기준으로 정확히 12장 표시되는 것까지 확인.
+
+### 신규/수정 파일
+```
+수정:
+  src/main/resources/mappers/MemberMapper.xml                                (쿠폰 쿼리에 만료 제외 + 페이징, countCouponsByMemberId 추가)
+  src/main/java/com/kh/sajotuna/mds/member/model/mapper/MemberMapper.java    (〃)
+  src/main/java/com/kh/sajotuna/mds/member/service/MemberService.java       (listCoupon 페이징화, countCoupons/totalCouponPages 추가)
+  src/main/java/com/kh/sajotuna/mds/member/service/MemberServiceImpl.java   (〃)
+  src/main/java/com/kh/sajotuna/mds/member/controller/MemberController.java (couponView 페이징 파라미터, myPage는 countCoupons로 교체)
+  src/main/webapp/WEB-INF/views/member/usercouponView.jsp                   (admin 형식 2단 레이아웃, 만료 섹션 제거, 페이징 추가)
+  src/main/webapp/WEB-INF/views/member/myPage.jsp                           (couponList.size() -> couponCount)
+  src/main/resources/static/css/style_coupon.css                           (admin 톤으로 전면 재작성)
+  src/main/resources/static/js/views/usercouponView.js                     (단일 리스트 기준으로 단순화)
+```
+
+### 3-30-16. 쿠폰 뷰: "사용" 버튼 제거 + 마이페이지 복귀 링크 추가
+
+사용자님 지적: 쿠폰 사용은 체크아웃(주문서 작성) 화면에서 하는 거지 쿠폰 보관함 화면에서 할 일이 아니므로 "사용" 버튼은 애초에 없는 게 맞다는 판단 → 각 쿠폰 카드의 `.coupon-use` 버튼과 관련 CSS 제거. 다른 목록 페이지(배송/리뷰)와 마찬가지로 하단에 "마이페이지로 돌아가기" 링크(`.coupon-back`/`.btn-back-mypage`, 동일한 스타일)도 추가.
+
+### 3-30-17. 관리자 마이페이지 "일반 메뉴"도 새 리스트 형식으로 통일 + 테스트 데이터 전체 정리
+
+사용자님이 마이페이지 화면 테스트를 마무리 지으면서, admin 마이페이지의 "일반 메뉴"가 초록색 아코디언 헤더(`#ccd5ae`)+작은 글씨(13~14px)로 되어있어 새로 만든 유저 마이페이지 디자인과 안 맞는다고 지적 → admin 쪽도 통일.
+
+- `admin/adminPage.jsp`의 "일반 메뉴"를 기존 2단 구조(그룹 헤더 3개 + 하위 항목)의 아코디언에서, `member/myPage.jsp`의 "주문관리"/"고객센터"와 동일한 `.list-card`/`.list-row`(제목+설명+화살표) 평평한 리스트 5줄(상품 등록/주문·배송 관리/쿠폰 조회 및 등록/문의사항 처리/공지 작성)로 재구성. 실제 화면 이동이 있는 3개는 기존 라우트 그대로 유지, 대응 화면 없는 2개는 기존처럼 `href="#"`.
+- `style_admin_mypage.css`의 `.accordion`/`.accordion-header`(초록 배경)/`.accordion-panel` 규칙을 전부 제거하고, `style_myPage.css`의 `.list-row` 관련 규칙을 `.admin-mypage-page` 스코프로 동일하게 이식.
+- 이번 세션에서 만든 모든 테스트 데이터(테스트 계정 `delvtest`, 주문 24건, 리뷰 12건, 쿠폰발급이력 13건) 전체 정리 완료 — 잔존 0건 확인.
+
+### 3-30-18. 세션은 살아있는데 회원 행이 없어진 경우 처리 (마이페이지 null 가드)
+
+3-30-17 직후 사용자님이 직접 마이페이지 스크린샷을 보내며 날카롭게 지적: "계정 삭제됐으면 이 페이지 연결이 안 되어야 정상 아니냐" — 정확히 맞는 지적이었음. 원인은 제가 테스트 계정을 DB에서 삭제하는 동안 사용자님 브라우저는 로그인 세션을 계속 들고 있었던 것 — 세션은 서버 메모리에 살아있어서 `WebConfig`의 `LoginInterceptor`(로그인 여부만 확인)는 통과시키는데, `MemberController.myPageForm()`이 `service.getMemberByMemberId()`가 `null`을 반환할 수 있다는 걸 전혀 확인 안 하고 그대로 모델에 넣어버려서 화면에 빈 필드만 나오는 상태였음.
+
+- **수정**: `myPageForm()`에서 `getMemberByMemberId()` 결과가 `null`이면(세션은 유효한데 실제 회원 행이 없어진 경우 - 탈퇴/관리자 삭제 등) `session.invalidate()`로 세션을 무효화하고 `/member/login`으로 리다이렉트(flash 메시지 "회원 정보를 찾을 수 없습니다. 다시 로그인해주세요." 포함).
+- **라이브 재현 검증**: 새 테스트 계정으로 로그인해서 세션을 살려둔 채 DB에서 그 회원 행만 직접 삭제 → 마이페이지 재요청 시 수정 전엔 200 + 빈 필드, 수정 후엔 302로 로그인 페이지 이동 + 새 세션 발급 + flash 메시지 정상 표시까지 확인.
+- **범위 참고**: 같은 패턴(`session.getAttribute(LOGIN_SESSION)`을 쓰지만 회원 상세를 다시 조회하진 않는) `wishlistForm`/`cartForm`/`userOrderDeliveryForm`/`userCouponViewForm`은 회원 상세 재조회가 없어서 이 정도로 눈에 띄게 깨지진 않음(목록 쿼리가 그냥 빈 결과를 반환) — `myPageForm`만 회원 필드 전체를 다시 바인딩해서 증상이 뚜렷하게 나타난 것. 다른 메서드들도 근본적으로는 같은 종류의 gap이 있지만 이번엔 실제로 증상이 재현된 `myPageForm`만 수정.
+
+### 신규/수정 파일
+```
+수정:
+  src/main/java/com/kh/sajotuna/mds/member/controller/MemberController.java (myPageForm에 null 가드 + 세션 무효화 추가)
+```
+
+### 3-30-19. 오늘 세션 마무리 점검 (재검증 + 죽은 코드 정리)
+
+하루 마무리하면서 오늘 만든 것 전체를 한 번 더 점검.
+
+- **기능 재검증**: 새 테스트 계정으로 `/member/myPage`, `/member/orderDelivery`, `/review/myReviews`, `/member/couponView` 전부 200 확인, 데이터 없는 상태에서 각 페이지의 빈 상태 문구가 정상 표시되고 페이지네이션 위젯이 안 뜨는 것(1페이지뿐일 때) 확인, 오늘 새로 만들거나 수정한 CSS/JS 파일(`style_order.css`, `style_myPage.css`, `style_myReviews.css`, `style_coupon.css`, `style_admin_mypage.css`, `views/usercouponView.js`) 전부 200 확인.
+- **죽은 코드 점검**: 오늘 수정한 CSS 파일들의 클래스가 대응 JSP에서 전부 쓰이고 있는지, 오늘 추가한 `MemberService`/`MemberMapper`/`ReviewService`/`ReviewMapper`의 신규 메서드가 전부 실제로 호출되는지, 새로 추가한 import가 전부 실제로 쓰이는지 grep으로 전수 확인 — 전부 정상.
+- **정리한 것**: `userOderDelivery.jsp`에 남아있던 `id="order-status-filter"`/`id="order-list"`/`id="order-empty"` 3개 — 원래 클라이언트 JS 필터용 훅이었는데 서버사이드 페이징으로 바꾸면서 그 JS 파일(`userOrderDelivery.js`)을 삭제했을 때 이 id들만 지우는 걸 깜빡했던 것. CSS/JS 어디서도 참조 안 하는 것 확인 후 제거.
+- **문서 정합성 확인**: `PROJECT_AUDIT.md` 전체를 다시 읽고 오늘 추가한 항목들이 서로 모순되지 않는지 확인(예: 쿠폰 CSS 오진단 → 정정 → 최종 결정까지 흐름이 앞뒤가 맞는지). 번호가 일부 비순차적(13 다음 16, 17이 나온 뒤 14/15가 이어지는 구간)인 건 기존 문서의 섹션 구조 때문 — 다른 항목들이 이 번호를 서로 인용하고 있어서(`"정책 항목 9번"` 등) 번호를 다시 매기면 그 참조들이 깨질 위험이 있어 이번엔 손대지 않음.
+
+### 이번에 새로 발견한 것 (범위 밖이라 수정 안 하고 PROJECT_AUDIT.md에만 기록)
+- **`header.jsp:30`의 `data-logged-in`이 항상 `false`로 나옴** — `sessionScope.loginMemberId`라는 세션 키가 프로젝트 어디에서도 저장되지 않음(실제 키는 `LOGIN_SESSION`). 로그인 상태로 홈에 갈 때마다 장바구니/찜 localStorage가 "비회원 초기화" 로직에 의해 매번 조용히 삭제되는 실질적 버그. `common/header.jsp` 담당자 확인 필요, 자세한 내용은 PROJECT_AUDIT.md 참고.
+
+### 신규/수정 파일
+```
+신규:
+  src/main/resources/static/js/views/userOrderDelivery.js
+
+수정:
+  src/main/java/com/kh/sajotuna/mds/member/controller/MemberController.java     (뷰 이름 수정)
+  src/main/java/com/kh/sajotuna/mds/member/service/MemberServiceImpl.java      (listDelivery N+1 루프 제거)
+  src/main/java/com/kh/sajotuna/mds/member/model/mapper/MemberMapper.java     (selectProductByOrderId 삭제)
+  src/main/java/com/kh/sajotuna/mds/member/model/dto/MyPageDeliveryDTO.java   (qty/productCount 필드 추가)
+  src/main/resources/mappers/MemberMapper.xml                                 (selectDeliveriesByMemberId 재작성, selectProductByOrderId 삭제)
+  src/main/webapp/WEB-INF/views/order/userOderDelivery.jsp                    (header/footer include + JSTL 데이터 바인딩으로 전면 재작성)
+  src/main/resources/static/css/style_order.css                              (.page-content 스코프 수정, out_for_delivery 색상 추가, 미사용 버튼 CSS 제거)
+  src/main/webapp/WEB-INF/views/member/myPage.jsp                             (주문·배송 조회 타일 2곳에 링크 추가)
+```

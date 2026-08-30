@@ -6,12 +6,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
+import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -98,11 +98,24 @@ public class MemberServiceImpl implements MemberService{
 		return member;
 	}
 
+	private static final int COUPON_PAGE_SIZE = 10;
+
 	@Override
-	public List<MypageCouponDTO> listCoupon(Long memberId) {
-		List<MypageCouponDTO> couponList = mapper.selectCouponsByMemberId(memberId);
-		
-		return couponList;
+	public List<CouponDTO> listCoupon(Long memberId, int page) {
+		int safePage = Math.max(page, 1);
+		int offset = (safePage - 1) * COUPON_PAGE_SIZE;
+		return mapper.selectCouponsByMemberId(memberId, offset, COUPON_PAGE_SIZE);
+	}
+
+	@Override
+	public int totalCouponPages(Long memberId) {
+		int totalCount = mapper.countCouponsByMemberId(memberId);
+		return Math.max(1, (int) Math.ceil((double) totalCount / COUPON_PAGE_SIZE));
+	}
+
+	@Override
+	public int countCoupons(Long memberId) {
+		return mapper.countCouponsByMemberId(memberId);
 	}
 
 	@Override
@@ -119,26 +132,32 @@ public class MemberServiceImpl implements MemberService{
 		return cartList;
 	}
 
+	private static final int DELIVERY_PAGE_SIZE = 10;
+
 	@Override
-	public List<MyPageDeliveryDTO> listDelivery(Long memberId) {
-		List<MyPageDeliveryDTO> deliveryList = mapper.selectDeliveriesByMemberId(memberId);
-		
-		for(MyPageDeliveryDTO list : deliveryList) {
-			MyPageDeliveryDTO productInfo = mapper.selectProductByOrderId(list.getOrderId());
-			if (productInfo != null) {
-				list.setProductName(productInfo.getProductName());
-				list.setProductImagePath(productInfo.getProductImagePath());
-				list.setProductImageSaveName(productInfo.getProductImageSaveName());
-			} else { // 대표 상품 정보가 누락되거나 문제가 생겨 null로 들어올 때를 대비 
-				list.setProductName("상품 정보 없음");
-				list.setProductImagePath("/upload/product/");
-				list.setProductImageSaveName(""); // TODO: 상품 이미지 없을 때를 대비한 no-image.png 만들면 추후 수정
-			}
-		}
-		
-		return deliveryList;
+	public List<MyPageDeliveryDTO> listDelivery(Long memberId, String status, int page) {
+		// 대표 상품 정보(이름/이미지/수량/건수)는 selectDeliveriesByMemberId 쿼리에 이미 조인되어 있음
+		// (주문 건수만큼 반복 조회하던 N+1 쿼리를 단일 쿼리로 정리). 주문이 쌓여도 느려지지 않도록
+		// 상태 필터 + 페이징은 서버(SQL의 WHERE/OFFSET-FETCH)에서 처리한다
+		int safePage = Math.max(page, 1);
+		int offset = (safePage - 1) * DELIVERY_PAGE_SIZE;
+		return mapper.selectDeliveriesByMemberId(memberId, status, offset, DELIVERY_PAGE_SIZE);
 	}
 
-	
+	@Override
+	public int totalDeliveryPages(Long memberId, String status) {
+		int totalCount = mapper.countDeliveriesByMemberId(memberId, status);
+		return Math.max(1, (int) Math.ceil((double) totalCount / DELIVERY_PAGE_SIZE));
+	}
+
+	@Override
+	public int countActiveDeliveries(Long memberId) {
+		return mapper.countActiveDeliveries(memberId);
+	}
+
+	@Override
+	public int countReviewableOrderDetails(Long memberId) {
+		return mapper.countReviewableOrderDetails(memberId);
+	}
 }
 

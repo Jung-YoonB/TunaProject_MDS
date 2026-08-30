@@ -200,63 +200,65 @@
     color: #333;
 }
 
-/* ---- 일반 메뉴 ---- */
+/* ---- 일반 메뉴 (member/style_myPage.css의 .list-card/.list-row와 동일한 형식으로 통일) ---- */
 .admin-mypage-page .general-menu-section {
     margin-top: 24px;
 }
 
-.admin-mypage-page .accordion {
-    background-color: #fff;
-    border: 1px solid #eee;
-    border-radius: 10px;
+.admin-mypage-page .list-card {
+    padding: 0;
     overflow: hidden;
 }
 
-.admin-mypage-page .accordion-item {
-    border-bottom: 1px solid #f2ede4;
-}
-
-.admin-mypage-page .accordion-item:last-child {
-    border-bottom: none;
-}
-
-.admin-mypage-page .accordion-header {
+.admin-mypage-page .list-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    padding: 16px 20px;
-    background-color: #ccd5ae;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    color: #222;
-    text-align: left;
+    gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f2ede4;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color .15s;
 }
 
-.admin-mypage-page .accordion-panel {
-    padding: 0;
-    background-color: #f0dfc0;
-}
-
-.admin-mypage-page .accordion-panel li {
-    border-bottom: 1px solid #e2cea4;
-}
-
-.admin-mypage-page .accordion-panel li:last-child {
+.admin-mypage-page .list-row:last-child {
     border-bottom: none;
 }
 
-.admin-mypage-page .accordion-panel a {
-    display: block;
-    padding: 12px 20px;
-    font-size: 13px;
-    color: #5c4a2f;
+.admin-mypage-page .list-row:hover,
+.admin-mypage-page .list-row:focus {
+    background-color: #fbf8f2;
     text-decoration: none;
 }
 
-.admin-mypage-page .accordion-panel a:hover {
-    background-color: #e9d6ab;
-    color: #3f2f1a;
-    text-decoration: none;
+.admin-mypage-page .list-row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.admin-mypage-page .list-row-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+}
+
+.admin-mypage-page .list-row-desc {
+    font-size: 13px;
+    color: #999;
+}
+
+.admin-mypage-page .list-row-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-mypage-page .list-row-chevron {
+    color: #ccc;
+    font-size: 20px;
+    line-height: 1;
 }

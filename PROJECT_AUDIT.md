@@ -52,12 +52,18 @@
 4. **`ProductServiceImpl.detailPage()`** — 상세조회는 `STATUS='ON_SALE'`만 허용하는데 목록/검색(`product.xml`)엔 상태 필터가 없음 → 품절/숨김 상품을 목록에서 클릭하면 결과 `null`에 바로 필드 접근해 NPE.
 5. **`signUp.jsp:8`** — `<form>`에 `action`/`method`가 없고, input `name`도 `MemberDTO`의 camelCase 프로퍼티와 다름(`member_name` vs `memberName` 등). 회원가입 버튼을 눌러도 아무 것도 저장 안 되고 새로고침만 됨.
 6. 같은 지점 — 폼을 우회해 API를 직접 호출하면 `MemberDTO`엔 `loginId`/`loginPw` 외 필드 검증이 없어서 `memberName` 없이 요청 시 Oracle NOT NULL 위반이 처리 안 된 500으로 그대로 노출.
-7. **`MemberMapper.xml:90-97`** — `/member/orderDelivery`가 DELIVERY 테이블과 INNER JOIN인데, 관리자가 배송 상태를 처음 바꾸기 전엔 DELIVERY 행이 없음(체크아웃 미구현) → 결제 완료했지만 배송 처리 전인 주문이 목록에서 통째로 사라짐.
+7. ~~**`MemberMapper.xml:90-97`** — `/member/orderDelivery`가 DELIVERY 테이블과 INNER JOIN인데, 관리자가 배송 상태를 처음 바꾸기 전엔 DELIVERY 행이 없음(체크아웃 미구현) → 결제 완료했지만 배송 처리 전인 주문이 목록에서 통째로 사라짐.~~
+   - **✅ 조치 완료 (2026-08-30, 유저 주문 배송 확인 기능 구현 세션) — `selectDeliveriesByMemberId`를 LEFT JOIN으로 변경. `AdminOrderMapper.selectSummary`와 동일한 패턴. 자세한 내용은 HANDOFF.md 참고.**
 8. **`MemberMapper.xml:67-88`** — 찜/장바구니 조회가 `PRODUCT_TITLE_IMAGE=0`(대표이미지)과 INNER JOIN. 대표이미지 등록을 빠뜨린 상품은 찜/장바구니에 담겨 있어도 목록에서 안 보임.
-9. **뷰 이름 불일치** — `/member/wish`,`/member/cart`,`/member/orderDelivery`가 리턴하는 뷰 이름에 실제 파일이 없음(진짜 파일은 `product/wish.jsp`, `order/userOderDelivery.jsp` 등) → 접근 시 뷰 리졸브 실패로 500.
+   - **참고: 이번 세션에 새로 작성한 `selectDeliveriesByMemberId`의 대표 상품 서브쿼리는 이 패턴을 답습하지 않도록 처음부터 PRODUCTIMAGE를 LEFT JOIN(+ NVL 기본값)으로 작성함. 다만 찜/장바구니(`selectWishesByMemberId`/`selectCartsByMemberId`) 자체는 이번 범위 밖이라 그대로 INNER JOIN으로 남아있음.**
+9. ~~**뷰 이름 불일치**~~ — `/member/wish`,`/member/cart`,`/member/orderDelivery`가 리턴하는 뷰 이름에 실제 파일이 없음(진짜 파일은 `product/wish.jsp`, `order/userOderDelivery.jsp` 등) → 접근 시 뷰 리졸브 실패로 500.
+   - **✅ `/member/orderDelivery` 부분만 조치 완료 (2026-08-30) — `MemberController.userOrderDeliveryForm()`이 반환하는 뷰 이름을 `order/userOderDelivery`로 수정. `/member/wish`,`/member/cart`는 이번 범위 밖(product 패키지 담당)이라 그대로 남아있음.**
+   - **참고(2026-08-30): 실제로는 500이 아니라 404로 남(Spring Boot 3.x JSP 뷰 리졸버가 파일 없음을 404로 처리) — `{"status":404,"message":"JSP file [/WEB-INF/views/member/cart.jsp] not found"}` 형태로 확인됨.** 마이페이지 UI 개편(`member/myPage.jsp`) 중 "나의 장바구니"/"나의 찜 목록"을 실제 라우트로 연결하려다 이 버그를 직접 재현함. 이후 사용자님이 제공한 디자인 시안에 따라 "주문관리" 섹션을 주문·배송조회/주문취소환불 2개 항목만 있는 리스트 형식으로 다시 짜면서 장바구니/찜 항목 자체가 화면에서 빠짐(헤더의 장바구니/찜 아이콘으로 이미 접근 가능해서 중복 제거) — 그래서 지금은 `myPage.jsp`에 `/member/cart`,`/member/wish` 링크 자체가 없음. product 패키지 담당자가 이 버그를 고친 뒤 마이페이지에도 다시 노출하고 싶다면 새로 추가하면 됨.
 10. **깨진 내부 링크 여러 개** — 마이페이지 링크가 소문자 `mypage`로 되어있어 실제 매핑(`myPage`)과 안 맞아 404. `/member/updateInfo`,`/member/userWithdraw`,`/member/addAddress`는 대응하는 컨트롤러 매핑 자체가 없음.
+    - **✅ `order/userOderDelivery.jsp`의 "마이페이지로 돌아가기" 링크 1곳만 조치 완료 (2026-08-30)** — 사용자님이 리뷰 작성 후 이 버튼을 눌러서 직접 404(스택트레이스의 줄 번호 "527"을 에러 코드로 오인해서 리포트됨)를 재현 → `/member/mypage` → `/member/myPage`로 수정. 이 페이지가 이번 세션에서 직접 작성한 파일이라 범위 내로 판단해서 수정함. **다른 페이지들의 동일 오타(예: `member/myPage.jsp` 자체 등 나머지 위치)는 그대로 남아있음** — 전체 사이트 스캔해서 한 번에 고치는 건 여전히 필요.
 11. **`MyPageWishDTO.reviewAvg`가 `Long`** — 쿼리는 소수점 1자리 평균(`4.5`)을 계산하는데 `Long`으로 받아서 소수부가 잘림.
-12. **이미지 경로 오타** — `MemberServiceImpl.java:134`와 `productDetail.jsp`(3곳)에 `/upload/product/`(s 빠짐)로 하드코딩. 실제 정적 리소스 경로는 `/uploads/**`.
+12. ~~**이미지 경로 오타**~~ — `MemberServiceImpl.java:134`와 `productDetail.jsp`(3곳)에 `/upload/product/`(s 빠짐)로 하드코딩. 실제 정적 리소스 경로는 `/uploads/**`.
+    - **✅ `MemberServiceImpl.java:134` 부분만 조치 완료 (2026-08-30) — 대표 상품이 없을 때의 기본값 자체를 SQL의 `NVL(..., '/uploads/product/')`로 옮기면서 오타 제거(N+1 제거 리팩토링과 함께 처리). `productDetail.jsp`(3곳)는 이번 범위 밖(product 패키지 담당)이라 그대로 남아있음. 참고로 기존 시드 데이터의 `PRODUCTIMAGE.PRODUCT_IMAGE_PATH` 컬럼값 자체도 `/upload/product/`(오타 포함)로 저장되어 있는 게 확인됨 — 다만 이 값들은 이미 알려진 대로 `uuid_` 접두사의 플레이스홀더(실파일 없음)라 실질적 영향은 없음.**
 
 ---
 
@@ -66,6 +72,9 @@
 1. **`MEMBER_STATUS` 컬럼이 로그인 로직에서 전혀 안 쓰임** — 지금은 탈퇴/정지 기능이 없어서 괜찮지만, 나중에 이 컬럼으로 탈퇴/정지를 구현하면서 로그인 체크 추가를 깜빡하면 정지 계정도 로그인되는 구멍이 생길 수 있음.
 2. **쿠폰 도메인이 두 군데로 쪼개져 있음** — `coupon.*` 패키지는 완전히 빈 스캐폴딩인데, 실제 동작하는 "보유 쿠폰 조회"는 `member.*` 쪽에 있음.
    - **📌 사용자 방향성: 리뷰(review 패키지)처럼 쿠폰도 하나의 독립된 기능으로 보고, 관련 코드를 전용 쿠폰 폴더로 모으는 게 맞다는 판단. 실제로 `Coupon_branch`라는 별도 기능 브랜치도 존재함. 지금 당장 리팩토링하진 않았고, 팀 논의 후 진행할 방향.**
+   - **✅ 2026-08-30 부수 발견 + 조치 완료: `coupon.*` 패키지에 남아있던 `MypageCouponDTO`가 실제로는 안 쓰이는 죽은 클래스였고, `MemberMapper.selectCouponsByMemberId`는 SQL에서 `resultType="CouponDTO"`(product 패키지의 통합 DTO, admin 쿠폰 기능과 공유)를 반환하면서 Java 인터페이스는 `List<MypageCouponDTO>`로 선언해놓은 **타입 불일치 버그**가 있었음. 제네릭 타입 소거 때문에 컴파일은 되고 Java 코드에서 캐스팅 에러도 안 났지만(모델에 그냥 통째로 넘기기만 함), 필드명이 서로 다름(`deadLine`/`deadLineStr` vs 실제로는 `deadline`/`deadlineStr`)해서 JSP가 이 데이터를 EL로 바인딩하려 했으면 값이 계속 비어 나왔을 것 — `/member/couponView` 화면이 실데이터 연동 없이 완전 정적 목업으로 방치됐던 이유 중 하나로 추정됨. `MemberMapper`/`MemberService`/`MemberController`를 `CouponDTO` 기준으로 통일하고 `MypageCouponDTO.java` 삭제(사용처 없음 확인 후).**
+   - **⚠️ 2026-08-30 정정: `/member/couponView`의 CSS 원인 진단이 처음에 틀렸었음.** 처음엔 "CSS 파일 자체가 프로젝트에 없다"고 판단해서 `style_coupon.css`를 새로 만들었는데, 사용자님이 확인해보니 **`style_usercouponView.css`라는, 이 화면 전용으로 이미 제대로 디자인된 CSS 파일이 실제로 존재하고 있었음**(`.coupon-page`, `#CouponSummary`, `.coupon-card` 등 원래 정적 목업 마크업과 정확히 맞는 선택자로 작성됨) — 다만 이 파일이 (a) `usercouponView.jsp` 자신의 `<link>` 태그에서도 참조되지 않고(그 태그는 존재하지도 않는 `style_coupon.css`를 가리키고 있었음) (b) `header.jsp`의 전역 CSS 목록에도 등록되지 않아서 **완전히 고아 상태(어디서도 안 불러와짐)** 였던 것. 파일명이 이 프로젝트 관례(`style_<JSP파일명>.css`)를 따르는데 검색을 좁게(`style_coupon.css`만) 해서 못 찾은 게 원인 — 죄송함, 다음엔 `style_<파일명>.css` 패턴부터 먼저 확인할 것.
+   - **✅ 2026-08-30 결정 완료: `style_coupon.css`(신규 작성분) 유지 + admin 쿠폰 뷰(`admincouponView.jsp`/`style_admincouponView.css`) 형식으로 통일하는 방향으로 확정.** 추가로 "만료 쿠폰은 유저에게 안 보여주고 사용 가능한 보유 쿠폰만 노출"로 범위도 축소(요약 박스도 "보유쿠폰" 하나로 단순화) + 페이징 적용. `style_usercouponView.css`(고아 파일)는 그대로 안 쓰고 남겨둠 — 자세한 내용은 HANDOFF.md 3-30-15 참고.
 3. **`MemberDTO` 필드별 검증 강도가 들쭉날쭉** — `loginId`/`loginPw`만 정규식 검증, 나머지(이름/닉네임/이메일/전화)는 중복 체크만 있고 형식 검증이 없음.
 4. **상품 목록/검색에 STATUS 필터가 없음** — 상세조회는 판매중인 것만 허용하면서 목록/검색은 숨김·품절·판매중지 상품까지 노출(버그 4번과 동일 지점, 의도인지 확인 필요).
 5. **만료된 쿠폰도 발급(수령) 가능** — `getCoupons`/`insertCoupon`에 마감일 검증이 없음.
@@ -76,6 +85,14 @@
 9. **`application.properties`에 죽어있는 `spring.security.user.*`(테스트용 계정) 설정이 남아있음** — `httpBasic`이 지금은 꺼져있어 안 쓰이지만, 나중에 누가 실수로 다시 켜면 약한 기본 계정(admin/1234)이 부활함.
    - **⚠️ 잊지 말 것: 나중에 반드시 정리하거나 최소한 비밀번호를 강화할 것. (사용자가 인지했고, 까먹지 않도록 강조 표시 요청)**
 10. 아이디/닉네임/이메일/전화번호 중복확인 API에 rate-limit이 없어 계정 존재 여부 대량 확인(enumeration) 가능(학교 프로젝트 규모에선 낮은 우선순위).
+11. **신규(2026-08-30): "내가 쓴 리뷰" 삭제 후 재작성 허용 여부 — 팀 논의 대기, 스키마 변경 보류.**
+    - **현재 동작**: `ReviewServiceImpl.deleteReview()`가 `REVIEW` 행을 실제로 DELETE함 → `UK_REVIEW(MEMBER_ID, OD_ID)` 제약이 사라져서 같은 주문상품에 리뷰를 다시 쓸 수 있음(쿠팡/아마존 등 대부분의 쇼핑몰과 동일한 방식).
+    - **사용자님 의견**: 삭제 후 재작성이 가능한 게 버그처럼 느껴진다 — 삭제하면 해당 주문상품엔 영구히 리뷰를 다시 못 쓰게 막고 싶음.
+    - **검토 결과**: 스키마(또는 최소한 REVIEW 테이블에 어떤 형태로든 흔적)를 전혀 안 남기고는 논리적으로 불가능함(행을 완전히 지우면 "예전에 썼었다"는 사실 자체가 사라짐). 두 가지 방식을 제시함:
+      1. `REVIEW`에 `IS_DELETED CHAR(1) DEFAULT 'N'` 컬럼 추가 + 삭제 시 실제 DELETE 대신 `UPDATE ... SET IS_DELETED='Y'`로 변경(행은 유지되므로 UNIQUE 제약이 계속 재작성을 막아줌). `checkReviewExists`는 그대로 둬도 됨(행 존재 자체로 이미 차단됨), `selectMyReviews`같은 "보여주는" 쿼리에만 `WHERE IS_DELETED='N'` 필터 추가.
+      2. 스키마 변경 없이 `REVIEW_TEXT`만 비워서 "삭제됨"을 표시 — 재작성은 잘 막히지만, **상품 상세 페이지의 평균 별점/리뷰 개수 집계 쿼리(`ProductServiceImpl`, `product/detailPage.xml`·`product/product.xml`, product 패키지 담당 영역)가 이 "빈 리뷰"를 그대로 카운트해버려서 평균 별점에 부작용이 생김.**
+    - **결정: 1번 방식(새 컬럼 추가)으로 하기로 했으나, 실제 스키마 변경은 보류 — 사용자님이 월요일에 팀원들과 논의 후 진행 여부/방식을 다시 결정하기로 함. 그때까지 이번 세션에서 만든 "내가 쓴 리뷰" 삭제 기능은 원래 방식(실제 DELETE, 재작성 허용)으로 그대로 둠 — 코드/스키마 둘 다 변경하지 않음.**
+    - **참고**: 사용자님은 방식 2(스키마 무변경)를 선택하더라도 그 부작용(상품 페이지에 빈 리뷰가 별점으로 카운트되는 것)은 일단 인지하고 넘어가겠다고 하셨음 — 즉 스키마 변경이 결국 불발되면 이 부작용을 감수하고 방식 2로 갈 수도 있다는 뜻으로 남겨둠. 팀 논의 후 다시 이어서 진행할 것.
 
 ---
 
@@ -100,11 +117,16 @@
    - 참고로 이 논의 과정에서, 초기 프로젝트 설정 문서의 "@Transactional 어노테이션 사용으로 무결성 확보" 항목이 이 문제와 관련 있는지 확인 요청이 있었음 → 조사 결과 `@Transactional` 자체는 프로젝트 전체 write 메서드(`MemberServiceImpl.signUp`, `ProductServiceImpl`(클래스 레벨), `ReviewServiceImpl.writeReview`, admin 3종 서비스 전부)에 이미 잘 적용돼 있었음(정책 자체는 잘 지켜지고 있었음). 다만 `@Transactional`은 DB 커넥션의 커밋/롤백만 관리할 뿐 파일 시스템 쓰기에는 전혀 관여하지 않아서, 완벽하게 적용해도 이미 디스크에 쓰인 파일까지 되돌리지는 못함 — DB와 파일은 서로 다른 자원이라 트랜잭션 하나로 묶을 수 없는 구조적 한계이고, 이 문제 해결과는 별개 사안이었음(그래서 아래처럼 `TransactionSynchronizationManager`로 별도 처리).
    - 부수 발견: `ProductController`(컨트롤러 계층)에도 클래스 레벨 `@Transactional`이 걸려있는데, `ProductServiceImpl`에도 이미 클래스 레벨로 걸려있어 중복임. "트랜잭션 경계는 서비스 계층에 둔다"는 일반적인 설계 관례에서 벗어난 지점이라 참고로 남김(동작 오류는 아님, 나중에 레이어링 정리할 때 참고).
 8. 리뷰 이미지 업로드에 콘텐츠타입 검증이 없었음 — **이번에 조치 완료** (위 "조치 완료" 참고).
-9. `/member/orderDelivery` 배송 목록 조회가 N+1 쿼리(주문 건수만큼 개별 쿼리) — 주문이 쌓일수록 느려짐.
+9. ~~`/member/orderDelivery` 배송 목록 조회가 N+1 쿼리(주문 건수만큼 개별 쿼리) — 주문이 쌓일수록 느려짐.~~
+   - **✅ 조치 완료 (2026-08-30) — 대표 상품 조회를 `AdminOrderMapper.selectOrderList`와 동일한 `ROW_NUMBER() OVER (PARTITION BY ...)` 패턴으로 `selectDeliveriesByMemberId` 쿼리 하나에 통합. `MemberServiceImpl.listDelivery()`의 반복 조회 루프 제거.**
 10. `login.jsp`에서 `${error}`는 이스케이프 안 하면서 바로 아래 `redirectURL`은 이스케이프하는 등 같은 파일 안에서도 처리가 불일치 — 지금은 `error`가 전부 고정 문구라 안전하지만, 나중에 사용자 입력을 반영한 에러 메시지를 추가하면 XSS 함정이 됨. (위 2번 논의와 연결됨)
 11. `CouponController`의 `/coupon/couponview`에 인증 검사가 전혀 없음(지금은 정적 목업이라 무해).
 12. `/uploads/**`가 접근 제어 없이 전체 공개 — 지금 저장되는 상품/리뷰 이미지는 원래 공개용이라 문제없지만, 나중에 같은 업로드 유틸/디렉터리에 비공개성 파일을 저장하게 되면 그대로 공개돼버리는 구조.
 13. `DELIVERY_STATUS_RANK.get(currentDeliveryStatus)`가 DB CHECK 제약이 항상 5개 값 중 하나임을 암묵적으로 신뢰(admin 자체 검토, 우선순위 낮음) — 제약이 느슨해지거나 다른 경로로 예외값이 들어가면 NPE 가능.
+16. **신규 발견 (2026-08-30, 유저 주문 배송 확인 기능 세션): `header.jsp:30`의 `data-logged-in="${not empty sessionScope.loginMemberId}"`가 항상 `false`로 나옴** — 프로젝트 전체에서 `loginMemberId`라는 세션 키가 저장되는 곳이 한 군데도 없음(실제 로그인 시 저장되는 키는 `SessionConst.LOGIN_SESSION`, 값은 `MemberDTO` 객체). 실제로 로그인한 상태로 `/member/orderDelivery`를 확인하던 중 응답 HTML에서 `data-logged-in="false"`로 찍히는 것을 발견함(세션 쿠키 정상 전달, 컨트롤러 레벨 로그인 체크는 별도로 정상 동작 — `header.jsp`의 이 표시만 항상 틀림).
+    - **영향**: `static/js/views/header.js`가 이 값을 `isLoggedIn`으로 읽어서, 홈(`/`) 방문 시 "비회원이면 장바구니/찜 localStorage 초기화" 로직을 로그인 여부와 무관하게 항상 실행함 → **로그인한 회원이 홈 화면에 올 때마다 담아둔 장바구니/찜 데이터가 매번 조용히 삭제됨.** 장바구니/찜이 아직 localStorage 임시 구현(실제 DB 연동 전)이라 지금 당장 서버 데이터가 날아가는 건 아니지만, 사용자 입장에서는 "장바구니에 담았는데 홈에 갔다 오면 사라진다"로 체감되는 실질적 버그.
+    - `common/header.jsp`/`static/js/views/header.js`는 이번 세션 범위(member 패키지의 order/delivery) 밖이라 수정하지 않음 — header/cartWish 담당자 확인 필요.
+17. **신규 발견 + 부분 조치 (2026-08-30): 세션은 유효한데 실제 회원 행이 없어진 경우(탈퇴/관리자 삭제 등) 처리가 컨트롤러마다 들쭉날쭉함.** 로그인 후 세션은 서버 메모리에 그대로 남아있어서 `WebConfig.LoginInterceptor`(로그인 여부만 확인)는 통과되는데, 그 이후 회원 데이터를 다시 조회하는 지점에서 `null` 처리를 안 해두면 화면이 깨짐 — `MemberController.myPageForm()`에서 실제로 재현됨(회원 상세를 통째로 다시 조회해서 필드 전부가 빈 값으로 렌더링됨). ✅ `myPageForm()`은 조치 완료(`getMemberByMemberId()`가 null이면 `session.invalidate()` + 로그인 페이지로 리다이렉트, HANDOFF.md 3-30-18 참고). **`wishlistForm`/`cartForm`/`userOrderDeliveryForm`/`userCouponViewForm`은 회원 상세를 다시 조회하지 않고 memberId만 사용해서 목록 쿼리가 빈 결과를 반환할 뿐 이 정도로 눈에 띄게 깨지진 않지만, 근본적으로는 같은 종류의 gap이 남아있음** — 실제 탈퇴 기능이 생기면 (정책 항목 1번과 연결) 이 메서드들도 전부 같은 패턴으로 점검 필요.
 
 ### 인증 가드 / 설정 관련 (교차점검)
 

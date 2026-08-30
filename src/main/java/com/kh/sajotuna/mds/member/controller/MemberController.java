@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
+import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 import com.kh.sajotuna.mds.util.SessionConst;
 import com.kh.sajotuna.mds.util.dto.ApiResponse;
 
@@ -51,34 +51,56 @@ public class MemberController {
 	}
 	
 	@GetMapping("/myPage")
-	public String myPageForm(HttpSession session, Model model) {
-		
+	public String myPageForm(HttpSession session, Model model, RedirectAttributes redirectAttr) {
+
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-		model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
-		System.out.println("마이페이지용 모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
-				
+		MemberDTO loginMember = service.getMemberByMemberId(member.getMemberId());
+		if (loginMember == null) {
+			// 세션은 살아있는데 회원 행 자체가 없어진 경우(탈퇴/삭제 등) - 세션을 무효화하고 다시 로그인하게 함
+			session.invalidate();
+			redirectAttr.addFlashAttribute("error", "회원 정보를 찾을 수 없습니다. 다시 로그인해주세요.");
+			return "redirect:/member/login";
+		}
+		model.addAttribute(SessionConst.LOGIN_MEMBER, loginMember);
+		System.out.println("마이페이지용 모델로 저장" + loginMember); // 추적용 출력
+
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
+			model.addAttribute("couponCount", service.countCoupons(member.getMemberId()));
+			model.addAttribute("activeOrderCount", service.countActiveDeliveries(member.getMemberId()));
+			model.addAttribute("reviewableCount", service.countReviewableOrderDetails(member.getMemberId()));
 			return "member/myPage";
 		} else {
 			return "admin/adminPage";
 		}
-		// 유저는 loginMember 에 유저DTO, couponList에 List<MypageCouponDTO> 가 모델에 저장되고 넘어감
+		// 유저는 loginMember 에 유저DTO가 모델에 저장되고 넘어감
 	}
-	
+
 	@GetMapping("/couponView")
-	public String userCouponViewForm(HttpSession session, Model model) {
-		
+	public String userCouponViewForm(@RequestParam(defaultValue = "1") int page,
+			HttpSession session, Model model) {
+
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-				
+
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
-			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<MypageCouponDTO>)model.getAttribute("couponList")); // 추적용 출력
+			int totalPages = service.totalCouponPages(member.getMemberId());
+			int currentPage = Math.min(Math.max(page, 1), totalPages);
+			int windowSize = 5;
+			int windowStart = Math.max(1, currentPage - windowSize / 2);
+			int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
+			windowStart = Math.max(1, windowEnd - windowSize + 1);
+
+			model.addAttribute("couponList", (service.listCoupon(member.getMemberId(), currentPage)));
+			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<CouponDTO>)model.getAttribute("couponList")); // 추적용 출력
+			model.addAttribute("couponCount", service.countCoupons(member.getMemberId()));
+			model.addAttribute("currentPage", currentPage);
+			model.addAttribute("totalPages", totalPages);
+			model.addAttribute("pageWindowStart", windowStart);
+			model.addAttribute("pageWindowEnd", windowEnd);
 			return "member/usercouponView";
 		} else {
 			return "admin/admincouponView";
 		}
-		// 유저는 couponList에 List<MypageCouponDTO> 가 모델에 최신화 되어 넘어감
+		// 유저는 couponList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	@GetMapping("/wish")
@@ -113,20 +135,36 @@ public class MemberController {
 	}
 	
 	@GetMapping("/orderDelivery")
-	public String userOrderDeliveryForm(HttpSession session, Model model) {
-		
+	public String userOrderDeliveryForm(
+			@RequestParam(defaultValue = "all") String status,
+			@RequestParam(defaultValue = "1") int page,
+			HttpSession session, Model model) {
+
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-		
-		
-		
+
+
+
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("deliveryList", (service.listDelivery(member.getMemberId())));
+			model.addAttribute("deliveryList", (service.listDelivery(member.getMemberId(), status, page)));
 			System.out.println("배송관리 모델로 저장" + (List<MyPageDeliveryDTO>)model.getAttribute("deliveryList")); // 추적용 출력
-			return "member/orderDelivery"; 
+
+			int totalPages = service.totalDeliveryPages(member.getMemberId(), status);
+			int currentPage = Math.min(Math.max(page, 1), totalPages);
+			int windowSize = 5;
+			int windowStart = Math.max(1, currentPage - windowSize / 2);
+			int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
+			windowStart = Math.max(1, windowEnd - windowSize + 1);
+
+			model.addAttribute("currentStatus", status);
+			model.addAttribute("currentPage", currentPage);
+			model.addAttribute("totalPages", totalPages);
+			model.addAttribute("pageWindowStart", windowStart);
+			model.addAttribute("pageWindowEnd", windowEnd);
+			return "order/userOderDelivery";
 		}  else {
 			return "admin/adminOrderDelivery";
-		} 
-		
+		}
+
 		// 유저는 deliveryList에 List<MyPageDeliveryDTO> 가 모델에 최신화 되어 넘어감
 	}
 	

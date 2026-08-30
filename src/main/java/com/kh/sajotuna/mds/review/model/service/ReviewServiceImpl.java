@@ -1,6 +1,10 @@
 package com.kh.sajotuna.mds.review.model.service;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +27,7 @@ public class ReviewServiceImpl implements ReviewService {
 	private static final int MAX_IMAGE_COUNT = 5;
 	private static final int MAX_REVIEW_TEXT_LENGTH = 500;
 	private static final String IMAGE_URL_PREFIX = "/uploads/review/";
+	private static final int MY_REVIEWS_PAGE_SIZE = 10;
 
 	private final ReviewMapper mapper;
 
@@ -109,6 +114,61 @@ public class ReviewServiceImpl implements ReviewService {
 		for (MultipartFile file : files) {
 			if (!ImageValidationUtil.isAllowedImage(file)) {
 				throw new IllegalStateException("이미지는 JPG, PNG, WEBP 파일만 등록할 수 있습니다.");
+			}
+		}
+	}
+
+	@Override
+	public List<ReviewDTO> listMyReviews(Long memberId, int page) {
+		int safePage = Math.max(page, 1);
+		int offset = (safePage - 1) * MY_REVIEWS_PAGE_SIZE;
+		List<ReviewDTO> reviews = mapper.selectMyReviews(memberId, offset, MY_REVIEWS_PAGE_SIZE);
+		if (reviews.isEmpty()) {
+			return reviews;
+		}
+
+		List<Long> reviewIds = new ArrayList<>();
+		for (ReviewDTO review : reviews) {
+			reviewIds.add(review.getReviewId());
+		}
+
+		// reviewId별로 묶어서 각 리뷰에 자기 사진만 배정 (ProductServiceImpl에 있던 "리스트를 반복문 밖에서
+		// 한 번만 만들어서 전부 공유해버리는" 버그를 반복하지 않도록, 리뷰마다 새 리스트를 만들어서 채움)
+		Map<Long, List<ReviewImagesDTO>> imagesByReviewId = new HashMap<>();
+		for (ReviewImagesDTO image : mapper.selectReviewImagesByReviewIds(reviewIds)) {
+			imagesByReviewId.computeIfAbsent(image.getReviewId(), key -> new ArrayList<>()).add(image);
+		}
+
+		for (ReviewDTO review : reviews) {
+			review.setReviewImages(imagesByReviewId.getOrDefault(review.getReviewId(), new ArrayList<>()));
+		}
+
+		return reviews;
+	}
+
+	@Override
+	public int totalMyReviewPages(Long memberId) {
+		int totalCount = mapper.countMyReviews(memberId);
+		return Math.max(1, (int) Math.ceil((double) totalCount / MY_REVIEWS_PAGE_SIZE));
+	}
+
+	@Override
+	@Transactional
+	public void deleteReview(Long reviewId, Long memberId) {
+		// 물리 파일은 DB 삭제 전에 미리 알아둬야 함 - REVIEWIMAGE는 REVIEW 삭제 시 FK CASCADE로 같이 지워지므로
+		List<String> imageSaveNames = mapper.selectReviewImageSaveNamesByReviewId(reviewId);
+
+		int deleted = mapper.deleteReview(reviewId, memberId);
+		if (deleted == 0) {
+			throw new IllegalStateException("본인이 작성한 리뷰만 삭제할 수 있습니다.");
+		}
+
+		for (String saveName : imageSaveNames) {
+			File target = new File(new File(uploadDir).getAbsoluteFile(), saveName);
+			if (target.exists() && !target.delete()) {
+				// 파일 삭제 실패는 DB 삭제를 되돌릴 이유가 안 됨 - admin의 파일 정합성 검사가 이런
+				// "DB엔 없는데 파일만 남음" 케이스를 나중에 잡아줌
+				System.err.println("[ReviewServiceImpl] 리뷰 이미지 파일 삭제 실패: " + saveName);
 			}
 		}
 	}

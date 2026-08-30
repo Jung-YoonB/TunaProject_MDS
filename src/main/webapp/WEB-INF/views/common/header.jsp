@@ -13,6 +13,8 @@
 	<link rel="stylesheet" href="/css/style.css">
 	<link rel="stylesheet" href="/css/style_member.css">
 	<link rel="stylesheet" href="/css/style_order.css">
+	<link rel="stylesheet" href="/css/style_myReviews.css">
+	<link rel="stylesheet" href="/css/style_coupon.css">
 	<link rel="stylesheet" href="/css/style_home.css">
 	<link rel="stylesheet" href="/css/style_myPage.css">
 	<link rel="stylesheet" href="/css/style_search.css">
