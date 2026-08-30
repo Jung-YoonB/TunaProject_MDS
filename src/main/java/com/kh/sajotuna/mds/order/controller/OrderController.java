@@ -55,13 +55,13 @@ public class OrderController {
 	
 	@PostMapping("/checkout")
 	@ResponseBody
-	public CheckoutDTO checkout(HttpSession session, @ModelAttribute CheckoutDTO checkoutData,
+	public String checkout(HttpSession session, @ModelAttribute CheckoutDTO checkoutData,
 			RedirectAttributes redirectAttr) {
 	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
 	    
 	    if (member == null) {
-//	        return "redirect:/member/login";
-	    	return null; // 임시테스트용
+	        return "redirect:/member/login";
+//	    	return null; // 임시테스트용
 	    }
 	    
 	    checkoutData.setMemberId(member.getMemberId());
@@ -69,16 +69,16 @@ public class OrderController {
 	    try {
 	    CheckoutDTO resultData = service.checkout(checkoutData);
 	    redirectAttr.addFlashAttribute("checkoutData", resultData);
-//	    return "redirect:/order/completed"; // 결제 완료 페이지로 리다이렉트
-	    return resultData;   // 임시테스트용
+	    return "redirect:/order/completed"; // 결제 완료 페이지로 리다이렉트
+//	    return resultData;   // 임시테스트용
 	    } catch(Exception e) {
 	    	e.printStackTrace();
 	    	redirectAttr.addFlashAttribute("error", e.getMessage());
-//			return "redirect:/order/payment";
-	    	// 임시 테스트용 에러 반환 처리
+			return "redirect:/order/payment";
+/*	    	// 임시 테스트용 에러 반환 처리
 	    	CheckoutDTO errorData = new CheckoutDTO();
 	    	errorData.setAddressNameFix(e.getMessage());
-	    	return errorData;
+	    	return errorData;  */
 	    }
 	   
 	}
