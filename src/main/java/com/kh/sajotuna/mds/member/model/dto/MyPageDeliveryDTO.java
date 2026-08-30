@@ -2,6 +2,7 @@ package com.kh.sajotuna.mds.member.model.dto;
 
 import java.time.LocalDate;
 
+import org.apache.ibatis.type.Alias;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Getter
 @Setter
+@Alias("MyPageDeliveryDTO")
 public class MyPageDeliveryDTO {
 
 	// 딜리버리 테이블

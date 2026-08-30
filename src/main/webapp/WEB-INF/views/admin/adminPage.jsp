@@ -95,6 +95,20 @@
                         <span class="quick-menu-label">문의 내역</span>
                     </a>
                 </li>
+                <li>
+                    <a class="quick-menu-tile" href="<c:url value='/admin/maintenance'/>">
+                        <span class="quick-menu-icon">
+                            <svg viewBox="0 0 24 24" focusable="false">
+                                <path d="M9 3H5a2 2 0 0 0-2 2v4"/>
+                                <path d="M15 3h4a2 2 0 0 1 2 2v4"/>
+                                <path d="M9 21H5a2 2 0 0 1-2-2v-4"/>
+                                <path d="M15 21h4a2 2 0 0 0 2-2v-4"/>
+                                <path d="M9 12l2 2 4-4"/>
+                            </svg>
+                        </span>
+                        <span class="quick-menu-label">파일 정합성 검사</span>
+                    </a>
+                </li>
             </ul>
         </section>
 

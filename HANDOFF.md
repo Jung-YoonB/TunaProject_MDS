@@ -946,3 +946,51 @@ API로: 301자 쿠폰설명 거부, 정확히 300자는 성공 확인(테스트 
   src/main/java/com/kh/sajotuna/mds/admin/model/dto/CategoryOptionDTO.java
   src/main/java/com/kh/sajotuna/mds/admin/model/dto/AdminCouponDTO.java
 ```
+
+## 3-29. 2026-08-31: 프로젝트 전체 감사(`PROJECT_AUDIT.md`) + 후속 조치
+
+3-28 직후 사용자님이 "프로젝트 전체를 훑어서 버그/정책 검토/잠재적 위험을 리스트업만 해달라(수정 X)"고 요청 → member/coupon, product/review, 전체 보안·설정 3개 영역을 병렬 조사 에이전트로 감사하고 admin 3종은 직접 재검토. 결과를 별도 문서 **`PROJECT_AUDIT.md`**(레포 루트, HANDOFF.md처럼 커밋 대상 아님)로 저장 — 팀 공유 및 지속 업데이트용. **이 세션에서 발견된 버그(회원가입 폼 깨짐, ProductController 세션 키 오류, 리뷰 이미지 뒤섞임, `/member/orderDelivery` INNER JOIN 문제 등 다수)는 전부 review/product/member 담당 영역이라 이번엔 고치지 않음 — 자세한 내용은 `PROJECT_AUDIT.md` 참고.**
+
+사용자님이 자기 담당 영역(리뷰/일부 admin) 및 명시적으로 지시한 것만 다음처럼 실제로 적용:
+
+1. **리뷰 텍스트 500자 서버 검증** — `ReviewServiceImpl.writeReview()`. `REVIEW_TEXT VARCHAR2(1500 BYTE)`가 한글 500자(3바이트×500)까지만 안전한데 서버 검증이 없었음.
+2. **리뷰 이미지 업로드 파일종류 검증 + 관리자 상품 등록의 Content-Type 스푸핑 대응** — 신규 `util.ImageValidationUtil`(JPG/PNG/WEBP 매직 바이트 직접 확인, Content-Type 헤더 대체)을 만들어 `AdminProductServiceImpl`/`ReviewServiceImpl` 양쪽에서 공용으로 사용.
+3. **쿠폰 `couponValue`를 `double` → `BigDecimal`로 변경** — `discountPercent/100.0` 나눗셈 대신 `BigDecimal.valueOf(discountPercent, 2)`로 스케일 직접 지정(부동소수점 오차 원천 차단). 처음엔 기존 `createdAt`/`deadline`(String) 필드의 타입을 LocalDate로 바꿔치기했었는데, 사용자님이 "기존 필드는 그대로 두고 admin용 LocalDate 필드를 새로 추가하는 방향이어야 한다"고 정정 — `createdAtStr`/`deadlineStr`(String, 기존 용도 유지)와 `createdAt`/`deadline`(LocalDate, admin 신규)을 나란히 두는 구조로 수정.
+4. **업로드 파일 orphan 완전 차단 + 파일 정합성 검사 기능 신설** — `util.FileUploadUtil`을 "UUID 파일명 즉시 생성"과 "실제 디스크 쓰기"로 분리하고, 디스크 쓰기를 `TransactionSynchronizationManager`의 `afterCommit()` 콜백으로 미룸(`AdminProductServiceImpl`, `ReviewServiceImpl` 양쪽 적용) — 등록 도중 실패해도 파일이 애초에 안 써져서 orphan이 원천 차단됨. 추가로 `/admin/maintenance` 화면(관리자 대시보드 퀵메뉴에 5번째 타일로 노출) 신설 — `uploads/product`↔`PRODUCTIMAGE`, `uploads/review`↔`REVIEWIMAGE`를 대조해서 "파일만 있음(삭제 가능)"/"DB만 있음(재업로드 필요)"을 리스트로 보여줌. 스케줄러 없이 관리자가 직접 누르는 온디맨드 방식(포트폴리오 성격상 눈에 보이는 게 낫다고 판단). 자동 삭제 없이 목록 확인 후 사람이 버튼을 눌러야 삭제되고, 삭제 API는 클릭 시점에 DB를 재확인 + 경로 순회 문자 차단하는 안전장치 포함.
+5. **전체 프로젝트 낡은/오해 소지 있는 주석 정리** — Java/JSP/매퍼 XML 전수 스캔 후 실제 코드와 대조해서 9곳 수정(이미 해결된 TODO가 안 지워진 것, 옛 리다이렉트 문자열을 가리키는 것, 복붙하다 타입명 안 고친 것 등). 상세 내역은 `PROJECT_AUDIT.md` 참고.
+6. **매퍼가 이름으로 참조 중인 DTO 4개에 `@Alias` 명시적으로 추가** — `SearchDTO`, `MyPageWishDTO`, `MyPageCartDTO`, `MyPageDeliveryDTO`. `application.properties`의 `mybatis.type-aliases-package=com.kh.sajotuna.mds`가 패키지 전체를 자동 스캔해서 `@Alias` 없이도 클래스명으로 resolve되고 있었지만(그래서 지금까지 문제없이 동작), 매퍼가 클래스명에 의존한다는 걸 코드에서 바로 보이게 하려고 명시함. **참고: 이 자동 스캔 때문에 프로젝트 전체(`com.kh.sajotuna.mds` 하위)에서 클래스명이 유일해야 함 — 새 DTO 만들 때 이름 겹침 주의.**
+7. **최종 점검**: `/code-review high`로 이번 세션 diff(39개 파일) 재검증 → `FileUploadUtil.saveFile()`이 4번 리팩토링 이후 호출부 0건인 죽은 메서드로 남아있던 것 발견, 삭제. 그 외 문제 없음. 컴파일 + 서버 기동 후 admin/member 주요 엔드포인트 스모크 테스트 전부 통과, 파일 정합성 검사 기능으로 이번 세션 테스트 흔적이 DB/디스크에 하나도 안 남은 것까지 확인.
+
+### 신규/수정/삭제 파일
+```
+신규:
+  PROJECT_AUDIT.md
+  src/main/java/com/kh/sajotuna/mds/util/ImageValidationUtil.java
+  src/main/java/com/kh/sajotuna/mds/admin/model/dto/FileIntegrityIssueDTO.java
+  src/main/java/com/kh/sajotuna/mds/admin/model/dto/DeleteOrphanFileRequestDTO.java
+  src/main/java/com/kh/sajotuna/mds/admin/model/mapper/AdminMaintenanceMapper.java (+xml)
+  src/main/java/com/kh/sajotuna/mds/admin/model/service/AdminMaintenanceService.java (+Impl)
+  src/main/java/com/kh/sajotuna/mds/admin/controller/AdminMaintenanceController.java
+  src/main/webapp/WEB-INF/views/admin/adminMaintenance.jsp
+  src/main/resources/static/css/style_adminMaintenance.css
+  src/main/resources/static/js/admin/adminMaintenanceService.js
+  src/main/resources/static/js/views/adminMaintenance.js
+
+수정:
+  src/main/java/com/kh/sajotuna/mds/review/model/service/ReviewServiceImpl.java   (텍스트 길이/이미지 검증, AFTER_COMMIT)
+  src/main/java/com/kh/sajotuna/mds/admin/model/service/AdminProductServiceImpl.java (이미지 검증 교체, AFTER_COMMIT)
+  src/main/java/com/kh/sajotuna/mds/util/FileUploadUtil.java                      (파일명 생성/디스크 쓰기 분리 + saveOnCommit)
+  src/main/java/com/kh/sajotuna/mds/product/model/dto/coupon/CouponDTO.java       (couponValue BigDecimal, createdAtStr/deadlineStr + createdAt/deadline 분리)
+  src/main/java/com/kh/sajotuna/mds/admin/model/service/AdminCouponServiceImpl.java (BigDecimal 반영)
+  src/main/java/com/kh/sajotuna/mds/product/model/dto/mainPage/SearchDTO.java     (@Alias 추가)
+  src/main/java/com/kh/sajotuna/mds/member/model/dto/MyPageWishDTO.java           (〃)
+  src/main/java/com/kh/sajotuna/mds/member/model/dto/MyPageCartDTO.java           (〃)
+  src/main/java/com/kh/sajotuna/mds/member/model/dto/MyPageDeliveryDTO.java       (〃)
+  src/main/webapp/WEB-INF/views/admin/adminPage.jsp                              (퀵메뉴 5번째 타일)
+  src/main/resources/static/css/style_admin_mypage.css                          (퀵메뉴 그리드 4→5열)
+  src/main/webapp/WEB-INF/views/common/header.jsp                                (신규 CSS 링크)
+  src/main/webapp/WEB-INF/views/product/productDetail.jsp                       (낡은 주석 정리 2건)
+  src/main/webapp/WEB-INF/views/product/searchProduct.jsp                       (낡은 주석 정리 4건)
+  src/main/webapp/WEB-INF/views/product/wish.jsp                                 (오해 소지 있는 주석 정리)
+  src/main/java/com/kh/sajotuna/mds/member/controller/MemberController.java     (복붙 오류 주석 5곳 수정)
+```

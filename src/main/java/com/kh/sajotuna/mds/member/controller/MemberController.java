@@ -63,7 +63,7 @@ public class MemberController {
 		} else {
 			return "admin/adminPage";
 		}
-		// 유저는 loginMember 에 유저DTO, couponList에 List<CouponDTO> 가 모델에 저장되고 넘어감
+		// 유저는 loginMember 에 유저DTO, couponList에 List<MypageCouponDTO> 가 모델에 저장되고 넘어감
 	}
 	
 	@GetMapping("/couponView")
@@ -78,7 +78,7 @@ public class MemberController {
 		} else {
 			return "admin/admincouponView";
 		}
-		// 유저는 couponList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
+		// 유저는 couponList에 List<MypageCouponDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	@GetMapping("/wish")
@@ -94,7 +94,7 @@ public class MemberController {
 			return "admin/adminPage"; // 관리자용 찜 화면이 없어 대시보드로
 		} 
 		
-		// 유저는 wishList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
+		// 유저는 wishList에 List<MyPageWishDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	@GetMapping("/cart")
@@ -109,7 +109,7 @@ public class MemberController {
 		}  else {
 			return "admin/adminPage"; // 관리자용 장바구니 화면이 없어 대시보드로
 		} 
-		// 유저는 cartList에 List<CartDTO> 가 모델에 최신화 되어 넘어감
+		// 유저는 cartList에 List<MyPageCartDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	@GetMapping("/orderDelivery")
@@ -127,7 +127,7 @@ public class MemberController {
 			return "admin/adminOrderDelivery";
 		} 
 		
-		// 유저는 cartList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
+		// 유저는 deliveryList에 List<MyPageDeliveryDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	

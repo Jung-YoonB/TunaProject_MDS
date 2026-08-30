@@ -1,8 +1,6 @@
 package com.kh.sajotuna.mds.admin.model.service;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,6 +14,7 @@ import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.CategoryDTO;
 import com.kh.sajotuna.mds.util.FileUploadUtil;
+import com.kh.sajotuna.mds.util.ImageValidationUtil;
 
 import lombok.RequiredArgsConstructor;
 import tools.jackson.core.JacksonException;
@@ -29,9 +28,6 @@ public class AdminProductServiceImpl implements AdminProductService {
 	private static final int TITLE_IMAGE_MAIN = 0;
 	private static final int TITLE_IMAGE_SUB = 1;
 	private static final int TITLE_IMAGE_DESCRIPTION = 2;
-
-	// 화면 안내 문구(JPG/PNG/WEBP)와 동일한 기준으로 서버에서도 실제 업로드되는 파일 종류를 제한
-	private static final Set<String> ALLOWED_IMAGE_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
 
 	private final AdminProductMapper mapper;
 	private final ObjectMapper objectMapper;
@@ -77,8 +73,6 @@ public class AdminProductServiceImpl implements AdminProductService {
 			throw new IllegalStateException("카테고리를 선택해 주세요.");
 		}
 
-		// 실제로 디스크에 쓰기 전에 전부 검사해서, 뒤쪽 이미지가 부적합할 때
-		// 앞쪽 이미지만 파일로 남는(트랜잭션 롤백은 DB에만 적용되고 파일엔 안 적용됨) 상황을 방지
 		checkImageType(mainImage);
 		checkImageTypes(subImages);
 		checkImageTypes(descriptionImages);
@@ -120,12 +114,10 @@ public class AdminProductServiceImpl implements AdminProductService {
 		}
 	}
 
+	// Content-Type 헤더는 요청자가 임의로 바꿔 보낼 수 있어 신뢰할 수 없으므로,
+	// 실제 파일 시그니처(매직 바이트)까지 확인하는 ImageValidationUtil로 검사
 	private void checkImageType(MultipartFile file) {
-		if (file == null || file.isEmpty()) {
-			return;
-		}
-		String contentType = file.getContentType();
-		if (contentType == null || !ALLOWED_IMAGE_CONTENT_TYPES.contains(contentType)) {
+		if (!ImageValidationUtil.isAllowedImage(file)) {
 			throw new IllegalStateException("이미지는 JPG, PNG, WEBP 파일만 등록할 수 있습니다.");
 		}
 	}
@@ -144,12 +136,11 @@ public class AdminProductServiceImpl implements AdminProductService {
 			return;
 		}
 
-		String saveName;
-		try {
-			saveName = FileUploadUtil.saveFile(file, uploadDir);
-		} catch (IOException e) {
-			throw new IllegalStateException("이미지 업로드에 실패했습니다.", e);
-		}
+		// 파일명만 미리 생성해서 DB엔 즉시 반영하고, 실제 디스크 쓰기는 트랜잭션 커밋 후로 미룬다.
+		// 등록 도중 뒤쪽 단계(태그 파싱 등)에서 실패해도, 이미 써진 이미지 파일이 롤백된 상품에
+		// orphan으로 남는 일이 없도록 하기 위함(DB 롤백은 파일 시스템엔 적용 안 되는 문제의 근본 해결)
+		String saveName = FileUploadUtil.generateSaveName(file);
+		FileUploadUtil.saveOnCommit(file, uploadDir, saveName);
 
 		ProductImageInsertDTO image = new ProductImageInsertDTO();
 		image.setProductId(productId);

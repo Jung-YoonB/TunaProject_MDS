@@ -25,6 +25,7 @@
 	<link rel="stylesheet" href="/css/style_admin_mypage.css">
 	<link rel="stylesheet" href="/css/style_admin_order.css">
 	<link rel="stylesheet" href="/css/style_admincouponView.css">
+	<link rel="stylesheet" href="/css/style_adminMaintenance.css">
 </head>
 <body data-logged-in="${not empty sessionScope.loginMemberId}" data-home-url="<c:url value='/'/>">
 	<header id="site-header">

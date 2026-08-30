@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.admin.model.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -56,7 +57,9 @@ public class AdminCouponServiceImpl implements AdminCouponService {
 
 		CouponDTO coupon = new CouponDTO();
 		coupon.setCouponName(couponName);
-		coupon.setCouponValue(discountPercent / 100.0);
+		// discountPercent(1~100)를 소수로 바꿀 때 double 나눗셈 대신 BigDecimal.valueOf(unscaledVal, scale)로
+		// 직접 스케일을 지정 - 나눗셈 자체가 없어서 부동소수점 이진 표현 오차가 생길 여지가 없음
+		coupon.setCouponValue(BigDecimal.valueOf(discountPercent, 2));
 		coupon.setCouponText(couponText);
 		coupon.setCreatedAt(effectiveStart);
 		coupon.setDeadline(endDate);
