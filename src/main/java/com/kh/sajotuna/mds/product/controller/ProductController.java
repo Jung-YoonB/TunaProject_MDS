@@ -2,7 +2,7 @@ package com.kh.sajotuna.mds.product.controller;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewListDTO;
+import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
 import com.kh.sajotuna.mds.util.SessionConst;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -64,7 +64,7 @@ public class ProductController {
 		if(user.getMemberId() != null) {
 			memberId = user.getMemberId();
 		}
-		List<ReviewListDTO> reviewList = service.getReviewList(productId, memberId);
+		List<ReviewDTO> reviewList = service.getReviewList(productId, memberId);
 		model.addAttribute("reviewList", reviewList);
 		System.out.println("reviewList :: " + reviewList);
 		return"redirect:home/home";

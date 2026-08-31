@@ -2,22 +2,19 @@ package com.kh.sajotuna.mds.product.model.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
+import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
+import com.kh.sajotuna.mds.review.model.dto.ReviewImagesDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewListDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewImagesDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
 import com.kh.sajotuna.mds.product.model.mapper.ProductMapper;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -74,18 +71,18 @@ public class ProductServiceImpl implements ProductService{
 	}
 
 	@Override
-	public List<ReviewListDTO> getReviewList(Long productId, Long memberId) {
+	public List<ReviewDTO> getReviewList(Long productId, Long memberId) {
 
-		List<ReviewListDTO> reviewList = mapper.getReviewList(productId, memberId);
+		List<ReviewDTO> reviewList = mapper.getReviewList(productId, memberId);
 		List<Long> reviewIds = new ArrayList<>();
 		List<ReviewImagesDTO> images = new  ArrayList<>();
 
-		for(ReviewListDTO review : reviewList) {
+		for(ReviewDTO review : reviewList) {
 			reviewIds.add(review.getReviewId());
 		}
 		List<ReviewImagesDTO> reviewImages = mapper.getReviewImages(reviewIds);
 
-		for(ReviewListDTO review : reviewList) {
+		for(ReviewDTO review : reviewList) {
 			for(ReviewImagesDTO image : reviewImages) {
 				if(review.getReviewId().equals(image.getReviewId())) {
 					images.add(image);

@@ -1,13 +1,11 @@
 package com.kh.sajotuna.mds.product.model.mapper;
 
 import java.util.List;
-
 import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewListDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewImagesDTO;
+import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
+import com.kh.sajotuna.mds.review.model.dto.ReviewImagesDTO;
 import org.apache.ibatis.annotations.Mapper;
-
 import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
@@ -34,7 +32,7 @@ public interface ProductMapper {
 	int insertCoupon(@Param("memberId") Long memberId, @Param("couponId") Long couponId);
 
 	//리뷰 관련
-	List<ReviewListDTO> getReviewList(@Param("productId") Long productId, @Param("memberId") Long memberId);
+	List<ReviewDTO> getReviewList(@Param("productId") Long productId, @Param("memberId") Long memberId);
 	List<ReviewImagesDTO> getReviewImages(List<Long> reviewId);
 
 	//ReviewLike
