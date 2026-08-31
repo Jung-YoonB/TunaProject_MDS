@@ -1,4 +1,4 @@
-/* 회원가입 페이지 */
+/* 회원가입 페이지 인터랙션 - 중복확인 서버 통신은 member/memberService.js에 위임 */
 
 // 비밀번호 일치 여부 확인
 const loginPw = document.querySelector("#login_pw");  // 비밀번호 입력창
@@ -74,20 +74,12 @@ idCheckBtn.addEventListener("click", async function() {
         return;
     }
 
-
     // 입력된 아이디값이 중복되는 지 서버로 요청
     try {
-        const response = await fetch("/member/checkId?loginId=" + encodeURIComponent(loginId), {
-            method: "GET",
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        });
+        const result = await MemberService.checkId(loginId);
 
-        // response.json() : json 응답을 자바스크립트 객체로 변경
-        const result = await response.json();
-
-        // console.log(result);
         checkIdResult.textContent = result.message;
-        checkIdResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
+        checkIdResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용
 
         checkId = result.data ? null : loginId;
     } catch (error) {
@@ -123,15 +115,10 @@ nicknameCheckBtn.addEventListener("click", async function() {
 
     // 입력된 닉네임값이 중복되는 지 서버로 요청
     try {
-        const response = await fetch("/member/checkNickname?nickname=" + encodeURIComponent(nickname), {
-            method: "GET",
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        });
-
-        const result = await response.json();
+        const result = await MemberService.checkNickname(nickname);
 
         checkNicknameResult.textContent = result.message;
-        checkNicknameResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
+        checkNicknameResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용
 
         checkNickname = result.data ? null : nickname;
     } catch (error) {
@@ -173,15 +160,10 @@ emailCheckBtn.addEventListener("click", async function() {
     }
 
     try {
-        const response = await fetch("/member/checkEmail?email=" + encodeURIComponent(email), {
-            method: "GET",
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        });
-
-        const result = await response.json();
+        const result = await MemberService.checkEmail(email);
 
         checkEmailResult.textContent = result.message;
-        checkEmailResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
+        checkEmailResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용
 
         checkEmail = result.data ? null : email;
     } catch (error) {
@@ -224,15 +206,10 @@ phoneCheckBtn.addEventListener("click", async function() {
     }
 
     try {
-        const response = await fetch("/member/checkPhone?phone=" + encodeURIComponent(phone), {
-            method: "GET",
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        });
-
-        const result = await response.json();
+        const result = await MemberService.checkPhone(phone);
 
         checkPhoneResult.textContent = result.message;
-        checkPhoneResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용 
+        checkPhoneResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용
 
         checkPhone = result.data ? null : phone;
     } catch (error) {

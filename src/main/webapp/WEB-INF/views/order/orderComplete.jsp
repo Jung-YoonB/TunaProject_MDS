@@ -2,6 +2,8 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
+<div class="order-complete-page">
+<div class="order-complete-card">
         <!-- 주문 완료 제목 -->
         <div id="title">
 
@@ -141,5 +143,7 @@
             </button>
 
         </div>
+</div>
+</div>
 
 		<jsp:include page="/WEB-INF/views/common/footer.jsp"/>

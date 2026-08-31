@@ -3,7 +3,7 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin_mypage.css 포함)를 로드하므로 별도 link 불필요 --%>
+<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin.css 포함)를 로드하므로 별도 link 불필요 --%>
 <div class="admin-mypage-page">
 
     <%-- header.jsp가 이미 <main>을 열어서 폭 제약이 없으므로, 원래 main 태그가 담당하던

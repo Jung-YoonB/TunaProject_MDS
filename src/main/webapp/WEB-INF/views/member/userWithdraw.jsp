@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/default.css">
 
     <!-- 회원 전용 CSS -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style_member.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style_user.css">
 
 </head>
 

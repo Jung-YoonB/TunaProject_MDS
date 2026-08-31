@@ -15,7 +15,6 @@
                             소중한 사람에게<br>
                             취향을 담은 선물을 전해보세요.
                         </p>
-                        <a href="#" class="banner-button">선물 둘러보기</a>
                     </div>
                     <!-- TODO(assets): 실제 배너 이미지 확보되면 이 영역에 <img> 추가 -->
                     <div class="banner-image"></div>
@@ -57,7 +56,6 @@
         <div class="home-container">
             <div class="section-header">
                 <h2>선물 카테고리</h2>
-                <a href="#" class="section-more">전체보기 &gt;</a>
             </div>
             <div id="category-list">
                 <!-- 1 -->
@@ -263,7 +261,10 @@
                                 </svg>
                             </button>
                         </div>
-                        <span class="product-rating">★ 4.9 (1,245)</span>
+                        <div class="product-meta">
+                            <span class="product-rating">★ 4.9 (1,245)</span>
+                            <span class="product-wish-count">♡ 342</span>
+                        </div>
                     </div>
                 </div>
 
@@ -289,7 +290,10 @@
                                 </svg>
                             </button>
                         </div>
-                        <span class="product-rating">★ 4.9 (892)</span>
+                        <div class="product-meta">
+                            <span class="product-rating">★ 4.9 (892)</span>
+                            <span class="product-wish-count">♡ 567</span>
+                        </div>
                     </div>
                 </div>
 
@@ -315,7 +319,10 @@
                                 </svg>
                             </button>
                         </div>
-                        <span class="product-rating">★ 4.8 (652)</span>
+                        <div class="product-meta">
+                            <span class="product-rating">★ 4.8 (652)</span>
+                            <span class="product-wish-count">♡ 218</span>
+                        </div>
                     </div>
                 </div>
 
@@ -341,13 +348,16 @@
                                 </svg>
                             </button>
                         </div>
-                        <span class="product-rating">★ 4.9 (1,103)</span>
+                        <div class="product-meta">
+                            <span class="product-rating">★ 4.9 (1,103)</span>
+                            <span class="product-wish-count">♡ 489</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-<script src="<c:url value='/js/views/home.js'/>"></script>
+<script src="<c:url value='/js/common/bannerSlider.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>
