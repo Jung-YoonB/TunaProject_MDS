@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.sajotuna.mds.review.model.mapper.ReviewMapper">
+
+	<!-- 주문상세(OD_ID) 기준 배송 상태 조회 -->
+	<select id="checkDeliveryStatus" resultType="String" parameterType="Long">
+		SELECT d.DELIVERY_STATUS
+		FROM ORDERDETAIL od
+		JOIN DELIVERY d ON od.ORDER_ID = d.ORDER_ID
+		WHERE od.OD_ID = #{odId}
+	</select>
+
+	<!-- 리뷰 작성 화면에 보여줄 상품/옵션/가격/썸네일 조회
+	     memberId가 실제 이 주문상세의 소유자가 아니면 결과 없음(null) -->
+	<select id="getReviewWriteInfo" resultType="ReviewWriteInfoDTO">
+		SELECT
+			od.OD_ID AS odId,
+			p.PRODUCT_NAME AS productName,
+			po.OPTION_NAME AS optionName,
+			od.PRICE_FIX AS priceFix,
+			pi.PRODUCT_IMAGE_PATH AS productImagePath,
+			pi.PRODUCT_IMAGE_SAVE_NAME AS productImageSaveName
+		FROM ORDERDETAIL od
+		JOIN PRODUCTORDER pord ON od.ORDER_ID = pord.ORDER_ID
+		JOIN OPTIONDETAIL opd ON od.POP_ID = opd.POP_ID
+		JOIN PRODUCT p ON opd.PRODUCT_ID = p.PRODUCT_ID
+		JOIN PRODUCTOPTION po ON opd.OPTION_ID = po.OPTION_ID
+		LEFT JOIN PRODUCTIMAGE pi ON pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0
+		WHERE od.OD_ID = #{odId} AND pord.MEMBER_ID = #{memberId}
+	</select>
+
+	<!-- 이미 해당 주문상세에 리뷰를 작성했는지 확인 (UK_REVIEW: MEMBER_ID + OD_ID) -->
+	<select id="checkReviewExists" resultType="int">
+		SELECT COUNT(*)
+		FROM REVIEW
+		WHERE MEMBER_ID = #{memberId} AND OD_ID = #{odId}
+	</select>
+
+	<!-- 리뷰 본문 등록 -->
+	<insert id="insertReview" parameterType="ReviewDTO">
+		<selectKey keyProperty="reviewId" resultType="long" order="BEFORE">
+			SELECT SEQ_REVIEW_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO REVIEW (REVIEW_ID, MEMBER_ID, OD_ID, REVIEW_TEXT, SCORE)
+		VALUES (#{reviewId}, #{memberId}, #{odId}, #{reviewText}, #{score})
+	</insert>
+
+	<!-- 리뷰 이미지 추가 (REVIEW_IMAGE_ID는 자바에서 쓸 일이 없어 selectKey 없이 시퀀스 바로 사용) -->
+	<insert id="insertReviewImages" parameterType="ReviewImagesDTO">
+		INSERT INTO REVIEWIMAGE (REVIEW_IMAGE_ID, REVIEW_ID, REVIEW_IMAGE_ORIGINAL_NAME, REVIEW_IMAGE_SAVE_NAME, REVIEW_IMAGE_PATH, REVIEW_TITLE_IMAGE)
+		VALUES (SEQ_REVIEW_IMAGE_ID.NEXTVAL, #{reviewId}, #{reviewImageOriginalName}, #{reviewImage}, #{reviewImagePath}, #{reviewTitleImage})
+	</insert>
+
+	<!-- 마이페이지 "내가 쓴 리뷰" 목록: getReviewList(product 상세용)와 동일한 조인 패턴 + 상품 대표이미지 추가 -->
+	<select id="selectMyReviews" resultType="ReviewDTO">
+		SELECT
+			r.REVIEW_ID,
+			r.SCORE,
+			r.REVIEW_TEXT,
+			TO_CHAR(r.WRITE_DATE, 'YYYY-MM-DD') AS writeDate,
+			po.OPTION_NAME,
+			p.PRODUCT_NAME,
+			po.OPTION_PRICE,
+			orderd.QTY,
+			r.LIKE_COUNT,
+			r.OD_ID,
+			r.MEMBER_ID,
+			pi.PRODUCT_IMAGE_PATH,
+			pi.PRODUCT_IMAGE_SAVE_NAME
+		FROM REVIEW r
+		JOIN ORDERDETAIL orderd ON r.OD_ID = orderd.OD_ID
+		JOIN OPTIONDETAIL od ON orderd.POP_ID = od.POP_ID
+		JOIN PRODUCTOPTION po ON po.OPTION_ID = od.OPTION_ID
+		JOIN PRODUCT p ON p.PRODUCT_ID = od.PRODUCT_ID
+		LEFT JOIN PRODUCTIMAGE pi ON pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0
+		WHERE r.MEMBER_ID = #{memberId}
+		ORDER BY r.WRITE_DATE DESC
+		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+	</select>
+
+	<select id="countMyReviews" resultType="int">
+		SELECT COUNT(*) FROM REVIEW WHERE MEMBER_ID = #{memberId}
+	</select>
+
+	<select id="selectReviewImagesByReviewIds" resultType="ReviewImagesDTO">
+		SELECT REVIEW_ID, REVIEW_IMAGE_SAVE_NAME AS REVIEW_IMAGE, REVIEW_IMAGE_PATH
+		FROM REVIEWIMAGE
+		WHERE REVIEW_ID IN
+		<foreach collection="reviewIds" item="reviewId" open="(" separator="," close=")">
+			#{reviewId}
+		</foreach>
+	</select>
+
+	<select id="selectReviewImageSaveNamesByReviewId" resultType="String">
+		SELECT REVIEW_IMAGE_SAVE_NAME
+		FROM REVIEWIMAGE
+		WHERE REVIEW_ID = #{reviewId}
+	</select>
+
+	<!-- REVIEWIMAGE는 FK_RIMAGE_REVIEW ON DELETE CASCADE라 REVIEW 삭제 시 자동으로 같이 삭제됨.
+	     MEMBER_ID 조건까지 같이 걸어서 본인 리뷰가 아니면 0건 삭제되게(소유권 검증을 WHERE로 처리) -->
+	<delete id="deleteReview">
+		DELETE FROM REVIEW WHERE REVIEW_ID = #{reviewId} AND MEMBER_ID = #{memberId}
+	</delete>
+
+</mapper>

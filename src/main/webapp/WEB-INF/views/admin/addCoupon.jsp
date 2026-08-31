@@ -3,6 +3,13 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
+<%-- header.jsp가 모든 CSS를 전역으로 로드하므로, 이 페이지의 배경/폭 스타일이 다른 페이지의
+     공용 <body>/<main>에 새지 않도록 이 wrapper 안에서만 적용되게 스코프한다 --%>
+<div class="add-coupon-page"
+     data-register-url="<c:url value='/admin/coupon/add'/>"
+     data-list-url="<c:url value='/admin/coupon'/>">
+<div class="add-coupon-page-card">
+
         <!-- 제목 -->
         <div id="title">쿠폰 신규 등록</div>
 
@@ -12,6 +19,9 @@
             <input
                 type="text"
                 class="form-input"
+                id="couponNameInput"
+                name="couponName"
+                maxlength="50"
                 placeholder="쿠폰명을 입력하세요">
         </div>
 
@@ -19,9 +29,13 @@
         <div class="form-group">
             <label>할인율</label>
             <input
-                type="text"
+                type="number"
                 class="form-input"
-                placeholder="할인율을 입력하세요">
+                id="discountPercentInput"
+                name="discountPercent"
+                min="1"
+                max="100"
+                placeholder="할인율을 입력하세요 (예: 10)">
         </div>
 
         <!-- 쿠폰 설명 -->
@@ -29,6 +43,9 @@
             <label>쿠폰설명</label>
             <textarea
                 class="form-textarea"
+                id="couponTextInput"
+                name="couponText"
+                maxlength="300"
                 placeholder="쿠폰설명을 입력하세요"></textarea>
         </div>
 
@@ -40,7 +57,8 @@
                 <input
                     type="date"
                     class="date-input"
-                    id="startDate">
+                    id="startDate"
+                    name="startDate">
             </div>
 
             <div class="date-box">
@@ -48,32 +66,22 @@
                 <input
                     type="date"
                     class="date-input"
-                    id="endDate">
+                    id="endDate"
+                    name="endDate">
             </div>
 
         </div>
 
         <!-- 쿠폰 발급 -->
-        <button type="button" class="register-button">
+        <button type="button" class="register-button" id="registerCouponButton">
             쿠폰 발급
         </button>
 
-    </main>
+</div>
+</div>
 
+    <%-- header.jsp가 연 <main>은 여기서 안 닫음 — footer.jsp의 </main>이 닫아준다 --%>
 
-    <script>
-        // 오늘 날짜
-        const today = new Date().toISOString().split("T")[0];
-
-        const startDate = document.getElementById("startDate");
-        const endDate = document.getElementById("endDate");
-
-        // 발급일은 오늘 이전 선택 불가
-        startDate.min = today;
-
-        // 발급일을 선택하면 종료일은 발급일 이전 선택 불가
-        startDate.addEventListener("change", function () {
-            endDate.min = this.value;
-        });
-    </script>
+    <script src="<c:url value='/js/admin/adminCouponService.js'/>"></script>
+    <script src="<c:url value='/js/views/addCoupon.js'/>"></script>
 	<jsp:include page="/WEB-INF/views/common/footer.jsp"/>

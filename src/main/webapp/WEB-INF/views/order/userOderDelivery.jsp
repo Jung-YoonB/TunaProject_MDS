@@ -1,150 +1,185 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
-<!DOCTYPE html>
-<html lang="ko">
+<jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<head>
+<%-- header.jsp가 모든 CSS를 전역으로 로드하므로, 이 페이지의 배경/폭 스타일이 다른 페이지의
+     공용 <body>/<main>에 새지 않도록 이 wrapper 안에서만 적용되게 스코프한다 --%>
+<div class="order-delivery-page">
+<div class="page-content">
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <h1 class="page-title">주문/배송내역</h1>
 
-    <title>주문/배송내역</title>
+    <%-- 주문이 쌓여도 느려지지 않도록 상태 필터/페이징을 서버에서 처리하므로, 탭은 쿼리 파라미터를 바꿔서
+         페이지를 새로 요청하는 링크로 구성한다(필터 바꿀 땐 1페이지부터 다시 보여줌) --%>
+    <nav class="status-filter" aria-label="주문 상태 필터">
+        <a class="${currentStatus == 'all' ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='all'/><c:param name='page' value='1'/></c:url>">전체</a>
+        <a class="${currentStatus == 'preparing' ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='preparing'/><c:param name='page' value='1'/></c:url>">배송준비중</a>
+        <a class="${currentStatus == 'shipped' ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='shipped'/><c:param name='page' value='1'/></c:url>">배송중</a>
+        <a class="${currentStatus == 'out_for_delivery' ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='out_for_delivery'/><c:param name='page' value='1'/></c:url>">배송출발</a>
+        <a class="${currentStatus == 'delivered' ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='delivered'/><c:param name='page' value='1'/></c:url>">배송완료</a>
+        <a class="${currentStatus == 'canceled' ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='canceled'/><c:param name='page' value='1'/></c:url>">취소/환불</a>
+    </nav>
 
-    <!-- 공통 CSS -->
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/default.css">
+    <section class="order-list" aria-label="주문 목록" ${empty deliveryList ? 'hidden' : ''}>
+        <c:forEach items="${deliveryList}" var="item">
 
-    <!-- 주문 전용 CSS -->
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/css/style_order.css">
+            <%-- 필터 탭과 매칭되는 상태: DELIVERY 행이 아직 없거나 PREPARING이면 배송준비중.
+                 SHIPPED/OUT_FOR_DELIVERY/DELIVERED/CANCELED는 각각 별도 탭으로 매칭한다 --%>
+            <c:choose>
+                <c:when test="${item.deliveryStatus == 'CANCELED'}">
+                    <c:set var="filterStatus" value="canceled"/>
+                </c:when>
+                <c:when test="${item.deliveryStatus == 'SHIPPED'}">
+                    <c:set var="filterStatus" value="shipped"/>
+                </c:when>
+                <c:when test="${item.deliveryStatus == 'OUT_FOR_DELIVERY'}">
+                    <c:set var="filterStatus" value="out_for_delivery"/>
+                </c:when>
+                <c:when test="${item.deliveryStatus == 'DELIVERED'}">
+                    <c:set var="filterStatus" value="delivered"/>
+                </c:when>
+                <c:otherwise>
+                    <c:set var="filterStatus" value="preparing"/>
+                </c:otherwise>
+            </c:choose>
 
-</head>
+            <%-- 진행 단계 표시용 인덱스: 배송준비중=1, 배송중=2, 배송출발=3, 배송완료=4, 아직 DELIVERY
+                 행이 없으면(결제완료만 된 상태) 0 (아무 단계도 시작 전) --%>
+            <c:choose>
+                <c:when test="${item.deliveryStatus == 'PREPARING'}"><c:set var="stepIndex" value="1"/></c:when>
+                <c:when test="${item.deliveryStatus == 'SHIPPED'}"><c:set var="stepIndex" value="2"/></c:when>
+                <c:when test="${item.deliveryStatus == 'OUT_FOR_DELIVERY'}"><c:set var="stepIndex" value="3"/></c:when>
+                <c:when test="${item.deliveryStatus == 'DELIVERED'}"><c:set var="stepIndex" value="4"/></c:when>
+                <c:otherwise><c:set var="stepIndex" value="0"/></c:otherwise>
+            </c:choose>
 
-<body class="order-delivery-page">
+            <article class="order-card">
+                <div class="order-header">
+                    <span class="order-number">주문번호 <strong>${item.orderId}</strong></span>
+                    <span class="order-date">주문일 ${item.orderDateStr}</span>
+                </div>
+                <div class="order-body">
+                    <div class="item-thumb">
+                        <c:choose>
+                            <c:when test="${not empty item.productImageSaveName}">
+                                <img src="<c:out value='${item.productImagePath}'/><c:out value='${item.productImageSaveName}'/>"
+                                     alt="<c:out value='${item.productName}'/>">
+                            </c:when>
+                            <c:otherwise>
+                                <span class="no-image-text">상품 이미지가<br>없습니다</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="order-info">
+                        <h3 class="product-name">
+                            <c:out value="${item.productName}"/>
+                            <c:if test="${item.productCount > 1}"> 외 ${item.productCount - 1}건</c:if>
+                        </h3>
+                        <p class="product-detail">
+                            <c:if test="${item.qty != null}">수량: ${item.qty}개 | </c:if>금액:
+                            <fmt:formatNumber value="${item.totalPrice}" pattern="#,##0"/>원
+                        </p>
+                    </div>
+                    <span class="status-badge status-${filterStatus}">
+                        <c:choose>
+                            <c:when test="${item.deliveryStatus == 'CANCELED' && item.orderStatus == 'CANCELED'}">취소/환불 완료</c:when>
+                            <c:when test="${item.deliveryStatus == 'CANCELED'}">취소/환불 대기중</c:when>
+                            <c:when test="${item.deliveryStatus == 'PREPARING'}">배송준비중</c:when>
+                            <c:when test="${item.deliveryStatus == 'SHIPPED'}">배송중</c:when>
+                            <c:when test="${item.deliveryStatus == 'OUT_FOR_DELIVERY'}">배송출발</c:when>
+                            <c:when test="${item.deliveryStatus == 'DELIVERED'}">배송완료</c:when>
+                            <c:when test="${item.orderStatus == 'PAYMENT_WAITING'}">결제대기</c:when>
+                            <c:otherwise>결제완료</c:otherwise>
+                        </c:choose>
+                    </span>
+                </div>
 
-    <main>
+                <c:if test="${item.deliveryStatus != 'CANCELED'}">
+                <div class="order-progress">
 
-        <h1 class="page-title">주문/배송내역</h1>
+                    <div class="progress-step ${stepIndex > 1 ? 'is-complete' : (stepIndex == 1 ? 'is-current status-preparing' : 'is-upcoming')}">
+                        <span class="step-icon">${stepIndex > 1 ? '✓' : ''}</span>
+                        <span class="step-label">배송준비중</span>
+                    </div>
+                    <div class="progress-line ${stepIndex > 1 ? 'is-complete' : ''}"></div>
 
-        <nav class="status-filter" id="order-status-filter" aria-label="주문 상태 필터">
-            <button type="button" class="is-active" data-status="all">전체</button>
-            <button type="button" data-status="preparing">배송준비중</button>
-            <button type="button" data-status="shipped">배송중</button>
-            <button type="button" data-status="delivered">배송완료</button>
-        </nav>
+                    <div class="progress-step ${stepIndex > 2 ? 'is-complete' : (stepIndex == 2 ? 'is-current status-shipped' : 'is-upcoming')}">
+                        <span class="step-icon">${stepIndex > 2 ? '✓' : ''}</span>
+                        <span class="step-label">배송중</span>
+                    </div>
+                    <div class="progress-line ${stepIndex > 2 ? 'is-complete' : ''}"></div>
 
-        <section class="order-list" id="order-list" aria-label="주문 목록"></section>
+                    <div class="progress-step ${stepIndex > 3 ? 'is-complete' : (stepIndex == 3 ? 'is-current status-out_for_delivery' : 'is-upcoming')}">
+                        <span class="step-icon">${stepIndex > 3 ? '✓' : ''}</span>
+                        <span class="step-label">배송출발</span>
+                    </div>
+                    <div class="progress-line ${stepIndex > 3 ? 'is-complete' : ''}"></div>
 
-        <p class="order-empty" id="order-empty" hidden>주문/배송내역이 없습니다.</p>
+                    <div class="progress-step ${stepIndex == 4 ? 'is-complete' : 'is-upcoming'}">
+                        <span class="step-icon">${stepIndex == 4 ? '✓' : ''}</span>
+                        <span class="step-label">배송완료</span>
+                    </div>
 
-        <div class="order-back">
-            <a class="btn-back-mypage" href="<c:url value='/member/mypage'/>">마이페이지로 돌아가기</a>
-        </div>
+                </div>
+                </c:if>
 
-    </main>
+                <c:if test="${not empty item.trackingNo || not empty item.addressNameFix}">
+                <div class="delivery-info">
+                    <c:if test="${not empty item.trackingNo}">
+                    <p class="info-row">
+                        <span class="info-label">택배사</span> : <c:out value="${item.company}"/>
+                        <span class="info-divider">|</span>
+                        <span class="info-label">송장번호</span> : <c:out value="${item.trackingNo}"/>
+                    </p>
+                    </c:if>
+                    <c:if test="${not empty item.addressNameFix}">
+                    <p class="info-row">
+                        <span class="info-label">배송지</span> : <c:out value="${item.addressNameFix}"/> - <c:out value="${item.detailAddressFix}"/>
+                    </p>
+                    </c:if>
+                </div>
+                </c:if>
 
-    <%-- TODO(data binding): Order/Delivery/OrderDetail/ProductOption 테이블 연동 필요.
-         현재는 테스트용 예시 주문 3건을 하드코딩. 배송 상태(status)는 Delivery 테이블의
-         배송 상태 값과 매핑해야 하며, 진행 단계(주문완료/배송준비중/배송중/배송완료)도
-         실제 Delivery 이력 데이터를 기준으로 계산해야 함.
-         수량(qty)은 OrderDetail 테이블의 qty, 금액(price)은 ProductOption 테이블의
-         option_price에서 가져와야 함 — 현재는 테스트용 임의값. --%>
-    <script>
-    (function () {
-        var STEP_LABELS = ['주문완료', '배송준비중', '배송중', '배송완료'];
-        var STATUS_STEP_INDEX = { preparing: 1, shipped: 2, delivered: 3, canceled: 1 };
-        var STATUS_BADGE_LABEL = { preparing: '배송준비중', shipped: '배송중', delivered: '배송완료', canceled: '주문취소' };
+                <c:if test="${item.deliveryStatus == 'DELIVERED' && item.odId != null}">
+                <div class="order-actions">
+                    <c:choose>
+                        <c:when test="${item.hasReview}">
+                            <span class="review-done-badge">리뷰 작성 완료</span>
+                        </c:when>
+                        <c:otherwise>
+                            <%-- 리뷰 작성 완료 후 지금 보고 있던 필터/페이지로 그대로 돌아올 수 있도록 returnUrl로 넘김 --%>
+                            <a class="btn-review" href="<c:url value='/review/write'><c:param name='odId' value='${item.odId}'/><c:param name='returnUrl' value='/member/orderDelivery?status=${currentStatus}&page=${currentPage}'/></c:url>">리뷰 작성</a>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+                </c:if>
+            </article>
+        </c:forEach>
+    </section>
 
-        var ORDERS = [
-            { orderId: '20260815-001', orderDate: '2026.08.15', productName: '프리미엄 한우 선물세트', qty: 1, price: 129000, status: 'preparing' },
-            { orderId: '20260812-003', orderDate: '2026.08.12', productName: '전통 과일 선물세트', qty: 2, price: 118000, status: 'shipped' },
-            { orderId: '20260805-007', orderDate: '2026.08.05', productName: '프리미엄 견과 선물세트', qty: 1, price: 75000, status: 'delivered' }
-        ];
+    <p class="order-empty" ${empty deliveryList ? '' : 'hidden'}>주문/배송내역이 없습니다.</p>
 
-        var REVIEW_WRITER_URL = '<c:url value="/temp/reviewWriter.html"/>';
+    <c:if test="${totalPages > 1}">
+    <nav class="pagination" aria-label="페이지 이동">
+        <c:if test="${currentPage > 1}">
+        <a class="page-link page-prev" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage - 1}'/></c:url>">이전</a>
+        </c:if>
+        <c:forEach begin="${pageWindowStart}" end="${pageWindowEnd}" var="p">
+        <a class="page-link ${p == currentPage ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${p}'/></c:url>">${p}</a>
+        </c:forEach>
+        <c:if test="${currentPage < totalPages}">
+        <a class="page-link page-next" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage + 1}'/></c:url>">다음</a>
+        </c:if>
+    </nav>
+    </c:if>
 
-        var filterBar = document.getElementById('order-status-filter');
-        var listEl = document.getElementById('order-list');
-        var emptyEl = document.getElementById('order-empty');
-        var currentFilter = 'all';
+    <div class="order-back">
+        <a class="btn-back-mypage" href="<c:url value='/member/myPage'/>">마이페이지로 돌아가기</a>
+    </div>
 
-        function formatWon(n) {
-            return n.toLocaleString('ko-KR') + '원';
-        }
+</div>
+</div>
 
-        function buildProgress(status) {
-            var currentIndex = STATUS_STEP_INDEX[status];
-            var html = '';
-            STEP_LABELS.forEach(function (label, i) {
-                var isTerminalComplete = (i === currentIndex && currentIndex === STEP_LABELS.length - 1);
-                var stepClass;
-                if (i < currentIndex || isTerminalComplete) {
-                    stepClass = 'is-complete';
-                } else if (i === currentIndex) {
-                    stepClass = 'is-current status-' + status;
-                } else {
-                    stepClass = 'is-upcoming';
-                }
-                html += '<div class="progress-step ' + stepClass + '">' +
-                            '<span class="step-icon">' + (stepClass.indexOf('is-complete') === 0 ? '✓' : '') + '</span>' +
-                            '<span class="step-label">' + label + '</span>' +
-                        '</div>';
-                if (i < STEP_LABELS.length - 1) {
-                    var lineClass = i < currentIndex ? 'is-complete' : '';
-                    html += '<div class="progress-line ' + lineClass + '"></div>';
-                }
-            });
-            return html;
-        }
-
-        function render() {
-            var filtered = currentFilter === 'all' ? ORDERS : ORDERS.filter(function (o) { return o.status === currentFilter; });
-            var isEmpty = filtered.length === 0;
-            listEl.hidden = isEmpty;
-            emptyEl.hidden = !isEmpty;
-            if (isEmpty) return;
-
-            listEl.innerHTML = '';
-            filtered.forEach(function (order) {
-                var card = document.createElement('article');
-                card.className = 'order-card';
-                card.innerHTML =
-                    '<div class="order-header">' +
-                        '<span class="order-number">주문번호 <strong>' + order.orderId + '</strong></span>' +
-                        '<span class="order-date">주문일 ' + order.orderDate + '</span>' +
-                    '</div>' +
-                    '<div class="order-body">' +
-                        '<div class="item-thumb"></div>' +
-                        '<div class="order-info">' +
-                            '<h3 class="product-name">' + order.productName + '</h3>' +
-                            '<p class="product-detail">수량: ' + order.qty + '개 | 금액: ' + formatWon(order.price) + '</p>' +
-                        '</div>' +
-                        '<span class="status-badge status-' + order.status + '">' + STATUS_BADGE_LABEL[order.status] + '</span>' +
-                    '</div>' +
-                    '<div class="order-progress">' + buildProgress(order.status) + '</div>' +
-                    '<div class="order-actions">' +
-                        '<button type="button" class="btn-track">배송조회</button>' +
-                        (order.status === 'preparing' ? '<button type="button" class="btn-cancel">주문취소</button>' : '') +
-                        (order.status === 'delivered' ? '<a class="btn-review" href="' + REVIEW_WRITER_URL + '">리뷰작성</a>' : '') +
-                    '</div>';
-                listEl.appendChild(card);
-            });
-        }
-
-        filterBar.addEventListener('click', function (e) {
-            var btn = e.target.closest('button[data-status]');
-            if (!btn) return;
-            currentFilter = btn.dataset.status;
-            filterBar.querySelectorAll('button').forEach(function (b) { b.classList.remove('is-active'); });
-            btn.classList.add('is-active');
-            render();
-        });
-
-        render();
-    })();
-    </script>
-
-</body>
-
-</html>
+<jsp:include page="/WEB-INF/views/common/footer.jsp"/>

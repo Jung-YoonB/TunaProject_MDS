@@ -1,20 +1,24 @@
 package com.kh.sajotuna.mds.product.controller;
 
-import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewDTO;
-import com.kh.sajotuna.mds.util.SessionConst;
-import jakarta.servlet.http.HttpSession;
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.service.ProductService;
+import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
+import com.kh.sajotuna.mds.util.SessionConst;
+
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import java.util.List;
 
 
 @Controller
@@ -26,9 +30,9 @@ public class ProductController {
 	private final ProductService service;
 	
 	@GetMapping("/list")
-	public String getList(Model model) {
+	public String getList(Model model, SearchDTO searchDTO) {
 		
-		MainPageDTO list = service.getList();
+		MainPageDTO list = service.getList(searchDTO);
 		
 		model.addAttribute("productList", list);
 		System.out.println("컨트롤러 :: " + list);

@@ -17,7 +17,7 @@
     'productContent':'집들이 수건 선물 세트 - 최고급 순면 100% 소재로 제작되어 흡수력이 뛰어나고 촉감이 부드럽습니다.',
     'thumbnail':'uuid_towel_main.jpg',
     'image':['uuid_towel_sub1.jpg','uuid_towel_sub2.jpg','uuid_towel_sub3.jpg','uuid_towel_sub4.jpg','uuid_towel_sub5.jpg','uuid_towel_sub6.jpg'],
-    'detailImage':['uuid_towel_detail2.jpg']
+    'detailContents':['uuid_towel_detail2.jpg']
 }}" />
 
 <%--
@@ -32,13 +32,17 @@
 
 <c:set var="optionList" value="${[opt1, opt2, opt3, opt4]}" />
 
-<%-- 리뷰 탭 확인용 더미 (이미지 있는 리뷰 1개 + 이미지 없는 리뷰 1개) --%>
-<c:set var="reviewImg1" value="${{'reviewImagePath':'/upload/review/','reviewImageSaveName':'uuid_towel_review.jpg'}}" />
-<c:set var="review1" value="${{'writerNicname':'길동이','score':5,'writeDateStr':'2026-08-20','reviewText':'배송도 빠르고 수건 감촉이 너무 좋아요!','reviewImages':[reviewImg1]}}" />
-<c:set var="review2" value="${{'writerNicname':'수건러버','score':4,'writeDateStr':'2026-08-15','reviewText':'선물용으로 딱 좋았습니다. 포장도 깔끔해요.','reviewImages':[]}}" />
-<c:set var="reviews" value="${[review1, review2]}" />
+<%--
+     리뷰 탭 확인용 더미 (이미지 있는 리뷰 1개 + 이미지 없는 리뷰 1개)
+     reviewList 는 detail 안에 중첩된 게 아니라 별도의 request 속성 (실제로 detailPage() 컨트롤러가
+     getReviewList() 호출 결과를 이렇게 sibling 속성으로 얹어줄 예정이라 그 모양 그대로 맞춤)
+--%>
+<c:set var="reviewImg1" value="${{'reviewImagePath':'/upload/review/','reviewImage':'uuid_towel_review.jpg'}}" />
+<c:set var="review1" value="${{'nickname':'길동이','score':5,'writeDate':'2026-08-20','reviewText':'배송도 빠르고 수건 감촉이 너무 좋아요!','reviewImages':[reviewImg1]}}" />
+<c:set var="review2" value="${{'nickname':'수건러버','score':4,'writeDate':'2026-08-15','reviewText':'선물용으로 딱 좋았습니다. 포장도 깔끔해요.','reviewImages':[]}}" />
+<c:set var="reviewList" value="${[review1, review2]}" scope="request" />
 
-<c:set var="detail" value="${{'product':product,'option':optionList,'reviews':reviews}}" scope="request" />
+<c:set var="detail" value="${{'product':product,'option':optionList}}" scope="request" />
 
 
 <jsp:include page="/WEB-INF/views/product/productDetail.jsp"/>
