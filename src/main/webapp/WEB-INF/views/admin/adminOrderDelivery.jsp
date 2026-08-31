@@ -3,7 +3,7 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin_order.css 포함)를 로드하므로 별도 link 불필요 --%>
+<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin.css 포함)를 로드하므로 별도 link 불필요 --%>
 <div class="admin-order-delivery-page"
      data-order-list-url="<c:url value='/admin/order/list'/>"
      data-order-delivery-url-prefix="<c:url value='/admin/order/delivery/'/>"
