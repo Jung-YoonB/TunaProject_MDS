@@ -1383,3 +1383,35 @@ PROJECT_AUDIT.md에 이미 기록돼있던 `/member/orderDelivery` 관련 버그
 ```
 없음 (코드 변경 0건 — 병합은 사용자님이 직접 수행, 문서만 갱신)
 ```
+
+---
+
+## 3-33. 2026-08-31: `JWC_works` → `front_for_merge` 병합 검토 + 실제 병합 + 병합 결과물 검증
+
+`server_for_merge`(=3-32까지 반영된 `KGH_works` 병합 결과) 기준으로 `front_for_merge` 브랜치를 새로 파서, 프론트 담당 팀원 브랜치 `JWC_works`를 병합. 이번 세션도 3-32와 동일하게 **병합 전/후 코드 리뷰 + 실제 빌드/기동/스모크테스트 위주 — 직접 작성한 신규 코드 없음(문서 정리 제외)**.
+
+### 범위 확인: 스타일가이드 PDF가 설명하는 범위와 실제 브랜치 상태가 다름
+프론트 작업자가 사용자님께 전달한 `메종드사조_스타일가이드.pdf`(레포 루트, git 추적 대상 아님 — MS Edge에서 열어야 한글이 안 깨짐)는 `JWC_works` 커밋 `6e8b236`, `7b885e4` 기준으로 홈/로그인/회원가입/주문·결제/주문완료/상품상세/리뷰작성/쿠폰/배송지 추가 **9개 페이지**, CSS 13개 파일을 `style.css` 하나로 통합(기존 파일 삭제)하는 대규모 작업을 설명하고 있었음.
+
+- `git fetch --all` 후 확인한 결과 로컬/원격 `JWC_works` HEAD는 **`6e8b236`(홈페이지 재작업) 하나뿐**이고, `7b885e4`는 저장소 어디에도 없는 오브젝트였음(`git cat-file -t` 실패).
+- 커밋 메시지만 보고 판단한 게 아니라, 스타일가이드가 언급한 시그니처 클래스명(`.auth-shell`,`.auth-visual`,`.login-card`,`.signup-card`,`.order-card`,`.gender-pill` 등)과 "삭제됐다"는 CSS 파일 9개(`style_login.css`,`style_signUp.css`,`style_order.css`,`style_orderComplete.css`,`style_payment.css`,`style_addreview.css`,`style_usercouponView.css`,`style_deliveryAddress.css`,`style_util_da.css`)를 `JWC_works` 트리 전체에서 직접 grep/byte-diff로 재검증 — 전부 홈페이지 외엔 흔적 0건, CSS 파일들도 전혀 삭제되지 않고 그대로 남아있었음.
+- 사용자님 확인: `7b885e4`는 작업 중 컴파일 오류/파일 손상이 생겨서 커밋했다가 **일부러 revert한 버전** — 절대 가져오면 안 됨. 프론트 작업자는 이후 `hero-bg.jpg`와 전달받은 스타일가이드 PDF를 참고해서 나머지 8개 페이지 작업을 다시 할 예정. **즉 이번 병합의 실제 범위는 처음부터 끝까지 "홈페이지 + header.jsp/footer.jsp 리디자인" 하나뿐이었고, 이건 의도된 정상 상태.**
+
+### 병합 전 검토 (`git merge --no-commit --no-ff` 드라이런, merge-base `98107ef`)
+- KGH_works 때와 달리 **조용한 파일 삭제 없음**(diff 전부 M/A, D 없음). 변경 파일: `header.jsp`,`footer.jsp`,`home.jsp`,`style.css`,`style_home.css` 수정 + `home.js`,`img/home/hero-bg.jpg` 신규 + `MyPageCouponDTO.java`(`@Alias` 추가, 무해) + `.vscode/settings.json`(개인 에디터 설정, 이후 JWC가 자체적으로 삭제 커밋 `f9980ab`를 추가로 푸시해서 병합 시점엔 이미 정리됨).
+- `header.jsp`/`footer.jsp`는 충돌 없이 자동 병합됨 — `front_for_merge`(백엔드 트랙, 커밋 `987574d`/`ddaee8b`/`96e4ee9`) 쪽은 이 파일들에 `<link>` 태그 추가(`style_myReviews.css`,`style_coupon.css`,`style_adminMaintenance.css`)만 했을 뿐 마크업 자체는 안 건드려서, JWC의 새 마크업(flex 헤더, `.header-actions` 래퍼, `.search-submit` 버튼, `.footer-contact`/`.footer-social`)이 그대로 살아남음.
+- **`style.css`에서 텍스트 충돌 9곳 발생.** 원인: `front_for_merge` 쪽도 독립적으로 같은 헤더/푸터 CSS 섹션을 손대고 있었는데, 두 브랜치 다 같은 스타일가이드 팔레트(`--gsf-sage`,`--gsf-caramel`,`--gsf-ink` 등, 값까지 거의 동일)를 참고한 것으로 보임 — 다만 `front_for_merge` 쪽은 **옛 헤더 DOM 구조**(CSS Grid, `.icon`/`.sign`이 `header` 바로 아래)를 겨냥한 CSS였고 JWC 쪽은 **새 flex 구조**를 겨냥한 CSS였음. header.jsp가 이미 JWC 버전으로 자동 병합됐으므로, **9곳 전부 JWC_works 쪽을 채택하는 게 정답**이라고 판단(옛 CSS를 쓰면 새 마크업의 `.search-submit`/`.footer-contact` 등에 대응하는 스타일이 없어 깨짐). `--gsf-cream` 변수는 양쪽 다 이미 제거했고 다른 곳 참조도 없어 안전.
+- JS 영향 재검토(사용자님 요청): `header.js`가 실제로 참조하는 건 `getElementById('cartBadge'/'wishBadge')`와 `document.body.dataset.loggedIn/homeUrl` 뿐 — 둘 다 JWC 새 마크업에서도 id/data-속성이 그대로 유지됨. `cartWishService.js`는 DOM 의존 없이 `localStorage`+전역함수(`window.addToCart` 등)로만 다른 페이지와 연결돼 있어 마크업 변경의 영향을 안 받음. `#search_input`→`#headerSearchInput` id 변경, `.home-page` 래퍼 삭제 둘 다 이걸 참조하는 다른 JS/CSS가 전체 코드베이스에 원래 없었던 것도 grep으로 확인. `home.js`(신규)는 완전히 독립적인 IIFE라 로드 순서 문제도 없음. → **결론: 충돌 9곳을 JWC 쪽으로 채택해도 인터랙션/비즈니스 로직 JS가 깨질 지점 없음.**
+
+### 실제 병합 + 결과물 검증
+사용자님이 `git merge JWC_works`를 `front_for_merge`에 실행, 충돌 9곳을 JWC_works 쪽으로 해결(+ 프론트 작업자가 이어서 작업하기 편하도록 `style.css`를 JWC_works와 완전히 동일한 내용으로 맞춤). 커밋 후 재검증:
+- 충돌 마커 잔존 0건(다른 CSS 파일의 `================================` 장식 구분선은 기존부터 있던 false positive, 실제 마커 아님).
+- `style.css`가 CRLF 줄바꿈 차이 제외하고 JWC_works와 byte-identical한 것 확인. `header.jsp`도 JWC_works 대비 다른 팀원이 추가한 `<link>` 3줄만 더 있는 것 외엔 동일, `footer.jsp`/`home.jsp`/`style_home.css`/`home.js`/`MyPageCouponDTO.java`는 완전히 동일.
+- `mvnw clean compile` BUILD SUCCESS(80개 소스파일).
+- 실제 서버 기동(포트 8797) + `curl` 스모크테스트: `/`,`/member/login` 200, `/member/cart`(비로그인) 302, `/css/style.css`,`/css/style_home.css`,`/js/views/home.js`,`/img/home/hero-bg.jpg` 전부 200. `/` 응답 HTML에 `id="bannerSlider"`,`class="home-hero"`,`class="header-actions"`가 실제로 렌더링되는 것(=header.jsp의 EL 기반 body 클래스 트릭이 실제 요청에서도 정상 동작)과 `id="wishBadge"`/`id="cartBadge"`가 그대로 살아있는 것(회귀 없음)까지 확인.
+- 병합 커밋: `b6551d9`(부모: `f81b21c` + `f9980ab`).
+
+### 신규/수정 파일
+```
+없음 (코드 변경 0건 — 병합은 사용자님이 직접 수행, 문서만 갱신)
+```
