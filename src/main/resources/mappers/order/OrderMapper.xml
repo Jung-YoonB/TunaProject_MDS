@@ -59,7 +59,7 @@
 			SELECT SEQ_ORDER_ID.NEXTVAL FROM DUAL
 		</selectKey>
 		INSERT INTO PRODUCTORDER(ORDER_ID, MEMBER_ID, TOTAL_PRICE, ORDER_STATUS, USED_POINT, PAYMENT_ID, ADDRESS_NAME_FIX, DETAIL_ADDRESS_FIX)
-		VALUES (#{orderId},#{memberId},#{totalPrice},'PAYMENT COMPLETED', #{usedPoint}, #{paymentId}, #{addressNameFix}, #{detailAddressFix})
+		VALUES (#{orderId},#{memberId},#{totalPrice},'PAYMENT_COMPLETED', #{usedPoint}, #{paymentId}, #{addressNameFix}, #{detailAddressFix})
 	</insert>
 	
 	<update id="updateProductStock">
@@ -91,6 +91,20 @@
 		INSERT INTO POINTHISTORY (PHIST_ID, MEMBER_ID, ORDER_ID, TYPE, AMOUNT, BALANCE)
 		VALUES (SEQ_PHIST_ID.NEXTVAL, #{memberId}, #{orderId}, 'EARN', #{earnPoint}, #{balance})
 	</insert>
+	
+	<update id="updateTotalAmount">
+		UPDATE MEMBER SET TOTAL_AMOUNT = TOTAL_AMOUNT + #{totalPrice} WHERE MEMBER_ID = #{memberId} 
+	</update>
+	
+	<update id="updateMemberGrade">
+    	UPDATE MEMBER M
+    	SET M.GRADE_ID = (
+        	SELECT G.GRADE_ID 
+        	FROM GRADE G 
+        	WHERE M.TOTAL_AMOUNT BETWEEN G.MIN_VAL AND G.MAX_VAL
+    		)
+    	WHERE M.MEMBER_ID = #{memberId}
+	</update>
 	
 	<delete id="deleteCartItems">
     	DELETE FROM CART

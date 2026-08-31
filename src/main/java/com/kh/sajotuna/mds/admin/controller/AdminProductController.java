@@ -15,6 +15,7 @@ import com.kh.sajotuna.mds.admin.model.service.AdminProductService;
 import com.kh.sajotuna.mds.util.AdminAuthUtil;
 import com.kh.sajotuna.mds.util.dto.ApiResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -26,8 +27,8 @@ public class AdminProductController {
 	private final AdminProductService service;
 
 	@GetMapping("/add")
-	public String addForm(HttpSession session, Model model) {
-		String guard = checkAdminPage(session);
+	public String addForm(HttpServletRequest request, HttpSession session, Model model) {
+		String guard = AdminAuthUtil.pageGuard(request, session);
 		if (guard != null) {
 			return guard;
 		}
@@ -40,7 +41,9 @@ public class AdminProductController {
 	@PostMapping("/add")
 	@ResponseBody
 	public ApiResponse<Void> add(HttpSession session,
+			@RequestParam String productTitle,
 			@RequestParam String productName,
+			@RequestParam String optionName,
 			@RequestParam int price,
 			@RequestParam int stock,
 			@RequestParam(required = false) Long categoryId,
@@ -50,28 +53,18 @@ public class AdminProductController {
 			@RequestParam(required = false) List<MultipartFile> subImages,
 			@RequestParam(required = false) List<MultipartFile> descriptionImages) {
 
-		String failMessage = checkAdminApi(session);
+		String failMessage = AdminAuthUtil.apiGuard(session);
 		if (failMessage != null) {
 			return ApiResponse.fail(failMessage);
 		}
 
 		try {
-			service.registerProduct(productName, price, stock, categoryId, productContent, tagsJson,
-					mainImage, subImages, descriptionImages);
+			service.registerProduct(productTitle, productName, optionName, price, stock, categoryId, productContent,
+					tagsJson, mainImage, subImages, descriptionImages);
 		} catch (IllegalStateException e) {
 			return ApiResponse.fail(e.getMessage());
 		}
 
 		return ApiResponse.success("상품이 등록되었습니다.", null);
-	}
-
-	// 로그인 안 됐거나 ADMIN이 아니면 리다이렉트 view 이름을, 통과하면 null을 반환
-	private String checkAdminPage(HttpSession session) {
-		return AdminAuthUtil.isAdmin(session) ? null : "redirect:/member/login";
-	}
-
-	// 로그인 안 됐거나 ADMIN이 아니면 에러 메시지를, 통과하면 null을 반환
-	private String checkAdminApi(HttpSession session) {
-		return AdminAuthUtil.isAdmin(session) ? null : "관리자만 접근할 수 있습니다.";
 	}
 }

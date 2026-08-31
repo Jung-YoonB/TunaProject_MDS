@@ -28,5 +28,9 @@ public class ProductDetailDTO {
 	private String thumbnail;		//상품 썸네일 (대표이미지)
 	private List<String> image;		//상품 이미지
 	private List<String> detailContents;	//상품 설명 이미지
-	
+
+	// admin.AdminProductService의 상품 등록도 같은 PRODUCT 테이블에 행을 하나 추가하는데,
+	// 같은 테이블을 참조하는 DTO(ProductInsertDTO)가 따로 있어서 이쪽으로 합침(ReviewDTO와 동일한 방식).
+	// 등록 시점엔 productId/productTitle/productName/productContent만 채우고 나머지(가격/평점/이미지 등
+	// 전부 조회 전용 조인·집계 필드)는 비워둠
 }

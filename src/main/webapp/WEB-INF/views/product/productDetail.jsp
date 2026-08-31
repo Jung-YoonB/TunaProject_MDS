@@ -39,12 +39,6 @@
             </div>
 
             <!-- 리뷰 / 찜 -->
-            <%--
-                 백엔드 확인 필요: ProductDetailDTO 에 아래 필드 추가돼야 함
-                   - avgScore    (평균 평점, Double)
-                   - reviewCount (리뷰 개수, Long)
-                   - wishCount   (찜 개수, Long)
-            --%>
             <div id="product-stats">
                 <div class="product-stat">★ ${detail.product.avgScore}</div>
                 <div class="product-stat">리뷰 ${detail.product.reviewCount}개</div>
@@ -86,10 +80,6 @@
                 <%--
                      value = POP_ID (장바구니 / 주문이 참조하는 값)
                      재고 표시 규칙: 50개 미만일 때만 "N개 남음", 0개면 "품절" + disabled
-
-                     백엔드 확인 필요: OptionDTO 에 아래 필드 추가돼야 함
-                       - popId (OPTIONDETAIL.POP_ID, Long) -- 지금은 optionId만 있음
-                       - stock (PRODUCTOPTION.OPTION_STOCK, int) -- 지금은 없음
                 --%>
                 <select id="product-option">
                     <c:forEach items="${detail.option}" var="opt" varStatus="status">
@@ -173,8 +163,6 @@
              백엔드 확인 필요: detailPage() 컨트롤러에서 이미 있는 ProductServiceImpl.getReviewList(productId, memberId)를
              한 번 더 호출해서 model.addAttribute("reviewList", ...) 로 얹어주면 됨 (DetailPageDTO에 새 필드 추가할 필요 없음,
              /mds/review/{productId} 에서 이미 하는 것과 동일한 패턴).
-             단, detailPage.xml의 getReviewList 쿼리 자체에 조인 버그 있음 (r.OD_ID = od.OPTION_ID 비교, member의 전체
-             주문/주문상세를 다 끌어옴) - 이건 리뷰탭 데이터 정확도에 영향을 주니 같이 확인 필요.
         --%>
         <div class="tab-panel" data-tab-panel="review">
             <c:if test="${empty reviewList}">

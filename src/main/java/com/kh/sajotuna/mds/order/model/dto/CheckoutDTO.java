@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.order.model.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.ibatis.type.Alias;
@@ -21,13 +22,14 @@ public class CheckoutDTO {
 	private Long memberId;
 	private Long orderId;
 	private long totalPrice;
-	private Double discountRate;
+	private BigDecimal discountRate;
 	private Long point;
 	private Integer usedPoint;
 	private long balance;
 	private long earnPoint;
 	private Long paymentId;
-	private Double couponValue;
+	private Long clientPaidAmount;
+	private BigDecimal couponValue;
 	private String addressNameFix;
 	private String detailAddressFix;
 	private Long couponId;

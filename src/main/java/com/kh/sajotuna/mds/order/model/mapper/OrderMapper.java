@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.order.model.mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -28,7 +29,7 @@ public interface OrderMapper {
 	List<OrderItemDTO> selectItems(@Param("itemList") List<OrderItemDTO> itemList);
 	
 	// 쿠폰히스토리id로 쿠폰 할인율 받아오기
-	Double selectByChistId(@Param("memberId") Long memberId,@Param("chistId") Long chistId);
+	BigDecimal selectByChistId(@Param("memberId") Long memberId,@Param("chistId") Long chistId);
 	
 	// 검증한 데이터로 productorder테이블에 입력
 	int insertProductOrder(CheckoutDTO verifiedData);
@@ -50,6 +51,12 @@ public interface OrderMapper {
 	
 	// 포인트 적립 이력 기록
 	int insertPointHistoryEarn(CheckoutDTO verifiedData);
+	
+	// 누적구매금액 업데이트
+	int updateTotalAmount(@Param("memberId") Long memberId, @Param("totalPrice") long totalPrice);
+	
+	// 누적구매금액에 따른 회원 등급 재조정
+	int updateMemberGrade(Long memberId);
 	
 	// 결제 후 장바구니에서 제거
 	int deleteCartItems(@Param("memberId") Long memberId,@Param("cartIds") List<Long> cartIds);

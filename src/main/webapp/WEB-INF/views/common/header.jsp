@@ -17,6 +17,8 @@
 	<link rel="stylesheet" href="/css/style.css">
 	<link rel="stylesheet" href="/css/style_member.css">
 	<link rel="stylesheet" href="/css/style_order.css">
+	<link rel="stylesheet" href="/css/style_myReviews.css">
+	<link rel="stylesheet" href="/css/style_coupon.css">
 	<link rel="stylesheet" href="/css/style_home.css">
 	<link rel="stylesheet" href="/css/style_myPage.css">
 	<link rel="stylesheet" href="/css/style_search.css">
@@ -29,6 +31,7 @@
 	<link rel="stylesheet" href="/css/style_admin_mypage.css">
 	<link rel="stylesheet" href="/css/style_admin_order.css">
 	<link rel="stylesheet" href="/css/style_admincouponView.css">
+	<link rel="stylesheet" href="/css/style_adminMaintenance.css">
 </head>
 <%-- 컨트롤러(.java) 수정 없이, 홈페이지 배경(산수화 이미지)을 홈 화면에서만 적용하기 위해
      현재 요청 경로를 JSP EL에서 직접 확인해 body 클래스를 결정한다 --%>

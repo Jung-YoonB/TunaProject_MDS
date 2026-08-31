@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.order.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,12 +9,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MyPageCouponDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
 import com.kh.sajotuna.mds.order.model.dto.CheckoutDTO;
 import com.kh.sajotuna.mds.order.model.dto.OrderItemDTO;
 import com.kh.sajotuna.mds.order.model.dto.PaymentViewDTO;
 import com.kh.sajotuna.mds.order.model.mapper.OrderMapper;
+import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +36,7 @@ public class OrderServiceImpl implements OrderService {
 			totalPrice += i.getOptionPrice() * i.getQty();
 		}
 		// 보유 쿠폰 조회
-		List<MyPageCouponDTO> couponList = memberMapper.selectCouponsByMemberId(memberId);
+		List<CouponDTO> couponList = memberMapper.selectAllCouponsByMemberId(memberId);
 		
 		// 데이터 통합
 		pvData.setItemList(itemList);
@@ -61,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
 			totalPrice += i.getOptionPrice() * i.getQty();
 		}
 		// 보유 쿠폰 조회
-		List<MyPageCouponDTO> couponList = memberMapper.selectCouponsByMemberId(memberId);
+		List<CouponDTO> couponList = memberMapper.selectAllCouponsByMemberId(memberId);
 				
 		// 데이터 통합
 		pvData.setItemList(itemList);
@@ -74,7 +75,13 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	@Transactional
 	public CheckoutDTO checkout(CheckoutDTO checkoutInputData) {
-
+	
+	// sql 조회 전 사용한 포인트 1000 이상인지 체크
+	if (checkoutInputData.getUsedPoint() != null && checkoutInputData.getUsedPoint() != 0
+			&& checkoutInputData.getUsedPoint() < 1000) {  // 뷰에서 넘겨줄 데이터에 따라 null이나 0 조건 하나 삭제
+		throw new IllegalArgumentException("포인트는 1000 이상부터 사용할 수 있습니다.");
+	}
+		
 	// 회원 정보 조회
 	CheckoutDTO verifiedData = mapper.selectByMemberIdForCheckout(checkoutInputData.getMemberId());
 
@@ -115,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
 	verifiedData.setChistId(checkoutInputData.getChistId());
 
 	if (checkoutInputData.getChistId() != null) {
-		Double couponValue = mapper.selectByChistId(
+		BigDecimal couponValue = mapper.selectByChistId(
 						verifiedData.getMemberId(), checkoutInputData.getChistId());
 
 		if (couponValue == null) {
@@ -123,7 +130,7 @@ public class OrderServiceImpl implements OrderService {
 		}
 		verifiedData.setCouponValue(couponValue);
 	} else {
-		verifiedData.setCouponValue(0.0);
+		verifiedData.setCouponValue(BigDecimal.ZERO);
 	}
 
 	// 사용할 포인트 확인
@@ -140,26 +147,41 @@ public class OrderServiceImpl implements OrderService {
 	verifiedData.setPaymentId(checkoutInputData.getPaymentId());
 	verifiedData.setAddressNameFix(checkoutInputData.getAddressNameFix());
 	verifiedData.setDetailAddressFix(checkoutInputData.getDetailAddressFix());
-
+	verifiedData.setClientPaidAmount(checkoutInputData.getClientPaidAmount());
 
 	// 총 가격 계산
 	long totalPrice = 0L;
-
 	for (OrderItemDTO item : itemList) {
 		totalPrice += item.getOptionPrice() * item.getQty();
 	}
+		
+	// 계산을 정확하게 하기 위해 BigDecimal로 변환
+	BigDecimal calcPrice = BigDecimal.valueOf(totalPrice);
 
-	// 쿠폰 할인
-	totalPrice = (long) (totalPrice	* (1.0 - verifiedData.getCouponValue()));
-
-	// 회원 등급 할인
-	totalPrice = (long) (totalPrice	* (1.0 - verifiedData.getDiscountRate()));
-
+	// 쿠폰 할인 적용 (가격 * (1 - 쿠폰할인율))
+	// verifiedData.getCouponValue()가 null일 수 있으니 방어 코드 추가
+	BigDecimal couponVal = verifiedData.getCouponValue() != null ? verifiedData.getCouponValue() : BigDecimal.ZERO;
+	calcPrice = calcPrice.multiply(BigDecimal.ONE.subtract(couponVal));
+		
+	// 회원 등급 할인 적용 (가격 * (1 - 등급할인율))
+	// 만약 discountRate가 double이라면 BigDecimal.valueOf(verifiedData.getDiscountRate())로 감싸줍니다.
+	BigDecimal discountRate = verifiedData.getDiscountRate() != null ? verifiedData.getDiscountRate() : BigDecimal.ZERO;
+	calcPrice = calcPrice.multiply(BigDecimal.ONE.subtract(discountRate));
+		
+	// 소수점이 생길 수 있으므로 반올림 처리 후 long으로 변환 (.setScale(0, RoundingMode.HALF_UP))
+	totalPrice = calcPrice.setScale(0, java.math.RoundingMode.HALF_UP).longValue();
+	
 	// 포인트 사용
 	totalPrice -= usedPoint;
-
+	System.out.println("" + totalPrice + ", " + usedPoint);
+	
 	if (totalPrice < 0) {
 		throw new IllegalArgumentException("사용 포인트가 결제 금액보다 많습니다.");
+	}
+	
+	// 클라이언트가 결제한 금액과 최종 계산된 비용 확인
+		if (totalPrice != verifiedData.getClientPaidAmount()) {
+		throw new IllegalArgumentException("결제한 금액과 지불할 금액이 같지 않습니다.");
 	}
 
 	verifiedData.setTotalPrice(totalPrice);
@@ -176,8 +198,13 @@ public class OrderServiceImpl implements OrderService {
 
 		item.setOrderId(verifiedData.getOrderId());
 		item.setPriceFix(item.getOptionPrice());
-		item.setGradeDisAmount((long)(item.getOptionPrice() * item.getQty()
-						* (1.0 - verifiedData.getCouponValue()) * verifiedData.getDiscountRate()));
+		BigDecimal itemTotal = BigDecimal.valueOf(item.getOptionPrice() * item.getQty());
+		BigDecimal gradeDisAmount = itemTotal
+				.multiply(BigDecimal.ONE.subtract(couponVal))
+				.multiply(verifiedData.getDiscountRate() != null ? verifiedData.getDiscountRate() : BigDecimal.ZERO)
+				.setScale(0, java.math.RoundingMode.HALF_UP);
+				
+		item.setGradeDisAmount(gradeDisAmount.longValue());
 
 		result = mapper.insertOrderDetail(item);
 
@@ -227,6 +254,21 @@ public class OrderServiceImpl implements OrderService {
 	if (result == 0) {
 		throw new RuntimeException("포인트 업데이트에 실패했습니다.");
 	}
+	
+	// 회원 누적구매금액 업데이트
+	result = mapper.updateTotalAmount(verifiedData.getMemberId(), totalPrice);
+
+		if (result == 0) {
+			throw new RuntimeException("누적 구매금액 업데이트에 실패했습니다.");
+		}
+	
+	// 회원 누적구매금액 업데이트
+	result = mapper.updateMemberGrade(verifiedData.getMemberId());
+
+		if (result == 0) {
+			throw new RuntimeException("회원 등급 업데이트에 실패했습니다.");
+		}
+	
 
 	// 장바구니 상품 삭제
 	if (checkoutInputData.getCartIds() != null	&& !checkoutInputData.getCartIds().isEmpty()) {

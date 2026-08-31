@@ -54,4 +54,56 @@
 		VALUES (SEQ_REVIEW_IMAGE_ID.NEXTVAL, #{reviewId}, #{reviewImageOriginalName}, #{reviewImage}, #{reviewImagePath}, #{reviewTitleImage})
 	</insert>
 
+	<!-- 마이페이지 "내가 쓴 리뷰" 목록: getReviewList(product 상세용)와 동일한 조인 패턴 + 상품 대표이미지 추가 -->
+	<select id="selectMyReviews" resultType="ReviewDTO">
+		SELECT
+			r.REVIEW_ID,
+			r.SCORE,
+			r.REVIEW_TEXT,
+			TO_CHAR(r.WRITE_DATE, 'YYYY-MM-DD') AS writeDate,
+			po.OPTION_NAME,
+			p.PRODUCT_NAME,
+			po.OPTION_PRICE,
+			orderd.QTY,
+			r.LIKE_COUNT,
+			r.OD_ID,
+			r.MEMBER_ID,
+			pi.PRODUCT_IMAGE_PATH,
+			pi.PRODUCT_IMAGE_SAVE_NAME
+		FROM REVIEW r
+		JOIN ORDERDETAIL orderd ON r.OD_ID = orderd.OD_ID
+		JOIN OPTIONDETAIL od ON orderd.POP_ID = od.POP_ID
+		JOIN PRODUCTOPTION po ON po.OPTION_ID = od.OPTION_ID
+		JOIN PRODUCT p ON p.PRODUCT_ID = od.PRODUCT_ID
+		LEFT JOIN PRODUCTIMAGE pi ON pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0
+		WHERE r.MEMBER_ID = #{memberId}
+		ORDER BY r.WRITE_DATE DESC
+		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+	</select>
+
+	<select id="countMyReviews" resultType="int">
+		SELECT COUNT(*) FROM REVIEW WHERE MEMBER_ID = #{memberId}
+	</select>
+
+	<select id="selectReviewImagesByReviewIds" resultType="ReviewImagesDTO">
+		SELECT REVIEW_ID, REVIEW_IMAGE_SAVE_NAME AS REVIEW_IMAGE, REVIEW_IMAGE_PATH
+		FROM REVIEWIMAGE
+		WHERE REVIEW_ID IN
+		<foreach collection="reviewIds" item="reviewId" open="(" separator="," close=")">
+			#{reviewId}
+		</foreach>
+	</select>
+
+	<select id="selectReviewImageSaveNamesByReviewId" resultType="String">
+		SELECT REVIEW_IMAGE_SAVE_NAME
+		FROM REVIEWIMAGE
+		WHERE REVIEW_ID = #{reviewId}
+	</select>
+
+	<!-- REVIEWIMAGE는 FK_RIMAGE_REVIEW ON DELETE CASCADE라 REVIEW 삭제 시 자동으로 같이 삭제됨.
+	     MEMBER_ID 조건까지 같이 걸어서 본인 리뷰가 아니면 0건 삭제되게(소유권 검증을 WHERE로 처리) -->
+	<delete id="deleteReview">
+		DELETE FROM REVIEW WHERE REVIEW_ID = #{reviewId} AND MEMBER_ID = #{memberId}
+	</delete>
+
 </mapper>

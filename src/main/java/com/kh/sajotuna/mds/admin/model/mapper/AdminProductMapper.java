@@ -5,25 +5,25 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.kh.sajotuna.mds.admin.model.dto.CategoryOptionDTO;
 import com.kh.sajotuna.mds.admin.model.dto.ProductImageInsertDTO;
-import com.kh.sajotuna.mds.admin.model.dto.ProductInsertDTO;
-import com.kh.sajotuna.mds.admin.model.dto.ProductOptionInsertDTO;
 import com.kh.sajotuna.mds.admin.model.dto.TagOptionDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.CategoryDTO;
 
 @Mapper
 public interface AdminProductMapper {
 
 	// 상품 등록 폼 렌더링용
-	List<CategoryOptionDTO> selectAllCategories();
+	List<CategoryDTO> selectAllCategories();
 
 	List<TagOptionDTO> selectAllTags();
 
-	// 상품 본문 등록
-	int insertProduct(ProductInsertDTO product);
+	// 상품 본문 등록 (PRODUCT 테이블 - product.model.dto.detail.ProductDetailDTO와 공용)
+	int insertProduct(ProductDetailDTO product);
 
-	// 기본 옵션(가격/재고) 등록 + 상품-옵션 연결
-	int insertProductOption(ProductOptionInsertDTO option);
+	// 기본 옵션(가격/재고) 등록 + 상품-옵션 연결 (PRODUCTOPTION 테이블 - product.model.dto.detail.OptionDTO와 공용)
+	int insertProductOption(OptionDTO option);
 
 	int insertOptionDetail(@Param("productId") Long productId, @Param("optionId") Long optionId);
 

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
@@ -53,12 +54,14 @@ public class OrderController {
 	}
 	
 	@PostMapping("/checkout")
+	@ResponseBody
 	public String checkout(HttpSession session, @ModelAttribute CheckoutDTO checkoutData,
 			RedirectAttributes redirectAttr) {
 	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
 	    
 	    if (member == null) {
 	        return "redirect:/member/login";
+//	    	return null; // 임시테스트용
 	    }
 	    
 	    checkoutData.setMemberId(member.getMemberId());
@@ -67,10 +70,15 @@ public class OrderController {
 	    CheckoutDTO resultData = service.checkout(checkoutData);
 	    redirectAttr.addFlashAttribute("checkoutData", resultData);
 	    return "redirect:/order/completed"; // 결제 완료 페이지로 리다이렉트
+//	    return resultData;   // 임시테스트용
 	    } catch(Exception e) {
 	    	e.printStackTrace();
 	    	redirectAttr.addFlashAttribute("error", e.getMessage());
 			return "redirect:/order/payment";
+/*	    	// 임시 테스트용 에러 반환 처리
+	    	CheckoutDTO errorData = new CheckoutDTO();
+	    	errorData.setAddressNameFix(e.getMessage());
+	    	return errorData;  */
 	    }
 	   
 	}

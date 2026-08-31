@@ -1,0 +1,227 @@
+@charset "utf-8";
+
+/* style_myPage.css의 bare "body"/"main" 규칙이 모든 페이지에 새어 들어오므로 이 페이지에서만 되돌림 */
+body:has(.wishlist-container) {
+	background-color: #f6efe4;
+}
+main:has(.wishlist-container) {
+	width: 1100px;
+	margin: 0 auto;
+}
+
+/* 이 파일의 모든 규칙은 .wishlist-container로 스코프함: .product-card/.item-checkbox 같은
+   범용 클래스명이 home.jsp/cart.jsp 등 다른 페이지의 동일 클래스명과 충돌해 CSS가 새는 것을 방지 */
+.wishlist-container {
+	padding: 50px 0 80px;
+}
+
+/* ===== 상단 제목 ===== */
+.wishlist-container .wishlist-header {
+	margin-bottom: 30px;
+	text-align: center;
+}
+.wishlist-container .wishlist-header h1 {
+	margin: 0 0 8px;
+	font-size: 32px;
+	font-weight: 700;
+	color: #222;
+}
+.wishlist-container .wishlist-header p {
+	margin: 0;
+	font-size: 14px;
+	color: #888;
+}
+
+/* ===== 전체 선택 / 선택 상품 삭제 ===== */
+.wishlist-container .wishlist-controls[hidden] {
+	display: none;
+}
+.wishlist-container .wishlist-controls {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+	font-size: 14px;
+	color: #555;
+}
+.wishlist-container #wish-delete-btn {
+	border: none;
+	background: none;
+	color: #888;
+	font-size: 13px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* ===== 개수 표시 + 정렬 필터 ===== */
+.wishlist-container .wishlist-filter[hidden] {
+	display: none;
+}
+.wishlist-container .wishlist-filter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 20px;
+	font-size: 14px;
+}
+.wishlist-container .total-count {
+	font-weight: 700;
+	color: #333;
+}
+.wishlist-container .short-options {
+	display: flex;
+	gap: 18px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.wishlist-container .short-options li {
+	color: #999;
+	cursor: pointer;
+}
+.wishlist-container .short-options li:hover {
+	color: var(--gsf-caramel);
+}
+.wishlist-container .short-options li.is-active {
+	color: #222;
+	font-weight: 700;
+}
+
+/* ===== 상품 그리드 ===== */
+.wishlist-container .product-grid[hidden] {
+	display: none;
+}
+.wishlist-container .product-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 24px;
+}
+.wishlist-container .product-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	background-color: #fff;
+	border: 1px solid #eee;
+	border-radius: 10px;
+	overflow: hidden;
+	transition: opacity 0.3s ease;
+}
+.wishlist-container .product-card.is-removing {
+	opacity: 0;
+}
+.wishlist-container .product-link {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+}
+.wishlist-container .product-link:hover {
+	text-decoration: none;
+}
+.wishlist-container .product-thumbnail {
+	width: 100%;
+	height: 180px;
+	background-color: #f5f5f5;
+}
+.wishlist-container .item-checkbox {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 18px;
+	height: 18px;
+	accent-color: var(--gsf-caramel);
+	cursor: pointer;
+}
+.wishlist-container .btn-wish-toggle {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: none;
+	padding: 0;
+	cursor: pointer;
+}
+.wishlist-container .wish-heart {
+	width: 20px;
+	height: 20px;
+	fill: none;
+	stroke: var(--gsf-caramel);
+	stroke-width: 2;
+}
+.wishlist-container .btn-wish-toggle.is-active .wish-heart {
+	fill: var(--gsf-caramel);
+}
+.wishlist-container .product-info {
+	padding: 16px;
+	flex: 1;
+}
+.wishlist-container .product-name {
+	margin: 0 0 8px;
+	font-size: 15px;
+	font-weight: 700;
+	color: #222;
+}
+.wishlist-container .product-rating {
+	margin: 0;
+	font-size: 14px;
+	color: #d4a373;
+	font-weight: 700;
+}
+.wishlist-container .product-rating .rating-count {
+	font-weight: 400;
+	color: #999;
+}
+.wishlist-container .product-actions {
+	padding: 0 16px 16px;
+}
+.wishlist-container .btn-cart {
+	width: 100%;
+	height: 40px;
+	border: none;
+	border-radius: 6px;
+	background-color: var(--gsf-caramel);
+	color: #222;
+	font-size: 13px;
+	font-weight: 700;
+	cursor: pointer;
+}
+.wishlist-container .btn-cart:hover {
+	background-color: #b48b62;
+}
+
+/* ===== 빈 찜 목록 ===== */
+.wishlist-container .wishlist-empty {
+	padding: 100px 20px;
+	text-align: center;
+}
+.wishlist-container .wishlist-empty-title {
+	margin: 0 0 6px;
+	font-size: 16px;
+	color: #333;
+}
+.wishlist-container .wishlist-empty-desc {
+	margin: 0 0 20px;
+	font-size: 13px;
+	color: #999;
+}
+.wishlist-container .wishlist-empty .btn-solid {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 44px;
+	padding: 0 24px;
+	border: none;
+	border-radius: 8px;
+	background-color: var(--gsf-caramel);
+	color: #222;
+	font-weight: 700;
+	text-decoration: none;
+}
+.wishlist-container .wishlist-empty .btn-solid:hover {
+	background-color: #b48b62;
+	text-decoration: none;
+}

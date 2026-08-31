@@ -14,6 +14,7 @@ import com.kh.sajotuna.mds.admin.model.service.AdminOrderService;
 import com.kh.sajotuna.mds.util.AdminAuthUtil;
 import com.kh.sajotuna.mds.util.dto.ApiResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -25,15 +26,15 @@ public class AdminOrderController {
 	private final AdminOrderService service;
 
 	@GetMapping
-	public String listPage(HttpSession session) {
-		String guard = checkAdminPage(session);
+	public String listPage(HttpServletRequest request, HttpSession session) {
+		String guard = AdminAuthUtil.pageGuard(request, session);
 		return guard != null ? guard : "admin/adminOrderDelivery";
 	}
 
 	@GetMapping("/list")
 	@ResponseBody
 	public ApiResponse<AdminOrderListResponseDTO> list(HttpSession session) {
-		String failMessage = checkAdminApi(session);
+		String failMessage = AdminAuthUtil.apiGuard(session);
 		if (failMessage != null) {
 			return ApiResponse.fail(failMessage);
 		}
@@ -44,7 +45,7 @@ public class AdminOrderController {
 	@ResponseBody
 	public ApiResponse<Void> updateDelivery(HttpSession session, @PathVariable Long orderId,
 			@RequestBody DeliveryUpdateRequestDTO request) {
-		String failMessage = checkAdminApi(session);
+		String failMessage = AdminAuthUtil.apiGuard(session);
 		if (failMessage != null) {
 			return ApiResponse.fail(failMessage);
 		}
@@ -62,7 +63,7 @@ public class AdminOrderController {
 	@PostMapping("/payment/{orderId}")
 	@ResponseBody
 	public ApiResponse<Void> confirmPayment(HttpSession session, @PathVariable Long orderId) {
-		String failMessage = checkAdminApi(session);
+		String failMessage = AdminAuthUtil.apiGuard(session);
 		if (failMessage != null) {
 			return ApiResponse.fail(failMessage);
 		}
@@ -79,7 +80,7 @@ public class AdminOrderController {
 	@PostMapping("/cancel-complete/{orderId}")
 	@ResponseBody
 	public ApiResponse<Void> completeCancel(HttpSession session, @PathVariable Long orderId) {
-		String failMessage = checkAdminApi(session);
+		String failMessage = AdminAuthUtil.apiGuard(session);
 		if (failMessage != null) {
 			return ApiResponse.fail(failMessage);
 		}
@@ -91,13 +92,5 @@ public class AdminOrderController {
 		}
 
 		return ApiResponse.success("취소/환불 처리가 완료되었습니다.", null);
-	}
-
-	private String checkAdminPage(HttpSession session) {
-		return AdminAuthUtil.isAdmin(session) ? null : "redirect:/member/login";
-	}
-
-	private String checkAdminApi(HttpSession session) {
-		return AdminAuthUtil.isAdmin(session) ? null : "관리자만 접근할 수 있습니다.";
 	}
 }
