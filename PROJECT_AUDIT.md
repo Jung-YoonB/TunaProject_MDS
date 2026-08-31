@@ -52,6 +52,7 @@
 4. **`ProductServiceImpl.detailPage()`** — 상세조회는 `STATUS='ON_SALE'`만 허용하는데 목록/검색(`product.xml`)엔 상태 필터가 없음 → 품절/숨김 상품을 목록에서 클릭하면 결과 `null`에 바로 필드 접근해 NPE.
 5. **`signUp.jsp:8`** — `<form>`에 `action`/`method`가 없고, input `name`도 `MemberDTO`의 camelCase 프로퍼티와 다름(`member_name` vs `memberName` 등). 회원가입 버튼을 눌러도 아무 것도 저장 안 되고 새로고침만 됨.
 6. 같은 지점 — 폼을 우회해 API를 직접 호출하면 `MemberDTO`엔 `loginId`/`loginPw` 외 필드 검증이 없어서 `memberName` 없이 요청 시 Oracle NOT NULL 위반이 처리 안 된 500으로 그대로 노출.
+   - **📌 추가 확인(2026-08-31, 재검증 세션 중 테스트 계정 생성하다가 발견): `ROLE` 컬럼도 같은 방식으로 500이 남**. `MEMBER.ROLE`은 `DEFAULT 'USER' NOT NULL`이라 스키마상으로는 값을 안 넘겨도 될 것 같지만, `MemberServiceImpl.signUp()`이 `member.setRole(...)`을 전혀 안 하고 `MemberMapper.xml`의 `insertMember`가 `ROLE` 컬럼을 INSERT 목록에 항상 포함시켜서 바인딩값 `null`을 그대로 넣어버림 — Oracle은 INSERT문에 컬럼이 명시되면 바인딩값이 NULL이어도 DEFAULT를 적용하지 않고 그대로 NULL을 넣으려다가 `ORA-01400`(NOT NULL 위반)으로 막힘. 실제 브라우저 폼은 버그 5번 때문에 애초에 제출 자체가 안 되니 이 경로를 못 타지만, API를 직접 호출하는 경우(테스트 계정 생성 등)엔 `role=USER`를 명시적으로 안 보내면 항상 500. member 패키지 담당자가 버그 5/6을 고칠 때 같이 참고할 것(이번 세션 범위 밖이라 직접 수정하지 않음).
 7. ~~**`MemberMapper.xml:90-97`** — `/member/orderDelivery`가 DELIVERY 테이블과 INNER JOIN인데, 관리자가 배송 상태를 처음 바꾸기 전엔 DELIVERY 행이 없음(체크아웃 미구현) → 결제 완료했지만 배송 처리 전인 주문이 목록에서 통째로 사라짐.~~
    - **✅ 조치 완료 (2026-08-30, 유저 주문 배송 확인 기능 구현 세션) — `selectDeliveriesByMemberId`를 LEFT JOIN으로 변경. `AdminOrderMapper.selectSummary`와 동일한 패턴. 자세한 내용은 HANDOFF.md 참고.**
 8. **`MemberMapper.xml:67-88`** — 찜/장바구니 조회가 `PRODUCT_TITLE_IMAGE=0`(대표이미지)과 INNER JOIN. 대표이미지 등록을 빠뜨린 상품은 찜/장바구니에 담겨 있어도 목록에서 안 보임.

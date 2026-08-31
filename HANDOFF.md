@@ -1306,3 +1306,46 @@ PROJECT_AUDIT.md에 이미 기록돼있던 `/member/orderDelivery` 관련 버그
   src/main/resources/static/css/style_order.css                              (.page-content 스코프 수정, out_for_delivery 색상 추가, 미사용 버튼 CSS 제거)
   src/main/webapp/WEB-INF/views/member/myPage.jsp                             (주문·배송 조회 타일 2곳에 링크 추가)
 ```
+
+---
+
+## 3-31. 2026-08-31: 새 환경에서 어제 작업 전체 재검증 (코드 변경 없음)
+
+새 작업환경(`c:\work sapace\05_Framework\TunaProject_MDS`)에서 3-30 시리즈(유저 주문/배송 확인, 마이페이지, 내가 쓴 리뷰, 쿠폰 뷰) 전체를 처음부터 다시 라이브 검증. **이번 세션은 순수 검증만 수행 — 코드 변경 0건**(PROJECT_AUDIT.md에 새로 발견한 사항 1건만 기록 추가, 아래 참고).
+
+### 사전 점검
+- git status 깨끗함(미커밋 변경 없음), 현재 브랜치 `BJY_works`.
+- 서버가 이미 8797 포트에서 실행 중(devtools). `mvnw compile` 재실행 → 컴파일 에러 0건, devtools 자동 재기동 확인 → 현재 소스와 실행 중인 인스턴스가 일치함을 확인 후 검증 시작.
+
+### 코드-문서 정합성 재확인 (grep 기반 대조)
+아래 전부 HANDOFF.md/PROJECT_AUDIT.md의 서술과 실제 코드 상태가 일치함을 확인 — 어제 기록에 잘못된 부분 없음:
+- `MemberMapper.xml`의 `selectDeliveriesByMemberId` 등 3곳 모두 `LEFT JOIN DELIVERY` (INNER JOIN 버그 수정 유지).
+- `selectProductByOrderId`(N+1 원인 메서드) 코드베이스 전체에서 0건 — 삭제 확인.
+- `MemberController.myPageForm()`에 null 가드 + `session.invalidate()` 존재.
+- `coupon/MypageCouponDTO.java` 파일 없음 — 삭제 확인.
+- `header.jsp`가 `style_coupon.css`만 로드하고 `style_usercouponView.css`(고아 파일)는 안 불러옴 — 결정대로 유지.
+- `userOderDelivery.jsp`에 죽은 id(`order-status-filter`/`order-list`/`order-empty`) 없음 — 정리 확인.
+- `adminPage.jsp`/`style_admin_mypage.css`에 `accordion` 관련 클래스/CSS 완전히 없고 `list-card` 형식으로만 존재.
+- `MemberMapper`/`MemberService`에 `countActiveDeliveries`/`countReviewableOrderDetails` 정상 존재 및 호출됨.
+
+### 실제 라이브 검증 (신규 테스트 계정 2개, 서버 8797 + 라이브 DB)
+
+**테스트 계정 1 (`qatest01`, MEMBER_ID=33)** — 회원가입 API로 생성 후 로그인, 다음 순서로 실제 화면/API 호출:
+1. **주문/배송 목록 페이징**: 테스트 주문 24건(CART 1 + PAYMENT_COMPLETED 2(DELIVERY 행 없음) + PREPARING 2 + SHIPPED 2 + OUT_FOR_DELIVERY 2 + 취소대기 2 + 취소완료 2 + DELIVERED 11)을 jshell로 직접 INSERT. 전체 필터(`status=all`)에서 23건(CART 제외)이 10+10+3으로 정확히 3페이지 분할되는 것, 상태별 필터(`preparing`=4, `shipped`=2, `out_for_delivery`=2, `canceled`=4, `delivered`=11→10+1 페이지분할) 전부 정확한 건수로 서버사이드 필터링+페이징이 함께 정상 동작하는 것 확인. 취소대기/취소완료 배지가 `DELIVERY_STATUS`/`ORDER_STATUS` 조합대로 2건씩 정확히 갈리는 것도 확인.
+2. **리뷰 작성 → returnUrl 복귀 → 내가 쓴 리뷰 조회/삭제 전체 플로우**: DELIVERED 주문 11건 중 10건은 `POST /review/write`로 벌크 작성(내가 쓴 리뷰 페이징 검증용, 10건은 1페이지에 꽉 참), 남은 1건으로 전체 플로우를 정밀 검증 — 배송목록 화면에서 실제 렌더링된 "리뷰 작성" 링크의 `returnUrl` 파라미터를 그대로 따라가서 `GET /review/write`(hidden `returnUrl` 필드 정상 삽입 확인) → `POST /review/write`(성공 시 `Location` 헤더가 정확히 원래 배송목록 URL, `/`가 아님) → 배송목록에서 "리뷰 작성 완료" 배지로 전환 확인 → 이 시점 "내가 쓴 리뷰"가 11건이 되어 10+1로 정확히 페이지 분할되는 것 확인(방금 쓴 리뷰가 최신순으로 1페이지 맨 위, 가장 먼저 썼던 리뷰가 2페이지로 밀림 — 정렬 정상) → `POST /review/delete/{reviewId}` 실제 호출 → `/review/myReviews`로 리다이렉트, 목록에서 사라짐, 배송목록의 해당 카드가 "리뷰 작성" 버튼으로 원복, 마이페이지 "작성 가능한 리뷰" 배지 숫자도 정확히 갱신되는 것까지 확인.
+3. **쿠폰 뷰 페이징 + 만료 제외**: 사용가능 쿠폰 12장(활성 11장 + 마감일=오늘인 경계값 1장) + 이미 만료된 쿠폰 1장을 발급 상태로 INSERT → `/member/couponView`가 정확히 12장(10+2 페이지 분할)만 노출하고 만료 쿠폰은 어느 페이지에도 안 나오는 것, 마이페이지의 "보유 쿠폰 12장" 배지도 일치하는 것 확인.
+4. **세션 유효 + 회원 행 삭제**: 위 검증에 쓴 하위 데이터(REVIEW/COUPONHISTORY/PRODUCTORDER)를 전부 지운 뒤 MEMBER 행까지 삭제 — 이 계정은 이 시점에 정리를 겸함.
+
+**테스트 계정 2 (`qatest02`)** — 세션-회원삭제 시나리오만 깨끗하게 재현하기 위해 별도로 생성(하위 데이터 없이 즉시 MEMBER만 삭제 가능하게). 로그인 세션을 살려둔 채 `DELETE FROM MEMBER`로 회원 행만 제거 → `GET /member/myPage` 단발 호출: `302 → /member/login`(리다이렉트 URL에 `redirectURL` 파라미터 없음 = `LoginInterceptor`가 아니라 컨트롤러의 null 가드 분기를 정확히 탄 것), 새 `JSESSIONID` 발급(구 세션 invalidate 확인), 이어지는 `/member/login` 요청에서 플래시 메시지 "회원 정보를 찾을 수 없습니다. 다시 로그인해주세요." 정상 렌더링까지 확인.
+   - (참고: 중간에 이미 소모된 세션 쿠키로 같은 테스트를 반복 시도했다가 "플래시 메시지가 안 뜬다"는 오탐을 한 번 겪음 — 원인은 재검증 스크립트 실수(같은 세션으로 두 번째 요청)였고 기능 자체는 문제없음, 새 계정으로 깨끗하게 재현해서 확인 완료.)
+
+### 새로 발견한 것 (범위 밖 — PROJECT_AUDIT.md에만 기록, 코드 수정 안 함)
+- **`MemberServiceImpl.signUp()`이 `ROLE`을 안 채워서, 폼(버그 5로 원래 제출 자체가 안 됨)을 우회해 API를 직접 호출하면 `ORA-01400`(NOT NULL 위반)으로 500** — 기존 버그 6번(같은 경로에서 `memberName` 누락 시 500)과 같은 뿌리, `ROLE` 컬럼 한정으로 더 구체적인 사례. PROJECT_AUDIT.md 버그 6번에 각주로 추가함. 이번 세션에서 테스트 계정을 만들다가 실제로 겪음(`role=USER`를 API 호출에 명시적으로 넣어서 우회).
+
+### 데이터 정리 (파일 + DB 전부 완료 확인)
+- 이번 세션에서 만든 파일 업로드 없음(리뷰/쿠폰 테스트 전부 텍스트 데이터, 이미지 첨부 없이 진행) — `uploads/` 정리 불필요.
+- DB: `MEMBER`(qatest01, qatest02), `PRODUCTORDER`(24건, CASCADE로 ORDERDETAIL/DELIVERY 동반 삭제), `REVIEW`(11건), `COUPONHISTORY`(13건), `COUPON`(13건, `COUPON_NAME LIKE 'QATEST%'`) 전부 ID 기준으로 직접 삭제 — 마무리에 `LOGIN_ID IN ('qatest01','qatest02')`/`COUPON_NAME LIKE 'QATEST%'`/`MEMBER_ID=33` 기준 잔존 건수 재조회로 전부 0건 확인.
+- (참고: 테스트 데이터 삽입에 쓴 jshell 스크립트에서 한글 리터럴을 직접 소스에 적었더니 mojibake로 깨져 들어간 경우가 2건 있었음 — ①리뷰 본문은 실제 앱 API(`multipart/form-data`)로 다시 써서 정상 확인 후 문제없음, ②테스트 쿠폰 이름은 SQL 리터럴이 깨진 채로 들어갔지만 페이징/만료제외 로직 검증에는 지장 없어서 그대로 쓰고 삭제로 마무리함 — 실제 애플리케이션 코드의 인코딩 문제가 아니라 jshell 소스 파일 인코딩 이슈, 재확인 완료.)
+
+### 결론
+어제(3-30 시리즈) 구현한 유저 주문/배송 확인, 마이페이지, 내가 쓴 리뷰, 쿠폰 뷰 기능 전부 새 환경에서 코드 변경 없이 재검증 통과. 문서(HANDOFF.md/PROJECT_AUDIT.md)와 실제 코드 상태 100% 일치 확인. 미결 항목(리뷰 재작성 정책, 쿠폰 CSS 확정)은 지시대로 손대지 않음.
