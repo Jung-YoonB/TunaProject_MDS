@@ -1349,3 +1349,37 @@ PROJECT_AUDIT.md에 이미 기록돼있던 `/member/orderDelivery` 관련 버그
 
 ### 결론
 어제(3-30 시리즈) 구현한 유저 주문/배송 확인, 마이페이지, 내가 쓴 리뷰, 쿠폰 뷰 기능 전부 새 환경에서 코드 변경 없이 재검증 통과. 문서(HANDOFF.md/PROJECT_AUDIT.md)와 실제 코드 상태 100% 일치 확인. 미결 항목(리뷰 재작성 정책, 쿠폰 CSS 확정)은 지시대로 손대지 않음.
+
+---
+
+## 3-32. 2026-08-31: `KGH_works` → `server_for_merge` 병합 검토 + 실제 병합 + 병합 결과물 검증
+
+사용자님이 팀원별 작업 브랜치를 순차적으로 합치기 위해 `BJY_works` 기반의 `server_for_merge` 브랜치를 새로 파고, 첫 번째로 `KGH_works`(BE005 주문결제, BE014 멤버정보수정 기능)를 병합하기 전 검토 요청. **이번 세션은 병합 전/후 코드 리뷰 + 실제 빌드/기동 검증 위주 — 직접 작성한 신규 코드 없음(문서 정리 제외).**
+
+### 1차 검토 (병합 전, `git merge --no-commit` 드라이런)
+- Git 텍스트 충돌은 0건(merge-base 이후 `server_for_merge`가 코드를 안 건드려서). 문제는 충돌이 아니라 **조용한 삭제**였음: `KGH_works`가 리팩토링 과정에서 `member/userUpdateInfo.jsp`, `product/cart.jsp`, `member/userWithdraw.jsp`, `style_search/cart/wish.css`를 지운 채로 푸시함.
+  - `member/userUpdateInfo.jsp` 삭제는 진짜 회귀버그(같은 커밋에서 `/member/updateInfo` GET 매핑을 신규로 만들면서 정작 뷰 파일은 지움 → 신규 기능이 바로 404).
+  - `product/cart.jsp` 삭제는 기존에 이미 알려진 버그(PROJECT_AUDIT.md 버그#9 — `cartForm()`이 `"member/cart"`를 리턴하는데 실제 파일은 `product/cart.jsp`)의 원본 자료를 잃는 문제였고, 신규 회귀는 아니었음.
+  - `header.jsp`가 전역으로 링크하는 CSS(`style_search/cart/wish.css`)와 `style.css`의 `.icon-badge`(헤더의 `#wishBadge`/`#cartBadge`가 실사용) 삭제는 **사이트 전역 영향** — HANDOFF 3-4/3-5에서 이미 진단했던 "header.jsp가 모든 CSS를 무조건 로드 + 스코프 없는 선택자" 문제가 그대로 재발한 사례.
+  - `userWithdraw.jsp` 삭제는 실제로는 무해(대응 GET 매핑 자체가 없음, PROJECT_AUDIT 버그#10과 일치) — 복구 불필요 항목으로 판정.
+- KGH 작업자에게 위 파일들(`userWithdraw.jsp` 제외) 복구 요청 → 재푸시 확인.
+
+### 2차 검토 (KGH 재푸시 후)
+- 복구 확인 + 추가로 `/wish`,`/cart`가 리턴하는 뷰 이름이 `"member/wish"`,`"member/cart"` → **`"product/wish"`,`"product/cart"`로 수정**된 것 확인(PROJECT_AUDIT 버그#9의 나머지 절반이 이번에 같이 해결됨). `style_member.css`는 KGH의 수정분이 merge-base와 동일하게 되돌아가서 스코프 이슈 자체가 이번 병합 범위에서 빠짐.
+- 병합 드라이런 재실행 → 충돌 0건, `mvnw clean compile` BUILD SUCCESS.
+- 작업자 코멘트로 "회원탈퇴 화면(`userWithdraw.jsp`)이 비동기식(`@PostMapping /withdraw` + `@ResponseBody`)으로 짜여서 성공 후 화면 이동을 프론트에서 처리해야 한다"는 이슈 전달받음 — 실제 코드 확인 결과 `userWithdraw.jsp` 자체에 "실제 탈퇴 기능 구현 시 이 화면으로 forward/redirect 연결 필요"라는 TODO 주석이 원래부터 있었고, 프론트 JS 어디에도 `/withdraw` 호출이나 이 화면 이동 코드가 없어서(grep 0건) **현재는 탈퇴 성공 후 완료 화면으로 연결하는 코드가 아예 없는 상태**. 두 가지 해결 옵션(A: 비동기 유지 + 프론트 이동 처리 + 신규 GET 매핑 추가, B: 동기 폼 제출로 전환해서 컨트롤러가 바로 뷰 forward)을 사용자님께 전달, 팀 결정 대기(코드 미수정).
+
+### 실제 병합 + 결과물 검증
+사용자님이 실제로 `git merge KGH_works`를 `server_for_merge`에 수행. 이후 결과물을 처음부터 재검증:
+- 충돌 마커 잔존 0건, 소스 상 `MemberMapper.xml` 중복 없음(정상적으로 `mappers/member/MemberMapper.xml` 1개로 rename됨).
+- `mvnw clean compile` BUILD SUCCESS, 실제 서버 기동(포트 8797)까지 성공 — 빈 생성/MyBatis 매퍼 파싱 문제 없음.
+- `curl`로 스모크테스트: `/`, `/member/login` 200, `/member/cart`(비로그인) 302 정상 리다이렉트, `/css/style_cart.css`,`/css/style_search.css`,`/css/style_wish.css`,`/css/style.css` 전부 200.
+- **`/member/updateInfo`(비로그인) 500 재현** — `WebConfig.LoginInterceptor`의 `addPathPatterns`에 `/member/myPage`,`/member/couponView`,`/member/wish`,`/member/cart`,`/member/orderDelivery`,`/order/**`는 있는데 KGH가 새로 만든 `/member/updateInfo`만 빠져서, 비로그인 상태로 `MemberController.updateInfoForm()`이 그대로 호출되고 `member.getRole()`에서 NPE → 500 스택트레이스 노출. 같은 패턴이 `updateNickname`/`updatePhone`/`updateEmail`/`updateName`/`updateBirth`/`updateGender`/`updatePassword`(전부 세션 null 체크 없이 `member.getMemberId()` 호출) POST API에도 있음. **이번 세션 범위 밖(KGH 담당)이라 코드 수정은 안 함, PROJECT_AUDIT.md 버그#18로 신규 기록만.**
+
+### (참고) 병합 검토 중 겪은 삽질: 빌드 캐시로 인한 가짜 장애
+병합 드라이런을 여러 번 반복하는 과정에서 `target/classes`에 `mappers/MemberMapper.xml`(기존)과 `mappers/member/MemberMapper.xml`(드라이런 중 KGH 버전이 컴파일되며 생긴 잔재)이 동시에 남아, MyBatis가 같은 namespace의 `<sql id="deliveryStatusFilter">`를 중복으로 읽어 `IllegalArgumentException`으로 서버가 죽는 현상이 발생함. **소스 코드/브랜치 자체의 버그가 아니라 순수 빌드 산출물(target) 문제** — `target` 폴더 삭제(또는 STS의 Maven Update)로 해결됨. 이후 `BJY_works` 소스 자체는 애초에 `MemberMapper.xml`이 1개뿐이었던 것도 재확인함. `target` 삭제 직후 STS에서 즉시 재기동하면 `ClassNotFoundException: MdsApplication`이 나는데, 이건 컴파일이 아직 안 된 것뿐이라 STS에서 **Maven Update(Alt+F5)**로 재빌드하면 해결됨 — 다음에 비슷한 상황(다른 브랜치 병합 드라이런 후) 겪으면 먼저 `target` 삭제 + Maven Update부터 시도할 것.
+
+### 신규/수정 파일
+```
+없음 (코드 변경 0건 — 병합은 사용자님이 직접 수행, 문서만 갱신)
+```
