@@ -1,11 +1,10 @@
 package com.kh.sajotuna.mds.product.model.service;
 
-import java.util.List;
-
+import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
-import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
+import java.util.List;
 
 
 public interface ProductService {
