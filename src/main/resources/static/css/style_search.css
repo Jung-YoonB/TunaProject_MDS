@@ -1,0 +1,322 @@
+@charset "utf-8";
+
+/* ===== Search result page scoping ===== */
+/* style_myPage.css의 bare "main" 규칙(width:900px, margin:50px auto)이 모든 페이지에 새어 들어와
+   이 페이지의 main 폭/여백을 덮어써서 :has()로 이 페이지에서만 되돌림 */
+main:has(.search-result-page) {
+	width: 1200px;
+	margin: 0 auto;
+}
+.search-result-page {
+	padding-bottom: 60px;
+}
+
+/* ===== Visually-hidden accessibility utility ===== */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* ===== Category selector (pinned directly under header) ===== */
+.sp-category-section {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	padding: 16px 0;
+	background-color: #f7f7f7;
+}
+.sp-category-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+.sp-category-item {
+	appearance: none;
+	border: none;
+	border-radius: 8px;
+	background-color: var(--gsf-sage-light);
+	color: #333;
+	font-size: 14px;
+	padding: 10px 18px;
+	cursor: pointer;
+}
+.sp-category-item:hover,
+.sp-category-item.is-active {
+	background-color: var(--gsf-caramel);
+	color: #222;
+}
+
+/* ===== Tag section (가격대·선호 등 상품 속성, 중복 선택 가능, 메인 카테고리 바로 아래) ===== */
+.sp-tag-section {
+	margin-top: 20px;
+}
+.sp-tag-selector {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.sp-tag-btn {
+	border: 1px solid var(--gsf-tan);
+	border-radius: 999px;
+	background-color: #fff;
+	color: #555;
+	font-size: 13px;
+	padding: 8px 16px;
+	cursor: pointer;
+}
+.sp-tag-btn:hover {
+	border-color: var(--gsf-caramel);
+	color: var(--gsf-caramel);
+}
+.sp-tag-btn.is-active {
+	background-color: var(--gsf-caramel);
+	border-color: var(--gsf-caramel);
+	color: #222;
+}
+
+/* ===== Search box + quick filter (인기/신상품/할인) ===== */
+.sp-search-filter {
+	margin-top: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+.sp-search-form {
+	display: flex;
+	gap: 8px;
+}
+.sp-search-input {
+	width: 320px;
+	height: 40px;
+	padding: 0 16px;
+	border: 1px solid var(--gsf-caramel);
+	border-radius: 999px;
+	background-color: #fff;
+	font-size: 14px;
+	outline: none;
+}
+.sp-search-input::placeholder {
+	color: #999;
+}
+.sp-search-btn {
+	height: 40px;
+	padding: 0 20px;
+	border: none;
+	border-radius: 999px;
+	background-color: var(--gsf-caramel);
+	color: #222;
+	font-size: 14px;
+	cursor: pointer;
+}
+.sp-search-btn:hover {
+	background-color: #b48b62;
+}
+.sp-quick-filter {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.sp-filter-btn {
+	border: none;
+	border-radius: 999px;
+	background-color: #eee;
+	color: #666;
+	font-size: 13px;
+	padding: 8px 16px;
+	cursor: pointer;
+}
+.sp-filter-btn:hover {
+	background-color: var(--gsf-caramel);
+	color: #222;
+}
+
+/* ===== Product grid ===== */
+.sp-product-section {
+	margin-top: 40px;
+}
+.sp-product-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 24px;
+}
+.sp-product-card {
+	position: relative;
+	border: 1px solid #e5e5e5;
+	background-color: #fff;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+.sp-product-link {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+}
+.sp-product-link:hover {
+	text-decoration: none;
+}
+.sp-product-thumb {
+	position: relative;
+	margin: 0;
+}
+.sp-product-img {
+	width: 100%;
+	height: 220px;
+	border-bottom: 1px solid #e5e5e5;
+	background-color: #fafafa;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #aaa;
+	font-size: 13px;
+}
+.sp-btn-wishlist {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: none;
+	padding: 0;
+	cursor: pointer;
+}
+.sp-btn-wishlist:hover {
+	background: none;
+}
+.search-result-page .wish-heart {
+	width: 20px;
+	height: 20px;
+	fill: none;
+	stroke: var(--gsf-caramel);
+	stroke-width: 2;
+}
+.sp-btn-wishlist.is-active .wish-heart {
+	fill: var(--gsf-caramel);
+}
+.sp-product-info {
+	padding: 16px;
+	flex: 1;
+}
+.sp-product-name {
+	margin: 0 0 8px;
+	font-size: 15px;
+	font-weight: 700;
+	color: #222;
+}
+.sp-product-price {
+	margin: 0 0 6px;
+	font-size: 14px;
+	font-weight: 700;
+	color: #333;
+}
+.sp-product-category {
+	display: inline-block;
+	margin: 0;
+	font-size: 11px;
+	padding: 3px 8px;
+	border-radius: 999px;
+	background-color: var(--gsf-sage-light);
+	color: #555;
+}
+
+/* ===== 상품 카드 호버 시 뜨는 태그 팝업 (태그가 많아져도 이미지가 아닌 아래쪽 설명 영역 방향으로 늘어남) ===== */
+.sp-tag-popup {
+	position: absolute;
+	left: 8px;
+	right: 8px;
+	top: calc(100% - 48px);
+	z-index: 5;
+	display: flex;
+	gap: 4px;
+	flex-wrap: wrap;
+	padding: 6px;
+	border-radius: 6px;
+	background-color: rgba(0, 0, 0, 0.5);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.15s ease;
+	pointer-events: none;
+}
+.sp-product-card:hover .sp-tag-popup {
+	opacity: 1;
+	visibility: visible;
+}
+.sp-tag-popup .sp-product-tag {
+	font-size: 11px;
+	padding: 3px 8px;
+	border-radius: 999px;
+	background-color: rgba(255, 255, 255, 0.9);
+	color: #555;
+}
+.sp-product-actions {
+	padding: 0 16px 16px;
+}
+.sp-btn-cart {
+	width: 100%;
+	height: 38px;
+	border: none;
+	border-radius: 4px;
+	background-color: var(--gsf-sage);
+	color: #222;
+	font-size: 13px;
+	cursor: pointer;
+}
+.sp-btn-cart:hover {
+	background-color: var(--gsf-caramel);
+	color: #222;
+}
+
+/* ===== Pagination ===== */
+.sp-pagination {
+	margin-top: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+}
+.sp-pagination ol {
+	display: flex;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	gap: 6px;
+}
+.sp-page-btn,
+.sp-btn-prev,
+.sp-btn-next {
+	appearance: none;
+	border: 1px solid var(--gsf-tan);
+	background-color: #fff;
+	color: #555;
+	font-size: 13px;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+.sp-page-btn.is-current {
+	background-color: var(--gsf-caramel);
+	border-color: var(--gsf-caramel);
+	color: #222;
+}
+.sp-btn-prev:hover,
+.sp-btn-next:hover,
+.sp-page-btn:hover {
+	border-color: var(--gsf-caramel);
+	color: var(--gsf-caramel);
+}
+.sp-page-btn.is-current:hover {
+	color: #fff;
+}

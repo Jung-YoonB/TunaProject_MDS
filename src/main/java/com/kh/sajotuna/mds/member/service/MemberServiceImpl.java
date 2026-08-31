@@ -2,6 +2,7 @@ package com.kh.sajotuna.mds.member.service;
 
 import java.util.List;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,8 +53,13 @@ public class MemberServiceImpl implements MemberService{
 		member.setLoginPw(encodePw);
 				
 		// 체크 된 데이터를 저장
-		mapper.insertMember(member);
-		mapper.insertPoint(member.getMemberId()); // 회원의 포인트도 초기화
+		try {
+			mapper.insertMember(member);
+			mapper.insertPoint(member.getMemberId()); // 회원의 포인트도 초기화
+		} catch (DuplicateKeyException e) {
+	        // 동시에 가입하여 UNIQUE 제약조건에 걸린 경우
+	        throw new IllegalStateException("동시 가입으로 인해 이미 등록된 정보가 존재합니다. 다시 확인해주세요.");
+	    }
 		
 	}
 
@@ -152,7 +158,7 @@ public class MemberServiceImpl implements MemberService{
 
 	@Override
 	public boolean nicknameUpdate(Long memberId, String nickname) {
-		return mapper.updateNickname(memberId, nickname) < 0;
+		return mapper.updateNickname(memberId, nickname) > 0;
 	}
 	
 	@Override

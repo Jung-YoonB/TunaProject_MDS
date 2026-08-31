@@ -112,7 +112,7 @@ public class MemberController {
 		if(member.getRole().equals("USER")) {
 			model.addAttribute("wishList", (service.listWish(member.getMemberId())));
 			System.out.println("찜하기용 모델로 저장" + (List<MyPageWishDTO>)model.getAttribute("wishList")); // 추적용 출력
-			return "member/wish"; 
+			return "product/wish"; 
 		}  else {
 			return "admin/adminPage"; // 관리자용 찜 화면이 없어 대시보드로
 		} 
@@ -128,7 +128,7 @@ public class MemberController {
 		if(member.getRole().equals("USER")) {
 			model.addAttribute("cartList", (service.listCart(member.getMemberId())));
 			System.out.println("장바구니용 모델로 저장" + (List<MyPageCartDTO>)model.getAttribute("cartList")); // 추적용 출력
-			return "member/cart"; 
+			return "product/cart"; 
 		}  else {
 			return "admin/adminPage"; // 관리자용 장바구니 화면이 없어 대시보드로
 		} 
@@ -306,7 +306,7 @@ public class MemberController {
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 		boolean isUpdate = service.nicknameUpdate(member.getMemberId(), nickname);
 		
-		String message = isUpdate ? "정보 변경에 실패했습니다." : "정보 변경에 성공하셨습니다.";
+		String message = isUpdate ? "정보 변경에 성공했습니다." : "정보 변경에 실패하셨습니다.";
 		
 		return ApiResponse.success(message, isUpdate);
 	}
