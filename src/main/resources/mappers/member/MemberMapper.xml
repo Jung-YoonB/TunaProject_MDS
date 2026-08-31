@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.kh.sajotuna.mds.member.model.mapper.MemberMapper">
+	
+	<insert id="insertMember" parameterType="MemberDTO">
+		<selectKey
+			keyProperty="memberId" resultType="long" order="BEFORE">
+			SELECT SEQ_MEMBER_ID.NEXTVAL FROM DUAL
+		</selectKey>
+  		INSERT INTO MEMBER (MEMBER_ID, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME, EMAIL, PHONE, ROLE)
+  		VALUES (#{memberId}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname}, #{email}, #{phone}, #{role})
+ 	</insert>
+ 	
+ 	<insert id="insertPoint" parameterType="long">
+  		INSERT INTO MEMBERPOINT (POINT_ID, MEMBER_ID)
+  		VALUES (SEQ_POINT_ID.NEXTVAL, #{memberId})
+ 	</insert>
+  
+  	<select id="countByLoginId" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE LOGIN_ID = #{loginId}  
+  	</select>
+  	
+  	<select id="countByNickname" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE NICKNAME = #{nickname}  
+  	</select>
+  	
+  	<select id="countByEmail" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE EMAIL = #{email}  
+  	</select>
+  	
+  	<select id="countByPhone" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE PHONE = #{phone}  
+  	</select>
+  	
+  	<select id="selectByLoginId" parameterType="String" resultType="MemberDTO">
+		SELECT MEMBER_ID, GRADE_ID, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
+			EMAIL, CREATED_AT, PHONE, ROLE, MEMBER_STATUS,
+			TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
+			TO_CHAR(CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR 
+		FROM MEMBER 
+		WHERE LOGIN_ID = #{loginId} 
+  	</select>
+  	
+  	<select id="selectByMemberId" parameterType="long" resultType="MemberDTO">
+		SELECT M.MEMBER_ID, M.GRADE_ID, G.GRADE_NAME, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
+			EMAIL, M.CREATED_AT, PHONE, ROLE, MEMBER_STATUS, P.POINT,
+			TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
+			TO_CHAR(M.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR,
+			(SELECT COUNT(*)
+				FROM COUPONHISTORY H
+				WHERE M.MEMBER_ID = H.MEMBER_ID AND H.TYPE='ISSUE') AS ISSUE
+		FROM MEMBER M LEFT JOIN MEMBERPOINT P ON M.MEMBER_ID = P.MEMBER_ID
+			LEFT JOIN GRADE G ON M.GRADE_ID = G.GRADE_ID
+		WHERE M.MEMBER_ID = #{memberId}
+  	</select>
+  	
+
+  	<!-- 보유 쿠폰 중 사용 가능한(만료 안 된) 것만 조회. 만료 쿠폰은 유저 화면에 아예 노출하지 않기로 함 -->
+  	<select id="selectAllCouponsByMemberId" resultType="CouponDTO">
+		SELECT C.COUPON_ID, C.COUPON_NAME, C.COUPON_VALUE, C.COUPON_TEXT, C.CREATED_AT, C.DEADLINE,
+			CH.CHIST_ID,
+			TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR,
+			TO_CHAR(C.DEADLINE, 'YYYY-MM-DD') AS DEAD_LINE_STR
+		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
+		WHERE CH.MEMBER_ID = #{memberId} AND CH.TYPE='ISSUE' AND C.DEADLINE >= TRUNC(SYSDATE)
+		ORDER BY C.DEADLINE ASC
+  	</select>
+
+  	<!-- 위 조회와 동일한 조건(사용 가능한 쿠폰만)의 전체 건수 (페이지네이션 계산용) -->
+  	<select id="countCouponsByMemberId" resultType="int">
+		SELECT COUNT(*)
+		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
+		WHERE CH.MEMBER_ID = #{memberId} AND CH.TYPE='ISSUE' AND C.DEADLINE >= TRUNC(SYSDATE)
+  	</select>
+  	
+  	<select id="selectWishesByMemberId" parameterType="long" resultType="MyPageWishDTO">
+    	SELECT 
+        	(SELECT COUNT(*) FROM WISH WHERE PRODUCT_ID = P.PRODUCT_ID) AS COUNT_WISH,
+        	P.PRODUCT_NAME, PI.PRODUCT_IMAGE_PATH, PI.PRODUCT_IMAGE_SAVE_NAME,
+        	(SELECT NVL(ROUND(AVG(R.SCORE), 1), 0) 
+        		FROM OPTIONDETAIL POP JOIN ORDERDETAIL OD ON POP.POP_ID = OD.POP_ID
+           		JOIN REVIEW R ON OD.OD_ID = R.OD_ID
+        		WHERE POP.PRODUCT_ID = P.PRODUCT_ID) AS REVIEW_AVG
+    	FROM WISH W	JOIN PRODUCT P ON W.PRODUCT_ID = P.PRODUCT_ID
+    		JOIN PRODUCTIMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID
+  		WHERE W.MEMBER_ID = #{memberId} AND PI.PRODUCT_TITLE_IMAGE = 0
+	</select>
+  	
+  	<select id="selectCartsByMemberId" parameterType="long" resultType="MyPageCartDTO">
+  		SELECT C.CART_ID, C.QTY, PO.OPTION_ID, PO.OPTION_NAME, PO.OPTION_PRICE, PO.OPTION_STOCK, P.PRODUCT_ID, P.PRODUCT_NAME,
+  				PI.PRODUCT_IMAGE_PATH, PI.PRODUCT_IMAGE_SAVE_NAME
+  		FROM CART C JOIN OPTIONDETAIL POP ON C.POP_ID = POP.POP_ID
+  			JOIN PRODUCTOPTION PO ON POP.OPTION_ID = PO.OPTION_ID
+  			JOIN PRODUCT P ON POP.PRODUCT_ID = P.PRODUCT_ID
+  			JOIN PRODUCTIMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID  
+  		WHERE C.MEMBER_ID = #{memberId} AND PI.PRODUCT_TITLE_IMAGE = 0
+  	</select>
+  	
+  	<!-- 상태 필터 탭 <-> DELIVERY_STATUS 매핑. status가 'all'이거나 인식 못하는 값이면 필터 없이 전체 조회 -->
+  	<sql id="deliveryStatusFilter">
+  		<choose>
+  			<when test="status == 'preparing'">AND (D.DELIVERY_STATUS IS NULL OR D.DELIVERY_STATUS = 'PREPARING')</when>
+  			<when test="status == 'shipped'">AND D.DELIVERY_STATUS = 'SHIPPED'</when>
+  			<when test="status == 'out_for_delivery'">AND D.DELIVERY_STATUS = 'OUT_FOR_DELIVERY'</when>
+  			<when test="status == 'delivered'">AND D.DELIVERY_STATUS = 'DELIVERED'</when>
+  			<when test="status == 'canceled'">AND D.DELIVERY_STATUS = 'CANCELED'</when>
+  		</choose>
+  	</sql>
+
+  	<!-- 배송 목록: DELIVERY 행이 없는(체크아웃 미구현으로 관리자가 배송준비중으로 아직 안 바꾼) 결제완료
+  	     주문도 보여야 하므로 DELIVERY는 LEFT JOIN. 대표 상품(가장 먼저 담긴 ORDERDETAIL) 1건과 상품 건수를
+  	     서브쿼리 하나로 함께 조회(N+1 방지) - AdminOrderMapper.selectOrderList의 대표상품 패턴과 동일.
+  	     대표 상품/이미지가 없는 경우(주문 상세 데이터 누락, 대표이미지 미등록 등)를 대비해 NVL로 기본값 처리.
+  	     주문이 쌓여도 느려지지 않도록 상태 필터는 서버에서 WHERE로 처리하고, OFFSET/FETCH로 페이징한다 -->
+  	<select id="selectDeliveriesByMemberId" resultType="MyPageDeliveryDTO">
+  		SELECT D.DELIVERY_ID, D.COMPANY, D.TRACKING_NO, D.DELIVERY_STATUS, PO.DETAIL_ADDRESS_FIX,
+	 		PO.ADDRESS_NAME_FIX, PO.ORDER_ID, PO.TOTAL_PRICE, PO.ORDER_STATUS, PO.ORDER_DATE,
+  			TO_CHAR(PO.ORDER_DATE, 'YYYY-MM-DD') AS ORDER_DATE_STR,
+  			NVL(rep.PRODUCT_NAME, '상품 정보 없음') AS PRODUCT_NAME,
+  			NVL(rep.PRODUCT_IMAGE_PATH, '/uploads/product/') AS PRODUCT_IMAGE_PATH,
+  			NVL(rep.PRODUCT_IMAGE_SAVE_NAME, '') AS PRODUCT_IMAGE_SAVE_NAME,
+  			rep.QTY AS QTY,
+  			rep.OD_ID AS OD_ID,
+  			NVL(rep.PRODUCT_COUNT, 0) AS PRODUCT_COUNT,
+  			CASE WHEN EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = rep.OD_ID) THEN 1 ELSE 0 END AS HAS_REVIEW
+  		FROM PRODUCTORDER PO
+  		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
+  		LEFT JOIN (
+  			SELECT od.ORDER_ID, od.OD_ID, p.PRODUCT_NAME, od.QTY,
+  				(SELECT pi.PRODUCT_IMAGE_PATH FROM PRODUCTIMAGE pi
+  					WHERE pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0 AND ROWNUM = 1) AS PRODUCT_IMAGE_PATH,
+  				(SELECT pi.PRODUCT_IMAGE_SAVE_NAME FROM PRODUCTIMAGE pi
+  					WHERE pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0 AND ROWNUM = 1) AS PRODUCT_IMAGE_SAVE_NAME,
+  				ROW_NUMBER() OVER (PARTITION BY od.ORDER_ID ORDER BY od.OD_ID) AS rn,
+  				COUNT(*) OVER (PARTITION BY od.ORDER_ID) AS PRODUCT_COUNT
+  			FROM ORDERDETAIL od
+  			JOIN OPTIONDETAIL opd ON opd.POP_ID = od.POP_ID
+  			JOIN PRODUCT p ON p.PRODUCT_ID = opd.PRODUCT_ID
+  		) rep ON rep.ORDER_ID = PO.ORDER_ID AND rep.rn = 1
+  		WHERE PO.MEMBER_ID = #{memberId} AND PO.ORDER_STATUS != 'CART'
+  		<include refid="deliveryStatusFilter"/>
+  		ORDER BY PO.ORDER_DATE DESC
+  		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+  	</select>
+
+  	<!-- 위 조회와 동일한 WHERE 조건의 전체 건수 (페이지네이션 총 페이지 수 계산용) -->
+  	<select id="countDeliveriesByMemberId" resultType="int">
+  		SELECT COUNT(*)
+  		FROM PRODUCTORDER PO
+  		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
+  		WHERE PO.MEMBER_ID = #{memberId} AND PO.ORDER_STATUS != 'CART'
+  		<include refid="deliveryStatusFilter"/>
+  	</select>
+
+  	<!-- 마이페이지 "주문/배송 조회" 배지: 아직 배송완료/취소환불에 도달하지 않은(진행중인) 주문 건수 -->
+  	<select id="countActiveDeliveries" resultType="int">
+  		SELECT COUNT(*)
+  		FROM PRODUCTORDER PO
+  		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
+  		WHERE PO.MEMBER_ID = #{memberId} AND PO.ORDER_STATUS != 'CART'
+  		  AND (D.DELIVERY_STATUS IS NULL OR D.DELIVERY_STATUS NOT IN ('DELIVERED', 'CANCELED'))
+  	</select>
+
+  	<!-- 마이페이지 "리뷰 작성" 배지: 배송완료된 주문 상세(품목 단위) 중 리뷰가 아직 없는 건수.
+  	     대표 상품 1건이 아니라 ORDERDETAIL 전체를 기준으로 세야 "몇 개 리뷰를 쓸 수 있는지"가 정확함 -->
+  	<select id="countReviewableOrderDetails" resultType="int">
+  		SELECT COUNT(*)
+  		FROM ORDERDETAIL od
+  		JOIN PRODUCTORDER po ON po.ORDER_ID = od.ORDER_ID
+  		JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
+  		WHERE po.MEMBER_ID = #{memberId}
+  		  AND d.DELIVERY_STATUS = 'DELIVERED'
+  		  AND NOT EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = od.OD_ID)
+  	</select>
+  	
+  	<update id="updateNickname" parameterType="String">
+  		UPDATE MEMBER SET NICKNAME = #{nickname} WHERE MEMBER_ID = #{memberId}
+  	</update>
+  	
+  	<update id="updatePhone" parameterType="map">
+  	  UPDATE MEMBER SET PHONE = #{phone} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updateEmail" parameterType="map">
+    	UPDATE MEMBER SET EMAIL = #{email} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updateName" parameterType="map">
+    	UPDATE MEMBER SET MEMBER_NAME = #{memberName} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updateBirth" parameterType="map">
+    	UPDATE MEMBER SET BIRTH = #{birth} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updateGender" parameterType="map">
+    	UPDATE MEMBER SET GENDER = #{gender} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updatePassword" parameterType="map">
+    	UPDATE MEMBER SET LOGIN_PW = #{newPassword} WHERE MEMBER_ID = #{memberId}
+	</update>
+	
+	<update id="withdrawMember" parameterType="long">
+    	UPDATE MEMBER SET MEMBER_STATUS = 0 WHERE MEMBER_ID = #{memberId}
+	</update>
+</mapper>

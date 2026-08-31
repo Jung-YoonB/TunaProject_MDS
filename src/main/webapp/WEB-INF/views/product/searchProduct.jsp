@@ -7,8 +7,8 @@
 <div class="search-result-page">
 
 	<!-- 메인 카테고리: 헤더 바로 밑에 고정 -->
-	<%-- TODO(data binding): ProductController.getList()의 return"redirect:home/test" 버그를 고쳐야 productList.category가 렌더링됨 --%>
-	<%-- TODO(data binding): CategoryDTO에 categoryId가 없어 카테고리 버튼에 연결할 DB id가 아직 없음 --%>
+	<%-- TODO(data binding): ProductController.getList()가 model에 담은 데이터를 리다이렉트(return "redirect:home/home")로
+	     날려버려서 productList.category가 아직 렌더링되지 않음 --%>
 	<section class="sp-category-section" aria-label="카테고리 선택">
 		<div class="sp-category-grid">
 			<!-- 테스트/예시용 카테고리 3개 (DB 미연동 상태에서도 항상 보이는 하드코딩 데이터) -->
@@ -51,7 +51,7 @@
 	</section>
 
 	<!-- 상품 카드 그리드: productList.product(ProductListDTO)를 반복 출력 -->
-	<%-- TODO(data binding): ProductListDTO 필드 = productId, productTitle, price, score, thumbnail (설명·태그 필드 없음, TagDetail 조인 필요) --%>
+	<%-- ProductListDTO 필드 = productId, productTitle, wishCount, titleImage, price, categoryNames, tagData, score --%>
 	<section class="sp-product-section" aria-label="검색 결과">
 		<div class="sp-product-grid">
 
@@ -131,8 +131,8 @@
 				</div>
 			</article>
 
-			<%-- TODO(placeholder route): /mds/detail/{productId}는 ProductController의 return"redirect:home/test" 버그로 아직 미동작 --%>
-			<%-- TODO(data binding): ProductListDTO에 categoryName 필드가 없어 카테고리 표시 불가 --%>
+			<%-- TODO(placeholder route): /mds/detail/{productId}는 ProductController가 결과를 무조건
+			     redirect:home/home으로 던져서 아직 미동작 --%>
 			<c:forEach items="${productList.product}" var="product">
 				<article class="sp-product-card" data-product-id="${product.productId}">
 					<a class="sp-product-link" href="<c:url value='/mds/detail/${product.productId}'/>">
