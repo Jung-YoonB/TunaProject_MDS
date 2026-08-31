@@ -32,4 +32,5 @@ public class CouponDTO {
     private LocalDate createdAt;
     private LocalDate deadline;
     private boolean hasHistory; // COUPONHISTORY 발급 이력 존재 여부(admin 목록 조회 시에만 채워짐, 삭제 가능 여부 판단용) - COUPONHISTORY 자체의 원본 행이 필요하면 CouponHistoryDTO를 쓸 것
+    private Long chistId; // 쿠폰 발급 이력 ID (결제 시 사용)
 }

@@ -2,9 +2,9 @@ package com.kh.sajotuna.mds.member.service;
 
 import java.util.List;
 
+import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
-import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 
@@ -13,16 +13,10 @@ public interface MemberService {
 	// 회원 가입
 	void signUp(MemberDTO member);
 	
-	// 아이디 중복체크
+	// 중복체크용
 	boolean isLoginIdCheck(String loginId);
-	
-	// 닉네임 중복 체크
 	boolean isNicknameCheck(String nickname);
-	
-	// 이메일 중복 체크
 	boolean isEmailCheck(String email);
-		
-	// 연락처 중복 체크
 	boolean isPhoneCheck(String phone);
 	
 	// 로그인
@@ -45,6 +39,18 @@ public interface MemberService {
 	
 	// 멤버id로 장바구니 검색
 	List<MyPageCartDTO> listCart(Long memberId);
+	
+	// 회원 정보 수정용
+	boolean nicknameUpdate(Long memberId, String nickname);
+	boolean phoneUpdate(Long memberId, String phone);
+	boolean emailUpdate(Long memberId, String email);
+	boolean nameUpdate(Long memberId, String memberName);
+	boolean birthUpdate(Long memberId, String birth);
+	boolean genderUpdate(Long memberId, String gender);
+	boolean passwordUpdate(Long memberId, String newPassword);
+	
+	//회원 탈퇴
+	boolean withdrawMember(Long memberId);
 	
 	// 멤버id로 배송데이터 검색 (상태 필터 + 페이징)
 	List<MyPageDeliveryDTO> listDelivery(Long memberId, String status, int page);
