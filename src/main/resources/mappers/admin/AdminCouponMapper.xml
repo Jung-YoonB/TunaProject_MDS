@@ -5,7 +5,7 @@
 
 <mapper namespace="com.kh.sajotuna.mds.admin.model.mapper.AdminCouponMapper">
 
-	<!-- CouponDTO(product.model.dto.coupon)는 COUPON 테이블을 참조하는 DTO라 admin 전용
+	<!-- CouponDTO(coupon.model)는 COUPON 테이블을 참조하는 DTO라 admin 전용
 	     AdminCouponDTO 대신 이걸 그대로 씀 -->
 	<select id="selectAllCoupons" resultType="CouponDTO">
 		SELECT

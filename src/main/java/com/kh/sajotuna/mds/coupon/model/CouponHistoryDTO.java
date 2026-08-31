@@ -1,4 +1,4 @@
-package com.kh.sajotuna.mds.product.model.dto.coupon;
+package com.kh.sajotuna.mds.coupon.model;
 
 import java.time.LocalDate;
 
