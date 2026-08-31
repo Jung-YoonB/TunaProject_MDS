@@ -59,7 +59,7 @@
   	
 
   	<!-- 보유 쿠폰 중 사용 가능한(만료 안 된) 것만 조회. 만료 쿠폰은 유저 화면에 아예 노출하지 않기로 함 -->
-  	<select id="selectCouponsByMemberId" resultType="CouponDTO">
+  	<select id="selectAllCouponsByMemberId" resultType="CouponDTO">
 		SELECT C.COUPON_ID, C.COUPON_NAME, C.COUPON_VALUE, C.COUPON_TEXT, C.CREATED_AT, C.DEADLINE,
 			CH.CHIST_ID,
 			TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR,
@@ -67,7 +67,6 @@
 		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
 		WHERE CH.MEMBER_ID = #{memberId} AND CH.TYPE='ISSUE' AND C.DEADLINE >= TRUNC(SYSDATE)
 		ORDER BY C.DEADLINE ASC
-		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
   	</select>
 
   	<!-- 위 조회와 동일한 조건(사용 가능한 쿠폰만)의 전체 건수 (페이지네이션 계산용) -->

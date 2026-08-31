@@ -33,7 +33,7 @@ public interface MemberMapper {
 	MemberDTO selectByMemberId(Long memberId);
 	
 	// 멤버 아이디를 통한 보유 쿠폰 조회 (사용 가능한 것만, 뷰가 아니라 결제용)
-	List<CouponDTO> selectCouponsByMemberId(Long memberId);
+	List<CouponDTO> selectAllCouponsByMemberId(Long memberId);
 	
 	// 멤버 아이디를 통한 보유 쿠폰 조회 (사용 가능한 것만, 페이징)
 	List<CouponDTO> selectCouponsByMemberId(@Param("memberId") Long memberId, @Param("offset") int offset, @Param("pageSize") int pageSize);

@@ -35,7 +35,7 @@ public class OrderServiceImpl implements OrderService {
 			totalPrice += i.getOptionPrice() * i.getQty();
 		}
 		// 보유 쿠폰 조회
-		List<CouponDTO> couponList = memberMapper.selectCouponsByMemberId(memberId);
+		List<CouponDTO> couponList = memberMapper.selectAllCouponsByMemberId(memberId);
 		
 		// 데이터 통합
 		pvData.setItemList(itemList);
@@ -61,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
 			totalPrice += i.getOptionPrice() * i.getQty();
 		}
 		// 보유 쿠폰 조회
-		List<CouponDTO> couponList = memberMapper.selectCouponsByMemberId(memberId);
+		List<CouponDTO> couponList = memberMapper.selectAllCouponsByMemberId(memberId);
 				
 		// 데이터 통합
 		pvData.setItemList(itemList);
