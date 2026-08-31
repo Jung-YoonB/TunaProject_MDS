@@ -60,6 +60,11 @@ body.delivery-hero {
 	background-color: var(--gsf-cream);
 }
 
+/* 홈페이지만 배경을 별도 톤으로 지정(다른 8개 hero 페이지는 공용 --gsf-cream 그대로 유지) */
+body.home-hero {
+	background-color: #FDFBF9;
+}
+
 /* ===== Header container =====
    다른 페이지 전용 CSS(style_addProduct.css 등)가 #site-header/.icon-item/#search_box 같은
    전역 선택자를 스코프 없이 재정의하고 있어, 이 파일이 먼저 로드돼도 나중에 로드되는 파일에
@@ -122,7 +127,7 @@ header#site-header {
 	font-size: 14px;
 	color: #333;
 	outline: none;
-	background-color: #faf9f6;
+	background-color: #FDFBF9;
 	transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
 }
 #site-header .search-input::placeholder {

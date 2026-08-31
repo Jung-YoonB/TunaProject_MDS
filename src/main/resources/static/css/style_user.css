@@ -153,13 +153,17 @@
     color: var(--gsf-text);
 }
 
-.section-more {
+/* #product 접두사로 명시도를 ID+클래스(1,1,0)까지 올림 - href="#"는 브라우저가 클릭 없이도
+   바로 :visited로 취급해서, default.css:22의 a:visited{color:#333}(명시도 0,1,1)가 순수
+   클래스 선택자(0,1,0)보다 이겨버리는 문제가 있음(.product-rating에서 실제로 겪은 버그와
+   동일한 원인 - 자세한 내용은 HANDOFF.md 참고). */
+#product .section-more {
     font-size: 13px;
     color: var(--gsf-subtext);
     text-decoration: none;
 }
 
-.section-more:hover {
+#product .section-more:hover {
     color: var(--gsf-caramel);
     text-decoration: none;
 }
@@ -236,14 +240,53 @@
 
 #product .home-container {
     background-color: #fbf8f4;
-    padding: 40px 40px 90px;
+    padding: 20px 20px 90px;
     border-top: 1px solid var(--gsf-border);
 }
 
+/* 좌우 여백(위 padding)과 카드 사이 간격을 20px로 통일 - 남는 폭은 전부 카드(1fr)가 가져간다 */
 #product-list {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+    gap: 20px;
+}
+
+/* 상품 더보기 버튼 - views/home.js가 클릭 시 8개 더 로드하고, 이후로는 스크롤 시 자동 로드
+   (버튼은 첫 클릭 후 숨김). 목업 데이터라 서버 호출 없이 클라이언트에서만 동작함. */
+.product-load-more-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+}
+
+.btn-load-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 28px;
+    border: 1px solid var(--gsf-border);
+    border-radius: var(--radius-pill);
+    background-color: #fff;
+    color: var(--gsf-text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+
+.btn-load-more:hover {
+    background-color: var(--gsf-peach-pale);
+    border-color: var(--gsf-caramel);
+}
+
+.btn-load-more-svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .product-card {
@@ -274,13 +317,13 @@
 /* 기본적으로 숨겨두고, 상품 이미지에 마우스를 올렸을 때만 보이게 함 */
 .product-badge {
     position: absolute;
-    left: 12px;
-    bottom: 12px;
-    padding: 4px 10px;
+    left: 14px;
+    bottom: 14px;
+    padding: 5px 12px;
     border-radius: 999px;
     background-color: var(--gsf-sage-pale);
     color: var(--gsf-ink);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: .5px;
     opacity: 0;
@@ -291,14 +334,14 @@
     opacity: 1;
 }
 
-/* 하단 장바구니 아이콘(.product-cart)과 같은 .product-card 기준 오른쪽 위치·크기로 맞춰
-   서로 같은 세로선 위에 오도록 함 (카드 중앙이 아니라 오른쪽으로 정렬) */
-.product-like {
+/* 카드 썸네일 오른쪽 위 퀵 액션 버튼 - 원래는 찜(하트)이었으나 장바구니로 교체(찜은
+   .product-wish-toggle로 이동, 아래 참고). 색상/위치/크기는 옛 .product-like 그대로 재사용. */
+.product-cart-quick {
     position: absolute;
-    top: 10px;
-    right: 12px;
-    width: 28px;
-    height: 28px;
+    top: 13px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     border: none;
     border-radius: 50%;
@@ -310,13 +353,13 @@
     cursor: pointer;
 }
 
-.product-like:hover {
+.product-cart-quick:hover {
     color: var(--gsf-caramel);
 }
 
-.product-like-svg {
-    width: 16px;
-    height: 16px;
+.product-cart-quick-svg {
+    width: 20px;
+    height: 20px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.8;
@@ -325,83 +368,144 @@
 }
 
 .product-info {
-    padding: 8px 10px;
+    padding: 10px 13px;
 }
 
 .product-name {
-    margin: 0 0 2px;
-    font-size: 16px;
+    margin: 0 0 4px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--gsf-text);
 }
 
 .product-description {
-    margin: 0 0 2px;
-    font-size: 13px;
+    margin: 0 0 5px;
+    font-size: 16px;
     color: var(--gsf-subtext);
 }
 
-/* margin-right로 .product-info의 좌우 패딩(10px)만큼을 상쇄하고 2px를 더 당겨서,
-   .product-cart가 .product-like(카드 기준 right:12px)와 같은 세로선에 오도록 함 */
 .product-price-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
     margin: 0 2px 2px 0;
 }
 
 .product-price {
     display: block;
-    font-size: 17px;
+    font-size: 21px;
     font-weight: 700;
     color: var(--gsf-text);
 }
 
-.product-cart {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    background-color: var(--gsf-beige);
+/* 별점 + 찜 영역 - 예전보다 터치 영역을 넓혀서(패딩) 찜 표시를 그 자체로 찜 버튼처럼
+   누를 수 있게 함(.product-wish-toggle 참고). */
+.product-meta {
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: var(--gsf-ink);
+    gap: 10px;
+    margin-top: 8px;
+    padding: 4px 2px;
+}
+
+/* .product-rating은 wish.jsp(.wishlist-container)도 같이 쓰는 공용 클래스라 여기서 구조를
+   바꾸면 그쪽까지 영향받는다 - 그래서 별/점수 분리 레이아웃은 #product-list 스코프에서만
+   켠다(다른 페이지의 .product-rating은 지금 그대로 단순 텍스트로 남아 영향 없음). */
+.product-rating {
+    color: var(--gsf-subtext);
+}
+
+/* 사용자님 요청으로 리뷰 보기 링크화 - .product-wish-toggle과 똑같은 pill 버튼 스타일을
+   써서 둘이 나란히 짝을 이루는 클릭 가능한 요소로 보이게 함(실제 href는 아직 상품 데이터가
+   없어 "#" - 상품 연동 시 리뷰 섹션으로 교체 필요, 위 home.jsp TODO 참고).
+   text-decoration:none은 명시적으로 다시 선언 - default.css의 전역 a:hover 규칙이
+   hover 시 밑줄을 강제로 붙여서(버튼인 .product-wish-toggle과 달리 <a> 태그라 영향받음),
+   아이콘 버튼처럼 보이려면 이걸 덮어써야 함.
+   color도 여기서 다시 선언 - href="#"는 현재 페이지 자신을 가리켜서 브라우저가 클릭 없이도
+   바로 :visited로 취급하는데, default.css:22의 a:visited{color:#333}가 타입+가상클래스라
+   명시도(0,1,1)가 .product-rating 단독(0,1,0)보다 높아 검게 이기고 있었음(실제 원인,
+   사용자님이 DevTools로 확인). #product-list .product-rating은 ID+클래스라 명시도(1,1,0)로
+   a:visited를 확실히 이김. */
+#product-list .product-rating {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 4px 10px;
+    color: var(--gsf-subtext);
+    /* pill의 자체 padding-left(10px) + .product-meta의 padding-left(2px)만큼 왼쪽으로
+       당겨서, 이 줄의 시작(별 아이콘)이 위 상품명/설명/가격과 같은 왼쪽 선에 맞게 함 -
+       hover 히트 영역은 padding 그대로라 넓게 유지됨. */
+    margin-left: -12px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    transition: background-color .2s ease;
+    text-decoration: none;
+    transition: background-color .2s ease, color .2s ease;
 }
 
-.product-cart:hover {
-    background-color: var(--gsf-sage);
+#product-list .product-rating:hover,
+#product-list .product-rating:focus,
+#product-list .product-rating:active {
+    background-color: var(--gsf-peach-pale);
+    color: var(--gsf-caramel);
+    text-decoration: none;
 }
 
-.product-cart-svg {
-    width: 16px;
-    height: 16px;
+/* 유니코드 ★ 대신 SVG로 통일(찜 하트와 같은 이유) - ★는 원래 채워진(칠해진) 모양이라
+   하트(outline, stroke)와 달리 fill:currentColor로 채움. 찜 하트(.product-wish-icon)와
+   같은 19px, 점수 텍스트(.product-rating-score)는 찜 개수(.product-wish-count-num)와
+   같은 15px로 맞춰서 두 줄(별점/찜)의 아이콘·글자 크기가 서로 짝이 맞게 함. */
+.product-rating-star {
+    width: 19px;
+    height: 19px;
+    fill: currentColor;
+    /* SVG의 기본 baseline은 아이콘 박스의 맨 아래 가장자리인데, 이 별 path는 실제 별
+       모양(잉크)이 박스 아래쪽에서 3.85/24 만큼 비어있어서(뾰족한 별 모양이라 위/아래
+       여백이 비대칭) 그대로 두면 글자 기준선보다 위로 떠 보인다. 그 여백만큼(19px 기준
+       약 3px) 아래로 내려서 별 잉크의 밑선이 실제 텍스트 기준선에 오게 함. */
+    transform: translateY(3px);
+}
+
+.product-rating-score {
+    font-size: 15px;
+}
+
+/* 옛 .product-wish-count(단순 텍스트)를 버튼으로 교체 - 찜 개수 표시 + 찜 토글을
+   겸함. 하트 아이콘(.product-wish-icon)만 오른쪽 위 장바구니 퀵버튼의 아이콘(20px)과
+   비슷한 크기로 키우고, 개수 숫자(.product-wish-count-num)는 별점과 같은 크기 유지. */
+.product-wish-toggle {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 4px 10px;
+    border: none;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--gsf-subtext);
+    cursor: pointer;
+    transition: background-color .2s ease, color .2s ease;
+}
+
+/* 하트 모양을 header.jsp의 찜 아이콘(#site-header .icon-svg)과 똑같은 SVG path로 통일 -
+   유니코드 ♡ 글자 대신 outline 하트 아이콘을 써서 헤더와 생김새가 같아지게 함. */
+.product-wish-icon {
+    width: 19px;
+    height: 19px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.8;
     stroke-linecap: round;
     stroke-linejoin: round;
+    /* .product-rating-star와 같은 원인(SVG 기본 baseline=아이콘 박스 맨 아래) - 별과 같은
+       양만큼 내려서 텍스트 기준선에 맞춤. */
+    transform: translateY(3px);
 }
 
-.product-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.product-wish-count-num {
+    font-size: 15px;
 }
 
-.product-rating {
-    font-size: 12px;
-    color: var(--gsf-subtext);
-}
-
-.product-wish-count {
-    font-size: 12px;
-    color: var(--gsf-subtext);
+.product-wish-toggle:hover {
+    background-color: var(--gsf-peach-pale);
+    color: var(--gsf-caramel);
 }
 
 /* 배경 산수화(hero)는 style.css의 body.home-hero::before/::after 공통 규칙(9개 페이지가
@@ -414,10 +518,9 @@
    공통
 ================================ */
 
-body {
-    margin: 0;
-    background-color: #f8f6f2;
-}
+/* 원본은 스코프 없는 body{} 였음(사이트 전역에 leak) - 로그인/회원가입은 이미 style.css의
+   body.login-hero/signup-hero가 배경을 담당하고, margin:0은 default.css가 이미 전역 리셋
+   하고 있어 그 외엔 불필요한 규칙이라 삭제함. 자세한 내용은 HANDOFF.md 참고. */
 
 #title {
     text-align: center;
@@ -2611,11 +2714,10 @@ main:has(.search-result-page) {
 /* ================================================================
    ↓↓↓ style_payment.css 원본 내용
    ================================================================ */
-body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            color: #333;
-        }
+/* 원본은 스코프 없는 body{margin:0;font-family:Arial;color:#333} 였음 - 사이트 전역
+   글꼴/글자색을 Arial/#333로 덮어써서 default.css의 기본 글꼴을 leak시키고 있었음(주문/
+   결제 페이지는 이미 style.css의 body.order-hero가 배경을 담당). 필요 없는 규칙이라 삭제함.
+   자세한 내용은 HANDOFF.md 참고. */
 
         /* outer wrapper는 투명하게, 폭/배경은 안쪽 카드(.order-card)에만 준다 -
            main 태그에 직접 폭을 주면 hero 배경이 스크롤 시 깨진다. */
@@ -3146,7 +3248,10 @@ body {
    방향: 자극적인 꾸밈 없이, 여백과 절제된 포인트로 정리
    ========================================================================== */
 
-:root {
+/* 원본은 스코프 없는 :root{}였음 - 이 페이지 전용 톤(--ink 등)이 커스텀 프로퍼티라 상속을 타고
+   사이트 전역에 leak되고 있었음. body.review-write-hero로 스코프해서 이 페이지 안에서만
+   유효하게 함(리뷰 작성 페이지 전체가 이 body의 후손이라 하위 선택자는 그대로 동작). */
+body.review-write-hero {
   /* sage/cornsilk/bronze는 style.css의 --gsf-* 값과 동일해 참조로 교체 (radius-*는
      전역 :root를 그대로 물려받도록 재선언 제거). 나머지는 이 페이지 전용 톤. */
   --sage: var(--gsf-sage);
@@ -3177,7 +3282,7 @@ body {
   box-sizing: border-box;
 }
 
-body {
+body.review-write-hero {
   margin: 0;
   background: var(--bg-page);
   color: var(--ink);
