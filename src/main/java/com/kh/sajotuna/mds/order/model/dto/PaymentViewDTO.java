@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.order.model.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.ibatis.type.Alias;
@@ -26,7 +27,7 @@ public class PaymentViewDTO {
 	
 	// 등급 테이블
 	private String gradeName;		// 회원의 등급
-	private Long discountRate;		// 회원의 할인율
+	private BigDecimal discountRate;		// 회원의 할인율
 	
 	// 배달주소 테이블
 	private String addressName;		// 회원이 저장한 기본 주소 이름

@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.order.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
 	verifiedData.setChistId(checkoutInputData.getChistId());
 
 	if (checkoutInputData.getChistId() != null) {
-		Double couponValue = mapper.selectByChistId(
+		BigDecimal couponValue = mapper.selectByChistId(
 						verifiedData.getMemberId(), checkoutInputData.getChistId());
 
 		if (couponValue == null) {
@@ -129,7 +130,7 @@ public class OrderServiceImpl implements OrderService {
 		}
 		verifiedData.setCouponValue(couponValue);
 	} else {
-		verifiedData.setCouponValue(0.0);
+		verifiedData.setCouponValue(BigDecimal.ZERO);
 	}
 
 	// 사용할 포인트 확인
@@ -150,19 +151,25 @@ public class OrderServiceImpl implements OrderService {
 
 	// 총 가격 계산
 	long totalPrice = 0L;
-
 	for (OrderItemDTO item : itemList) {
 		totalPrice += item.getOptionPrice() * item.getQty();
 	}
-	System.out.println("" + totalPrice);
-	
-	// 쿠폰 할인
-	totalPrice = (long) (totalPrice	* (1.0 - verifiedData.getCouponValue()));
-	System.out.println("" + totalPrice + ", " + verifiedData.getCouponValue());
-	
-	// 회원 등급 할인
-	totalPrice = (long) (totalPrice	* (1.0 - verifiedData.getDiscountRate()));
-	System.out.println("" + totalPrice + ", " + verifiedData.getDiscountRate());
+		
+	// 계산을 정확하게 하기 위해 BigDecimal로 변환
+	BigDecimal calcPrice = BigDecimal.valueOf(totalPrice);
+
+	// 쿠폰 할인 적용 (가격 * (1 - 쿠폰할인율))
+	// verifiedData.getCouponValue()가 null일 수 있으니 방어 코드 추가
+	BigDecimal couponVal = verifiedData.getCouponValue() != null ? verifiedData.getCouponValue() : BigDecimal.ZERO;
+	calcPrice = calcPrice.multiply(BigDecimal.ONE.subtract(couponVal));
+		
+	// 회원 등급 할인 적용 (가격 * (1 - 등급할인율))
+	// 만약 discountRate가 double이라면 BigDecimal.valueOf(verifiedData.getDiscountRate())로 감싸줍니다.
+	BigDecimal discountRate = verifiedData.getDiscountRate() != null ? verifiedData.getDiscountRate() : BigDecimal.ZERO;
+	calcPrice = calcPrice.multiply(BigDecimal.ONE.subtract(discountRate));
+		
+	// 소수점이 생길 수 있으므로 반올림 처리 후 long으로 변환 (.setScale(0, RoundingMode.HALF_UP))
+	totalPrice = calcPrice.setScale(0, java.math.RoundingMode.HALF_UP).longValue();
 	
 	// 포인트 사용
 	totalPrice -= usedPoint;
@@ -191,8 +198,13 @@ public class OrderServiceImpl implements OrderService {
 
 		item.setOrderId(verifiedData.getOrderId());
 		item.setPriceFix(item.getOptionPrice());
-		item.setGradeDisAmount((long)(item.getOptionPrice() * item.getQty()
-						* (1.0 - verifiedData.getCouponValue()) * verifiedData.getDiscountRate()));
+		BigDecimal itemTotal = BigDecimal.valueOf(item.getOptionPrice() * item.getQty());
+		BigDecimal gradeDisAmount = itemTotal
+				.multiply(BigDecimal.ONE.subtract(couponVal))
+				.multiply(verifiedData.getDiscountRate() != null ? verifiedData.getDiscountRate() : BigDecimal.ZERO)
+				.setScale(0, java.math.RoundingMode.HALF_UP);
+				
+		item.setGradeDisAmount(gradeDisAmount.longValue());
 
 		result = mapper.insertOrderDetail(item);
 
