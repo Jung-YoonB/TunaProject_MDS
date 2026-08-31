@@ -1,0 +1,223 @@
+@charset "utf-8";
+
+/* ================================
+   내 쿠폰 (admin/style_admincouponView.css와 동일한 형식으로 통일)
+================================ */
+
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .coupon-view-page로 스코프할 것.
+   admin과 동일하게 바깥 배경은 .coupon-view-page에, 흰 카드는 그 안의 .coupon-view-page-card에 나눠 담는다 */
+.coupon-view-page {
+    background-color: #f8f6f2;
+    min-height: 100vh;
+    padding: 50px 0;
+    box-sizing: border-box;
+}
+
+.coupon-view-page-card {
+    width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: #fff;
+    border: 1px solid #e5e0d8;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.coupon-view-page #title {
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* 쿠폰 검색 */
+.coupon-view-page #SearchCoupons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 30px;
+}
+
+.coupon-view-page #coupon-search {
+    flex: 1;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    outline: none;
+    font-size: 14px;
+}
+
+.coupon-view-page #coupon-search:focus {
+    border-color: #b59b7b;
+}
+
+.coupon-view-page #search-button {
+    width: 80px;
+    height: 42px;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.coupon-view-page #search-button:hover {
+    background-color: #faf9f7;
+}
+
+/* 보유 쿠폰 목록 제목 */
+.coupon-view-page .coupon-list-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.coupon-view-page .coupon-list-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.coupon-view-page .coupon-count {
+    color: #888;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+/* 쿠폰 카드 */
+.coupon-view-page .coupon-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+    padding: 18px 20px;
+    border: 1px solid #e3ded7;
+    border-radius: 10px;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.coupon-view-page .coupon-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.coupon-view-page .coupon-name {
+    margin-bottom: 7px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.coupon-view-page .coupon-description {
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #777;
+}
+
+.coupon-view-page .coupon-deadline {
+    font-size: 12px;
+    color: #999;
+}
+
+.coupon-view-page .coupon-discount {
+    flex-shrink: 0;
+    min-width: 60px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    color: #806746;
+}
+
+.coupon-view-page .coupon-empty[hidden] {
+    display: none;
+}
+
+.coupon-view-page .coupon-empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+/* 페이지네이션 (admin의 .pagination 색상/톤에 맞춤) */
+.coupon-view-page .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.coupon-view-page .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #555;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.coupon-view-page .page-link:hover {
+    border-color: #b59b7b;
+    text-decoration: none;
+}
+
+.coupon-view-page .page-link.is-active {
+    background-color: #f0dfc0;
+    border-color: #f0dfc0;
+    color: #5c4a2f;
+    font-weight: 700;
+}
+
+/* 마이페이지로 돌아가기 */
+.coupon-view-page .coupon-back {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.coupon-view-page .btn-back-mypage {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    padding: 0 28px;
+    border: 1px solid #d8d3cc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #555;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.coupon-view-page .btn-back-mypage:hover {
+    background-color: #f8f6f2;
+    text-decoration: none;
+}
+
+/* ================================
+   반응형
+================================ */
+
+@media (max-width: 850px) {
+    .coupon-view-page-card {
+        width: calc(100% - 30px);
+        margin: 0 auto;
+        padding: 25px;
+    }
+}
+
+@media (max-width: 600px) {
+    .coupon-view-page .coupon-card {
+        flex-wrap: wrap;
+    }
+
+    .coupon-view-page .coupon-info {
+        width: 100%;
+        flex-basis: 100%;
+    }
+}

@@ -5,6 +5,9 @@
 
 	<form id="review-form" action="${pageContext.request.contextPath}/review/write" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="odId" value="${writeInfo.odId}">
+		<c:if test="${not empty returnUrl}">
+		<input type="hidden" name="returnUrl" value="<c:out value='${returnUrl}'/>">
+		</c:if>
 
 		<!-- 1. 상단 히어로 영역: 소개글 + 상품 카드가 나란히 배치 -->
 		<div class="review-hero">

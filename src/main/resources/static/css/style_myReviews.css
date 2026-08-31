@@ -1,0 +1,254 @@
+@charset "utf-8";
+
+/* ================================
+   내가 쓴 리뷰
+================================ */
+
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .my-reviews-page로 스코프할 것 */
+.my-reviews-page {
+    background-color: #f6efe4;
+    min-height: 100vh;
+}
+
+.my-reviews-page .page-content {
+    width: 800px;
+    margin: 0 auto;
+    padding: 50px 0 80px;
+}
+
+.my-reviews-page .page-title {
+    margin: 0 0 24px;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    color: #222;
+}
+
+.my-reviews-page .flash-message {
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.my-reviews-page .flash-success {
+    background-color: #dcf1e2;
+    color: #2f9d5c;
+}
+
+.my-reviews-page .flash-error {
+    background-color: #fbe3d3;
+    color: #c1592f;
+}
+
+.my-reviews-page .review-list[hidden] {
+    display: none;
+}
+
+.my-reviews-page .review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.my-reviews-page .review-card {
+    padding: 20px 24px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.my-reviews-page .review-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.my-reviews-page .review-thumb {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    background-color: #f0ece3;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.my-reviews-page .review-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.my-reviews-page .review-thumb .no-image-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #aaa;
+    text-align: center;
+}
+
+.my-reviews-page .review-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.my-reviews-page .review-product-name {
+    margin: 0 0 2px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+}
+
+.my-reviews-page .review-option-name {
+    margin: 0 0 6px;
+    font-size: 13px;
+    color: #888;
+}
+
+.my-reviews-page .review-stars {
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.my-reviews-page .review-stars .star {
+    color: #ddd;
+}
+
+.my-reviews-page .review-stars .star.is-filled {
+    color: #e0a832;
+}
+
+.my-reviews-page .review-date {
+    flex-shrink: 0;
+    font-size: 13px;
+    color: #999;
+}
+
+.my-reviews-page .review-text {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    white-space: pre-wrap;
+}
+
+.my-reviews-page .review-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.my-reviews-page .review-image {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.my-reviews-page .review-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 12px;
+    border-top: 1px dashed #eee;
+}
+
+.my-reviews-page .btn-delete-review {
+    padding: 8px 16px;
+    border: 1px solid #e5b0ac;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #c0392b;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.my-reviews-page .btn-delete-review:hover {
+    background-color: #fdf1f0;
+}
+
+.my-reviews-page .review-empty[hidden] {
+    display: none;
+}
+
+.my-reviews-page .review-empty {
+    padding: 80px 20px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+/* 페이지네이션 (style_order.css의 .pagination과 동일한 형식) */
+.my-reviews-page .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 32px;
+}
+
+.my-reviews-page .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #e5e0d8;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #777;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.my-reviews-page .page-link:hover {
+    border-color: #d8c3a5;
+    text-decoration: none;
+}
+
+.my-reviews-page .page-link.is-active {
+    background-color: #e9dcc6;
+    border-color: #e9dcc6;
+    color: #5c4a2f;
+    font-weight: 700;
+}
+
+.my-reviews-page .page-prev,
+.my-reviews-page .page-next {
+    color: #555;
+}
+
+.my-reviews-page .review-back {
+    margin-top: 32px;
+    text-align: center;
+}
+
+.my-reviews-page .btn-back-mypage {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    padding: 0 28px;
+    border: 1px solid #d8d3cc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #555;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.my-reviews-page .btn-back-mypage:hover {
+    background-color: #f8f6f2;
+    text-decoration: none;
+}

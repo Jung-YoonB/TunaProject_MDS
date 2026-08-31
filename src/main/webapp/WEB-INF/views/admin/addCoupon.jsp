@@ -5,7 +5,9 @@
 
 <%-- header.jsp가 모든 CSS를 전역으로 로드하므로, 이 페이지의 배경/폭 스타일이 다른 페이지의
      공용 <body>/<main>에 새지 않도록 이 wrapper 안에서만 적용되게 스코프한다 --%>
-<div class="add-coupon-page">
+<div class="add-coupon-page"
+     data-register-url="<c:url value='/admin/coupon/add'/>"
+     data-list-url="<c:url value='/admin/coupon'/>">
 <div class="add-coupon-page-card">
 
         <!-- 제목 -->
@@ -19,6 +21,7 @@
                 class="form-input"
                 id="couponNameInput"
                 name="couponName"
+                maxlength="50"
                 placeholder="쿠폰명을 입력하세요">
         </div>
 
@@ -42,6 +45,7 @@
                 class="form-textarea"
                 id="couponTextInput"
                 name="couponText"
+                maxlength="300"
                 placeholder="쿠폰설명을 입력하세요"></textarea>
         </div>
 
@@ -78,72 +82,6 @@
 
     <%-- header.jsp가 연 <main>은 여기서 안 닫음 — footer.jsp의 </main>이 닫아준다 --%>
 
-    <script>
-        // 오늘 날짜
-        const today = new Date().toISOString().split("T")[0];
-
-        const startDate = document.getElementById("startDate");
-        const endDate = document.getElementById("endDate");
-
-        // 발급일은 오늘 이전 선택 불가
-        startDate.min = today;
-
-        // 발급일을 선택하면 종료일은 발급일 이전 선택 불가
-        startDate.addEventListener("change", function () {
-            endDate.min = this.value;
-        });
-
-        // 쿠폰 발급
-        document.getElementById("registerCouponButton").addEventListener("click", function () {
-
-            const couponName = document.getElementById("couponNameInput").value.trim();
-            const discountPercent = document.getElementById("discountPercentInput").value;
-            const couponText = document.getElementById("couponTextInput").value.trim();
-            const endDateValue = endDate.value;
-
-            if (!couponName) {
-                alert("쿠폰명을 입력해 주세요.");
-                return;
-            }
-            if (!discountPercent) {
-                alert("할인율을 입력해 주세요.");
-                return;
-            }
-            if (!endDateValue) {
-                alert("종료일을 선택해 주세요.");
-                return;
-            }
-
-            const params = new URLSearchParams();
-            params.append("couponName", couponName);
-            params.append("discountPercent", discountPercent);
-            params.append("couponText", couponText);
-            if (startDate.value) {
-                params.append("startDate", startDate.value);
-            }
-            params.append("endDate", endDateValue);
-
-            const button = this;
-            button.disabled = true;
-
-            fetch("<c:url value='/admin/coupon/add'/>", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString()
-            })
-                .then(function (response) { return response.json(); })
-                .then(function (result) {
-                    alert(result.message || (result.success ? "쿠폰이 등록되었습니다." : "쿠폰 등록에 실패했습니다."));
-                    if (result.success) {
-                        location.href = "<c:url value='/admin/coupon'/>";
-                    }
-                })
-                .catch(function () {
-                    alert("쿠폰 등록 중 오류가 발생했습니다.");
-                })
-                .finally(function () {
-                    button.disabled = false;
-                });
-        });
-    </script>
+    <script src="<c:url value='/js/admin/adminCouponService.js'/>"></script>
+    <script src="<c:url value='/js/views/addCoupon.js'/>"></script>
 	<jsp:include page="/WEB-INF/views/common/footer.jsp"/>

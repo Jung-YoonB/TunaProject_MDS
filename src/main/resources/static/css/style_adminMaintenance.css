@@ -1,0 +1,116 @@
+@charset "utf-8";
+
+/* ================================
+   관리자 - 파일 정합성 검사
+================================ */
+
+.admin-maintenance-page {
+    background-color: #f6efe4;
+    min-height: 100vh;
+}
+
+.admin-maintenance-page .page-content {
+    width: 900px;
+    margin: 0 auto;
+    padding: 40px 0 80px;
+}
+
+.admin-maintenance-page .page-title {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+}
+
+.admin-maintenance-page .page-subtitle {
+    margin: 0 0 24px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #888;
+}
+
+.admin-maintenance-page .check-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background-color: #4b433d;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.admin-maintenance-page .check-button:hover {
+    background-color: #332d29;
+}
+
+.admin-maintenance-page .result-section {
+    margin-top: 24px;
+    padding: 24px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.admin-maintenance-page .result-idle,
+.admin-maintenance-page .result-empty {
+    margin: 0;
+    font-size: 14px;
+    color: #888;
+}
+
+.admin-maintenance-page .issue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.admin-maintenance-page .issue-table th,
+.admin-maintenance-page .issue-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #f2ede4;
+}
+
+.admin-maintenance-page .issue-table th {
+    color: #888;
+    font-weight: 600;
+}
+
+.admin-maintenance-page .issue-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-maintenance-page .issue-badge.orphan {
+    background-color: #fdecea;
+    color: #b3261e;
+}
+
+.admin-maintenance-page .issue-badge.missing {
+    background-color: #fff4e0;
+    color: #a15c00;
+}
+
+.admin-maintenance-page .delete-orphan-button {
+    padding: 4px 10px;
+    font-size: 13px;
+    color: #b3261e;
+    background-color: #fff;
+    border: 1px solid #b3261e;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.admin-maintenance-page .delete-orphan-button:hover {
+    background-color: #fdecea;
+}
+
+.admin-maintenance-page .delete-orphan-button:disabled {
+    color: #bbb;
+    border-color: #ddd;
+    cursor: default;
+}

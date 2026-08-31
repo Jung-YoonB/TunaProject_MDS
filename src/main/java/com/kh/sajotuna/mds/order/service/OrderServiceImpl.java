@@ -8,12 +8,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MyPageCouponDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
 import com.kh.sajotuna.mds.order.model.dto.CheckoutDTO;
 import com.kh.sajotuna.mds.order.model.dto.OrderItemDTO;
 import com.kh.sajotuna.mds.order.model.dto.PaymentViewDTO;
 import com.kh.sajotuna.mds.order.model.mapper.OrderMapper;
+import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,7 +35,7 @@ public class OrderServiceImpl implements OrderService {
 			totalPrice += i.getOptionPrice() * i.getQty();
 		}
 		// 보유 쿠폰 조회
-		List<MyPageCouponDTO> couponList = memberMapper.selectCouponsByMemberId(memberId);
+		List<CouponDTO> couponList = memberMapper.selectCouponsByMemberId(memberId);
 		
 		// 데이터 통합
 		pvData.setItemList(itemList);
@@ -61,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
 			totalPrice += i.getOptionPrice() * i.getQty();
 		}
 		// 보유 쿠폰 조회
-		List<MyPageCouponDTO> couponList = memberMapper.selectCouponsByMemberId(memberId);
+		List<CouponDTO> couponList = memberMapper.selectCouponsByMemberId(memberId);
 				
 		// 데이터 통합
 		pvData.setItemList(itemList);
