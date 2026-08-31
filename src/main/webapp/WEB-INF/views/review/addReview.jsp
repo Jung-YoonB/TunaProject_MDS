@@ -4,8 +4,10 @@
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
 	<form id="review-form" action="${pageContext.request.contextPath}/review/write" method="post" enctype="multipart/form-data">
-		<input type="hidden" name="memberId" value="${member.memberId}">
-		<input type="hidden" name="odId" value="${orderDetail.odId}">
+		<input type="hidden" name="odId" value="${writeInfo.odId}">
+		<c:if test="${not empty returnUrl}">
+		<input type="hidden" name="returnUrl" value="<c:out value='${returnUrl}'/>">
+		</c:if>
 
 		<!-- 1. 상단 히어로 영역: 소개글 + 상품 카드가 나란히 배치 -->
 		<div class="review-hero">
@@ -18,26 +20,18 @@
 				</p>
 			</div>
 
-			<!--
-				주의: 아래 EL 표현식(${product.productName} 등)은 서버 컨트롤러에서
-				product / option / orderDetail / productImages 모델을 내려주지 않으면
-				빈 값으로 렌더링됩니다. 현재는 서버 연동 전이라 마크업 구조만 확인하는 용도입니다.
-			-->
 			<div class="gift-summary">
 				<h3>구매하신 선물 내역</h3>
 				<section class="review-product-card" aria-label="리뷰 작성 상품 정보">
 					<div class="product-thumbnail">
-						<%-- PRODUCT_TITLE_IMAGE 값이 0인 이미지만 대표 이미지로 노출 --%>
-						<c:forEach var="img" items="${productImages}">
-							<c:if test="${img.productTitleImage == 0}">
-								<img src="${img.productImagePath}${img.productImageSaveName}" alt="${product.productName}">
-							</c:if>
-						</c:forEach>
+						<c:if test="${not empty writeInfo.productImageSaveName}">
+							<img src="${writeInfo.productImagePath}${writeInfo.productImageSaveName}" alt="${writeInfo.productName}">
+						</c:if>
 					</div>
 					<div class="product-info">
-						<strong class="product-name">$상품명{product.productName}</strong>
-						<strong class="product-option-name">$옵션명{option.optionName}</strong>
-						<p class="product-price"><c:out value="$가격{orderDetail.priceFix}"/>원</p>
+						<strong class="product-name">${writeInfo.productName}</strong>
+						<strong class="product-option-name">${writeInfo.optionName}</strong>
+						<p class="product-price"><c:out value="${writeInfo.priceFix}"/>원</p>
 					</div>
 				</section>
 			</div>
@@ -85,6 +79,6 @@
 		</div>
 	</form>
 
-<script src="/js/review/addreview.js"></script>
+<script src="<c:url value='/js/views/addreview.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

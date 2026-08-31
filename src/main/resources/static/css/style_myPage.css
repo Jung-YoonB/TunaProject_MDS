@@ -1,156 +1,387 @@
-* {
-    box-sizing: border-box;
+@charset "utf-8";
+
+/* ================================
+   회원 - 마이페이지
+   (admin/style_admin_mypage.css의 프로필 카드 + 아이콘 타일 그리드 형식을 그대로 가져와 통일)
+================================ */
+
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .member-mypage-page로 스코프할 것 */
+.member-mypage-page {
+    background-color: #f6efe4;
+    min-height: 100vh;
 }
 
-body {
-    margin: 0;
-    background-color: #f7f7f7;
-    font-family: Arial, sans-serif;
-    color: #333;
+.member-mypage-page .page-content {
+    width: 720px;
+    margin: 0 auto;
+    padding: 40px 0 80px;
 }
 
-main {
-    width: 900px;
-    margin: 50px auto;
+.member-mypage-page .page-title {
+    margin: 0 0 24px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
 }
 
-/* 제목 */
-#title {
-    background-color: white;
-    border: 1px solid #ddd;
-    padding: 25px;
+/* ---- 공통 카드 ---- */
+.member-mypage-page .card {
+    padding: 24px;
     margin-bottom: 20px;
-    font-size: 26px;
-    font-weight: bold;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
 }
 
-/* 회원 정보 */
-#MemberInfo {
-    background-color: white;
-    border: 1px solid #ddd;
-    padding: 25px;
-    margin-bottom: 20px;
+/* ---- 프로필 카드 ---- */
+.member-mypage-page .profile-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #f2ede4;
 }
 
-#MemberInfo h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 20px;
-}
-
-.member-info-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px 30px;
-}
-
-.member-info-item {
+.member-mypage-page .profile-identity {
     display: flex;
     align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #eee;
+    gap: 16px;
 }
 
-.member-label {
-    width: 80px;
-    font-weight: bold;
+.member-mypage-page .avatar-circle {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ececec;
+    border-radius: 50%;
 }
 
-.member-value {
+.member-mypage-page .avatar-icon-svg {
+    width: 32px;
+    height: 32px;
+    fill: none;
+    stroke: #999;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.member-mypage-page .profile-name-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.member-mypage-page .profile-name-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.member-mypage-page .profile-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+}
+
+.member-mypage-page .profile-grade-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background-color: #f6efe4;
+    color: #a8834f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.member-mypage-page .profile-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #888;
+}
+
+.member-mypage-page .btn-edit-member {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
     color: #555;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
 }
 
-/* 정보 수정 */
-#EditMember {
-    margin-top: 20px;
-    text-align: right;
+.member-mypage-page .btn-edit-member:hover {
+    background-color: #f8f6f2;
+    text-decoration: none;
 }
 
-#EditMember button,
-#EditMember a {
-    display: inline-block;
-    padding: 10px 20px;
-    border: 1px solid #ccc;
-    background-color: white;
-    color: #333;
+/* ---- 라벨/값 행 ---- */
+.member-mypage-page .info-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.member-mypage-page .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f2ede4;
+}
+
+.member-mypage-page .info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.member-mypage-page .info-label {
+    font-size: 13px;
+    color: #888;
+}
+
+.member-mypage-page .info-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #222;
+}
+
+.member-mypage-page .info-row-link {
+    color: inherit;
     text-decoration: none;
     cursor: pointer;
 }
 
-/* 빠른 메뉴 */
-#QuickMenu {
-    background-color: white;
-    border: 1px solid #ddd;
-    padding: 25px;
-    margin-bottom: 20px;
+.member-mypage-page .info-row-link:hover {
+    text-decoration: none;
 }
 
-#QuickMenu h2 {
-    margin-top: 0;
-    font-size: 20px;
+.member-mypage-page .info-row-link:hover .info-label,
+.member-mypage-page .info-row-link:hover .info-value {
+    color: #a8834f;
 }
 
-.quick-menu-list {
+.member-mypage-page .info-chevron {
+    color: #ccc;
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* ---- 아이콘 타일 그리드(빠른 메뉴 / 내 선물 관리 / 고객센터 공용) ---- */
+.member-mypage-page .quick-menu-section {
+    margin-top: 8px;
+}
+
+.member-mypage-page .section-title {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.member-mypage-page .quick-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    padding: 0;
+    margin: 0 0 24px;
+    list-style: none;
+}
+
+.member-mypage-page .quick-menu-tile {
+    position: relative;
     display: flex;
-    gap: 12px;
-}
-
-.quick-menu-item {
-    flex: 1;
-    padding: 20px 10px;
-    border: 1px solid #ddd;
-    background-color: white;
-    text-align: center;
-    cursor: pointer;
-}
-
-/* 각 관리 영역 */
-.my-section {
-    background-color: white;
-    border: 1px solid #ddd;
-    padding: 25px;
-    margin-bottom: 20px;
-}
-
-.my-section h2 {
-    margin-top: 0;
-    font-size: 20px;
-}
-
-.menu-list {
-    display: flex;
-    gap: 12px;
-}
-
-.menu-item {
-    flex: 1;
-    padding: 18px;
-    border: 1px solid #ddd;
-    background-color: white;
-    text-align: center;
-    cursor: pointer;
-}
-
-/* 리뷰 영역 */
-#MyReview {
-    text-align: center;
-}
-
-.review-message {
-    padding: 25px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px 12px;
+    background-color: #fff;
     border: 1px solid #eee;
-    margin-bottom: 15px;
-    color: #555;
+    border-radius: 10px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color .15s, border-color .15s;
 }
 
-#ReviewButton {
-    padding: 10px 25px;
-    border: 1px solid #ccc;
-    background-color: white;
-    cursor: pointer;
+.member-mypage-page .quick-menu-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background-color: #f6efe4;
+    color: #a8834f;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
 }
 
-/* 마우스 효과 */
-.quick-menu-item:hover, .menu-item:hover, button:hover, #EditMember a:hover {
-    background-color: #f5f5f5;
+.member-mypage-page .quick-menu-tile:hover,
+.member-mypage-page .quick-menu-tile:focus {
+    background-color: #fbf8f2;
+    border-color: #e2d9c8;
+    text-decoration: none;
+}
+
+.member-mypage-page .quick-menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #f6efe4;
+    border-radius: 8px;
+}
+
+.member-mypage-page .quick-menu-icon svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: #a8834f;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.member-mypage-page .quick-menu-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+}
+
+/* ---- 리스트형 메뉴(주문관리 / 고객센터) ---- */
+.member-mypage-page .list-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.member-mypage-page .list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f2ede4;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color .15s;
+}
+
+.member-mypage-page .list-row:last-child {
+    border-bottom: none;
+}
+
+.member-mypage-page .list-row:hover,
+.member-mypage-page .list-row:focus {
+    background-color: #fbf8f2;
+    text-decoration: none;
+}
+
+.member-mypage-page .list-row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.member-mypage-page .list-row-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+}
+
+.member-mypage-page .list-row-desc {
+    font-size: 13px;
+    color: #999;
+}
+
+.member-mypage-page .list-row-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.member-mypage-page .list-row-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background-color: #f6efe4;
+    color: #a8834f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.member-mypage-page .list-row-chevron {
+    color: #ccc;
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* ---- 리뷰 작성 CTA 카드 ---- */
+.member-mypage-page .review-cta-card {
+    text-align: center;
+}
+
+.member-mypage-page .review-cta-desc {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: #666;
+}
+
+.member-mypage-page .review-cta-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 6px;
+    background-color: #e9dcc6;
+    color: #5c4a2f;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.member-mypage-page .review-cta-badge:hover {
+    background-color: #ddc9a3;
+    text-decoration: none;
+}
+
+.member-mypage-page .review-cta-link {
+    display: block;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #888;
+    text-decoration: none;
+}
+
+.member-mypage-page .review-cta-link:hover {
+    color: #5c4a2f;
+    text-decoration: underline;
 }

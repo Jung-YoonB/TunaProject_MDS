@@ -1,14 +1,18 @@
-body {
-           margin: 0;
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .add-coupon-page로 스코프할 것.
+   원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, JSP 쪽엔 wrapper가 하나뿐이라
+   바깥 배경은 .add-coupon-page에, 흰 카드는 그 안의 .add-coupon-page-card에 나눠 담는다 */
+.add-coupon-page {
            background-color: #f8f6f2;
-           font-family: Arial, sans-serif;
-           color: #333;
+           min-height: 100vh;
+           padding: 70px 0;
+           box-sizing: border-box;
        }
 
-       /* 전체 영역 */
-       main {
+       /* 전체 영역 (흰 카드) */
+       .add-coupon-page-card {
            width: 600px;
-           margin: 70px auto;
+           margin: 0 auto;
            padding: 40px;
            background-color: white;
            border: 1px solid #e5e0d8;
@@ -17,7 +21,7 @@ body {
        }
 
        /* 제목 */
-       #title {
+       .add-coupon-page #title {
            margin-bottom: 35px;
            font-size: 28px;
            font-weight: bold;

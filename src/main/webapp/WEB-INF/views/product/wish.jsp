@@ -38,8 +38,9 @@
 
 <%-- TODO(data binding): 찜 목록은 header.jsp가 관리하는 localStorage(wishItems) 임시 구현임.
 	 실제로는 Wish 테이블 및 회원 세션과 연동해야 함. 정렬 중 "인기순"은 실제 인기 지표가 없어
-	 현재는 담긴 순서를 그대로 사용함. 별점(rating/reviewCount)은 백엔드에서 통계 API 작업 중이라
-	 현재는 테스트용 임의값이며, 완성되면 실제 값으로 교체 필요. 비어있으면 예시 8개로 채워 테스트 가능하게 함. --%>
+	 현재는 담긴 순서를 그대로 사용함. 별점(rating/reviewCount) 집계 자체는 상품 상세/목록(detailPage.xml,
+	 product.xml)에 이미 구현되어 있음 - 이 화면엔 아직 연동만 안 돼서 테스트용 임의값을 쓰는 중이며,
+	 연동되면 실제 값으로 교체 필요. 비어있으면 예시 8개로 채워 테스트 가능하게 함. --%>
 <script>
 (function () {
 	var DEFAULT_ITEMS = [

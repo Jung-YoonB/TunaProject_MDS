@@ -70,9 +70,12 @@
 		where p.product_id = #{productId}
 	</select>
 
+	<!-- CouponDTO가 admin과 공용 DTO가 되면서 createdAt/deadline(LocalDate, admin 전용)이 추가됐지만,
+	     스토어프론트는 원래대로 문자열 표시용 필드(createdAtStr/deadlineStr)만 채우면 됨 -->
 	<select id="getCoupons" resultType="CouponDTO" >
-		select coupon_id, coupon_name, coupon_text, to_char(CREATED_AT, 'YYYY-MM-DD') as created_at,
-		to_char(DEADLINE, 'YYYY-MM-DD') as deadline
+		select coupon_id, coupon_name, coupon_value, coupon_text,
+			to_char(CREATED_AT, 'YYYY-MM-DD') as created_at_str,
+			to_char(DEADLINE, 'YYYY-MM-DD') as deadline_str
 		from COUPON
 	</select>
 

@@ -1,8 +1,12 @@
-body {
-            margin: 0;
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .admin-coupon-view-page로 스코프할 것.
+   원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, 바깥 배경은 .admin-coupon-view-page에,
+   흰 카드는 그 안의 .admin-coupon-view-page-card에 나눠 담는다 */
+        .admin-coupon-view-page {
             background-color: #f8f6f2;
-            font-family: Arial, sans-serif;
-            color: #333;
+            min-height: 100vh;
+            padding: 50px 0;
+            box-sizing: border-box;
         }
 
 
@@ -10,9 +14,9 @@ body {
            전체 영역
         ================================= */
 
-        main {
+        .admin-coupon-view-page-card {
             width: 800px;
-            margin: 50px auto;
+            margin: 0 auto;
             padding: 40px;
 
             background-color: white;
@@ -27,7 +31,7 @@ body {
            제목
         ================================= */
 
-        #title {
+        .admin-coupon-view-page #title {
             margin-bottom: 30px;
 
             font-size: 28px;
@@ -79,6 +83,28 @@ body {
             gap: 8px;
 
             margin-bottom: 30px;
+        }
+
+        #coupon-state-filter {
+            flex: 0 0 150px;
+
+            height: 42px;
+            padding: 0 10px;
+
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+
+            background-color: white;
+            color: #444;
+
+            font-size: 13px;
+
+            cursor: pointer;
+        }
+
+        #coupon-state-filter:focus {
+            border-color: #b59b7b;
+            outline: none;
         }
 
         #coupon-search {
@@ -141,6 +167,14 @@ body {
             font-weight: normal;
         }
 
+        .coupon-notice {
+            margin: 0 0 15px;
+
+            color: #c1592f;
+
+            font-size: 12px;
+        }
+
 
         /* ================================
            목록 관리
@@ -159,6 +193,13 @@ body {
             gap: 12px;
         }
 
+        /* .select-menu가 display:flex를 지정하고 있어서, 브라우저 기본 hidden 속성 규칙
+           ([hidden]{display:none})보다 이 author 규칙이 항상 우선함 - 그래서 hidden을 줘도
+           안 숨겨지는 문제가 있었음. 이 규칙으로 명시적으로 다시 숨김 처리 */
+        #selectionControls[hidden] {
+            display: none;
+        }
+
         .select-menu button {
             padding: 0;
 
@@ -175,6 +216,41 @@ body {
         .select-menu button:hover {
             color: #333;
             text-decoration: underline;
+        }
+
+        .list-control-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #toggleSelectModeButton {
+            height: 32px;
+            padding: 0 12px;
+
+            border: 1px solid #ddd;
+            border-radius: 6px;
+
+            background-color: white;
+            color: #666;
+
+            font-size: 12px;
+
+            cursor: pointer;
+        }
+
+        #toggleSelectModeButton:hover {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* 선택 모드일 땐 같은 버튼이 "취소" 역할을 함 - 살짝 눌린 듯한 톤으로 구분.
+           .active처럼 흔한 이름 대신 .is-selecting을 써서 .coupon-status.active(진행중 배지)와
+           이름 자체가 겹치지 않게 함 - 지금은 ID 선택자라 우연히 안 부딪히지만 이름부터 다르게 두는 게 안전함 */
+        #toggleSelectModeButton.is-selecting {
+            background-color: #f0dfc0;
+            border-color: #b59b7b;
+            color: #5c4a2f;
         }
 
 
@@ -234,6 +310,8 @@ body {
         ================================= */
 
         .coupon-check {
+            display: none;
+
             width: 18px;
             height: 18px;
 
@@ -246,6 +324,11 @@ body {
             flex-shrink: 0;
         }
 
+        /* "삭제할 쿠폰 선택"으로 선택 모드에 들어갔을 때만 체크박스 노출 */
+        #couponCardList.selecting .coupon-check {
+            display: inline-block;
+        }
+
 
         /* ================================
            쿠폰 정보
@@ -255,11 +338,50 @@ body {
             flex: 1;
         }
 
-        .coupon-name {
-            margin-bottom: 7px;
+        /* 만료 여부 x 발급 이력 여부, 2x2 네 가지 조합을 카드 왼쪽 색 띠로 구분
+           (회색=만료·이력없음/안전하게 삭제 가능, 빨강=만료·이력있음/할인 이력 기록 보존 목적으로 의도적으로 안 지움,
+            초록=진행중·이력있음/정상 사용 중, 파랑=진행중·이력없음/아직 안 쓰인 신규) */
+        .coupon-card.state-expired-no-history {
+            border-left: 4px solid #9e9e9e;
+            background-color: #f7f7f7;
+        }
 
+        .coupon-card.state-expired-history {
+            border-left: 4px solid #c1592f;
+            background-color: #fdf8f4;
+        }
+
+        .coupon-card.state-active-history {
+            border-left: 4px solid #5b8c5a;
+            background-color: #f3f8f1;
+        }
+
+        .coupon-card.state-active-no-history {
+            border-left: 4px solid #5b7c99;
+            background-color: #f1f5f8;
+        }
+
+        .coupon-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 7px;
+        }
+
+        .coupon-name {
             font-size: 16px;
             font-weight: bold;
+        }
+
+        .history-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background-color: #fbe3d3;
+            color: #c1592f;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
         }
 
         .coupon-description {
@@ -307,12 +429,14 @@ body {
             text-align: center;
         }
 
-        .active {
+        /* .active/.expired는 이름이 흔해서 다른 페이지 CSS와 부딪힐 수 있어 페이지 클래스로 스코프함
+           (header.jsp가 모든 CSS를 전 페이지에 로드하는 구조라 스코프 없는 범용 클래스명은 위험) */
+        .admin-coupon-view-page .active {
             background-color: #eee7dd;
             color: #806746;
         }
 
-        .expired {
+        .admin-coupon-view-page .expired {
             background-color: #eee;
             color: #999;
         }
@@ -352,12 +476,113 @@ body {
 
 
         /* ================================
+           쿠폰 개별 삭제 아이콘
+        ================================= */
+
+        .delete-icon-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 36px;
+            height: 36px;
+
+            border: 1px solid #e3c9c9;
+            border-radius: 50%;
+
+            background-color: white;
+            color: #b3453f;
+
+            font-size: 15px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .delete-icon-button:hover {
+            background-color: #fbecea;
+            border-color: #d99a95;
+
+            transform: scale(1.05);
+        }
+
+        .delete-icon-button:disabled {
+            border-color: #e0e0e0;
+            background-color: #f5f5f5;
+            color: #bbb;
+
+            cursor: not-allowed;
+        }
+
+        .delete-icon-button:disabled:hover {
+            background-color: #f5f5f5;
+            transform: none;
+        }
+
+
+        /* ================================
+           페이지네이션
+        ================================= */
+
+        .admin-coupon-view-page .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+
+            margin-top: 20px;
+        }
+
+        .admin-coupon-view-page .pagination ol {
+            display: flex;
+            gap: 6px;
+        }
+
+        .admin-coupon-view-page .pagination button {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 8px;
+
+            border: 1px solid #ddd;
+            border-radius: 6px;
+
+            background-color: #fff;
+            color: #555;
+
+            font-size: 13px;
+
+            cursor: pointer;
+        }
+
+        .admin-coupon-view-page .pagination button:hover {
+            border-color: #b59b7b;
+        }
+
+        .admin-coupon-view-page .pagination button.is-active {
+            background-color: #f0dfc0;
+            border-color: #f0dfc0;
+            color: #5c4a2f;
+            font-weight: 700;
+        }
+
+        .admin-coupon-view-page .pagination button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .admin-coupon-view-page .pagination button:disabled:hover {
+            border-color: #ddd;
+        }
+
+
+        /* ================================
            반응형
         ================================= */
 
         @media (max-width: 850px) {
 
-            main {
+            .admin-coupon-view-page-card {
                 width: calc(100% - 30px);
 
                 margin: 30px auto;

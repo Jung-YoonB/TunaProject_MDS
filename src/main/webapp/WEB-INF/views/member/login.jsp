@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
@@ -13,6 +14,10 @@
 		</c:if>
 
         <form action="/member/login" method="post">
+            <c:if test="${not empty redirectURL}">
+                <input type="hidden" name="redirectURL" value="${fn:escapeXml(redirectURL)}">
+            </c:if>
+
             <!-- 아이디 -->
             <div class="login-field">
                 <label for="login_id">아이디</label>

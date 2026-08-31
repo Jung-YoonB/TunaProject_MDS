@@ -2,21 +2,19 @@ package com.kh.sajotuna.mds.product.model.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
+import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
+import com.kh.sajotuna.mds.review.model.dto.ReviewImagesDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewDTO;
-import com.kh.sajotuna.mds.product.model.dto.detail.Review.ReviewImagesDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
 import com.kh.sajotuna.mds.product.model.mapper.ProductMapper;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -26,9 +24,9 @@ public class ProductServiceImpl implements ProductService{
 	private final ProductMapper mapper;
 	
 	@Override
-	public MainPageDTO getList() {
+	public MainPageDTO getList(SearchDTO search) {
 		
-		List<ProductListDTO> list = mapper.getList();
+		List<ProductListDTO> list = mapper.getList(search);
 		List<BannerDTO> bannerList = mapper.bannerList();
 		MainPageDTO dto = new MainPageDTO(list, bannerList);
 		System.out.println("product list:: " + list.toString());
