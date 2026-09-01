@@ -51,6 +51,11 @@ public class MemberController {
 	public String myPageForm(HttpSession session, Model model, RedirectAttributes redirectAttr) {
 
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		
+		if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
 
 		MemberDTO loginMember = service.getMemberByMemberId(member.getMemberId());
 		if (loginMember == null) {
@@ -76,10 +81,15 @@ public class MemberController {
 
 	@GetMapping("/couponView")
 	public String userCouponViewForm(@RequestParam(defaultValue = "1") int page,
-			HttpSession session, Model model) {
+			HttpSession session, Model model, RedirectAttributes redirectAttr) {
 
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 
+		if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
+		
 		if(member.getRole().equals("USER")) {
 
 			int totalPages = service.totalCouponPages(member.getMemberId());
@@ -107,10 +117,15 @@ public class MemberController {
 	public String userOrderDeliveryForm(
 			@RequestParam(defaultValue = "all") String status,
 			@RequestParam(defaultValue = "1") int page,
-			HttpSession session, Model model) {
+			HttpSession session, Model model,
+			RedirectAttributes redirectAttr) {
 
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 
+		if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
 
 
 		if(member.getRole().equals("USER")) {
@@ -252,9 +267,15 @@ public class MemberController {
 	}
 	
 	@GetMapping("/updateInfo")
-	public String updateInfoForm(HttpSession session, Model model) {
+	public String updateInfoForm(HttpSession session, Model model,
+					RedirectAttributes redirectAttr) {
 		
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		
+		if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
 		
 		if("ADMIN".equals(member.getRole())) {
 			return "admin/adminPage";  // 관리자 데이터 수정은 미구현
@@ -394,19 +415,22 @@ public class MemberController {
 
 	@PostMapping("/updatePassword")
 	@ResponseBody
-	public ApiResponse<Boolean> updatePassword(HttpSession session, String newPassword) {
-		try {
-			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-			if (member == null) {
-				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
-			}
-			boolean isUpdate = service.passwordUpdate(member.getMemberId(), newPassword);
-
-			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
-			return ApiResponse.success(message, isUpdate);
-		} catch (IllegalArgumentException | IllegalStateException e) {
-			return ApiResponse.fail(e.getMessage());
-		}
+	public ApiResponse<Boolean> updatePassword(
+	        HttpSession session,
+	        @RequestParam String currentPassword,
+	        @RequestParam String newPassword) {
+	    
+	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	    if (member == null) {
+	        return ApiResponse.fail("로그인이 필요합니다.");
+	    }
+	    
+	    try {
+	        boolean result = service.passwordUpdate(member.getMemberId(), currentPassword, newPassword);
+	        return ApiResponse.success(result);
+	    } catch (IllegalArgumentException | IllegalStateException e) {
+	        return ApiResponse.fail(e.getMessage());
+	    }
 	}
 	
 	@PostMapping("/withdraw")

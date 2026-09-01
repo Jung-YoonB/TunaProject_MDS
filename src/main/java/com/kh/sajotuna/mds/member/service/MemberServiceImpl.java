@@ -1,5 +1,7 @@
 package com.kh.sajotuna.mds.member.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import org.springframework.dao.DuplicateKeyException;
@@ -49,6 +51,9 @@ public class MemberServiceImpl implements MemberService{
 		// 비밀번호 암호화 처리
 		String encodePw = passwordEncoder.encode(member.getLoginPw());
 		member.setLoginPw(encodePw);
+		
+		// role에 user 부여
+		member.setRole("USER");
 				
 		// 체크 된 데이터를 저장
 		try {
@@ -143,49 +148,70 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	@Transactional
 	public boolean nicknameUpdate(Long memberId, String nickname) {
-	if (nickname == null || nickname.isBlank()) {
-	throw new IllegalArgumentException("닉네임은 비워둘 수 없습니다.");
-	}
-	if (isNicknameCheck(nickname)) {
-	throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
-	}
-	MemberDTO currentMember = mapper.selectByMemberId(memberId);
-	if (currentMember != null && nickname.equals(currentMember.getNickname())) {
-	return true;
-	}
-	return mapper.updateNickname(memberId, nickname) > 0;
+		if (nickname == null || nickname.isBlank()) {
+			throw new IllegalArgumentException("닉네임은 비워둘 수 없습니다.");
+		}
+		
+		MemberDTO currentMember = mapper.selectByMemberId(memberId);
+		if (currentMember == null) {
+			throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+		}
+		
+		if (nickname.equals(currentMember.getNickname())) {
+			return true; // 기존 값과 동일하면 그대로 성공 처리
+		}
+		
+		if (isNicknameCheck(nickname)) {
+			throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
+		}
+		
+		return mapper.updateNickname(memberId, nickname) > 0;
 	}
 	
 	@Override
 	@Transactional
 	public boolean phoneUpdate(Long memberId, String phone) {
-	if (phone == null || phone.isBlank() || !phone.matches("^01[0-9]{8,9}$")) {
-	throw new IllegalArgumentException("올바른 전화번호 형식이 아닙니다.");
-	}
-	if (isPhoneCheck(phone)) {
-	throw new IllegalStateException("이미 사용 중인 연락처입니다.");
-	}
-	MemberDTO currentMember = mapper.selectByMemberId(memberId);
-	if (currentMember != null && phone.equals(currentMember.getPhone())) {
-	return true;
-	}
-	return mapper.updatePhone(memberId, phone) > 0;
+		if (phone == null || phone.isBlank() || !phone.matches("^01[0-9]{8,9}$")) {
+			throw new IllegalArgumentException("올바른 전화번호 형식이 아닙니다.");
+		}
+		
+		MemberDTO currentMember = mapper.selectByMemberId(memberId);
+		if (currentMember == null) {
+			throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+		}
+		
+		if (phone.equals(currentMember.getPhone())) {
+			return true; // 기존 값과 동일하면 그대로 성공 처리
+		}
+		
+		if (isPhoneCheck(phone)) {
+			throw new IllegalStateException("이미 사용 중인 연락처입니다.");
+		}
+		
+		return mapper.updatePhone(memberId, phone) > 0;
 	}
 
 	@Override
 	@Transactional
 	public boolean emailUpdate(Long memberId, String email) {
-	if (email == null || email.isBlank() || !email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
-	throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
-	}
-	if (isEmailCheck(email)) {
-	throw new IllegalStateException("이미 사용 중인 이메일입니다.");
-	}
-	MemberDTO currentMember = mapper.selectByMemberId(memberId);
-	if (currentMember != null && email.equals(currentMember.getEmail())) {
-	return true;
-	}
-	return mapper.updateEmail(memberId, email) > 0;
+		if (email == null || email.isBlank() || !email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+			throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
+		}
+		
+		MemberDTO currentMember = mapper.selectByMemberId(memberId);
+		if (currentMember == null) {
+			throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+		}
+		
+		if (email.equals(currentMember.getEmail())) {
+			return true; // 기존 값과 동일하면 그대로 성공 처리
+		}
+		
+		if (isEmailCheck(email)) {
+			throw new IllegalStateException("이미 사용 중인 이메일입니다.");
+		}
+		
+		return mapper.updateEmail(memberId, email) > 0;
 	}
 
 	@Override
@@ -203,15 +229,29 @@ public class MemberServiceImpl implements MemberService{
 
 	@Override
 	@Transactional
-	public boolean birthUpdate(Long memberId, String birth) {
-	if (birth == null || birth.isBlank()) {
-	throw new IllegalArgumentException("생년월일은 비워둘 수 없습니다.");
-	}
-	MemberDTO currentMember = mapper.selectByMemberId(memberId);
-	if (currentMember != null && birth.equals(currentMember.getBirthStr())) {
-	return true;
-	}
-	return mapper.updateBirth(memberId, birth) > 0;
+	public boolean birthUpdate(Long memberId, String birthStr) {
+	    if (birthStr == null || birthStr.isBlank()) {
+	        throw new IllegalArgumentException("생년월일은 비워둘 수 없습니다.");
+	    }
+	    
+	    LocalDate birthDate;
+	    try {
+	        birthDate = LocalDate.parse(birthStr);
+	    } catch (DateTimeParseException e) {
+	        throw new IllegalArgumentException("올바른 생년월일 형식이 아닙니다.");
+	    }
+
+	    MemberDTO currentMember = mapper.selectByMemberId(memberId);
+	    if (currentMember == null) {
+	        throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+	    }
+	    
+	    // LocalDate 타입끼리 직접 비교가 가능해집니다
+	    if (birthDate.equals(currentMember.getBirth())) {
+	        return true;
+	    }
+	    
+	    return mapper.updateBirth(memberId, birthDate) > 0;
 	}
 
 	@Override
@@ -229,15 +269,33 @@ public class MemberServiceImpl implements MemberService{
 
 	@Override
 	@Transactional
-	public boolean passwordUpdate(Long memberId, String newPassword) {
-		if (newPassword == null || newPassword.isBlank() || !newPassword.matches("^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()])[a-zA-Z0-9!@#$%^&*()]{8,16}$")) {
-			throw new IllegalArgumentException("영어와 숫자, 특수문자가 최소 하나씩 들어가는 8~16자로 입력해주세요.");
-		}
-		String encodePw = passwordEncoder.encode(newPassword);
-		return mapper.updatePassword(memberId, encodePw) > 0;
+	public boolean passwordUpdate(Long memberId, String currentPassword, String newPassword) {
+	    if (newPassword == null || !newPassword.matches("^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()])[a-zA-Z0-9!@#$%^&*()]{8,16}$")) {
+	        throw new IllegalArgumentException("영어, 숫자, 특수문자를 포함한 8~16자로 입력해주세요.");
+	    }
+
+	    MemberDTO currentMember = mapper.selectByMemberId(memberId);
+	    if (currentMember == null) {
+	        throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+	    }
+
+	    // 현재 비밀번호 일치 여부 확인 (PasswordEncoder의 matches 활용)
+	    if (!passwordEncoder.matches(currentPassword, currentMember.getLoginPw())) {
+	        throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+	    }
+
+	    // 새 비밀번호가 기존 비밀번호와 동일한지 확인 (선택 사항)
+	    if (passwordEncoder.matches(newPassword, currentMember.getLoginPw())) {
+	        throw new IllegalArgumentException("기존 비밀번호와 다른 새로운 비밀번호를 입력해주세요.");
+	    }
+
+	    // 새 비밀번호 암호화 후 업데이트
+	    String encodedNewPassword = passwordEncoder.encode(newPassword);
+	    return mapper.updatePassword(memberId, encodedNewPassword) > 0;
 	}
 	
 	@Override
+	@Transactional
 	public boolean withdrawMember(Long memberId) {
 	    return mapper.withdrawMember(memberId) > 0;
 	}

@@ -47,7 +47,7 @@ loginPw.addEventListener('input', validatePassword);
 loginPwConfirm.addEventListener('input', validatePassword);
 
 let checkId = null;   // 아이디 중복체크 값
-const checkIdResult = document.querySelector("#id-check-notice");
+const checkIdResult = document.querySelector("#id-message");
 const loginIdInput = document.querySelector("#login_id");
 loginIdInput.addEventListener("input", function() {
     checkIdResult.textContent = "";
@@ -94,7 +94,7 @@ idCheckBtn.addEventListener("click", async function() {
 });
 
 let checkNickname = null;   // 닉네임 중복체크 값
-const checkNicknameResult = document.querySelector("#nickname-check-notice");
+const checkNicknameResult = document.querySelector("#nickname-message");
 const nicknameInput = document.querySelector("#nickname");
 nicknameInput.addEventListener("input", function() {
     checkNicknameResult.textContent = "";
@@ -133,7 +133,7 @@ nicknameCheckBtn.addEventListener("click", async function() {
 });
 
 let checkEmail = null;   // 이메일 중복체크 값
-const checkEmailResult = document.querySelector("#email-check-notice");
+const checkEmailResult = document.querySelector("#email-message");
 const emailInput = document.querySelector("#email");
 emailInput.addEventListener("input", function() {
     checkEmailResult.textContent = "";
@@ -178,7 +178,7 @@ emailCheckBtn.addEventListener("click", async function() {
 });
 
 let checkPhone = null;   // 연락처 중복체크 값
-const checkPhoneResult = document.querySelector("#phone-check-notice");
+const checkPhoneResult = document.querySelector("#phone-message");
 const phoneInput = document.querySelector("#phone");
 phoneInput.addEventListener("input", function() {
     this.value = this.value.replace(/[^0-9]/g, '');  // 숫자 이외의 입력 막기

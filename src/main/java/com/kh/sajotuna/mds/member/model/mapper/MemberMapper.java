@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.member.model.mapper;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -44,7 +45,7 @@ public interface MemberMapper {
 	int updatePhone(@Param("memberId") Long memberId, @Param("phone") String phone);
 	int updateEmail(@Param("memberId") Long memberId, @Param("email") String email);
 	int updateName(@Param("memberId") Long memberId, @Param("memberName") String memberName);
-	int updateBirth(@Param("memberId") Long memberId, @Param("birth") String birth);
+	int updateBirth(@Param("memberId") Long memberId, @Param("birth") LocalDate birth);
 	int updateGender(@Param("memberId") Long memberId, @Param("gender") String gender);
 	int updatePassword(@Param("memberId") Long memberId, @Param("newPassword") String newPassword);
 	

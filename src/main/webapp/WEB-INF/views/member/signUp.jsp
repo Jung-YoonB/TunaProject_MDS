@@ -52,7 +52,7 @@
 			                   id="gender-male"
 			                   name="gender"
 			                   value="M"
-			                   class="gender-radio">
+			                   class="gender-radio" checked>
 			            <label for="gender-male" class="gender-pill">남성</label>
 
 			            <input type="radio"
@@ -67,12 +67,15 @@
 			    <!-- 닉네임 -->
 			    <div id="Nickname">
 			        <label for="nickname">닉네임</label>
-			        <input type="text"
-			               id="nickname"
-			               name="nickname"
-			               class="signup-input"
-			               placeholder="닉네임을 입력해주세요">
-			        <p id="nickname-message" class="check-message"></p>
+					<div class="id-input-box">
+			       		<input type="text"
+			            		id="nickname"
+			            	  	name="nickname"
+			              		class="signup-input"
+			              	 	placeholder="닉네임을 입력해주세요">
+						<button type="button" id="CheckNickname" class="dup-check-btn">중복확인</button>
+					</div>
+			    <p id="nickname-message" class="check-message"></p>
 			    </div>
 
 			    <!-- 아이디 -->
@@ -114,22 +117,30 @@
 			    <!-- 휴대폰 번호 -->
 			    <div id="PhoneNumber">
 			        <label for="phone">휴대폰 번호</label>
-			        <input type="tel"
-			               id="phone"
-			               name="phone"
-			               class="signup-input"
-			               placeholder="휴대폰 번호를 입력해주세요">
-			    </div>
+					<div class="id-input-box">
+			        	<input type="tel"
+			             	  id="phone"
+			              	 name="phone"
+			             	  class="signup-input"
+			            	   placeholder="휴대폰 번호를 입력해주세요">
+						<button type="button" id="CheckPhone" class="dup-check-btn">중복확인</button>
+			    	</div>
+					<p id="phone-message" class="check-message"></p>
+				</div>
 
 			    <!-- 이메일 -->
 			    <div id="Email">
 			        <label for="email">이메일</label>
+					<div class="id-input-box">
 			        <input type="email"
 			               id="email"
 			               name="email"
 			               class="signup-input"
 			               placeholder="이메일을 입력해주세요">
-			    </div>
+					<button type="button" id="CheckEmail" class="dup-check-btn">중복확인</button>
+			    	</div>
+					<p id="email-message" class="check-message"></p>
+				</div>
 
 			    <!-- 개인정보 동의 -->
 			    <div id="PrivacyBox">
