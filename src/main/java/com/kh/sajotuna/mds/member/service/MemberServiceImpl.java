@@ -141,39 +141,100 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
+	@Transactional
 	public boolean nicknameUpdate(Long memberId, String nickname) {
-		return mapper.updateNickname(memberId, nickname) > 0;
+	if (nickname == null || nickname.isBlank()) {
+	throw new IllegalArgumentException("닉네임은 비워둘 수 없습니다.");
+	}
+	if (isNicknameCheck(nickname)) {
+	throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
+	}
+	MemberDTO currentMember = mapper.selectByMemberId(memberId);
+	if (currentMember != null && nickname.equals(currentMember.getNickname())) {
+	return true;
+	}
+	return mapper.updateNickname(memberId, nickname) > 0;
 	}
 	
 	@Override
+	@Transactional
 	public boolean phoneUpdate(Long memberId, String phone) {
-	    return mapper.updatePhone(memberId, phone) > 0;
+	if (phone == null || phone.isBlank() || !phone.matches("^01[0-9]{8,9}$")) {
+	throw new IllegalArgumentException("올바른 전화번호 형식이 아닙니다.");
+	}
+	if (isPhoneCheck(phone)) {
+	throw new IllegalStateException("이미 사용 중인 연락처입니다.");
+	}
+	MemberDTO currentMember = mapper.selectByMemberId(memberId);
+	if (currentMember != null && phone.equals(currentMember.getPhone())) {
+	return true;
+	}
+	return mapper.updatePhone(memberId, phone) > 0;
 	}
 
 	@Override
+	@Transactional
 	public boolean emailUpdate(Long memberId, String email) {
-	    return mapper.updateEmail(memberId, email) > 0;
+	if (email == null || email.isBlank() || !email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+	throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
+	}
+	if (isEmailCheck(email)) {
+	throw new IllegalStateException("이미 사용 중인 이메일입니다.");
+	}
+	MemberDTO currentMember = mapper.selectByMemberId(memberId);
+	if (currentMember != null && email.equals(currentMember.getEmail())) {
+	return true;
+	}
+	return mapper.updateEmail(memberId, email) > 0;
 	}
 
 	@Override
+	@Transactional
 	public boolean nameUpdate(Long memberId, String memberName) {
-	    return mapper.updateName(memberId, memberName) > 0;
+	if (memberName == null || memberName.isBlank()) {
+	throw new IllegalArgumentException("이름은 비워둘 수 없습니다.");
+	}
+	MemberDTO currentMember = mapper.selectByMemberId(memberId);
+	if (currentMember != null && memberName.equals(currentMember.getMemberName())) {
+	return true;
+	}
+	return mapper.updateName(memberId, memberName) > 0;
 	}
 
 	@Override
+	@Transactional
 	public boolean birthUpdate(Long memberId, String birth) {
-	    return mapper.updateBirth(memberId, birth) > 0;
+	if (birth == null || birth.isBlank()) {
+	throw new IllegalArgumentException("생년월일은 비워둘 수 없습니다.");
+	}
+	MemberDTO currentMember = mapper.selectByMemberId(memberId);
+	if (currentMember != null && birth.equals(currentMember.getBirthStr())) {
+	return true;
+	}
+	return mapper.updateBirth(memberId, birth) > 0;
 	}
 
 	@Override
+	@Transactional
 	public boolean genderUpdate(Long memberId, String gender) {
-	    return mapper.updateGender(memberId, gender) > 0;
+	if (gender == null || gender.isBlank() || (!gender.equals("M") && !gender.equals("F"))) {
+	throw new IllegalArgumentException("유효하지 않은 성별 형식입니다.");
+	}
+	MemberDTO currentMember = mapper.selectByMemberId(memberId);
+	if (currentMember != null && gender.equals(currentMember.getGender())) {
+	return true; // 이미 동일한 값인 경우 불필요한 업데이트 생략
+	}
+	return mapper.updateGender(memberId, gender) > 0;
 	}
 
 	@Override
+	@Transactional
 	public boolean passwordUpdate(Long memberId, String newPassword) {
+		if (newPassword == null || newPassword.isBlank() || !newPassword.matches("^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()])[a-zA-Z0-9!@#$%^&*()]{8,16}$")) {
+			throw new IllegalArgumentException("영어와 숫자, 특수문자가 최소 하나씩 들어가는 8~16자로 입력해주세요.");
+		}
 		String encodePw = passwordEncoder.encode(newPassword);
-	    return mapper.updatePassword(memberId, encodePw) > 0;
+		return mapper.updatePassword(memberId, encodePw) > 0;
 	}
 	
 	@Override

@@ -33,9 +33,11 @@ public class MemberDTO {
 	@Pattern(regexp="^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()])[a-zA-Z0-9!@#$%^&*()]{8,16}$", message="영어와 숫자, 특수문자가 최소 하나씩 들어가는 8~16자로 입력해주세요.")
 	private String loginPw;
 	private String nickname;
+	@Pattern(regexp="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message="올바른 이메일 형식이 아닙니다.")
 	private String email;
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate createdAt;
+	@Pattern(regexp="^01[0-9]{8,9}$", message="올바른 전화번호 형식이 아닙니다.")
 	private String phone;
 	private String role;
 	private Integer memberStatus;

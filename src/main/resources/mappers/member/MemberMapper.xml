@@ -171,32 +171,32 @@
   		  AND NOT EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = od.OD_ID)
   	</select>
   	
-  	<update id="updateNickname" parameterType="String">
-  		UPDATE MEMBER SET NICKNAME = #{nickname} WHERE MEMBER_ID = #{memberId}
-  	</update>
-  	
-  	<update id="updatePhone" parameterType="map">
-  	  UPDATE MEMBER SET PHONE = #{phone} WHERE MEMBER_ID = #{memberId}
+  	<update id="updateNickname">
+		UPDATE MEMBER SET NICKNAME = #{nickname} WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updateEmail" parameterType="map">
-    	UPDATE MEMBER SET EMAIL = #{email} WHERE MEMBER_ID = #{memberId}
+	<update id="updatePhone">
+		UPDATE MEMBER SET PHONE = #{phone} WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updateName" parameterType="map">
-    	UPDATE MEMBER SET MEMBER_NAME = #{memberName} WHERE MEMBER_ID = #{memberId}
+	<update id="updateEmail">
+		UPDATE MEMBER SET EMAIL = #{email} WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updateBirth" parameterType="map">
-    	UPDATE MEMBER SET BIRTH = #{birth} WHERE MEMBER_ID = #{memberId}
+	<update id="updateName">
+		UPDATE MEMBER SET MEMBER_NAME = #{memberName} WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updateGender" parameterType="map">
-    	UPDATE MEMBER SET GENDER = #{gender} WHERE MEMBER_ID = #{memberId}
+	<update id="updateBirth">
+		UPDATE MEMBER SET BIRTH = #{birth} WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updatePassword" parameterType="map">
-    	UPDATE MEMBER SET LOGIN_PW = #{newPassword} WHERE MEMBER_ID = #{memberId}
+	<update id="updateGender">
+		UPDATE MEMBER SET GENDER = #{gender} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updatePassword">
+		UPDATE MEMBER SET LOGIN_PW = #{newPassword} WHERE MEMBER_ID = #{memberId}
 	</update>
 	
 	<update id="withdrawMember" parameterType="long">
