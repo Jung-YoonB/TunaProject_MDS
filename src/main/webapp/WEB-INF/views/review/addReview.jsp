@@ -4,8 +4,10 @@
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
 	<form id="review-form" action="${pageContext.request.contextPath}/review/write" method="post" enctype="multipart/form-data">
-		<input type="hidden" name="memberId" value="${member.memberId}">
-		<input type="hidden" name="odId" value="${orderDetail.odId}">
+		<input type="hidden" name="odId" value="${writeInfo.odId}">
+		<c:if test="${not empty returnUrl}">
+		<input type="hidden" name="returnUrl" value="<c:out value='${returnUrl}'/>">
+		</c:if>
 
 		<!-- 1. 상단 히어로 영역: 소개글 + 상품 카드가 나란히 배치 -->
 		<div class="review-hero">
@@ -18,26 +20,18 @@
 				</p>
 			</div>
 
-			<!--
-				주의: 아래 EL 표현식(${product.productName} 등)은 서버 컨트롤러에서
-				product / option / orderDetail / productImages 모델을 내려주지 않으면
-				빈 값으로 렌더링됩니다. 현재는 서버 연동 전이라 마크업 구조만 확인하는 용도입니다.
-			-->
 			<div class="gift-summary">
 				<h3>구매하신 선물 내역</h3>
 				<section class="review-product-card" aria-label="리뷰 작성 상품 정보">
 					<div class="product-thumbnail">
-						<%-- PRODUCT_TITLE_IMAGE 값이 0인 이미지만 대표 이미지로 노출 --%>
-						<c:forEach var="img" items="${productImages}">
-							<c:if test="${img.productTitleImage == 0}">
-								<img src="${img.productImagePath}${img.productImageSaveName}" alt="${product.productName}">
-							</c:if>
-						</c:forEach>
+						<c:if test="${not empty writeInfo.productImageSaveName}">
+							<img src="${writeInfo.productImagePath}${writeInfo.productImageSaveName}" alt="${writeInfo.productName}">
+						</c:if>
 					</div>
 					<div class="product-info">
-						<strong class="product-name">$상품명{product.productName}</strong>
-						<strong class="product-option-name">$옵션명{option.optionName}</strong>
-						<p class="product-price"><c:out value="$가격{orderDetail.priceFix}"/>원</p>
+						<strong class="product-name">${writeInfo.productName}</strong>
+						<strong class="product-option-name">${writeInfo.optionName}</strong>
+						<p class="product-price"><c:out value="${writeInfo.priceFix}"/>원</p>
 					</div>
 				</section>
 			</div>
@@ -46,12 +40,16 @@
 		<!-- 2. 별점 입력 영역 (기본: 전부 빈 별 / 호버·클릭 시 JS로 채움) -->
 		<section class="star-rating-section" aria-label="별점 입력">
 			<h3>만족도 별점을 남겨주세요</h3>
+			<%-- 별은 원래 유니코드 ★ 글리프였으나 환경에 따라 컬러 이모지로 렌더링돼
+				 CSS color를 무시하는 문제가 있어 SVG로 통일함(2026-09-01).
+				 채움/빈 상태는 예전과 똑같이 .star-btn의 color가 결정한다(SVG는 fill:currentColor)
+				 - views/addreview.js의 .is-filled 토글 로직은 그대로. --%>
 			<div class="star-container" id="star-rating">
-				<button type="button" class="star-btn" data-value="1" aria-label="1점">★</button>
-				<button type="button" class="star-btn" data-value="2" aria-label="2점">★</button>
-				<button type="button" class="star-btn" data-value="3" aria-label="3점">★</button>
-				<button type="button" class="star-btn" data-value="4" aria-label="4점">★</button>
-				<button type="button" class="star-btn" data-value="5" aria-label="5점">★</button>
+				<button type="button" class="star-btn" data-value="1" aria-label="1점"><svg class="icon-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg></button>
+				<button type="button" class="star-btn" data-value="2" aria-label="2점"><svg class="icon-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg></button>
+				<button type="button" class="star-btn" data-value="3" aria-label="3점"><svg class="icon-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg></button>
+				<button type="button" class="star-btn" data-value="4" aria-label="4점"><svg class="icon-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg></button>
+				<button type="button" class="star-btn" data-value="5" aria-label="5점"><svg class="icon-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg></button>
 			</div>
 			<input type="hidden" name="score" id="review-score" value="">
 		</section>
@@ -85,6 +83,6 @@
 		</div>
 	</form>
 
-<script src="/js/review/addreview.js"></script>
+<script src="<c:url value='/js/views/addreview.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

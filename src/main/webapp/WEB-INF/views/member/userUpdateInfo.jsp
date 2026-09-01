@@ -223,10 +223,12 @@
      - 배송지: DeliveryAddress 테이블(add_id/member_id/address_name/detail_address/is_default)에
        대응하는 컨트롤러/서비스/매퍼가 전혀 없음 — 현재는 완전히 목업(저장해도 DB 미반영, 새로고침
        시 사라짐). 실제 구현 시 DeliveryAddress 전용 CRUD API 신설 필요.
-     - 각 항목의 "저장" 버튼: 실제 회원정보 UPDATE 백엔드가 없어(MemberMapper에 UPDATE 문 없음)
-       화면 표시값만 갱신하고 DB에는 반영되지 않는 no-op. 실제 구현 시 MemberController에
-       POST /member/updateInfo, MemberService에 updateMember(...), MemberMapper.xml에
-       <update> 문 신설 필요. --%>
-<script src="/js/userUpdateInfo.js"></script>
+     - 각 항목의 "저장" 버튼: 화면 표시값만 갱신하고 DB에는 반영되지 않는 no-op.
+       단 백엔드는 #BE014에서 이미 신설됨 — MemberController에 POST /member/updateName,
+       /updateBirth, /updateGender, /updateNickname, /updatePhone, /updateEmail,
+       /updatePassword, /withdraw 8개와 MemberMapper.xml의 대응 <update> 문이 전부 있음.
+       프론트에서 이 엔드포인트들을 호출하기만 하면 되는 상태(연동은 이번 범위 밖). --%>
+<script src="<c:url value='/js/member/memberService.js'/>"></script>
+<script src="<c:url value='/js/views/userUpdateInfo.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>
