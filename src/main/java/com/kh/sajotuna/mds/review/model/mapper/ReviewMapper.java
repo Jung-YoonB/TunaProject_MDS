@@ -18,11 +18,18 @@ public interface ReviewMapper {
 	// 리뷰 작성 화면에 보여줄 상품/옵션/가격/썸네일 조회 (odId가 해당 memberId 소유일 때만 조회됨)
 	ReviewWriteInfoDTO getReviewWriteInfo(@Param("odId") Long odId, @Param("memberId") Long memberId);
 
-	// 해당 주문상세에 이미 리뷰가 작성됐는지 확인
+	// 해당 주문상세에 리뷰 작성 권한을 이미 썼는지 확인 (REVIEWHISTORY 기준 - 삭제해도 남음)
 	int checkReviewExists(@Param("memberId") Long memberId, @Param("odId") Long odId);
 
 	// 리뷰 본문 등록
 	int insertReview(ReviewDTO review);
+
+	// 리뷰 작성 이력 기록 (insertReview와 같은 트랜잭션에서 호출할 것)
+	int insertReviewHistory(@Param("odId") Long odId, @Param("memberId") Long memberId,
+							@Param("reviewId") Long reviewId, @Param("score") int score);
+
+	// 리뷰 삭제 시 이력을 "삭제됨"으로 표시 (행은 남겨서 재작성을 계속 차단)
+	int markReviewHistoryDeleted(@Param("reviewId") Long reviewId, @Param("memberId") Long memberId);
 
 	// 리뷰 이미지 추가
 	int insertReviewImages(ReviewImagesDTO reviewImages);

@@ -77,6 +77,9 @@ public class ReviewServiceImpl implements ReviewService {
 		review.setReviewText(reviewText);
 		mapper.insertReview(review);
 
+		// 이 행이 남아있는 한 이 주문상세엔 리뷰를 다시 못 쓴다(삭제해도 행은 유지)
+		mapper.insertReviewHistory(odId, memberId, review.getReviewId(), score);
+
 		if (images == null) {
 			return;
 		}
@@ -161,6 +164,13 @@ public class ReviewServiceImpl implements ReviewService {
 		int deleted = mapper.deleteReview(reviewId, memberId);
 		if (deleted == 0) {
 			throw new IllegalStateException("본인이 작성한 리뷰만 삭제할 수 있습니다.");
+		}
+
+		// 이력 행은 남기고 표시만 바꾼다 - 이 행이 있어야 재작성이 계속 막힌다
+		// (REVIEW_ID는 FK가 아니라서 위 DELETE 후에도 값으로 찾을 수 있음)
+		if (mapper.markReviewHistoryDeleted(reviewId, memberId) == 0) {
+			// 이력 누락분(기능 도입 전 데이터) - 삭제를 되돌릴 일은 아니지만 재작성이 열리므로 남겨둔다
+			System.err.println("[ReviewServiceImpl] REVIEWHISTORY 행 없음 - 재작성이 열릴 수 있음. reviewId=" + reviewId);
 		}
 
 		for (String saveName : imageSaveNames) {

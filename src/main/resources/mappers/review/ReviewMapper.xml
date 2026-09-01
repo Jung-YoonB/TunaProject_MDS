@@ -32,10 +32,11 @@
 		WHERE od.OD_ID = #{odId} AND pord.MEMBER_ID = #{memberId}
 	</select>
 
-	<!-- 이미 해당 주문상세에 리뷰를 작성했는지 확인 (UK_REVIEW: MEMBER_ID + OD_ID) -->
+	<!-- 이 주문상세의 리뷰 작성 권한을 이미 썼는지 확인. REVIEW가 아니라 REVIEWHISTORY를 보는 이유는
+	     삭제해도 이력이 남아야 재작성을 영구히 막기 때문(AUDIT 정책 11번). DELETED_AT 여부는 안 본다 -->
 	<select id="checkReviewExists" resultType="int">
 		SELECT COUNT(*)
-		FROM REVIEW
+		FROM REVIEWHISTORY
 		WHERE MEMBER_ID = #{memberId} AND OD_ID = #{odId}
 	</select>
 
@@ -47,6 +48,20 @@
 		INSERT INTO REVIEW (REVIEW_ID, MEMBER_ID, OD_ID, REVIEW_TEXT, SCORE)
 		VALUES (#{reviewId}, #{memberId}, #{odId}, #{reviewText}, #{score})
 	</insert>
+
+	<!-- 작성 이력 기록. UK_RHIST_OD(OD_ID unique)가 재작성을 막는 실제 장치다 -->
+	<insert id="insertReviewHistory">
+		INSERT INTO REVIEWHISTORY (RHIST_ID, OD_ID, MEMBER_ID, REVIEW_ID, SCORE_FIX)
+		VALUES (SEQ_REVIEW_RHIST_ID.NEXTVAL, #{odId}, #{memberId}, #{reviewId}, #{score})
+	</insert>
+
+	<!-- 삭제 시 행은 남기고 "삭제됨"으로만 표시(지우면 재작성이 다시 열림). REVIEW_ID는 FK가 아닌 참고값이라 비운다 -->
+	<update id="markReviewHistoryDeleted">
+		UPDATE REVIEWHISTORY
+		SET REVIEW_ID = NULL,
+			DELETED_AT = SYSTIMESTAMP
+		WHERE REVIEW_ID = #{reviewId} AND MEMBER_ID = #{memberId}
+	</update>
 
 	<!-- 리뷰 이미지 추가 (REVIEW_IMAGE_ID는 자바에서 쓸 일이 없어 selectKey 없이 시퀀스 바로 사용) -->
 	<insert id="insertReviewImages" parameterType="ReviewImagesDTO">
