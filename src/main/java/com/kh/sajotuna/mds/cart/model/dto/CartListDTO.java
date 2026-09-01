@@ -15,4 +15,5 @@ public class CartListDTO {
     private int optionPrice;
     private int qty;
     private int totalPrice;
+    private String titleImage;
 }
