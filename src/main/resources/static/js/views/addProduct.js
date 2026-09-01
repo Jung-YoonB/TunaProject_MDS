@@ -5,6 +5,13 @@
 const productRegisterPage = document.querySelector('.product-register');
 const registerUrl = productRegisterPage.dataset.registerUrl;
 
+// 삭제(×) 버튼 아이콘. 원래 "×" 글리프를 textContent로 넣었는데, 사이트 전체 아이콘을
+// SVG로 통일하면서(2026-09-01) 여기도 맞췄다. 스타일은 style.css의 공용 .icon-close.
+const CLOSE_ICON_SVG =
+    '<svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+        '<path d="M18 6L6 18M6 6l12 12"></path>' +
+    '</svg>';
+
 /* ==================================================
    태그 관리
    ================================================== */
@@ -174,7 +181,10 @@ function createCurrentTag(name, color, isCustom){
 
     removeButton.type = "button";
     removeButton.className = "tag-remove";
-    removeButton.textContent = "×";
+    // 원래 "×" 글리프였으나 SVG 아이콘 규격으로 통일(2026-09-01). 텍스트가 없어져서
+    // 스크린리더용 이름은 aria-label로 따로 준다.
+    removeButton.setAttribute("aria-label", name + " 태그 삭제");
+    removeButton.innerHTML = CLOSE_ICON_SVG;
 
     tag.appendChild(text);
     tag.appendChild(removeButton);
@@ -458,7 +468,8 @@ function createImageSlot(file, index, onRemove, onReorder){
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.className = "tag-remove sub-image-remove";
-    removeButton.textContent = "×";
+    removeButton.setAttribute("aria-label", "추가 이미지 삭제");
+    removeButton.innerHTML = CLOSE_ICON_SVG;
     removeButton.style.position = "absolute";
     removeButton.style.top = "4px";
     removeButton.style.right = "4px";
@@ -597,7 +608,8 @@ function showMainImagePreview(file){
         const removeButton = document.createElement("button");
         removeButton.type = "button";
         removeButton.className = "tag-remove main-image-remove";
-        removeButton.textContent = "×";
+        removeButton.setAttribute("aria-label", "대표 이미지 삭제");
+        removeButton.innerHTML = CLOSE_ICON_SVG;
         removeButton.addEventListener("click", function(event){
             event.preventDefault();
             event.stopPropagation();

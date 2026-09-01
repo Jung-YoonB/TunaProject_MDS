@@ -160,6 +160,6 @@
 	</div>
 </div>
 
-<script src="/js/member/memberService.js"></script>
-<script src="/js/views/signUp.js"></script>
+<script src="<c:url value='/js/member/memberService.js'/>"></script>
+<script src="<c:url value='/js/views/signUp.js'/>"></script>
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

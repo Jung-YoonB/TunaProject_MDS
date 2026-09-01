@@ -20,7 +20,9 @@
         <div id="OrderComplete">
 
             <div class="complete-icon">
-                ✓
+                <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M20 6L9 17l-5-5"/>
+                </svg>
             </div>
 
             <div class="complete-message">

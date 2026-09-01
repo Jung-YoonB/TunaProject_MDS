@@ -215,43 +215,6 @@
 
 <script src="<c:url value='/js/common/bannerSlider.js'/>"></script>
 
-<%-- TODO(data binding): 찜 상태는 header.jsp의 localStorage(wishItems) 임시 구현, 실제로는 /wish API 필요 --%>
-<script>
-	document.querySelectorAll('.sp-btn-wishlist').forEach(function (btn) {
-		var card = btn.closest('.sp-product-card');
-		var productId = card.dataset.productId;
-
-		if (typeof window.isWished === 'function' && window.isWished(productId)) {
-			btn.classList.add('is-active');
-		}
-
-		btn.addEventListener('click', function () {
-			if (typeof window.toggleWish !== 'function') return;
-			var name = card.querySelector('.sp-product-name').textContent.trim();
-			var priceText = card.querySelector('.sp-product-price').textContent;
-			var price = parseInt(priceText.replace(/[^0-9]/g, ''), 10) || 0;
-			var active = window.toggleWish({ productId: productId, name: name, price: price });
-			btn.classList.toggle('is-active', active);
-		});
-	});
-
-	document.querySelectorAll('.sp-btn-cart').forEach(function (btn) {
-		btn.addEventListener('click', function () {
-			if (typeof window.addToCart !== 'function') return;
-			var card = btn.closest('.sp-product-card');
-			var name = card.querySelector('.sp-product-name').textContent.trim();
-			var priceText = card.querySelector('.sp-product-price').textContent;
-			var price = parseInt(priceText.replace(/[^0-9]/g, ''), 10) || 0;
-			window.addToCart({ productId: card.dataset.productId, name: name, price: price, qty: 1 });
-		});
-	});
-
-	// TODO(data binding): 태그 선택은 아직 실제 검색/필터 요청과 연결되어 있지 않음, UI 토글만 동작
-	document.querySelectorAll('.sp-tag-btn').forEach(function (btn) {
-		btn.addEventListener('click', function () {
-			btn.classList.toggle('is-active');
-		});
-	});
-</script>
+<script src="<c:url value='/js/views/searchProduct.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

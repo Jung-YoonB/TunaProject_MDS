@@ -1691,6 +1691,10 @@ button,input,textarea,select{font-family:inherit}
     transition:.2s
 }
 .tag-remove:hover{background:rgba(0,0,0,.25)}
+/* 삭제 아이콘을 "×" 글리프에서 SVG로 바꾸면서(2026-09-01) 크기만 보정.
+   글리프는 em 박스 안에 여백이 있어 font-size(18px)보다 작게 보이는데 SVG는 박스를
+   꽉 채우므로, 0.7em으로 줄여 예전 덩치에 맞춘다. ⚠️ 근사치라 화면 확인 필요. */
+.tag-remove .icon-close{width:.7em;height:.7em}
 .add-tag-button{
     min-height:40px;
     padding:7px 16px;
@@ -1916,8 +1920,16 @@ button,input,textarea,select{font-family:inherit}
     background:transparent;
     color:#777;
     font-size:22px;
-    cursor:pointer
+    cursor:pointer;
+    /* "×" 글리프였을 땐 버튼 기본 텍스트 정렬로 가운데 왔는데, SVG로 바꾸면서(2026-09-01)
+       세로 가운데가 baseline에 걸리므로 flex로 직접 가운데 정렬한다. */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0
 }
+/* .tag-remove와 같은 이유의 크기 보정. ⚠️ 근사치라 화면 확인 필요. */
+.modal-close .icon-close{width:.7em;height:.7em}
 .modal-form-group{margin-bottom:20px}
 .modal-form-group label{
     display:block;
