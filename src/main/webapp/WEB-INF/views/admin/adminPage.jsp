@@ -3,7 +3,7 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin_mypage.css 포함)를 로드하므로 별도 link 불필요 --%>
+<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin.css 포함)를 로드하므로 별도 link 불필요 --%>
 <div class="admin-mypage-page">
 
     <%-- header.jsp가 이미 <main>을 열어서 폭 제약이 없으므로, 원래 main 태그가 담당하던
@@ -115,35 +115,54 @@
         <!-- 일반 메뉴 -->
         <section class="general-menu-section" aria-label="일반 메뉴">
             <h2 class="section-title">일반 메뉴</h2>
-            <ul class="accordion" id="general-menu-accordion">
-                <li class="accordion-item">
-                    <div class="accordion-header">
-                        <span>상품관리</span>
+            <div class="card list-card">
+                <a class="list-row" href="<c:url value='/admin/product/add'/>">
+                    <div class="list-row-text">
+                        <span class="list-row-title">상품 등록</span>
+                        <span class="list-row-desc">새로운 상품을 등록합니다.</span>
                     </div>
-                    <ul class="accordion-panel">
-                        <li><a href="<c:url value='/admin/product/add'/>">상품등록</a></li>
-                        <li><a href="<c:url value='/admin/order'/>">주문 배송 관리</a></li>
-                    </ul>
-                </li>
-                <li class="accordion-item">
-                    <div class="accordion-header">
-                        <span>쿠폰 조회 및 등록</span>
+                    <div class="list-row-right">
+                        <span class="list-row-chevron">&rsaquo;</span>
                     </div>
-                    <ul class="accordion-panel">
-                        <li><a href="<c:url value='/admin/coupon'/>">쿠폰 조회 및 등록</a></li>
-                    </ul>
-                </li>
-                <li class="accordion-item">
-                    <!-- 문의사항 처리 / 공지 작성: 대응 화면이 아직 없어 미구현 상태(href="#") -->
-                    <div class="accordion-header">
-                        <span>문의내역</span>
+                </a>
+                <a class="list-row" href="<c:url value='/admin/order'/>">
+                    <div class="list-row-text">
+                        <span class="list-row-title">주문·배송 관리</span>
+                        <span class="list-row-desc">주문 및 배송 상태를 관리합니다.</span>
                     </div>
-                    <ul class="accordion-panel">
-                        <li><a href="#">문의사항 처리</a></li>
-                        <li><a href="#">공지 작성</a></li>
-                    </ul>
-                </li>
-            </ul>
+                    <div class="list-row-right">
+                        <span class="list-row-chevron">&rsaquo;</span>
+                    </div>
+                </a>
+                <a class="list-row" href="<c:url value='/admin/coupon'/>">
+                    <div class="list-row-text">
+                        <span class="list-row-title">쿠폰 조회 및 등록</span>
+                        <span class="list-row-desc">쿠폰을 조회하고 새로 등록합니다.</span>
+                    </div>
+                    <div class="list-row-right">
+                        <span class="list-row-chevron">&rsaquo;</span>
+                    </div>
+                </a>
+                <%-- 문의사항 처리 / 공지 작성: 대응 화면이 아직 없어 미구현 상태(href="#") --%>
+                <a class="list-row" href="#">
+                    <div class="list-row-text">
+                        <span class="list-row-title">문의사항 처리</span>
+                        <span class="list-row-desc">고객 문의에 답변합니다.</span>
+                    </div>
+                    <div class="list-row-right">
+                        <span class="list-row-chevron">&rsaquo;</span>
+                    </div>
+                </a>
+                <a class="list-row" href="#">
+                    <div class="list-row-text">
+                        <span class="list-row-title">공지 작성</span>
+                        <span class="list-row-desc">사이트 공지사항을 작성합니다.</span>
+                    </div>
+                    <div class="list-row-right">
+                        <span class="list-row-chevron">&rsaquo;</span>
+                    </div>
+                </a>
+            </div>
         </section>
 
     </div>
@@ -160,38 +179,15 @@
          - 빠른 메뉴(4타일): 상품 관리/주문·배송 관리/쿠폰 관리는 admin 패키지 컨트롤러(/admin/product/add,
            /admin/order, /admin/coupon)로 연결됨 — resources/static/temp/*.html 정적 프로토타입은 더 이상
            사용하지 않음. 문의 내역은 대응 화면이 없어 href="#" 처리.
-         - 일반 메뉴: 상위 그룹 제목은 페이지로 이동하지 않는 단순 레이블이고(펼침/접힘 없이 하위
-           목록이 항상 노출됨 — 원래 아코디언이었으나 사용자 요청으로 상시 노출로 변경함),
-           실제 페이지 이동은 하위 항목에서만 발생함. "상품관리" 그룹의 하위 항목(상품등록/주문 배송
-           관리)과 "쿠폰 조회 및 등록" 그룹의 하위 항목(쿠폰 조회 및 등록 1건)은 각각 기존 화면으로
-           연결됨 — 목업 아님. "문의내역" 그룹의 하위 항목(문의사항 처리/공지 작성)은 대응 화면이
-           프로젝트에 없어 href="#" 임시 처리(추후 실제 화면/컨트롤러 구현 필요).
+         - 일반 메뉴: 원래 그룹 헤더(상품관리/쿠폰 조회 및 등록/문의내역) + 하위 항목의 2단 아코디언
+           구조였는데, 유저 마이페이지(member/myPage.jsp)에 새로 만든 목록형 디자인(제목+설명+화살표,
+           .list-card/.list-row)과 통일하기 위해 그룹 헤더를 없애고 5개 항목을 평평한 리스트로 재구성함
+           (상품 등록/주문·배송 관리/쿠폰 조회 및 등록은 기존 화면 연결, 문의사항 처리/공지 작성은 대응
+           화면이 프로젝트에 없어 href="#" 임시 처리 — 추후 실제 화면/컨트롤러 구현 필요).
          - 이전에 있던 "관리자 권한 정보"/"계정 관리"(로그아웃 포함)/"관리자 최근 활동 내역" 카드는
            사용자 요청에 따라 이번 레이아웃 개편에서 완전히 제거됨. --%>
-    <script>
-    (function () {
-        // TODO(data binding): memberName/loginId만 Member 테이블에 실제 컬럼이 존재함.
-        var MOCK_ADMIN = {
-            memberName: '관리자',
-            loginId: 'admin'
-        };
-
-        function render() {
-            document.getElementById('profile-name').textContent = MOCK_ADMIN.memberName;
-            document.getElementById('profile-subtitle').textContent =
-                MOCK_ADMIN.memberName + ' (' + MOCK_ADMIN.loginId + ')';
-
-            document.getElementById('val-name').textContent = MOCK_ADMIN.memberName;
-            document.getElementById('val-login-id').textContent = MOCK_ADMIN.loginId;
-        }
-
-        // 대응 화면이 없는 placeholder 링크(href="#")는 클릭해도 페이지 이동/점프가 없도록 처리
-        document.querySelectorAll('a[href="#"]').forEach(function (a) {
-            a.addEventListener('click', function (e) { e.preventDefault(); });
-        });
-
-        render();
-    })();
-    </script>
+<script src="<c:url value='/js/common/placeholderLinks.js'/>"></script>
+<script src="<c:url value='/js/admin/adminMypageService.js'/>"></script>
+<script src="<c:url value='/js/views/adminPage.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

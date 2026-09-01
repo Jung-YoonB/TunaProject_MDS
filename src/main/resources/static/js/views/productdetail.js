@@ -113,7 +113,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     wishButton.addEventListener('click', function () {
         const liked = wishButton.classList.toggle('is-active');
-        wishButton.textContent = liked ? '♥' : '♡';
+        // 원래는 textContent를 ♥/♡ 글리프로 갈아끼웠는데, 아이콘을 SVG로 바꾸면서
+        // 같은 path의 채움 여부만 토글하는 방식으로 변경(2026-09-01 규격화).
+        const heart = wishButton.querySelector('.icon-heart');
+        if (heart) heart.classList.toggle('is-filled', liked);
+        wishButton.setAttribute('aria-label', liked ? '찜 해제' : '찜하기');
 
         if (wishCount) {
             const count = parseInt(wishCount.textContent, 10) || 0;

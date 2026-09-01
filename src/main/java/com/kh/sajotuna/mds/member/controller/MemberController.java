@@ -15,11 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MypageCouponDTO;
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
 import com.kh.sajotuna.mds.util.SessionConst;
 import com.kh.sajotuna.mds.util.dto.ApiResponse;
@@ -27,14 +25,13 @@ import com.kh.sajotuna.mds.util.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/member")
+@RequiredArgsConstructor
 public class MemberController {
 	private final MemberService service;
-	public MemberController (MemberService service) {
-		this.service = service;
-	}
 	
 	// GET: 화면 요청 / 데이터 조회
 	@GetMapping("/signUp")
@@ -51,82 +48,92 @@ public class MemberController {
 	}
 	
 	@GetMapping("/myPage")
-	public String myPageForm(HttpSession session, Model model) {
-		
+	public String myPageForm(HttpSession session, Model model, RedirectAttributes redirectAttr) {
+
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-		model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
-		System.out.println("마이페이지용 모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
-				
+
+		MemberDTO loginMember = service.getMemberByMemberId(member.getMemberId());
+		if (loginMember == null) {
+			// 세션은 살아있는데 회원 행 자체가 없어진 경우(탈퇴/삭제 등) - 세션을 무효화하고 다시 로그인하게 함
+			session.invalidate();
+			redirectAttr.addFlashAttribute("error", "회원 정보를 찾을 수 없습니다. 다시 로그인해주세요.");
+			return "redirect:/member/login";
+		}
+		model.addAttribute(SessionConst.LOGIN_MEMBER, loginMember);
+		System.out.println("마이페이지용 모델로 저장" + loginMember); // 추적용 출력
+
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
+			model.addAttribute("couponCount", service.countCoupons(member.getMemberId()));
+			model.addAttribute("activeOrderCount", service.countActiveDeliveries(member.getMemberId()));
+			model.addAttribute("reviewableCount", service.countReviewableOrderDetails(member.getMemberId()));
 			return "member/myPage";
 		} else {
 			return "admin/adminPage";
 		}
-		// 유저는 loginMember 에 유저DTO, couponList에 List<MypageCouponDTO> 가 모델에 저장되고 넘어감
-	}
-	
-	@GetMapping("/couponView")
-	public String userCouponViewForm(HttpSession session, Model model) {
 		
+		// 유저는 loginMember 에 유저DTO가 모델에 저장되고 넘어감
+	} 
+
+	@GetMapping("/couponView")
+	public String userCouponViewForm(@RequestParam(defaultValue = "1") int page,
+			HttpSession session, Model model) {
+
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-				
+
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("couponList", (service.listCoupon(member.getMemberId())));
-			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<MypageCouponDTO>)model.getAttribute("couponList")); // 추적용 출력
+
+			int totalPages = service.totalCouponPages(member.getMemberId());
+			int currentPage = Math.min(Math.max(page, 1), totalPages);
+			int windowSize = 5;
+			int windowStart = Math.max(1, currentPage - windowSize / 2);
+			int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
+			windowStart = Math.max(1, windowEnd - windowSize + 1);
+
+			model.addAttribute("couponList", (service.listCoupon(member.getMemberId(), currentPage)));
+			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<CouponDTO>)model.getAttribute("couponList")); // 추적용 출력
+			model.addAttribute("couponCount", service.countCoupons(member.getMemberId()));
+			model.addAttribute("currentPage", currentPage);
+			model.addAttribute("totalPages", totalPages);
+			model.addAttribute("pageWindowStart", windowStart);
+			model.addAttribute("pageWindowEnd", windowEnd);
 			return "member/usercouponView";
 		} else {
 			return "admin/admincouponView";
 		}
-		// 유저는 couponList에 List<MypageCouponDTO> 가 모델에 최신화 되어 넘어감
-	}
-	
-	@GetMapping("/wish")
-	public String wishlistForm(HttpSession session, Model model) {
-		
-		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-		
-		if(member.getRole().equals("USER")) {
-			model.addAttribute("wishList", (service.listWish(member.getMemberId())));
-			System.out.println("찜하기용 모델로 저장" + (List<MyPageWishDTO>)model.getAttribute("wishList")); // 추적용 출력
-			return "member/wish"; 
-		}  else {
-			return "admin/adminPage"; // 관리자용 찜 화면이 없어 대시보드로
-		} 
-		
-		// 유저는 wishList에 List<MyPageWishDTO> 가 모델에 최신화 되어 넘어감
-	}
-	
-	@GetMapping("/cart")
-	public String cartForm(HttpSession session, Model model) {
-		
-		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-				
-		if(member.getRole().equals("USER")) {
-			model.addAttribute("cartList", (service.listCart(member.getMemberId())));
-			System.out.println("장바구니용 모델로 저장" + (List<MyPageCartDTO>)model.getAttribute("cartList")); // 추적용 출력
-			return "member/cart"; 
-		}  else {
-			return "admin/adminPage"; // 관리자용 장바구니 화면이 없어 대시보드로
-		} 
-		// 유저는 cartList에 List<MyPageCartDTO> 가 모델에 최신화 되어 넘어감
+		// 유저는 couponList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	@GetMapping("/orderDelivery")
-	public String userOrderDeliveryForm(HttpSession session, Model model) {
-		
+	public String userOrderDeliveryForm(
+			@RequestParam(defaultValue = "all") String status,
+			@RequestParam(defaultValue = "1") int page,
+			HttpSession session, Model model) {
+
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-		
-		
-		
+
+
+
 		if(member.getRole().equals("USER")) {
-			model.addAttribute("deliveryList", (service.listDelivery(member.getMemberId())));
+			model.addAttribute("deliveryList", (service.listDelivery(member.getMemberId(), status, page)));
 			System.out.println("배송관리 모델로 저장" + (List<MyPageDeliveryDTO>)model.getAttribute("deliveryList")); // 추적용 출력
-			return "member/orderDelivery"; 
+
+			int totalPages = service.totalDeliveryPages(member.getMemberId(), status);
+			int currentPage = Math.min(Math.max(page, 1), totalPages);
+			int windowSize = 5;
+			int windowStart = Math.max(1, currentPage - windowSize / 2);
+			int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
+			windowStart = Math.max(1, windowEnd - windowSize + 1);
+
+			model.addAttribute("currentStatus", status);
+			model.addAttribute("currentPage", currentPage);
+			model.addAttribute("totalPages", totalPages);
+			model.addAttribute("pageWindowStart", windowStart);
+			model.addAttribute("pageWindowEnd", windowEnd);
+			return "order/userOderDelivery";
 		}  else {
 			return "admin/adminOrderDelivery";
-		} 
-		
+		}
+
 		// 유저는 deliveryList에 List<MyPageDeliveryDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
@@ -148,6 +155,7 @@ public class MemberController {
 		try {
 				service.signUp(member);
 		} catch(IllegalStateException e) {
+			e.printStackTrace();
 			redirectAttr.addFlashAttribute("error", e.getMessage());
 			return "redirect:/member/signUp";
 		}
@@ -210,6 +218,7 @@ public class MemberController {
 		session.setAttribute(SessionConst.LOGIN_SESSION, member );
 		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_SESSION)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
+			e.printStackTrace();
 			redirectAttr.addFlashAttribute("error", e.getMessage());
 			// 로그인 실패 후 재시도할 수 있게, 원래 가려던 곳도 같이 들고 돌아간다
 			if (isSafeRedirect(redirectURL)) {
@@ -240,5 +249,124 @@ public class MemberController {
 		}
 		System.out.println("로그아웃 완료");
 		return "redirect:/";
+	}
+	
+	@GetMapping("/updateInfo")
+	public String updateInfoForm(HttpSession session, Model model) {
+		
+		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		
+		if("ADMIN".equals(member.getRole())) {
+			return "admin/adminPage";  // 관리자 데이터 수정은 미구현
+		} else {
+			model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
+			System.out.println("회원 정보 수정용 모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
+			return "member/userUpdateInfo";
+		}
+		// 관리자 상태 수정은 미구현
+		// 유저는 loginMember 에 유저DTO가 모델에 저장되고 넘어감
+	}
+	
+	@PostMapping("/updateNickname")
+	@ResponseBody
+	public ApiResponse<Boolean> updateNickname(HttpSession session, String nickname) {
+		
+		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		boolean isUpdate = service.nicknameUpdate(member.getMemberId(), nickname);
+		
+		String message = isUpdate ? "정보 변경에 성공했습니다." : "정보 변경에 실패하셨습니다.";
+		
+		return ApiResponse.success(message, isUpdate);
+	}
+	
+	@PostMapping("/updatePhone")
+	@ResponseBody
+	public ApiResponse<Boolean> updatePhone(HttpSession session, String phone) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.phoneUpdate(member.getMemberId(), phone);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updateEmail")
+	@ResponseBody
+	public ApiResponse<Boolean> updateEmail(HttpSession session, String email) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.emailUpdate(member.getMemberId(), email);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updateName")
+	@ResponseBody
+	public ApiResponse<Boolean> updateName(HttpSession session, String memberName) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.nameUpdate(member.getMemberId(), memberName);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updateBirth")
+	@ResponseBody
+	public ApiResponse<Boolean> updateBirth(HttpSession session, String birth) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.birthUpdate(member.getMemberId(), birth);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updateGender")
+	@ResponseBody
+	public ApiResponse<Boolean> updateGender(HttpSession session, String gender) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.genderUpdate(member.getMemberId(), gender);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+
+	@PostMapping("/updatePassword")
+	@ResponseBody
+	public ApiResponse<Boolean> updatePassword(HttpSession session, String newPassword) {
+	    
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    boolean isUpdate = service.passwordUpdate(member.getMemberId(), newPassword);
+	    
+	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+	    
+	    return ApiResponse.success(message, isUpdate);
+	}
+	
+	@PostMapping("/withdraw")
+	@ResponseBody
+	public ApiResponse<Boolean> withdraw(HttpSession session) {
+	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    
+	    if (member == null) {
+	        return ApiResponse.fail("로그인 정보가 없습니다.");
+	    }
+	    
+	    boolean isWithdrawn = service.withdrawMember(member.getMemberId());
+	    
+	    if (isWithdrawn) {
+	        session.invalidate(); // 탈퇴 성공 시 세션 무효화
+	        return ApiResponse.success("회원 탈퇴가 완료되었습니다.", true);
+	    } else {
+	        return ApiResponse.fail("회원 탈퇴에 실패했습니다.");
+	    }
 	}
 }

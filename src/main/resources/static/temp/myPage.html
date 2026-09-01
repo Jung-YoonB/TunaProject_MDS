@@ -75,16 +75,12 @@
 	            text-align: right;
 	        }
 	
-	        #EditMember button,
-        #EditMember a {
-            display: inline-block;
-            padding: 10px 20px;
-            border: 1px solid #ccc;
-            background-color: white;
-            color: #333;
-            text-decoration: none;
-            cursor: pointer;
-        }
+	        #EditMember button {
+	            padding: 10px 20px;
+	            border: 1px solid #ccc;
+	            background-color: white;
+	            cursor: pointer;
+	        }
 	
 	        /* 빠른 메뉴 */
 	        #QuickMenu {
@@ -160,7 +156,7 @@
 	        }
 	
 	        /* 마우스 효과 */
-	        .quick-menu-item:hover, .menu-item:hover, button:hover, #EditMember a:hover {
+	        .quick-menu-item:hover, .menu-item:hover, button:hover {
 	            background-color: #f5f5f5;
 	        }
 	    </style>
@@ -218,7 +214,7 @@
 	            </div>
 	
 	            <div id="EditMember">
-	                <a href="/temp/userUpdateInfo.html">정보 수정</a>
+	                <button type="button">정보 수정</button>
 	            </div>
 	        </div>
 	
