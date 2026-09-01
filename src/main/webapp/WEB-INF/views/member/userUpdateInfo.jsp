@@ -194,7 +194,7 @@
 
     <!-- 취소 -->
     <div id="Cancel">
-        <a href="${pageContext.request.contextPath}/member/mypage">마이페이지로 돌아가기</a>
+        <a href="${pageContext.request.contextPath}/member/myPage">마이페이지로 돌아가기</a>
     </div>
 
     <!-- 회원 탈퇴 -->
