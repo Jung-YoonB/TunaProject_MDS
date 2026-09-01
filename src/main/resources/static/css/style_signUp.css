@@ -1,192 +1,536 @@
 
-	        /* 전체 페이지 */
-	        body {
-	            margin: 0;
-	            background-color: #f8f6f2;
-	        }
-			
-	        /* 회원가입 전체 영역 */
-	        main {
-	            width: 500px;
-	            margin: 60px auto;
-	            padding: 40px;
-	            background-color: white;
-	            border: 1px solid #e5e0d8;
-	            border-radius: 12px;
-	            box-sizing: border-box;
-	        }
-	
-	        /* 회원가입 제목 */
-	        #title {
-	            text-align: center;
-	            font-size: 30px;
-	            font-weight: bold;
-	            margin-bottom: 35px;
-	        }
-	
-	        /* 각 입력 영역 */
-	        #Name, #Birth, #Gender, #Nickname, #Username,
-	        #Password, #ConfirmPassword, #PhoneNumber, #Email {
-	            margin-bottom: 20px;
-	        }
-	
-	        /* 입력 항목 이름 */
-	        label {
-	            display: block;
-	            margin-bottom: 8px;
-	            font-size: 14px;
-	            font-weight: bold;
-	        }
-	
-	        /* 일반 입력창 */
-	        .signup-input {
-	            width: 100%;
-	            height: 45px;
-	            padding: 0 15px;
-	            box-sizing: border-box;
-	            border: 1px solid #d8d3cc;
-	            border-radius: 6px;
-	            font-size: 14px;
-	            outline: none;
-	        }
-	
-	        /* 입력창 클릭 */
-	        .signup-input:focus {
-	            border-color: #b59b7b;
-	        }
-	
-	        /* 아이디 입력 + 중복확인 버튼 */
-	        .id-input-box {
-	            display: flex;
-	            gap: 8px;
-	        }
-	
-	        /* 아이디 입력창 */
-	        .id-input-box .signup-input {
-	            flex: 1;
-	        }
-	
-	        /* 중복확인 버튼 */
-	        #CheckId {
-	            width: 90px;
-	            height: 45px;
-	            border: 1px solid #b59b7b;
-	            border-radius: 6px;
-	            background-color: white;
-	            color: #555;
-	            font-size: 13px;
-	            font-weight: bold;
-	            cursor: pointer;
-	        }
-	
-	        /* 중복확인 버튼 마우스 올렸을 때 */
-	        #CheckId:hover {
-	            background-color: #f8f6f2;
-	        }
-	
-	        /* 성별 */
-	        #Gender {
-	            display: flex;
-	            align-items: center;
-	            gap: 10px;
-	        }
-	
-	        #Gender span {
-	            margin-right: 15px;
-	            font-size: 14px;
-	            font-weight: bold;
-	        }
-	
-	        /* 성별 라벨 */
-	        #Gender label {
-	            display: inline;
-	            margin: 0;
-	            font-weight: normal;
-	        }
-	
-	        /* 성별 라디오 버튼 */
-	        #Gender input {
-	            margin: 0;
-	        }
-	
-	        /* 개인정보 동의 */
-	        #PrivacyBox {
-	            display: flex;
-	            align-items: center;
-	            margin-top: 25px;
-	            margin-bottom: 10px;
-	        }
-	
-	        #PrivacyBox input {
-	            margin-right: 8px;
-	        }
-	
-	        #PrivacyBox label {
-	            display: inline;
-	            margin: 0;
-	            font-size: 13px;
-	            font-weight: normal;
-	        }
-	
-	        /* 개인정보처리방침 */
-	        #PrivacyPolicy {
-	            margin-bottom: 25px;
-	        }
-	
-	        #PrivacyPolicy a {
-	            font-size: 13px;
-	            color: #777;
-	            text-decoration: underline;
-	        }
-	
-	        /* 회원가입 버튼 */
-	        #SignUp {
-	            margin-top: 25px;
-	        }
-	
-	        #SignUp button {
-	            width: 100%;
-	            height: 52px;
-	            border: none;
-	            border-radius: 6px;
-	            background-color: #222;
-	            color: white;
-	            font-size: 16px;
-	            font-weight: bold;
-	            cursor: pointer;
-	        }
-	
-	        /* 기존 회원 로그인 */
-	        #Login {
-	            text-align: center;
-	            margin-top: 20px;
-	        }
-	
-	        #Login button {
-	            border: none;
-	            background: none;
-	            color: #777;
-	            font-size: 13px;
-	            cursor: pointer;
-	        }
-	
-	        #Login button:hover, #PrivacyPolicy a:hover {
-	            color: #222;
-	        }
-			
-			/* ================================
-			   입력값 확인 메시지
-			================================ */
+/* =========================================================
+   메종 드 사조 - 프리미엄 회원가입
+   심플 전통 물결무늬 버전
+========================================================= */
 
-			.check-message {
-			    margin: 6px 0 0;
-			    font-size: 12px;
-			}
 
-			.check-message.success {
-			    color: #4b9b62;
-			}
+/* 전체 페이지 */
+body {
+    margin: 0;
+    min-height: 100vh;
 
-			.check-message.error {
-			    color: #d9534f;
-			}
+    background-color: #f5f1e8;
+
+    color: #302c27;
+
+    font-family: "Noto Sans KR", Arial, sans-serif;
+
+    position: relative;
+    overflow-x: hidden;
+}
+
+
+/* =========================================================
+   배경 물결무늬
+   크게 넣어서 은은하게 보이도록
+========================================================= */
+
+body::before {
+    content: "";
+
+    position: fixed;
+
+    width: 900px;
+    height: 900px;
+
+    left: -400px;
+    top: -100px;
+
+    opacity: 0.12;
+
+    pointer-events: none;
+
+    z-index: 0;
+
+    background:
+        repeating-radial-gradient(
+            ellipse at center,
+            transparent 0px,
+            transparent 55px,
+            #a98b5d 57px,
+            #a98b5d 59px,
+            transparent 61px
+        );
+
+    border-radius: 50%;
+
+    transform: rotate(-15deg);
+}
+
+
+/* 오른쪽 물결무늬 */
+
+body::after {
+    content: "";
+
+    position: fixed;
+
+    width: 850px;
+    height: 850px;
+
+    right: -420px;
+    bottom: -150px;
+
+    opacity: 0.10;
+
+    pointer-events: none;
+
+    z-index: 0;
+
+    background:
+        repeating-radial-gradient(
+            ellipse at center,
+            transparent 0px,
+            transparent 55px,
+            #a98b5d 57px,
+            #a98b5d 59px,
+            transparent 61px
+        );
+
+    border-radius: 50%;
+
+    transform: rotate(20deg);
+}
+
+
+/* =========================================================
+   회원가입 전체 영역
+========================================================= */
+
+main {
+    position: relative;
+
+    z-index: 2;
+
+    width: 500px;
+
+    margin: 65px auto;
+
+    padding: 45px 42px;
+
+    box-sizing: border-box;
+
+    background-color: rgba(255, 253, 248, 0.98);
+
+    border: 1px solid #cbb990;
+
+    border-radius: 4px;
+
+    box-shadow:
+        0 20px 50px rgba(65, 51, 32, 0.12),
+        0 3px 10px rgba(65, 51, 32, 0.05);
+}
+
+
+/* =========================================================
+   안쪽 얇은 금색 테두리
+========================================================= */
+
+main::before {
+    content: "";
+
+    position: absolute;
+
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+
+    border: 1px solid rgba(166, 135, 79, 0.25);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   회원가입 제목
+========================================================= */
+
+#title {
+    text-align: center;
+
+    margin-bottom: 38px;
+
+    color: #302a23;
+
+    font-family:
+        "Noto Serif KR",
+        Georgia,
+        serif;
+
+    font-size: 29px;
+
+    font-weight: 500;
+
+    letter-spacing: 4px;
+}
+
+
+/* 제목 아래 작은 장식 */
+
+#title::after {
+    content: "";
+
+    display: block;
+
+    width: 45px;
+    height: 1px;
+
+    margin: 15px auto 0;
+
+    background-color: #a48650;
+
+    box-shadow:
+        -12px 0 0 #a48650,
+        12px 0 0 #a48650;
+}
+
+
+/* =========================================================
+   각 입력 영역
+========================================================= */
+
+#Name,
+#Birth,
+#Gender,
+#Nickname,
+#Username,
+#Password,
+#ConfirmPassword,
+#PhoneNumber,
+#Email {
+    margin-bottom: 20px;
+}
+
+
+/* =========================================================
+   입력 항목 이름
+========================================================= */
+
+label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: #4c4439;
+}
+
+
+/* =========================================================
+   입력창
+========================================================= */
+
+.signup-input {
+    width: 100%;
+    height: 46px;
+
+    padding: 0 15px;
+
+    box-sizing: border-box;
+
+    background-color: #fffefa;
+
+    border: 1px solid #d3cbbd;
+
+    border-radius: 3px;
+
+    font-size: 14px;
+
+    color: #342f29;
+
+    outline: none;
+
+    transition: 0.2s ease;
+}
+
+
+/* 입력창 클릭 */
+
+.signup-input:focus {
+    border-color: #a98a58;
+
+    box-shadow:
+        0 0 0 2px rgba(169, 138, 88, 0.08);
+}
+
+
+/* =========================================================
+   아이디 + 중복확인
+========================================================= */
+
+.id-input-box {
+    display: flex;
+
+    gap: 8px;
+}
+
+
+.id-input-box .signup-input {
+    flex: 1;
+}
+
+
+/* =========================================================
+   중복확인 버튼
+========================================================= */
+
+#CheckId {
+    width: 90px;
+    height: 46px;
+
+    border: 1px solid #b69a6b;
+
+    border-radius: 3px;
+
+    background-color: #f8f3e9;
+
+    color: #665438;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+#CheckId:hover {
+    background-color: #eee5d5;
+
+    border-color: #967541;
+}
+
+
+/* =========================================================
+   성별
+========================================================= */
+
+#Gender {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+#Gender span {
+    margin-right: 15px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: #4c4439;
+}
+
+
+#Gender label {
+    display: inline;
+
+    margin: 0;
+
+    font-weight: normal;
+
+    color: #625b52;
+}
+
+
+#Gender input {
+    margin: 0;
+
+    accent-color: #a48650;
+}
+
+
+/* =========================================================
+   개인정보 동의
+========================================================= */
+
+#PrivacyBox {
+    display: flex;
+
+    align-items: center;
+
+    margin-top: 27px;
+
+    margin-bottom: 10px;
+}
+
+
+#PrivacyBox input {
+    margin-right: 8px;
+
+    accent-color: #a48650;
+}
+
+
+#PrivacyBox label {
+    display: inline;
+
+    margin: 0;
+
+    font-size: 12px;
+
+    font-weight: normal;
+
+    color: #756d63;
+}
+
+
+/* =========================================================
+   개인정보처리방침
+========================================================= */
+
+#PrivacyPolicy {
+    margin-bottom: 27px;
+}
+
+
+#PrivacyPolicy a {
+    font-size: 12px;
+
+    color: #897c6a;
+
+    text-decoration: none;
+
+    border-bottom: 1px solid #cfc2ae;
+
+    padding-bottom: 2px;
+}
+
+
+#PrivacyPolicy a:hover {
+    color: #8d6b38;
+
+    border-color: #8d6b38;
+}
+
+
+/* =========================================================
+   회원가입 버튼
+========================================================= */
+
+#SignUp {
+    margin-top: 27px;
+}
+
+
+#SignUp button {
+    width: 100%;
+    height: 53px;
+
+    border: none;
+
+    border-radius: 3px;
+
+    background-color: #29251f;
+
+    color: #f8f2e8;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    letter-spacing: 2px;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+#SignUp button:hover {
+    background-color: #171411;
+
+    box-shadow:
+        0 8px 20px rgba(40, 32, 22, 0.18);
+}
+
+
+/* =========================================================
+   기존 회원 로그인
+========================================================= */
+
+#Login {
+    text-align: center;
+
+    margin-top: 21px;
+}
+
+
+#Login button {
+    border: none;
+
+    background: none;
+
+    color: #8a8175;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+
+#Login button:hover {
+    color: #8c6b38;
+}
+
+
+/* =========================================================
+   입력값 확인 메시지
+========================================================= */
+
+.check-message {
+    margin: 6px 0 0;
+
+    font-size: 11px;
+}
+
+
+.check-message.success {
+    color: #56805f;
+}
+
+
+.check-message.error {
+    color: #b5534d;
+}
+
+
+/* =========================================================
+   작은 화면
+========================================================= */
+
+@media (max-width: 600px) {
+
+    main {
+        width: calc(100% - 30px);
+
+        margin: 30px auto;
+
+        padding: 38px 25px;
+    }
+
+    body::before {
+        width: 650px;
+        height: 650px;
+
+        left: -350px;
+    }
+
+    body::after {
+        width: 600px;
+        height: 600px;
+
+        right: -350px;
+    }
+}
+

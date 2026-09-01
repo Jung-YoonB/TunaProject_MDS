@@ -12,42 +12,42 @@
 	    <div class="member-info-list">
 	        <div class="member-info-item">
 	            <span class="member-label">이름</span>
-	            <span class="member-value">이름값</span>
+	            <span class="member-value">${loginMember.memberName}</span>
 	        </div>
 	
 	        <div class="member-info-item">
 	            <span class="member-label">닉네임</span>
-	            <span class="member-value">닉네임값</span>
+	            <span class="member-value">${loginMember.nickname}</span>
 	        </div>
 	
 	        <div class="member-info-item">
 	            <span class="member-label">회원 등급</span>
-	            <span class="member-value">등급값</span>
+	            <span class="member-value">${loginMember.gradeId}</span>
 	        </div>
 	
 	        <div class="member-info-item">
 	            <span class="member-label">아이디</span>
-	            <span class="member-value">아이디값</span>
+	            <span class="member-value">${loginMember.loginId}</span>
 	        </div>
 	
 	        <div class="member-info-item">
 	            <span class="member-label">휴대폰</span>
-	            <span class="member-value">휴대폰값</span>
+	            <span class="member-value">${loginMember.phone}</span>
 	        </div>
 	
 	        <div class="member-info-item">
 	            <span class="member-label">이메일</span>
-	            <span class="member-value">이메일값</span>
+	            <span class="member-value">${loginMember.email}</span>
 	        </div>
 	
 	        <div class="member-info-item">
 	            <span class="member-label">포인트</span>
-	            <span class="member-value">포인트값</span>
+	            <span class="member-value">${loginMember.point}</span>
 	        </div>
 	
 	        <div class="member-info-item">
 	            <span class="member-label">쿠폰</span>
-	            <span class="member-value">사용 가능한 5장 >상세보기</span>
+	            <span class="member-value">${loginMember.issue}</span>
 	        </div>
 	
 	    </div>
