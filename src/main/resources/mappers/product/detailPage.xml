@@ -100,25 +100,36 @@
 		m.NICKNAME,
 		orderd.QTY,
 		r.LIKE_COUNT,
-		CASE WHEN rl.MEMBER_ID IS NOT NULL THEN 1 ELSE 0 END AS is_liked
+
+		-- 🌟 수정된 부분: SELECT 절에서도 memberId 유무에 따라 안전하게 분기 처리
+		<choose>
+			<when test="memberId != null">
+				CASE WHEN rl.MEMBER_ID IS NOT NULL THEN 1 ELSE 0 END AS is_liked
+			</when>
+			<otherwise>
+				0 AS is_liked -- 비로그인이면 안전하게 무조건 0 반환
+			</otherwise>
+		</choose>
 
 		FROM review r
 
 		JOIN orderdetail orderd ON r.OD_ID = orderd.OD_ID
-
 		JOIN OPTIONDETAIL od ON orderd.POP_ID = od.POP_ID
-
 		JOIN PRODUCTOPTION po ON po.OPTION_ID = od.OPTION_ID
 		JOIN product p ON p.PRODUCT_ID = od.PRODUCT_ID
-
 		JOIN member m ON m.MEMBER_ID = r.MEMBER_ID
 
-		LEFT JOIN REVIEWLIKE rl
-		ON r.REVIEW_ID = rl.REVIEW_ID
-		AND rl.MEMBER_ID = #{memberId}
+		-- 🌟 기존 부분: memberId가 있을 때만 조인
+		<if test="memberId != null">
+			LEFT JOIN REVIEWLIKE rl
+			ON r.REVIEW_ID = rl.REVIEW_ID
+			AND rl.MEMBER_ID = #{memberId}
+		</if>
 
 		WHERE p.PRODUCT_ID = #{productId}
 	</select>
+
+
 	<select id="getReviewImages" resultType="ReviewImagesDTO" >
 		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_image
 		from REVIEWIMAGE ri join REVIEW r on ri.REVIEW_ID = r.REVIEW_ID

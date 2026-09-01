@@ -31,7 +31,7 @@ public class ProductController {
 		
 		model.addAttribute("productList", list);
 		System.out.println("컨트롤러 :: " + list);
-		return"redirect:home/home";
+		return"home/home";
 	}
 	
 	@GetMapping("/detail/{productId}")
@@ -40,7 +40,7 @@ public class ProductController {
 
 		DetailPageDTO detail = service.detailPage(productId);
 		System.out.println("컨트롤러 detail :: " + detail);
-		return"redirect:home/home";
+		return"home/home";
 	}
 
 	@GetMapping("/coupon/{couponId}")
@@ -54,20 +54,20 @@ public class ProductController {
 		}
 		String message = service.getCoupons(user.getMemberId(), couponId);
 		System.out.println("message:: " + message);
-		return"redirect:home/home";
+		return"home/home";
 	}
 
 	@GetMapping("/review/{productId}")
 	public String reviewPage(@PathVariable Long productId, Model model, HttpSession session) {
 		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
 		Long memberId  = null;
-		if(user.getMemberId() != null) {
+		if(user != null) {
 			memberId = user.getMemberId();
 		}
 		List<ReviewDTO> reviewList = service.getReviewList(productId, memberId);
 		model.addAttribute("reviewList", reviewList);
 		System.out.println("reviewList :: " + reviewList);
-		return"redirect:home/home";
+		return"home/home";
 	}
 
 	@GetMapping("/review/like/{reviewId}")
