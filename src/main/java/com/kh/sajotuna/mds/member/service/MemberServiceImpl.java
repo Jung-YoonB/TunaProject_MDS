@@ -148,17 +148,20 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	@Transactional
 	public boolean nicknameUpdate(Long memberId, String nickname) {
-		if (nickname == null || nickname.isBlank()) {
-			throw new IllegalArgumentException("닉네임은 비워둘 수 없습니다.");
+		if (nickname == null
+				|| !nickname.matches("^[가-힣a-zA-Z0-9_]{2,8}$")) {
+			throw new IllegalArgumentException(
+					"닉네임은 한글, 영문, 숫자, 언더바(_)를 사용하여 2~8자로 입력해주세요.");
 		}
 		
 		MemberDTO currentMember = mapper.selectByMemberId(memberId);
+		
 		if (currentMember == null) {
 			throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
 		}
 		
 		if (nickname.equals(currentMember.getNickname())) {
-			return true; // 기존 값과 동일하면 그대로 성공 처리
+			return true;
 		}
 		
 		if (isNicknameCheck(nickname)) {
@@ -217,14 +220,23 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	@Transactional
 	public boolean nameUpdate(Long memberId, String memberName) {
-	if (memberName == null || memberName.isBlank()) {
-	throw new IllegalArgumentException("이름은 비워둘 수 없습니다.");
-	}
-	MemberDTO currentMember = mapper.selectByMemberId(memberId);
-	if (currentMember != null && memberName.equals(currentMember.getMemberName())) {
-	return true;
-	}
-	return mapper.updateName(memberId, memberName) > 0;
+		if (memberName == null
+				|| !memberName.matches("^[가-힣]{2,4}$")) {
+			throw new IllegalArgumentException(
+					"이름은 한글 2~4자로 입력해주세요.");
+		}
+
+		MemberDTO currentMember = mapper.selectByMemberId(memberId);
+
+		if (currentMember == null) {
+			throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+		}
+
+		if (memberName.equals(currentMember.getMemberName())) {
+			return true;
+		}
+
+		return mapper.updateName(memberId, memberName) > 0;
 	}
 
 	@Override

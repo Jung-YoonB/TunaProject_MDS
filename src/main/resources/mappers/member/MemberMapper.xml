@@ -197,6 +197,16 @@
 	</update>
 	
 	<update id="withdrawMember" parameterType="long">
-    	UPDATE MEMBER SET MEMBER_STATUS = 0 WHERE MEMBER_ID = #{memberId}
+	    UPDATE MEMBER SET
+        	MEMBER_STATUS = 0,
+        	MEMBER_NAME = '탈퇴회원',
+        	BIRTH = NULL,
+        	GENDER = NULL,
+        	LOGIN_ID = 'withdraw_' || MEMBER_ID,
+        	NICKNAME = '탈퇴회원_' || MEMBER_ID,
+        	EMAIL = 'withdraw_' || MEMBER_ID || '@withdraw.com',
+        	PHONE = '9' || MEMBER_ID
+    	WHERE MEMBER_ID = #{memberId}
 	</update>
+	
 </mapper>
