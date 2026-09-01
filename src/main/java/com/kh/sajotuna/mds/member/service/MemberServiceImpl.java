@@ -2,15 +2,14 @@ package com.kh.sajotuna.mds.member.service;
 
 import java.util.List;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MyPageCouponDTO;
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -52,8 +51,13 @@ public class MemberServiceImpl implements MemberService{
 		member.setLoginPw(encodePw);
 				
 		// 체크 된 데이터를 저장
-		mapper.insertMember(member);
-		mapper.insertPoint(member.getMemberId()); // 회원의 포인트도 초기화
+		try {
+			mapper.insertMember(member);
+			mapper.insertPoint(member.getMemberId()); // 회원의 포인트도 초기화
+		} catch (DuplicateKeyException e) {
+	        // 동시에 가입하여 UNIQUE 제약조건에 걸린 경우
+	        throw new IllegalStateException("동시 가입으로 인해 이미 등록된 정보가 존재합니다. 다시 확인해주세요.");
+	    }
 		
 	}
 
@@ -86,6 +90,10 @@ public class MemberServiceImpl implements MemberService{
 			throw new IllegalStateException("아이디 또는 비밀번호가 일치하지 않습니다.");
 		}
 		
+		if (member.getMemberStatus() != 1) { 
+		    throw new IllegalStateException("정지되었거나 탈퇴한 회원입니다.");
+		}
+		
 		MemberDTO sessionMember = new MemberDTO(member.getMemberId(),
 				member.getMemberName(), member.getRole());
 		return sessionMember;
@@ -99,48 +107,93 @@ public class MemberServiceImpl implements MemberService{
 		return member;
 	}
 
-	@Override
-	public List<MyPageCouponDTO> listCoupon(Long memberId) {
-		List<MyPageCouponDTO> couponList = mapper.selectCouponsByMemberId(memberId);
+	private static final int COUPON_PAGE_SIZE = 10;
 
-		
-		return couponList;
+	@Override
+
+	public List<CouponDTO> listCoupon(Long memberId, int page) {
+		int safePage = Math.max(page, 1);
+		int offset = (safePage - 1) * COUPON_PAGE_SIZE;
+		return mapper.selectCouponsByMemberId(memberId, offset, COUPON_PAGE_SIZE);
 	}
 
 	@Override
-	public List<MyPageWishDTO> listWish(Long memberId) {
-		List<MyPageWishDTO> wishList = mapper.selectWishesByMemberId(memberId);
-		
-		return wishList;
+	public int totalCouponPages(Long memberId) {
+		int totalCount = mapper.countCouponsByMemberId(memberId);
+		return Math.max(1, (int) Math.ceil((double) totalCount / COUPON_PAGE_SIZE));
+	}
+
+	@Override
+	public int countCoupons(Long memberId) {
+		return mapper.countCouponsByMemberId(memberId);
+	}
+
+	private static final int DELIVERY_PAGE_SIZE = 10;
+
+	@Override
+	public List<MyPageDeliveryDTO> listDelivery(Long memberId, String status, int page) {
+		// 대표 상품 정보(이름/이미지/수량/건수)는 selectDeliveriesByMemberId 쿼리에 이미 조인되어 있음
+		// (주문 건수만큼 반복 조회하던 N+1 쿼리를 단일 쿼리로 정리). 주문이 쌓여도 느려지지 않도록
+		// 상태 필터 + 페이징은 서버(SQL의 WHERE/OFFSET-FETCH)에서 처리한다
+		int safePage = Math.max(page, 1);
+		int offset = (safePage - 1) * DELIVERY_PAGE_SIZE;
+		return mapper.selectDeliveriesByMemberId(memberId, status, offset, DELIVERY_PAGE_SIZE);
+	}
+
+	@Override
+	public boolean nicknameUpdate(Long memberId, String nickname) {
+		return mapper.updateNickname(memberId, nickname) > 0;
 	}
 	
 	@Override
-	public List<MyPageCartDTO> listCart(Long memberId) {
-		List<MyPageCartDTO> cartList = mapper.selectCartsByMemberId(memberId);
-		
-		return cartList;
+	public boolean phoneUpdate(Long memberId, String phone) {
+	    return mapper.updatePhone(memberId, phone) > 0;
 	}
 
 	@Override
-	public List<MyPageDeliveryDTO> listDelivery(Long memberId) {
-		List<MyPageDeliveryDTO> deliveryList = mapper.selectDeliveriesByMemberId(memberId);
-		
-		for(MyPageDeliveryDTO list : deliveryList) {
-			MyPageDeliveryDTO productInfo = mapper.selectProductByOrderId(list.getOrderId());
-			if (productInfo != null) {
-				list.setProductName(productInfo.getProductName());
-				list.setProductImagePath(productInfo.getProductImagePath());
-				list.setProductImageSaveName(productInfo.getProductImageSaveName());
-			} else { // 대표 상품 정보가 누락되거나 문제가 생겨 null로 들어올 때를 대비 
-				list.setProductName("상품 정보 없음");
-				list.setProductImagePath("/upload/product/");
-				list.setProductImageSaveName(""); // TODO: 상품 이미지 없을 때를 대비한 no-image.png 만들면 추후 수정
-			}
-		}
-		
-		return deliveryList;
+	public boolean emailUpdate(Long memberId, String email) {
+	    return mapper.updateEmail(memberId, email) > 0;
 	}
 
+	@Override
+	public boolean nameUpdate(Long memberId, String memberName) {
+	    return mapper.updateName(memberId, memberName) > 0;
+	}
+
+	@Override
+	public boolean birthUpdate(Long memberId, String birth) {
+	    return mapper.updateBirth(memberId, birth) > 0;
+	}
+
+	@Override
+	public boolean genderUpdate(Long memberId, String gender) {
+	    return mapper.updateGender(memberId, gender) > 0;
+	}
+
+	@Override
+	public boolean passwordUpdate(Long memberId, String newPassword) {
+		String encodePw = passwordEncoder.encode(newPassword);
+	    return mapper.updatePassword(memberId, encodePw) > 0;
+	}
 	
+	@Override
+	public boolean withdrawMember(Long memberId) {
+	    return mapper.withdrawMember(memberId) > 0;
+	}
+	
+	public int totalDeliveryPages(Long memberId, String status) {
+		int totalCount = mapper.countDeliveriesByMemberId(memberId, status);
+		return Math.max(1, (int) Math.ceil((double) totalCount / DELIVERY_PAGE_SIZE));
+	}
+
+	@Override
+	public int countActiveDeliveries(Long memberId) {
+		return mapper.countActiveDeliveries(memberId);
+	}
+
+	@Override
+	public int countReviewableOrderDetails(Long memberId) {
+		return mapper.countReviewableOrderDetails(memberId);
+	}
 }
 

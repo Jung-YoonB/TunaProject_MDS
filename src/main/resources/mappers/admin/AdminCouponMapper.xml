@@ -5,7 +5,9 @@
 
 <mapper namespace="com.kh.sajotuna.mds.admin.model.mapper.AdminCouponMapper">
 
-	<select id="selectAllCoupons" resultType="AdminCouponDTO">
+	<!-- CouponDTO(coupon.model)는 COUPON 테이블을 참조하는 DTO라 admin 전용
+	     AdminCouponDTO 대신 이걸 그대로 씀 -->
+	<select id="selectAllCoupons" resultType="CouponDTO">
 		SELECT
 			c.COUPON_ID AS couponId,
 			c.COUPON_NAME AS couponName,
@@ -20,7 +22,7 @@
 		ORDER BY c.COUPON_ID DESC
 	</select>
 
-	<insert id="insertCoupon" parameterType="AdminCouponDTO">
+	<insert id="insertCoupon" parameterType="CouponDTO">
 		<selectKey keyProperty="couponId" resultType="long" order="BEFORE">
 			SELECT SEQ_COUPON_ID.NEXTVAL FROM DUAL
 		</selectKey>

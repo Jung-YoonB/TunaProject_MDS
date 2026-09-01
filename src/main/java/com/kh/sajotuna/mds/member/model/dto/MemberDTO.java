@@ -22,6 +22,7 @@ public class MemberDTO {
 
 	private Long memberId;
 	private Long gradeId;
+	private String gradeName; // GRADE.GRADE_NAME, 마이페이지 표시용 (selectByMemberId에서만 채워짐)
 	private Long totalAmount;
 	private String memberName;
 	@DateTimeFormat(pattern = "yyyy-MM-dd")

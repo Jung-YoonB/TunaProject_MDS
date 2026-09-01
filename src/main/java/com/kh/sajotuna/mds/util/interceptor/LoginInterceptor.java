@@ -1,10 +1,8 @@
 package com.kh.sajotuna.mds.util.interceptor;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import com.kh.sajotuna.mds.util.RedirectUtil;
 import com.kh.sajotuna.mds.util.SessionConst;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,9 +21,8 @@ public class LoginInterceptor implements HandlerInterceptor {
 		// 로그인 되어 있을 경우 컨트롤러 경로 진행
 		if (isLoggedIn) return true;
 		
-		// 로그인 후 기존에 요청했던 주소로 리다이렉트 처리
-		String redirectURL = URLEncoder.encode(request.getRequestURI(), StandardCharsets.UTF_8);
-		response.sendRedirect("/member/login?redirectURL=" + redirectURL);
+		// 로그인 후 기존에 요청했던 주소로 리다이렉트 처리 (AdminAuthUtil도 같은 걸 씀)
+		response.sendRedirect(RedirectUtil.buildLoginRedirectPath(request));
 		
 		return false;
 	}

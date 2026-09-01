@@ -120,7 +120,12 @@ function initPhotoUpload() {
       removeBtn.type = 'button';
       removeBtn.className = 'remove-btn';
       removeBtn.setAttribute('aria-label', (idx + 1) + '번째 사진 삭제');
-      removeBtn.textContent = '×';
+      // 원래 '×' 글리프였으나 사이트 전체 아이콘 SVG 통일에 맞춤(2026-09-01).
+      // 스타일은 style.css의 공용 .icon-close.
+      removeBtn.innerHTML =
+        '<svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+            '<path d="M18 6L6 18M6 6l12 12"></path>' +
+        '</svg>';
       removeBtn.addEventListener('click', function () {
         selectedFiles.splice(idx, 1);
         render();

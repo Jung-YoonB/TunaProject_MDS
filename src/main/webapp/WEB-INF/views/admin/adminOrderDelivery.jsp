@@ -3,7 +3,7 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin_order.css 포함)를 로드하므로 별도 link 불필요 --%>
+<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin.css 포함)를 로드하므로 별도 link 불필요 --%>
 <div class="admin-order-delivery-page"
      data-order-list-url="<c:url value='/admin/order/list'/>"
      data-order-delivery-url-prefix="<c:url value='/admin/order/delivery/'/>"
@@ -136,6 +136,7 @@
          조회 기간/검색어 필터는 기존처럼 프론트에서 클라이언트 필터링한다.
          JS는 서버 통신/데이터 가공(비즈니스 로직)과 화면 조작(인터랙션)을 파일로 분리했다:
          business -> /js/admin/adminOrderService.js, interaction -> /js/views/adminOrderDelivery.js --%>
+    <script src="<c:url value='/js/common/pagination.js'/>"></script>
     <script src="<c:url value='/js/admin/adminOrderService.js'/>"></script>
     <script src="<c:url value='/js/views/adminOrderDelivery.js'/>"></script>
 

@@ -10,7 +10,7 @@
 
 <!-- ================= MAIN ================= -->
 
-<div class="product-register">
+<div class="product-register" data-register-url="<c:url value='/admin/product/add'/>">
 
     <div class="page-title">
         <span class="eyebrow">PRODUCT MANAGEMENT</span>
@@ -49,6 +49,44 @@
             </div>
 
 
+            <!-- 상품 게시글 제목 (PRODUCT.PRODUCT_TITLE - 목록/검색 카드에 노출되는 제목) -->
+
+            <div class="form-row">
+                <label>
+                    상품 게시글 제목
+                    <span class="required">*</span>
+                </label>
+
+                <div class="input-area">
+                    <input
+                        type="text"
+                        name="productTitle"
+                        id="productTitleInput"
+                        placeholder="상품 목록/검색에 노출될 제목을 입력해 주세요"
+                    >
+                </div>
+            </div>
+
+
+            <!-- 옵션명 (PRODUCTOPTION.OPTION_NAME - 이 화면은 옵션 1개만 생성하므로 그 옵션의 이름) -->
+
+            <div class="form-row">
+                <label>
+                    옵션명
+                    <span class="required">*</span>
+                </label>
+
+                <div class="input-area">
+                    <input
+                        type="text"
+                        name="optionName"
+                        id="optionNameInput"
+                        placeholder="예: 기본, 단품"
+                    >
+                </div>
+            </div>
+
+
             <!-- 가격 -->
 
             <div class="form-row">
@@ -69,8 +107,7 @@
             </div>
 
 
-            <!-- 임시: 재고 입력 필드 (원래 addProduct.jsp에는 없던 필드.
-                 PRODUCT 테이블엔 가격/재고 컬럼이 없고 PRODUCTOPTION(옵션)에 있어서,
+            <!-- 재고 (PRODUCT 테이블엔 가격/재고 컬럼이 없고 PRODUCTOPTION(옵션)에 있어서,
                  상품 등록 시 이 값으로 "기본 옵션" 1개를 자동 생성해 가격/재고를 담는다) -->
             <div class="form-row">
                 <label>
@@ -141,7 +178,6 @@
                                     style="background-color:${tag.tagColor}"
                                 >
                                     <span>${tag.tagName}</span>
-                                    <button type="button" class="tag-remove">×</button>
                                 </div>
                             </c:forEach>
 
@@ -246,14 +282,13 @@
             </div>
 
 
-            <!-- 임시: 설명 이미지 업로드 영역 (원래 addProduct.jsp에는 없던 영역.
-                 PRODUCTIMAGE.PRODUCT_TITLE_IMAGE가 0(대표)/1(서브)/2(설명) 세 종류를
-                 지원하도록 스키마는 열려 있으나, 이 화면엔 대표/추가 이미지만 있어서 추가함) -->
+            <!-- 설명 이미지 업로드 영역 (원래 목업엔 없었으나 기획 확인 결과 필수 항목.
+                 PRODUCTIMAGE.PRODUCT_TITLE_IMAGE가 0(대표)/1(서브)/2(설명) 세 종류를 지원한다) -->
 
             <div class="sub-image-area">
 
                 <div class="sub-image-title">
-                    <strong>설명 이미지</strong>
+                    <strong>설명 이미지 <span class="required">*</span></strong>
                     <span id="descImageCount">0장</span>
                 </div>
 
@@ -337,12 +372,15 @@
 
             <h3>태그 추가</h3>
 
+            <%-- 원래 "×" 글리프였으나 사이트 전체 아이콘 SVG 통일에 맞춤(2026-09-01).
+                 텍스트가 없어져서 스크린리더용 이름은 aria-label로 준다. --%>
             <button
                 type="button"
                 class="modal-close"
                 id="modalCloseButton"
+                aria-label="닫기"
             >
-                ×
+                <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
 
         </div>
@@ -415,666 +453,8 @@
 </div>
 
 
-<script>
-
-/* ==================================================
-   태그 관리
-   ================================================== */
-
-/*
- * 현재 상품에 선택된 태그
- * 태그 이름을 기준으로 관리
- */
-const selectedTags = new Set();
-
-
-/*
- * 기존 태그 클릭
- *
- * 클릭하면:
- * 1. 선택 상태 변경
- * 2. 현재 상품 태그에 추가/삭제
- */
-document.getElementById("existingTagList").addEventListener("click", function(event){
-
-    const tag = event.target.closest(".product-tag");
-
-    if(!tag) return;
-
-    /*
-     * X 버튼을 누른 경우
-     * 기존 태그는 삭제하지 않고 선택만 해제
-     */
-    if(event.target.closest(".tag-remove")){
-        event.stopPropagation();
-
-        const name = tag.dataset.tagName;
-
-        selectedTags.delete(name);
-        updateTagDisplay();
-
-        return;
-    }
-
-    const name = tag.dataset.tagName;
-
-    if(selectedTags.has(name)){
-        selectedTags.delete(name);
-    }else{
-        selectedTags.add(name);
-    }
-
-    updateTagDisplay();
-});
-
-
-/*
- * 현재 상품 태그의 X 버튼
- *
- * 선택된 태그를 현재 상품에서 제거하고
- * 기존 태그의 선택 상태도 해제
- */
-document.getElementById("addedTagList").addEventListener("click", function(event){
-
-    const removeButton = event.target.closest(".tag-remove");
-
-    if(!removeButton) return;
-
-    event.stopPropagation();
-
-    const tag = removeButton.closest(".product-tag");
-
-    if(!tag) return;
-
-    const name = tag.dataset.tagName;
-
-    selectedTags.delete(name);
-
-    /*
-     * 직접 추가한 태그인지 확인
-     */
-    const existingTag = document.querySelector(
-        '#existingTagList .product-tag[data-tag-name="' +
-        CSS.escape(name) +
-        '"]'
-    );
-
-    /*
-     * 직접 추가한 태그는 X를 누르면
-     * 기존 태그에서도 완전히 삭제
-     */
-    if(tag.dataset.custom === "true" && existingTag){
-        existingTag.remove();
-    }
-
-    updateTagDisplay();
-});
-
-
-/*
- * 현재 상품 태그 표시 갱신
- */
-function updateTagDisplay(){
-
-    const existingTags =
-        document.querySelectorAll("#existingTagList .product-tag");
-
-    /*
-     * 기존 태그 선택 상태 갱신
-     */
-    existingTags.forEach(function(tag){
-
-        const name = tag.dataset.tagName;
-
-        tag.classList.toggle(
-            "selected",
-            selectedTags.has(name)
-        );
-    });
-
-
-    /*
-     * 현재 상품 태그 영역
-     */
-    const addedTagList =
-        document.getElementById("addedTagList");
-
-    const addButton =
-        document.getElementById("addTagButton");
-
-    /*
-     * 기존에 생성된 현재 상품 태그 제거
-     */
-    addedTagList
-        .querySelectorAll(".product-tag")
-        .forEach(function(tag){
-            tag.remove();
-        });
-
-
-    /*
-     * 선택된 태그를 현재 상품 태그로 생성
-     */
-    selectedTags.forEach(function(name){
-
-        const existingTag =
-            document.querySelector(
-                '#existingTagList .product-tag[data-tag-name="' +
-                CSS.escape(name) +
-                '"]'
-            );
-
-        if(!existingTag) return;
-
-        const tag = createCurrentTag(
-            existingTag.dataset.tagName,
-            existingTag.dataset.tagColor,
-            existingTag.dataset.custom === "true"
-        );
-
-        addedTagList.insertBefore(tag, addButton);
-    });
-}
-
-
-/*
- * 현재 상품 태그 생성
- */
-function createCurrentTag(name, color, isCustom){
-
-    const tag = document.createElement("div");
-
-    tag.className = "product-tag selected";
-
-    tag.dataset.tagName = name;
-    tag.dataset.tagColor = color;
-
-    if(isCustom){
-        tag.dataset.custom = "true";
-    }
-
-    tag.style.backgroundColor = color;
-
-    const text = document.createElement("span");
-    text.textContent = name;
-
-    const removeButton = document.createElement("button");
-
-    removeButton.type = "button";
-    removeButton.className = "tag-remove";
-    removeButton.textContent = "×";
-
-    tag.appendChild(text);
-    tag.appendChild(removeButton);
-
-    return tag;
-}
-
-
-/* ==================================================
-   태그 모달
-   ================================================== */
-
-const tagModal =
-    document.getElementById("tagModal");
-
-const newTagName =
-    document.getElementById("newTagName");
-
-const newTagColor =
-    document.getElementById("newTagColor");
-
-const colorPreview =
-    document.getElementById("colorPreview");
-
-
-/*
- * 태그 추가 버튼
- */
-document
-    .getElementById("addTagButton")
-    .addEventListener("click", openTagModal);
-
-
-/*
- * 모달 열기
- */
-function openTagModal(){
-
-    tagModal.classList.add("show");
-
-    newTagName.value = "";
-    newTagColor.value = "#E8D6C5";
-
-    updateColorPreview();
-
-    newTagName.focus();
-}
-
-
-/*
- * 모달 닫기
- */
-function closeTagModal(){
-
-    tagModal.classList.remove("show");
-}
-
-
-document
-    .getElementById("modalCloseButton")
-    .addEventListener("click", closeTagModal);
-
-document
-    .getElementById("modalCancelButton")
-    .addEventListener("click", closeTagModal);
-
-
-/*
- * 모달 바깥 클릭
- */
-tagModal.addEventListener("click", function(event){
-
-    if(event.target === tagModal){
-        closeTagModal();
-    }
-});
-
-
-/* ==================================================
-   색상 미리보기
-   ================================================== */
-
-newTagColor.addEventListener(
-    "input",
-    updateColorPreview
-);
-
-
-function updateColorPreview(){
-
-    const color =
-        newTagColor.value.toUpperCase();
-
-    colorPreview.style.backgroundColor = color;
-
-    colorPreview.style.color =
-        getContrastColor(color);
-
-    colorPreview.textContent =
-        "선택 색상 " + color;
-}
-
-
-function getContrastColor(hex){
-
-    const r =
-        parseInt(hex.substring(1,3),16);
-
-    const g =
-        parseInt(hex.substring(3,5),16);
-
-    const b =
-        parseInt(hex.substring(5,7),16);
-
-    const brightness =
-        (r * 299 + g * 587 + b * 114) / 1000;
-
-    return brightness > 160
-        ? "#4b433d"
-        : "#ffffff";
-}
-
-
-/* ==================================================
-   새 태그 생성
-   ================================================== */
-
-document
-    .getElementById("modalAddButton")
-    .addEventListener("click", addNewTag);
-
-
-function addNewTag(){
-
-    const name =
-        newTagName.value.trim();
-
-    const color =
-        newTagColor.value.toUpperCase();
-
-
-    /*
-     * 태그명 검사
-     */
-    if(!name){
-
-        alert("태그명을 입력해주세요.");
-
-        newTagName.focus();
-
-        return;
-    }
-
-
-    /*
-     * 기존 태그와 새 태그 전체 중복 검사
-     */
-    const allTags =
-        document.querySelectorAll(".product-tag");
-
-    for(const tag of allTags){
-
-        if(tag.dataset.tagName === name){
-
-            alert("이미 존재하는 태그입니다.");
-
-            newTagName.focus();
-
-            return;
-        }
-    }
-
-
-    /*
-     * 기존 태그 영역에 새 태그 생성
-     */
-    const existingTag =
-        document.createElement("div");
-
-    existingTag.className =
-        "product-tag selected";
-
-    existingTag.dataset.tagName =
-        name;
-
-    existingTag.dataset.tagColor =
-        color;
-
-    existingTag.dataset.custom =
-        "true";
-
-    existingTag.style.backgroundColor =
-        color;
-
-
-    const text =
-        document.createElement("span");
-
-    text.textContent = name;
-
-
-    const removeButton =
-        document.createElement("button");
-
-    removeButton.type = "button";
-    removeButton.className = "tag-remove";
-    removeButton.textContent = "×";
-
-
-    existingTag.appendChild(text);
-    existingTag.appendChild(removeButton);
-
-
-    document
-        .getElementById("existingTagList")
-        .appendChild(existingTag);
-
-
-    /*
-     * 현재 상품 태그에도 선택
-     */
-    selectedTags.add(name);
-
-    updateTagDisplay();
-
-
-    /*
-     * 입력창 초기화
-     */
-    newTagName.value = "";
-    newTagColor.value = "#E8D6C5";
-
-    updateColorPreview();
-
-    /*
-     * 모달은 닫지 않음
-     * → 여러 태그 연속 추가 가능
-     */
-    newTagName.focus();
-}
-
-
-/* ==================================================
-   상품 설명 글자 수
-   ================================================== */
-
-const textarea =
-    document.getElementById("productContent");
-
-const counter =
-    document.getElementById("counter");
-
-
-textarea.addEventListener("input", function(){
-
-    counter.textContent =
-        this.value.length + " / 2000";
-});
-
-
-/* ==================================================
-   추가 이미지 / 설명 이미지 (개수 제한 없는 동적 업로드)
-   ================================================== */
-
-let subImageFiles = [];
-let descImageFiles = [];
-
-function createImageSlot(file, onRemove){
-
-    const box = document.createElement("div");
-    box.className = "sub-image-box sub-image-preview";
-    box.style.position = "relative";
-    box.style.overflow = "hidden";
-
-    const img = document.createElement("img");
-    img.src = URL.createObjectURL(file);
-    img.alt = file.name;
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "cover";
-
-    const removeButton = document.createElement("button");
-    removeButton.type = "button";
-    removeButton.className = "tag-remove sub-image-remove";
-    removeButton.textContent = "×";
-    removeButton.style.position = "absolute";
-    removeButton.style.top = "4px";
-    removeButton.style.right = "4px";
-    removeButton.addEventListener("click", function(event){
-        event.preventDefault();
-        event.stopPropagation();
-        onRemove();
-    });
-
-    box.appendChild(img);
-    box.appendChild(removeButton);
-
-    return box;
-}
-
-function renderImageList(files, gridEl, addTileEl, countEl){
-
-    gridEl.querySelectorAll(".sub-image-preview img").forEach(function(img){
-        URL.revokeObjectURL(img.src);
-    });
-
-    gridEl.querySelectorAll(".sub-image-preview").forEach(function(el){
-        el.remove();
-    });
-
-    files.forEach(function(file, index){
-        const slot = createImageSlot(file, function(){
-            files.splice(index, 1);
-            renderImageList(files, gridEl, addTileEl, countEl);
-        });
-        gridEl.insertBefore(slot, addTileEl);
-    });
-
-    countEl.textContent = files.length + "장";
-}
-
-function setupImageUploader(addTileId, inputId, gridId, countId, filesArray){
-
-    const addTile = document.getElementById(addTileId);
-    const input = document.getElementById(inputId);
-    const grid = document.getElementById(gridId);
-    const count = document.getElementById(countId);
-
-    addTile.addEventListener("click", function(event){
-        event.preventDefault();
-        input.click();
-    });
-
-    input.addEventListener("change", function(event){
-        for(const file of event.target.files){
-            filesArray.push(file);
-        }
-        event.target.value = "";
-        renderImageList(filesArray, grid, addTile, count);
-    });
-}
-
-setupImageUploader("subImageAddTile", "subImageInput", "subImageGrid", "subImageCount", subImageFiles);
-setupImageUploader("descImageAddTile", "descImageInput", "descImageGrid", "descImageCount", descImageFiles);
-
-
-/* ==================================================
-   취소
-   ================================================== */
-
-document
-    .getElementById("cancelButton")
-    .addEventListener("click", function(){
-
-        history.back();
-
-    });
-
-
-/* ==================================================
-   상품 등록
-   ================================================== */
-
-document
-    .getElementById("registerButton")
-    .addEventListener("click", registerProduct);
-
-
-function registerProduct(){
-
-    const productName = document.getElementById("productNameInput").value.trim();
-    const price = document.getElementById("priceInput").value;
-    const stock = document.getElementById("stockInput").value;
-    const categoryId = document.getElementById("categorySelect").value;
-    const productContent = document.getElementById("productContent").value;
-    const mainImageInput = document.getElementById("main-image");
-
-    if(!productName){
-        alert("상품명을 입력해 주세요.");
-        return;
-    }
-    if(!price){
-        alert("판매가격을 입력해 주세요.");
-        return;
-    }
-    if(!stock){
-        alert("재고를 입력해 주세요.");
-        return;
-    }
-    if(!categoryId){
-        alert("카테고리를 선택해 주세요.");
-        return;
-    }
-    if(!mainImageInput.files[0]){
-        alert("대표 이미지를 등록해 주세요.");
-        return;
-    }
-    if(!productContent.trim()){
-        // PRODUCT_CONTENT는 NOT NULL 컬럼이고, Oracle은 빈 문자열을 NULL로 취급해서
-        // 비워둔 채 등록하면 DB 제약조건 위반으로 실패한다.
-        alert("상품 설명을 입력해 주세요.");
-        return;
-    }
-
-    const tagData = [];
-
-    selectedTags.forEach(function(name){
-
-        const tag =
-            document.querySelector(
-                '#existingTagList .product-tag[data-tag-name="' +
-                CSS.escape(name) +
-                '"]'
-            );
-
-        if(tag){
-
-            tagData.push({
-                tagName: tag.dataset.tagName,
-                tagColor: tag.dataset.tagColor
-            });
-
-        }
-    });
-
-    const formData = new FormData();
-    formData.append("productName", productName);
-    formData.append("price", price);
-    formData.append("stock", stock);
-    formData.append("categoryId", categoryId);
-    formData.append("productContent", productContent);
-    formData.append("tagsJson", JSON.stringify(tagData));
-    formData.append("mainImage", mainImageInput.files[0]);
-
-    subImageFiles.forEach(function(file){
-        formData.append("subImages", file);
-    });
-
-    descImageFiles.forEach(function(file){
-        formData.append("descriptionImages", file);
-    });
-
-    const registerButton = document.getElementById("registerButton");
-    registerButton.disabled = true;
-
-    fetch("<c:url value='/admin/product/add'/>", {
-        method: "POST",
-        body: formData
-    })
-        .then(function(response){ return response.json(); })
-        .then(function(result){
-            alert(result.message || (result.success ? "상품이 등록되었습니다." : "상품 등록에 실패했습니다."));
-            if(result.success){
-                location.href = "<c:url value='/admin/product/add'/>";
-            }
-        })
-        .catch(function(){
-            alert("상품 등록 중 오류가 발생했습니다.");
-        })
-        .finally(function(){
-            registerButton.disabled = false;
-        });
-}
-
-
-/* ==================================================
-   초기화
-   ================================================== */
-
-updateColorPreview();
-
-</script>
+<script src="<c:url value='/js/admin/adminProductService.js'/>"></script>
+<script src="<c:url value='/js/views/addProduct.js'/>"></script>
 
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

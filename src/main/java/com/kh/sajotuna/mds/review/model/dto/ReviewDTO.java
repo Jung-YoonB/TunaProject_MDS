@@ -33,5 +33,10 @@ public class ReviewDTO {
     private int score;      //별점 (리뷰 작성 시 필요)
 
     List<ReviewImagesDTO> reviewImages;     //리뷰 사진
+
+    // 마이페이지 "내가 쓴 리뷰" 목록에서만 채워지는 상품 대표이미지 (product detail 화면은 이미 상품 페이지 자체에
+    // 이미지가 있어서 필요 없었음)
+    private String productImagePath;
+    private String productImageSaveName;
 }
 

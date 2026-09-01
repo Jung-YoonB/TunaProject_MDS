@@ -5,7 +5,9 @@
 
 <mapper namespace="com.kh.sajotuna.mds.admin.model.mapper.AdminProductMapper">
 
-	<select id="selectAllCategories" resultType="CategoryOptionDTO">
+	<!-- CategoryDTO(product.model.dto.mainPage)는 CATEGORY 테이블을 참조하는 DTO라 admin 전용
+	     CategoryOptionDTO 대신 이걸 그대로 씀 -->
+	<select id="selectAllCategories" resultType="CategoryDTO">
 		SELECT CATEGORY_ID AS categoryId, CATEGORY_NAME AS categoryName
 		FROM CATEGORY
 		ORDER BY CATEGORY_ID
@@ -17,15 +19,19 @@
 		ORDER BY TAG_ID
 	</select>
 
-	<insert id="insertProduct" parameterType="ProductInsertDTO">
+	<!-- ProductDetailDTO(product.model.dto.detail)는 PRODUCT 테이블을 참조하는 DTO라 admin 전용
+	     ProductInsertDTO 대신 이걸 그대로 씀 (등록 시엔 이 중 4개 필드만 채워서 넘어옴) -->
+	<insert id="insertProduct" parameterType="ProductDetailDTO">
 		<selectKey keyProperty="productId" resultType="long" order="BEFORE">
 			SELECT SEQ_PRODUCT_ID.NEXTVAL FROM DUAL
 		</selectKey>
 		INSERT INTO PRODUCT (PRODUCT_ID, PRODUCT_TITLE, PRODUCT_NAME, PRODUCT_CONTENT, STATUS)
-		VALUES (#{productId}, #{productName}, #{productName}, #{productContent}, 'ON_SALE')
+		VALUES (#{productId}, #{productTitle}, #{productName}, #{productContent}, 'ON_SALE')
 	</insert>
 
-	<insert id="insertProductOption" parameterType="ProductOptionInsertDTO">
+	<!-- OptionDTO(product.model.dto.detail)는 PRODUCTOPTION 테이블을 참조하는 DTO라 admin 전용
+	     ProductOptionInsertDTO 대신 이걸 그대로 씀 (popId는 여기서 안 채움) -->
+	<insert id="insertProductOption" parameterType="OptionDTO">
 		<selectKey keyProperty="optionId" resultType="long" order="BEFORE">
 			SELECT SEQ_OPTION_ID.NEXTVAL FROM DUAL
 		</selectKey>

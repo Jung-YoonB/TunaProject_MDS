@@ -1,10 +1,11 @@
 package com.kh.sajotuna.mds.order.model.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.ibatis.type.Alias;
 
-import com.kh.sajotuna.mds.coupon.model.dto.MyPageCouponDTO;
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,7 +27,7 @@ public class PaymentViewDTO {
 	
 	// 등급 테이블
 	private String gradeName;		// 회원의 등급
-	private Long discountRate;		// 회원의 할인율
+	private BigDecimal discountRate;		// 회원의 할인율
 	
 	// 배달주소 테이블
 	private String addressName;		// 회원이 저장한 기본 주소 이름
@@ -37,5 +38,5 @@ public class PaymentViewDTO {
 	
 	// 리스트
 	private List<OrderItemDTO> itemList;		// 구매할 것들 정보 (옵션id, 수량, 옵션 이름, 옵션가격, 상품 이름)
-	private List<MyPageCouponDTO> couponList;	// 사용자가 가지고 있는 쿠폰 목록
+	private List<CouponDTO> couponList;	// 사용자가 가지고 있는 쿠폰 목록
 }
