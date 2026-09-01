@@ -108,9 +108,29 @@
 			</div>
 
 			<div class="sign">
-				<a href="<c:url value='/member/login'/>">로그인</a>
-				<span class="sign-divider" aria-hidden="true">|</span>
-				<a href="<c:url value='/member/signUp'/>">회원가입</a>
+
+			    <c:choose>
+
+			        <%-- 로그인 상태 --%>
+			        <c:when test="${not empty sessionScope.loginSession}">
+			            <span class="welcome">
+			                ${sessionScope.loginSession.memberName}님
+			            </span>
+
+			            <span class="sign-divider" aria-hidden="true">|</span>
+
+			            <a href="<c:url value='/member/logout'/>">로그아웃</a>
+			        </c:when>
+
+			        <%-- 로그아웃 상태 --%>
+			        <c:otherwise>
+			            <a href="<c:url value='/member/login'/>">로그인</a>
+			            <span class="sign-divider" aria-hidden="true">|</span>
+			            <a href="<c:url value='/member/signUp'/>">회원가입</a>
+			        </c:otherwise>
+
+			    </c:choose>
+
 			</div>
 		</div>
 
