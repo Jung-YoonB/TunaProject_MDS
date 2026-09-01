@@ -217,6 +217,11 @@
     background-color: var(--gsf-sage);
 }
 
+/* 짝수(노란색) 아이템은 명시도가 더 높아(0,4,0 > 0,3,0) 위 hover 규칙을 이기고 자기 색 계열의 진한 톤을 쓴다 */
+.category-item:nth-child(even):hover .category-icon {
+    background-color: var(--gsf-peach-dark);
+}
+
 .category-icon-svg {
     width: 26px;
     height: 26px;
@@ -341,6 +346,9 @@
     position: absolute;
     top: 13px;
     right: 14px;
+    /* searchProduct.jsp에서는 .product-img를 통째로 덮는 링크(.sp-product-link, z-index:1)가
+       같이 들어있어서, 그보다 위에 그려지도록 명시적으로 z-index를 줘야 버튼이 눌린다 */
+    z-index: 2;
     width: 36px;
     height: 36px;
     padding: 0;
@@ -531,7 +539,7 @@
 
 /* 로그인/회원가입 2단 패널 - 왼쪽 그라데이션 비주얼(.auth-visual) + 오른쪽 폼(.auth-form-panel). */
 .auth-shell {
-    width: min(920px, 100% - 40px);
+    width: min(920px, 100% - 80px);
     margin: 60px auto;
     display: flex;
     border-radius: var(--radius-lg);
@@ -541,7 +549,7 @@
 }
 
 .auth-shell-wide {
-    width: min(1000px, 100% - 40px); /* 회원가입 전용 - 필드가 많아서 더 넓음 */
+    width: min(1000px, 100% - 80px); /* 회원가입 전용 - 필드가 많아서 더 넓음 */
 }
 
 .auth-visual {
@@ -898,17 +906,22 @@
 /* style_myPage.css의 bare "body"/"main"/"#title" 규칙이 모든 페이지에 새어 들어오므로
    이 페이지에서만 되돌림 (style_cart.css/style_search.css와 동일한 기존 관례) */
 body:has(.update-page) {
-    background-color: #f8f6f2;
+    background-color: #FDFBF9;
 }
 
 main:has(.update-page) {
-    width: 500px;
-    margin: 60px auto;
+    width: min(500px, 100% - 80px);
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
 }
 
 .update-page {
     padding: 40px;
-    background-color: white;
+    background-color: #fefdfa;
     border: 1px solid #e5e0d8;
     border-radius: 12px;
     box-sizing: border-box;
@@ -1075,8 +1088,8 @@ main:has(.update-page) {
     padding: 10px 18px;
     border: none;
     border-radius: 6px;
-    background-color: #e9edc9;
-    color: #3f4a33;
+    background-color: var(--gsf-caramel);
+    color: white;
     font-size: 13px;
     font-weight: bold;
     cursor: pointer;
@@ -1086,8 +1099,8 @@ main:has(.update-page) {
    안 보이는 문제가 있어(specificity가 더 높음), 여기서 명시적으로 재정의해 되돌림 */
 .btn-save-field:hover,
 .btn-save-field:focus {
-    background-color: #ccd5ae;
-    color: #3f4a33;
+    background-color: var(--gsf-ink);
+    color: white;
 }
 
 .btn-cancel-edit {
@@ -1249,14 +1262,18 @@ main:has(.withdraw-page) {
 /* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
    다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .member-mypage-page로 스코프할 것 */
 .member-mypage-page {
-    background-color: #f6efe4;
+    background-color: #FDFBF9;
     min-height: 100vh;
 }
 
 .member-mypage-page .page-content {
-    width: 720px;
+    width: min(800px, 100% - 80px);
     margin: 0 auto;
-    padding: 40px 0 80px;
+    padding: 40px 40px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
 }
 
 .member-mypage-page .page-title {
@@ -1290,27 +1307,6 @@ main:has(.withdraw-page) {
     display: flex;
     align-items: center;
     gap: 16px;
-}
-
-.member-mypage-page .avatar-circle {
-    flex-shrink: 0;
-    width: 64px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #ececec;
-    border-radius: 50%;
-}
-
-.member-mypage-page .avatar-icon-svg {
-    width: 32px;
-    height: 32px;
-    fill: none;
-    stroke: #999;
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
 }
 
 .member-mypage-page .profile-name-wrap {
@@ -1634,11 +1630,16 @@ main:has(.withdraw-page) {
 
 /* style_myPage.css의 bare "body"/"main" 규칙이 모든 페이지에 새어 들어오므로 이 페이지에서만 되돌림 */
 body:has(.cart-container) {
-	background-color: #f6efe4;
+	background-color: #FDFBF9;
 }
 main:has(.cart-container) {
-	width: 800px;
+	width: min(800px, 100% - 80px);
 	margin: 0 auto;
+	padding: 0 40px;
+	background-color: #fbf8f4;
+	border-left: 1px solid var(--gsf-border);
+	border-right: 1px solid var(--gsf-border);
+	box-sizing: border-box;
 }
 
 /* 이 파일의 모든 규칙은 .cart-container로 스코프함: .item-checkbox/.btn-solid 같은
@@ -1902,11 +1903,16 @@ main:has(.cart-container) {
 
 /* style_myPage.css의 bare "body"/"main" 규칙이 모든 페이지에 새어 들어오므로 이 페이지에서만 되돌림 */
 body:has(.wishlist-container) {
-	background-color: #f6efe4;
+	background-color: #FDFBF9;
 }
 main:has(.wishlist-container) {
-	width: 1100px;
+	width: min(1100px, 100% - 80px);
 	margin: 0 auto;
+	padding: 0 40px;
+	background-color: #fbf8f4;
+	border-left: 1px solid var(--gsf-border);
+	border-right: 1px solid var(--gsf-border);
+	box-sizing: border-box;
 }
 
 /* 이 파일의 모든 규칙은 .wishlist-container로 스코프함: .product-card/.item-checkbox 같은
@@ -1996,101 +2002,50 @@ main:has(.wishlist-container) {
 	grid-template-columns: repeat(4, 1fr);
 	gap: 24px;
 }
-.wishlist-container .product-card {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	background-color: #fff;
-	border: 1px solid #eee;
-	border-radius: 10px;
+/* 카드 구조를 홈 상품 카드와 통일하면서(2026-09-02) 박스/이미지/이름/별점/찜아이콘/장바구니
+   스타일은 전부 .product-card/.product-img/.product-cart-quick/.product-meta/.product-rating/
+   .product-wish-toggle(위 홈 카드 섹션)를 그대로 재사용한다. 여기 남기는 건 찜 화면에만 있는
+   것들(선택 체크박스, 삭제 페이드 애니메이션, 이미지 박스를 덮는 링크)뿐 - btn-wish-toggle/
+   btn-cart는 views/wish.js의 클릭 위임이 그대로 쓰는 훅이라 클래스명만 유지 */
+/* .product-name은 공용 클래스라 20px인데, 4열 그리드라 카드 폭이 좁아 두 줄로 넘어가던 것을
+   한 줄로 고정(말줄임표 처리) - 홈/검색 결과 카드는 폭이 더 넓어 영향받지 않게 여기서만 스코프 */
+.wishlist-container .product-name {
+	font-size: 16px;
+	white-space: nowrap;
 	overflow: hidden;
-	transition: opacity 0.3s ease;
+	text-overflow: ellipsis;
+}
+/* cart.js의 .item-option과 같은 패턴(상품명 바로 아래 옵션 표기) - 실제 연동 전까지 기본값 */
+.wishlist-container .product-option {
+	margin: 0 0 4px;
+	font-size: 13px;
+	color: var(--gsf-subtext);
 }
 .wishlist-container .product-card.is-removing {
 	opacity: 0;
+	transition: opacity 0.3s ease;
 }
-.wishlist-container .product-link {
-	display: block;
-	color: inherit;
-	text-decoration: none;
-}
-.wishlist-container .product-link:hover {
-	text-decoration: none;
-}
-.wishlist-container .product-thumbnail {
-	width: 100%;
-	height: 180px;
-	background-color: #f5f5f5;
+.wishlist-container .product-img .product-link {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
 }
 .wishlist-container .item-checkbox {
 	position: absolute;
 	top: 10px;
 	left: 10px;
+	z-index: 2;
 	width: 18px;
 	height: 18px;
 	accent-color: var(--gsf-caramel);
 	cursor: pointer;
 }
-.wishlist-container .btn-wish-toggle {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	width: 32px;
-	height: 32px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: none;
-	background: none;
-	padding: 0;
-	cursor: pointer;
-}
-.wishlist-container .wish-heart {
-	width: 20px;
-	height: 20px;
-	fill: none;
-	stroke: var(--gsf-caramel);
-	stroke-width: 2;
-}
-.wishlist-container .btn-wish-toggle.is-active .wish-heart {
+/* 찜 화면 카드는 전부 이미 찜한 상품이라 항상 채워진 하트로 보여준다(누르면 찜 해제) */
+.wishlist-container .product-wish-toggle.is-active .product-wish-icon {
 	fill: var(--gsf-caramel);
 }
-.wishlist-container .product-info {
-	padding: 16px;
-	flex: 1;
-}
-.wishlist-container .product-name {
-	margin: 0 0 8px;
-	font-size: 15px;
-	font-weight: 700;
-	color: #222;
-}
-.wishlist-container .product-rating {
-	margin: 0;
-	font-size: 14px;
-	color: #d4a373;
-	font-weight: 700;
-}
-.wishlist-container .product-rating .rating-count {
-	font-weight: 400;
-	color: #999;
-}
-.wishlist-container .product-actions {
-	padding: 0 16px 16px;
-}
-.wishlist-container .btn-cart {
-	width: 100%;
-	height: 40px;
-	border: none;
-	border-radius: 6px;
-	background-color: var(--gsf-caramel);
-	color: #222;
-	font-size: 13px;
-	font-weight: 700;
-	cursor: pointer;
-}
-.wishlist-container .btn-cart:hover {
-	background-color: #b48b62;
+.wishlist-container .product-wish-toggle.is-active {
+	color: var(--gsf-caramel);
 }
 
 /* ===== 빈 찜 목록 ===== */
@@ -2133,20 +2088,40 @@ main:has(.wishlist-container) {
 /* ===== Search result page scoping ===== */
 /* style_myPage.css의 bare "main" 규칙(width:900px, margin:50px auto)이 모든 페이지에 새어 들어와
    이 페이지의 main 폭/여백을 덮어써서 :has()로 이 페이지에서만 되돌림 */
+body:has(.search-result-page) {
+	background-color: #FDFBF9;
+}
 main:has(.search-result-page) {
-	width: 1200px;
+	width: min(1200px, 100% - 80px);
 	margin: 0 auto;
+	padding: 0 40px;
+	background-color: #fbf8f4;
+	border-left: 1px solid var(--gsf-border);
+	border-right: 1px solid var(--gsf-border);
+	box-sizing: border-box;
 }
 .search-result-page {
 	padding-bottom: 60px;
 }
 
-/* 사이드바 배너 - 콘텐츠(1200px) 오른쪽 여백에 고정. 여백이 넉넉한 화면에서만 노출한다. */
+/* 배너가 뜨는 폭(1600px+)에서 배너를 콘텐츠 왼쪽에 둔다 - 콘텐츠(1200px)만 뷰포트 중앙에
+   놓으면 왼쪽에 배너 몫(24px 여백+260px)이 더 붙어서 전체(배너+콘텐츠)가 왼쪽으로 치우쳐
+   보이므로, 콘텐츠를 그 절반(142px)만큼 오른쪽으로 옮겨서 배너+콘텐츠를 한 덩어리로 봤을 때
+   화면 중앙에 오게 맞춘다 */
+@media (min-width: 1600px) {
+	main:has(.search-result-page) {
+		margin-left: calc(50% - 458px);
+		margin-right: auto;
+	}
+}
+
+/* 사이드바 배너 - 콘텐츠(1200px) 왼쪽 여백에 고정. 여백이 넉넉한 화면에서만 노출한다.
+   위 미디어쿼리로 콘텐츠를 오른쪽으로 옮긴 만큼(142px) 여기서도 같이 맞춰야 콘텐츠 바로 옆에 붙는다 */
 .sp-sidebar-banner {
 	display: none;
 	position: fixed;
 	top: 110px;
-	left: calc(50% + 624px);
+	left: calc(50% - 742px);
 	width: 260px;
 }
 @media (min-width: 1600px) {
@@ -2333,6 +2308,11 @@ main:has(.search-result-page) {
 	display: flex;
 	flex-direction: column;
 }
+/* 카드 구조를 홈 상품 카드와 통일하면서(2026-09-02) .sp-product-thumb/.sp-product-img/
+   .sp-product-price/.sp-product-category/.sp-product-actions/.wish-heart 관련 규칙은
+   더 이상 JSP에서 안 쓰여서 삭제 - 대신 .product-card/.product-img/.product-cart-quick/
+   .product-meta/.product-rating/.product-wish-toggle(위 홈 카드 섹션 참고)를 그대로 재사용한다.
+   .sp-product-link만 두 자리(이미지 전체를 덮는 링크, 상품명 링크)에서 계속 쓰여 남겨둠 */
 .sp-product-link {
 	display: block;
 	color: inherit;
@@ -2341,90 +2321,38 @@ main:has(.search-result-page) {
 .sp-product-link:hover {
 	text-decoration: none;
 }
-.sp-product-thumb {
-	position: relative;
-	margin: 0;
-}
-.sp-product-img {
-	width: 100%;
-	height: 220px;
-	border-bottom: 1px solid #e5e5e5;
-	background-color: #fafafa;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: #aaa;
-	font-size: 13px;
-}
-.sp-btn-wishlist {
+/* 이미지 박스를 통째로 덮는 링크 - .product-img가 이미 position:relative라 여기 꽉 채워진다 */
+.product-img .sp-product-link {
 	position: absolute;
-	top: 10px;
-	right: 10px;
-	width: 32px;
-	height: 32px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: none;
-	background: none;
-	padding: 0;
-	cursor: pointer;
+	inset: 0;
+	z-index: 1;
 }
-.sp-btn-wishlist:hover {
-	background: none;
+
+/* 찜(이미 찜한 상태)을 hover와 같은 색으로 계속 표시 - 홈 카드는 새로고침 전까지 상태를 안
+   들고 있어서 이 규칙이 필요 없었지만, 검색 결과는 페이지 로드 시 isWished()로 즉시 표시함 */
+.product-wish-toggle.is-active {
+	color: var(--gsf-caramel);
 }
-.search-result-page .wish-heart {
-	width: 20px;
-	height: 20px;
-	fill: none;
-	stroke: var(--gsf-caramel);
-	stroke-width: 2;
-}
-.sp-btn-wishlist.is-active .wish-heart {
+.product-wish-toggle.is-active .product-wish-icon {
 	fill: var(--gsf-caramel);
-}
-.sp-product-info {
-	padding: 16px;
-	flex: 1;
-}
-.sp-product-name {
-	margin: 0 0 8px;
-	font-size: 15px;
-	font-weight: 700;
-	color: #222;
-}
-.sp-product-price {
-	margin: 0 0 6px;
-	font-size: 14px;
-	font-weight: 700;
-	color: #333;
-}
-.sp-product-category {
-	display: inline-block;
-	margin: 0;
-	font-size: 11px;
-	padding: 3px 8px;
-	border-radius: 999px;
-	background-color: var(--gsf-sage-light);
-	color: #555;
 }
 
 /* ===== 상품 카드 호버 시 뜨는 태그 팝업 (태그가 많아져도 이미지가 아닌 아래쪽 설명 영역 방향으로 늘어남) ===== */
+/* 홈 상품카드의 .product-badge("BEST" 라벨, 이미지 위 왼쪽 아래에 hover 시 노출되는
+   sage-pale 필)와 같은 자리/스타일로 통일 - 여러 개 태그가 올 수 있어 감싸는 flex는
+   유지하되, 개별 pill 색상/모양은 .product-badge 값을 그대로 가져다 씀 */
 .sp-tag-popup {
 	position: absolute;
-	left: 8px;
-	right: 8px;
-	top: calc(100% - 48px);
+	left: 14px;
+	right: 14px;
+	bottom: 14px;
 	z-index: 5;
 	display: flex;
-	gap: 4px;
+	gap: 6px;
 	flex-wrap: wrap;
-	padding: 6px;
-	border-radius: 6px;
-	background-color: rgba(0, 0, 0, 0.5);
 	opacity: 0;
 	visibility: hidden;
-	transition: opacity 0.15s ease;
+	transition: opacity 0.2s ease;
 	pointer-events: none;
 }
 .sp-product-card:hover .sp-tag-popup {
@@ -2432,28 +2360,13 @@ main:has(.search-result-page) {
 	visibility: visible;
 }
 .sp-tag-popup .sp-product-tag {
-	font-size: 11px;
-	padding: 3px 8px;
+	padding: 5px 12px;
 	border-radius: 999px;
-	background-color: rgba(255, 255, 255, 0.9);
-	color: #555;
-}
-.sp-product-actions {
-	padding: 0 16px 16px;
-}
-.sp-btn-cart {
-	width: 100%;
-	height: 38px;
-	border: none;
-	border-radius: 4px;
-	background-color: var(--gsf-sage);
-	color: #222;
+	background-color: var(--gsf-sage-pale);
+	color: var(--gsf-ink);
 	font-size: 13px;
-	cursor: pointer;
-}
-.sp-btn-cart:hover {
-	background-color: var(--gsf-caramel);
-	color: #222;
+	font-weight: 700;
+	letter-spacing: .5px;
 }
 
 /* ===== Pagination ===== */
@@ -3285,15 +3198,16 @@ body.review-write-hero {
   --line: #e4ddc9;      /* 구분선/보더 */
   --danger: #c2694a;    /* 글자수 초과 등 경고 */
 
-  --bg-page: transparent; /* 배경 hero(body.review-write-hero)가 비쳐 보이도록 투명 처리 */
+  /* transparent였으나 style.css의 동일 셀렉터를 이 파일이 나중에 덮어써서 아무것도 안 비쳤다 - 세부 페이지 배경 기준을 직접 지정 */
+  --bg-page: #FDFBF9;
 
   --shadow-card: 0 2px 10px rgba(63, 58, 52, 0.06);
   --shadow-float: 0 4px 16px rgba(212, 163, 115, 0.25);
 
   --font-base: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
 
-  /* header.jsp와 동일한 max-width/gutter를 쓴다는 전제. 다르면 이 값만 맞추면 됨 */
-  --page-max: 1440px;
+  /* 원래 1440px라 구분선이 있어도 여백이 안 보여 확대돼 보였음 - 홈 폭(1200px)으로 맞춤, 콘텐츠는 --content-max로 따로 제한되니 레이아웃엔 영향 없음 */
+  --page-max: 1200px;
   --page-gutter: 40px;
   --content-max: 760px; /* 모든 섹션(히어로 포함)이 맞추는 공통 폭 라인 */
 }
@@ -3314,9 +3228,12 @@ body.review-write-hero {
 
 /* ---------- 레이아웃 컨테이너 (flex column - 그리드보다 단순하고 안정적) ---------- */
 #review-form {
-  max-width: var(--page-max);
+  width: min(var(--page-max), 100% - 80px);
   margin: 0 auto;
   padding: 56px var(--page-gutter) 80px;
+  background-color: #fbf8f4;
+  border-left: 1px solid var(--gsf-border);
+  border-right: 1px solid var(--gsf-border);
 
   display: flex;
   flex-direction: column;
@@ -3685,14 +3602,18 @@ label:focus-within {
 /* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
    다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .my-reviews-page로 스코프할 것 */
 .my-reviews-page {
-    background-color: #f6efe4;
+    background-color: #FDFBF9;
     min-height: 100vh;
 }
 
 .my-reviews-page .page-content {
-    width: 800px;
+    width: min(800px, 100% - 80px);
     margin: 0 auto;
-    padding: 50px 0 80px;
+    padding: 50px 40px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
 }
 
 .my-reviews-page .page-title {
@@ -3939,18 +3860,19 @@ label:focus-within {
    원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, 바깥 배경은 .product-detail-page에,
    흰 카드는 그 안의 .product-detail-page-card에 나눠 담는다 */
 .product-detail-page {
-    background-color: #f8f8f8;
-    min-height: 100vh;
-    padding: 40px 0;
+    background-color: #FDFBF9;
+    padding: 0 0 40px;
     box-sizing: border-box;
 }
 
 /* 전체 영역 */
 .product-detail-page-card {
-    width: 1100px;
+    width: min(1100px, 100% - 80px);
     margin: 0 auto;
     padding: 30px;
-    background-color: white;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
     box-sizing: border-box;
 }
 
@@ -4045,10 +3967,19 @@ label:focus-within {
 }
 
 .product-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     padding: 7px 10px;
     border: 1px solid #eee;
     border-radius: 5px;
     background-color: #fafafa;
+    color: var(--gsf-subtext);
+}
+
+.product-stat .product-rating-star,
+.product-stat .product-wish-icon {
+    transform: none;
 }
 
 /* 가격 영역 */
@@ -4080,10 +4011,10 @@ label:focus-within {
     margin-left: 6px;
     padding: 2px 7px;
     border-radius: 10px;
-    background-color: #f0f0f0;
+    background-color: #f6efe4;
     font-size: 11px;
     font-weight: bold;
-    color: #666;
+    color: #a8834f;
     vertical-align: middle;
 }
 
@@ -4163,8 +4094,9 @@ label:focus-within {
     color: #666;
 }
 
-/* 총 상품 금액 */
-#total-price {
+/* 총 상품 금액 - #total-price가 cart.jsp의 "상품 금액" span과 id가 겹쳐서(스코프 없는 전역
+   규칙이라) 장바구니 쪽에도 이 회색 박스가 그대로 새고 있었음 - productDetail.jsp로 스코프 */
+.product-detail-page #total-price {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -4174,12 +4106,12 @@ label:focus-within {
     border-radius: 8px;
 }
 
-.total-label {
+.product-detail-page .total-label {
     font-size: 15px;
     font-weight: bold;
 }
 
-#total-product-price {
+.product-detail-page #total-product-price {
     font-size: 25px;
     font-weight: bold;
 }
@@ -4212,8 +4144,8 @@ label:focus-within {
 }
 
 #wish-button.is-active {
-    color: #e64545;
-    border-color: #e64545;
+    color: var(--gsf-caramel);
+    border-color: var(--gsf-caramel);
 }
 
 #cart-button {
@@ -4478,14 +4410,18 @@ label:focus-within {
 ================================ */
 
 .order-delivery-page {
-    background-color: #f6efe4;
+    background-color: #FDFBF9;
     min-height: 100vh;
 }
 
 .order-delivery-page .page-content {
-    width: 800px;
+    width: min(800px, 100% - 80px);
     margin: 0 auto;
-    padding: 50px 0 80px;
+    padding: 50px 40px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
 }
 
 .order-delivery-page .page-title {

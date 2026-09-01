@@ -34,43 +34,57 @@
         checkAll.checked = boxes.length > 0 && Array.prototype.every.call(boxes, function (b) { return b.checked; });
     }
 
+    // 카드 구조/아이콘을 홈페이지 상품 카드(static/js/views/home.js의 buildCard)와
+    // 통일함(2026-09-02): .product-img+.product-cart-quick, .product-meta(.product-rating+
+    // .product-wish-toggle). 찜 화면 전용 기능(선택 체크박스, "장바구니 담기"였던 걸 아이콘으로
+    // 통합, 찜 아이콘은 토글이 아니라 항상 채워진 채로 눌러서 찜 해제)은 그 위에 그대로 얹는다.
+    // btn-wish-toggle/btn-cart 클래스는 아래 grid 클릭 위임 로직이 그대로 쓰는 훅이라 유지.
     function buildCard(item) {
         var checked = checkedState[item.productId] === true;
         var card = document.createElement('article');
         card.className = 'product-card';
         card.dataset.productId = item.productId;
+        card.dataset.price = item.price;
         card.innerHTML =
-            '<input type="checkbox" class="item-checkbox"' + (checked ? ' checked' : '') + '>' +
-            '<a class="product-link" href="' + DETAIL_BASE_URL + '/' + encodeURIComponent(item.productId) + '">' +
-                '<div class="product-thumbnail"></div>' +
-                '<div class="product-info">' +
+            '<div class="product-img">' +
+                '<input type="checkbox" class="item-checkbox"' + (checked ? ' checked' : '') + '>' +
+                '<a class="product-link" href="' + DETAIL_BASE_URL + '/' + encodeURIComponent(item.productId) + '"></a>' +
+                '<button type="button" class="product-cart-quick btn-cart" aria-label="장바구니 담기">' +
+                    '<svg class="product-cart-quick-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+                        '<circle cx="9" cy="21" r="1"></circle>' +
+                        '<circle cx="20" cy="21" r="1"></circle>' +
+                        '<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>' +
+                    '</svg>' +
+                '</button>' +
+            '</div>' +
+            '<div class="product-info">' +
+                '<a class="product-link" href="' + DETAIL_BASE_URL + '/' + encodeURIComponent(item.productId) + '">' +
                     '<h2 class="product-name"></h2>' +
-                    '<p class="product-rating"></p>' +
+                '</a>' +
+                '<p class="product-option"></p>' +
+                '<p class="product-description"></p>' +
+                '<div class="product-meta">' +
+                    '<a href="#" class="product-rating" aria-label="리뷰 보기">' +
+                        '<svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+                            '<path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"></path>' +
+                        '</svg>' +
+                        '<span class="product-rating-score"></span>' +
+                    '</a>' +
+                    '<button type="button" class="product-wish-toggle btn-wish-toggle is-active" aria-label="찜 해제">' +
+                        '<svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+                            '<path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"></path>' +
+                        '</svg>' +
+                    '</button>' +
                 '</div>' +
-            '</a>' +
-            '<button type="button" class="btn-wish-toggle is-active" aria-label="찜 해제">' +
-                '<svg class="wish-heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
-                    '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>' +
-                '</svg>' +
-            '</button>' +
-            '<div class="product-actions">' +
-                '<button type="button" class="btn-cart">장바구니 담기</button>' +
             '</div>';
 
         // 상품명은 사용자 데이터라 textContent로 넣는다.
         card.querySelector('.product-name').textContent = item.name;
-
-        // 별은 원래 유니코드 ★ 글리프였으나 환경에 따라 컬러 이모지로 렌더링돼 CSS color를
-        // 무시하는 문제가 있어 SVG로 통일함(홈 카드와 같은 path - HANDOFF 3-39-2 참고).
-        var rating = card.querySelector('.product-rating');
-        rating.innerHTML =
-            '<svg class="icon-star icon-inline" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
-                '<path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"></path>' +
-            '</svg> ' +
-            '<span class="rating-score"></span> ' +
-            '<span class="rating-count"></span>';
-        rating.querySelector('.rating-score').textContent = item.rating.toFixed(1);
-        rating.querySelector('.rating-count').textContent = '(' + item.reviewCount + ')';
+        // optionName은 cartService.js와 동일하게 실제 연동 전까지 기본값으로 대체(cart.js의 item-option과 같은 패턴).
+        card.querySelector('.product-option').textContent = item.optionName || '기본 옵션';
+        // item.rating/reviewCount는 WishService의 예시 데이터에만 있고, 실제 toggleWish()로
+        // 담긴 항목(cartWishService.js)에는 없어 렌더링이 통째로 죽는 기존 버그가 있었음 - 방어
+        card.querySelector('.product-rating-score').textContent = (item.rating || 0).toFixed(1) + ' (' + (item.reviewCount || 0) + ')';
 
         return card;
     }
@@ -113,7 +127,7 @@
             }, 300);
         }
 
-        if (e.target.classList.contains('btn-cart')) {
+        if (e.target.closest('.btn-cart')) {
             if (typeof window.addToCart === 'function') {
                 window.addToCart({ productId: item.productId, name: item.name, price: item.price, qty: 1 });
             }
