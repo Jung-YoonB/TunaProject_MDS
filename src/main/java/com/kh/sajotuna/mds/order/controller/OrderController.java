@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
@@ -30,6 +30,34 @@ public class OrderController {
 	private final MemberService memberService;
 	private final OrderService service;
 	
+	@GetMapping("/completed")
+	public String completed(@RequestParam Long orderId,
+	                        HttpSession session,
+	                        Model model,
+	                        RedirectAttributes redirectAttr) {
+
+	    MemberDTO member =
+	            (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+
+	    if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
+	        return "redirect:/member/login";
+	    }
+
+	    try {
+	    	Long validOrderId =
+	    	        service.getOrderIdForMember(orderId, member.getMemberId());
+
+	    	model.addAttribute("orderId", validOrderId);
+
+	        return "order/orderComplete";
+
+	    } catch (Exception e) {
+	        redirectAttr.addFlashAttribute("error", e.getMessage());
+	        return "redirect:/";
+	    }
+	}
+	
 	@PostMapping("/payment")
 	public String paymentForm(HttpSession session, Model model,
 			@RequestParam(value = "cartId", required = false) List<Long> cartIds,
@@ -40,6 +68,11 @@ public class OrderController {
 		// 세션의 정보에서 memberId를 받아 회원 정보 받아오기
 		MemberDTO loginMember = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
 		
+		if (loginMember == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
+	        return "redirect:/member/login";
+	    }
+		
 		if (cartIds != null && !cartIds.isEmpty()) { // 장바구니로 넘어온 경우
 			pvData = service.cartPrepare(loginMember.getMemberId(), cartIds);
 			
@@ -47,39 +80,36 @@ public class OrderController {
 			pvData = service.directPrepare(loginMember.getMemberId(), orderItem);
 		} else { // 장바구니가 0 인채로 넘어왔거나 이상한 접근
 			redirectAttr.addFlashAttribute("error", "장바구니에 담은게 없거나 잘못된 접근입니다.");
-			return "redirect:/aa/cart"; // 카트 주소 생기면 수정
+			return "redirect:/product/cart"; // 카트 주소 생기면 수정
 		}
 		model.addAttribute("pvData", pvData);
 		return "order/payment";
 	}
 	
 	@PostMapping("/checkout")
-	@ResponseBody
-	public String checkout(HttpSession session, @ModelAttribute CheckoutDTO checkoutData,
-			RedirectAttributes redirectAttr) {
-	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
-	    
+	public String checkout(HttpSession session,
+	                       @ModelAttribute CheckoutDTO checkoutData,
+	                       RedirectAttributes redirectAttr) {
+
+	    MemberDTO member =
+	            (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+
 	    if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
 	        return "redirect:/member/login";
-//	    	return null; // 임시테스트용
 	    }
-	    
+
 	    checkoutData.setMemberId(member.getMemberId());
-	    
+
 	    try {
-	    CheckoutDTO resultData = service.checkout(checkoutData);
-	    redirectAttr.addFlashAttribute("checkoutData", resultData);
-	    return "redirect:/order/completed"; // 결제 완료 페이지로 리다이렉트
-//	    return resultData;   // 임시테스트용
-	    } catch(Exception e) {
-	    	e.printStackTrace();
-	    	redirectAttr.addFlashAttribute("error", e.getMessage());
-			return "redirect:/order/payment";
-/*	    	// 임시 테스트용 에러 반환 처리
-	    	CheckoutDTO errorData = new CheckoutDTO();
-	    	errorData.setAddressNameFix(e.getMessage());
-	    	return errorData;  */
+	        CheckoutDTO resultData = service.checkout(checkoutData);
+
+	        return "redirect:/order/completed?orderId=" + resultData.getOrderId();
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        redirectAttr.addFlashAttribute("error", e.getMessage());
+	        return "redirect:/order/payment";
 	    }
-	   
 	}
 }

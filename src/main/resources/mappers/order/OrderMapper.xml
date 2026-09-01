@@ -12,12 +12,12 @@
 		WHERE M.MEMBER_ID = #{memberId}
   	</select>
 
-	<select id="selectCartIds" parameterType="list" resultType="OrderItemDTO">
+	<select id="selectCartIds" resultType="OrderItemDTO">
 		SELECT C.POP_ID, C.QTY, PO.OPTION_NAME, PO.OPTION_PRICE, P.PRODUCT_NAME
 		FROM CART C JOIN OPTIONDETAIL POP ON C.POP_ID = POP.POP_ID
 			JOIN PRODUCTOPTION PO ON POP.OPTION_ID = PO.OPTION_ID
 			JOIN PRODUCT P ON POP.PRODUCT_ID = P.PRODUCT_ID
-		WHERE C.CART_ID IN
+		WHERE C.MEMBER_ID = #{memberId} AND C.CART_ID IN
 		<foreach collection="cartIds" item="item" open="(" separator="," close=")">
    			 #{item}
 		</foreach>
@@ -114,5 +114,11 @@
         #{cartId}
     </foreach>
 	</delete>
+	
+	<select id="getOrderIdForMember" resultType="long">
+    	SELECT ORDER_ID
+    	FROM PRODUCTORDER
+    	WHERE ORDER_ID = #{orderId} AND MEMBER_ID = #{memberId}
+	</select>
  
 </mapper>

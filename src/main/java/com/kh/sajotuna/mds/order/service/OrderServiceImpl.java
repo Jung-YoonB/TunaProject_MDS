@@ -29,7 +29,7 @@ public class OrderServiceImpl implements OrderService {
 		// 멤버 정보 조회
 		PaymentViewDTO pvData = mapper.selectByMemberIdForPay(memberId);
 		// 장바구니 조회
-		List<OrderItemDTO> itemList = mapper.selectCartIds(cartIds);
+		List<OrderItemDTO> itemList = mapper.selectCartIds(memberId, cartIds);
 		// 총 가격 계산
 		long totalPrice = 0L;
 		for(OrderItemDTO i : itemList) {
@@ -50,7 +50,7 @@ public class OrderServiceImpl implements OrderService {
 	public PaymentViewDTO directPrepare(Long memberId, OrderItemDTO orderItem) {
 		// 멤버 정보 조회
 		PaymentViewDTO pvData = mapper.selectByMemberIdForPay(memberId);
-		// 장바구니 조회
+		// 바로구매 상품 조회
 		List<OrderItemDTO> itemList = new ArrayList<>();
 		OrderItemDTO result = mapper.selectPopId(orderItem.getPopId());
 		result.setQty(orderItem.getQty());
@@ -88,6 +88,11 @@ public class OrderServiceImpl implements OrderService {
 	if (verifiedData == null) {
 		throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
 	}
+	
+	if (checkoutInputData.getItemList() == null
+	        || checkoutInputData.getItemList().isEmpty()) {
+	    throw new IllegalArgumentException("구매할 상품이 없습니다.");
+	}
 
 	// 구매할 상품 최신 정보 조회
 	List<OrderItemDTO> itemList = mapper.selectItems(checkoutInputData.getItemList());
@@ -115,7 +120,7 @@ public class OrderServiceImpl implements OrderService {
 
 		item.setQty(qty);
 	}
-
+	
 	verifiedData.setItemList(itemList);
 
 	// 쿠폰 확인
@@ -277,6 +282,20 @@ public class OrderServiceImpl implements OrderService {
 
 	return verifiedData;
 
+	}
+	
+	@Override
+	public Long getOrderIdForMember(Long orderId, Long memberId) {
+
+	    Long result = mapper.getOrderIdForMember(orderId, memberId);
+
+	    if (result == null) {
+	        throw new IllegalArgumentException(
+	            "존재하지 않는 주문이거나 접근할 수 없는 주문입니다."
+	        );
+	    }
+
+	    return result;
 	}
 
 }

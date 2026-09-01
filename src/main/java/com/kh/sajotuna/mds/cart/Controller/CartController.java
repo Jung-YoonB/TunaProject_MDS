@@ -50,7 +50,7 @@ public class CartController {
         ResponseCartListDTO cartList = service.getCartList(member.getMemberId());
         model.addAttribute("cartList", cartList);
         System.out.println("cartList :: " + cartList);
-        return "redirect:home/home";
+        return "product/cart";
     }
 
     @GetMapping("/remove-cart")
