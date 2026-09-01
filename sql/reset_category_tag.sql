@@ -1,0 +1,268 @@
+-- ======================================================================
+--  카테고리 / 태그 확정본 반영 스크립트
+--  작성: 2026-09-01
+--
+--  목적
+--    1) 테스트용 임시 카테고리/태그와, 거기에 엮인 샘플 상품 및 파생 데이터를 전부 제거
+--    2) 확정된 카테고리 15개 / 태그 58개를 새로 등록
+--    3) 상품은 이후 관리자 "상품 등록" 화면으로 직접 등록 (여기서는 넣지 않음)
+--       → 실행 직후 카테고리·태그와 상품 사이 연결이 0건인 상태가 된다
+--
+--  ⚠️ 이 스크립트는 상품과 그에 엮인 주문/리뷰/장바구니/찜을 전부 지운다.
+--     회원(MEMBER)·등급·결제수단·쿠폰 마스터는 남긴다.
+--     실행 전 반드시 아래 "0. 사전 확인" 블록을 먼저 돌려 삭제 규모를 확인할 것.
+--
+--  실행 순서 근거 (schema.sql의 FK 삭제 규칙)
+--    - PRODUCT 삭제 시 CASCADE 되는 것 : PRODUCTIMAGE, CATEGORYDETAIL, TAGDETAIL,
+--                                        OPTIONDETAIL, WISH
+--    - 그런데 OPTIONDETAIL은 ORDERDETAIL / CART 가 NO ACTION 으로 참조하므로
+--      이 둘을 먼저 지우지 않으면 위 CASCADE 가 FK 위반으로 막힌다.
+--    - ORDERDETAIL 은 다시 REVIEW / REVIEWHISTORY 가 NO ACTION 으로 참조한다.
+--    - PRODUCTORDER 는 POINTHISTORY / COUPONHISTORY 가 NO ACTION 으로 참조한다.
+--    → 그래서 아래 1~9 순서를 지켜야 한다.
+-- ======================================================================
+
+
+-- ======================================================================
+-- 0. 사전 확인 (먼저 이 블록만 실행해서 지워질 양을 눈으로 볼 것)
+-- ======================================================================
+SELECT 'PRODUCT'        AS TABLE_NAME, COUNT(*) AS CNT FROM PRODUCT
+UNION ALL SELECT 'PRODUCTOPTION',  COUNT(*) FROM PRODUCTOPTION
+UNION ALL SELECT 'OPTIONDETAIL',   COUNT(*) FROM OPTIONDETAIL
+UNION ALL SELECT 'PRODUCTIMAGE',   COUNT(*) FROM PRODUCTIMAGE
+UNION ALL SELECT 'CATEGORY',       COUNT(*) FROM CATEGORY
+UNION ALL SELECT 'CATEGORYDETAIL', COUNT(*) FROM CATEGORYDETAIL
+UNION ALL SELECT 'TAG',            COUNT(*) FROM TAG
+UNION ALL SELECT 'TAGDETAIL',      COUNT(*) FROM TAGDETAIL
+UNION ALL SELECT 'PRODUCTORDER',   COUNT(*) FROM PRODUCTORDER
+UNION ALL SELECT 'ORDERDETAIL',    COUNT(*) FROM ORDERDETAIL
+UNION ALL SELECT 'DELIVERY',       COUNT(*) FROM DELIVERY
+UNION ALL SELECT 'REVIEW',         COUNT(*) FROM REVIEW
+UNION ALL SELECT 'REVIEWHISTORY',  COUNT(*) FROM REVIEWHISTORY
+UNION ALL SELECT 'REVIEWIMAGE',    COUNT(*) FROM REVIEWIMAGE
+UNION ALL SELECT 'REVIEWLIKE',     COUNT(*) FROM REVIEWLIKE
+UNION ALL SELECT 'CART',           COUNT(*) FROM CART
+UNION ALL SELECT 'WISH',           COUNT(*) FROM WISH
+UNION ALL SELECT 'COUPONHISTORY',  COUNT(*) FROM COUPONHISTORY
+UNION ALL SELECT 'POINTHISTORY',   COUNT(*) FROM POINTHISTORY
+UNION ALL SELECT 'MEMBER (유지)',  COUNT(*) FROM MEMBER;
+
+
+-- ======================================================================
+-- 1. 리뷰 계열 정리
+--    REVIEWIMAGE / REVIEWLIKE 는 REVIEW 에 ON DELETE CASCADE 라 자동 삭제되지만,
+--    순서를 눈에 보이게 두려고 명시적으로 먼저 지운다.
+-- ======================================================================
+DELETE FROM REVIEWLIKE;
+DELETE FROM REVIEWIMAGE;
+DELETE FROM REVIEWHISTORY;   -- ORDERDETAIL 을 NO ACTION 으로 참조하므로 반드시 먼저
+DELETE FROM REVIEW;          -- ORDERDETAIL / MEMBER 를 NO ACTION 으로 참조
+
+
+-- ======================================================================
+-- 2. 주문을 참조하는 이력 정리
+--    COUPONHISTORY 의 'ISSUE' 행(회원이 보유 중인 쿠폰)은 남기고 주문 연결만 끊는다.
+--    POINTHISTORY 는 주문 단위 적립/사용 이력이라 주문과 함께 정리한다.
+-- ======================================================================
+UPDATE COUPONHISTORY SET ORDER_ID = NULL WHERE ORDER_ID IS NOT NULL;
+DELETE FROM POINTHISTORY WHERE ORDER_ID IS NOT NULL;
+
+-- 포인트 잔액도 초기화하려면 아래 주석을 해제할 것 (이력만 지우면 잔액과 어긋난다)
+-- UPDATE MEMBERPOINT SET POINT = 0;
+-- UPDATE MEMBER SET TOTAL_AMOUNT = 0;
+
+
+-- ======================================================================
+-- 3. 장바구니 / 찜 정리
+--    CART 는 OPTIONDETAIL 을, WISH 는 PRODUCT 를 참조한다.
+--    (WISH 는 PRODUCT 에 CASCADE 지만 명시적으로 지워 순서를 분명히 한다)
+-- ======================================================================
+DELETE FROM CART;
+DELETE FROM WISH;
+
+
+-- ======================================================================
+-- 4. 주문 정리
+--    ORDERDETAIL / DELIVERY 는 PRODUCTORDER 에 ON DELETE CASCADE 라 함께 삭제된다.
+-- ======================================================================
+DELETE FROM PRODUCTORDER;
+
+
+-- ======================================================================
+-- 5. 상품 정리
+--    PRODUCT 삭제로 PRODUCTIMAGE / CATEGORYDETAIL / TAGDETAIL / OPTIONDETAIL 이
+--    CASCADE 로 함께 사라진다. 그 뒤 남는 PRODUCTOPTION 고아 행을 정리한다.
+-- ======================================================================
+DELETE FROM PRODUCT;
+DELETE FROM PRODUCTOPTION;   -- OPTIONDETAIL 이 사라져 참조가 끊긴 옵션 행
+
+
+-- ======================================================================
+-- 6. 기존 카테고리 / 태그 제거
+--    위에서 CATEGORYDETAIL / TAGDETAIL 이 이미 비었으므로 참조 없이 삭제된다.
+-- ======================================================================
+DELETE FROM CATEGORYDETAIL;  -- 안전장치 (5번에서 이미 비워짐)
+DELETE FROM TAGDETAIL;       -- 안전장치 (5번에서 이미 비워짐)
+DELETE FROM CATEGORY;
+DELETE FROM TAG;
+
+
+-- ======================================================================
+-- 7. 시퀀스 초기화 (선택)
+--    새 카테고리/태그의 ID 를 1번부터 깔끔하게 시작하고 싶을 때만 실행.
+--    실행하지 않아도 기능상 문제는 없다(이어지는 번호로 부여될 뿐).
+--    ※ DROP/CREATE 이므로 다른 세션이 해당 시퀀스를 쓰고 있지 않을 때 실행할 것.
+-- ======================================================================
+-- DROP SEQUENCE SEQ_CATEGORY_ID;
+-- DROP SEQUENCE SEQ_CD_ID;
+-- DROP SEQUENCE SEQ_TAG_ID;
+-- DROP SEQUENCE SEQ_TD_ID;
+-- DROP SEQUENCE SEQ_PRODUCT_ID;
+-- DROP SEQUENCE SEQ_PRODUCT_IMAGE_ID;
+-- DROP SEQUENCE SEQ_OPTION_ID;
+-- DROP SEQUENCE SEQ_POP_ID;
+-- CREATE SEQUENCE SEQ_CATEGORY_ID      START WITH 1 INCREMENT BY 1;
+-- CREATE SEQUENCE SEQ_CD_ID            START WITH 1 INCREMENT BY 1;
+-- CREATE SEQUENCE SEQ_TAG_ID           START WITH 1 INCREMENT BY 1;
+-- CREATE SEQUENCE SEQ_TD_ID            START WITH 1 INCREMENT BY 1;
+-- CREATE SEQUENCE SEQ_PRODUCT_ID       START WITH 1 INCREMENT BY 1;
+-- CREATE SEQUENCE SEQ_PRODUCT_IMAGE_ID START WITH 1 INCREMENT BY 1;
+-- CREATE SEQUENCE SEQ_OPTION_ID        START WITH 1 INCREMENT BY 1;
+-- CREATE SEQUENCE SEQ_POP_ID           START WITH 1 INCREMENT BY 1;
+
+
+-- ======================================================================
+-- 8. 확정 카테고리 등록 (15개)
+-- ======================================================================
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '생일');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '명절');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '기념일');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '합격・응원');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '상품권');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '맛있는 선물');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '가벼운 선물');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '출산・돌');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '결혼・집들이');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '주류');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '화장품');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '주류・주얼리');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '명품선물');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '스포츠');
+INSERT INTO CATEGORY (CATEGORY_ID, CATEGORY_NAME) VALUES (SEQ_CATEGORY_ID.NEXTVAL, '건강');
+
+
+-- ======================================================================
+-- 9. 확정 태그 등록 (58개)
+--    원본 목록의 빈 줄(그룹 구분)은 주석으로 옮겼다. 그룹 자체를 저장하는
+--    컬럼은 TAG 테이블에 없으므로 이름/색상만 들어간다.
+-- ======================================================================
+
+-- [가격대] 6개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '1만원 미만', '#cceddd');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '1~2만원대', '#b7e1cd');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '3~4만원대', '#a2d5be');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '5~9만원대', '#8dc9ae');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '10만원대', '#78bd9e');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '10만원 이상', '#64b18f');
+
+-- [연령대] 6개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '10대', '#efe5ff');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '20대', '#decaff');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '30대', '#ccb0ff');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '40대', '#bb95ff');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '50대', '#a97aff');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '60대+', '#975fff');
+
+-- [성별 인기] 2개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '여성 인기', '#ea9999');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '남성 인기', '#a4c2f4');
+
+-- [식품 종류] 6개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '육류', '#ffece3');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '과일', '#fcd1b5');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '간식', '#f9b596');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '케이크', '#f69977');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '특산물', '#f37c59');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '식품', '#f0603a');
+
+-- [사용처] 7개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '생활편의', '#def5fc');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '백화점・마트', '#c7edf8');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '뷰티・패션・건강', '#ade5f3');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '영화・OTT・게임', '#94ddee');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '카페', '#7bd6e8');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '편의점', '#62cee3');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '음식점', '#49c6de');
+
+-- [받는 사람] 9개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '친구', '#fff9e6');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '연인', '#fef2ce');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '부모님', '#fdecb6');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '배우자', '#fde59e');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '직장 상사', '#fcde86');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '직장 동료', '#fcd86e');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '거래처', '#fcd156');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '가족', '#fbcb3e');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '자녀', '#fbc626');
+
+-- [학업・커리어] 6개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '입학', '#ffe8ef');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '졸업', '#fcd2df');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '시험', '#fabbd0');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '수능', '#f8a5c0');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '취업', '#f58fb0');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '승진', '#f378a0');
+
+-- [기념일・시즌] 8개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '어버이날', '#ffe2e2');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '스승의날', '#fcc5c5');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '어린이날', '#f9a8a8');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '설날', '#f68b8b');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '추석', '#f36e6e');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '화이트데이・발렌타인 데이', '#f15151');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '크리스마스', '#ee3434');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '부처님 오신날', '#eb1717');
+
+-- [선물 성격] 7개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '감사', '#defff9');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '취향저격', '#befded');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '실용적', '#9efbe2');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '부담 없는', '#7df9d6');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '프리미엄', '#5df7ca');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '고급', '#3cf5bf');
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '인기', '#1cf3b3');
+
+-- [기타] 1개
+INSERT INTO TAG (TAG_ID, TAG_NAME, TAG_COLOR) VALUES (SEQ_TAG_ID.NEXTVAL, '기타', '#efefef');
+
+
+COMMIT;
+
+
+-- ======================================================================
+-- 10. 결과 확인
+--     CATEGORY 15 / TAG 58 이고, 나머지 상품 계열이 전부 0 이어야 한다.
+-- ======================================================================
+SELECT 'CATEGORY (기대 15)' AS ITEM, COUNT(*) AS CNT FROM CATEGORY
+UNION ALL SELECT 'TAG (기대 58)',        COUNT(*) FROM TAG
+UNION ALL SELECT 'PRODUCT (기대 0)',      COUNT(*) FROM PRODUCT
+UNION ALL SELECT 'PRODUCTOPTION (기대 0)',COUNT(*) FROM PRODUCTOPTION
+UNION ALL SELECT 'OPTIONDETAIL (기대 0)', COUNT(*) FROM OPTIONDETAIL
+UNION ALL SELECT 'PRODUCTIMAGE (기대 0)', COUNT(*) FROM PRODUCTIMAGE
+UNION ALL SELECT 'CATEGORYDETAIL (기대 0)', COUNT(*) FROM CATEGORYDETAIL
+UNION ALL SELECT 'TAGDETAIL (기대 0)',    COUNT(*) FROM TAGDETAIL
+UNION ALL SELECT 'PRODUCTORDER (기대 0)', COUNT(*) FROM PRODUCTORDER
+UNION ALL SELECT 'ORDERDETAIL (기대 0)',  COUNT(*) FROM ORDERDETAIL
+UNION ALL SELECT 'DELIVERY (기대 0)',     COUNT(*) FROM DELIVERY
+UNION ALL SELECT 'REVIEW (기대 0)',       COUNT(*) FROM REVIEW
+UNION ALL SELECT 'REVIEWHISTORY (기대 0)',COUNT(*) FROM REVIEWHISTORY
+UNION ALL SELECT 'CART (기대 0)',         COUNT(*) FROM CART
+UNION ALL SELECT 'WISH (기대 0)',         COUNT(*) FROM WISH
+UNION ALL SELECT 'MEMBER (유지)',         COUNT(*) FROM MEMBER
+UNION ALL SELECT 'COUPON (유지)',         COUNT(*) FROM COUPON
+UNION ALL SELECT 'COUPONHISTORY (ISSUE 유지)', COUNT(*) FROM COUPONHISTORY;
+
+-- 카테고리/태그와 상품 사이 연결이 0건인지 최종 확인 (둘 다 0 이어야 정상)
+SELECT (SELECT COUNT(*) FROM CATEGORYDETAIL) AS CATEGORY_LINK,
+       (SELECT COUNT(*) FROM TAGDETAIL)      AS TAG_LINK
+FROM DUAL;
