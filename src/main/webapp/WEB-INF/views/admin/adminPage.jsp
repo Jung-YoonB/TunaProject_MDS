@@ -3,7 +3,7 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin_mypage.css 포함)를 로드하므로 별도 link 불필요 --%>
+<%-- header.jsp가 이미 모든 페이지 공통 CSS(style_admin.css 포함)를 로드하므로 별도 link 불필요 --%>
 <div class="admin-mypage-page">
 
     <%-- header.jsp가 이미 <main>을 열어서 폭 제약이 없으므로, 원래 main 태그가 담당하던
@@ -186,30 +186,8 @@
            화면이 프로젝트에 없어 href="#" 임시 처리 — 추후 실제 화면/컨트롤러 구현 필요).
          - 이전에 있던 "관리자 권한 정보"/"계정 관리"(로그아웃 포함)/"관리자 최근 활동 내역" 카드는
            사용자 요청에 따라 이번 레이아웃 개편에서 완전히 제거됨. --%>
-    <script>
-    (function () {
-        // TODO(data binding): memberName/loginId만 Member 테이블에 실제 컬럼이 존재함.
-        var MOCK_ADMIN = {
-            memberName: '관리자',
-            loginId: 'admin'
-        };
-
-        function render() {
-            document.getElementById('profile-name').textContent = MOCK_ADMIN.memberName;
-            document.getElementById('profile-subtitle').textContent =
-                MOCK_ADMIN.memberName + ' (' + MOCK_ADMIN.loginId + ')';
-
-            document.getElementById('val-name').textContent = MOCK_ADMIN.memberName;
-            document.getElementById('val-login-id').textContent = MOCK_ADMIN.loginId;
-        }
-
-        // 대응 화면이 없는 placeholder 링크(href="#")는 클릭해도 페이지 이동/점프가 없도록 처리
-        document.querySelectorAll('a[href="#"]').forEach(function (a) {
-            a.addEventListener('click', function (e) { e.preventDefault(); });
-        });
-
-        render();
-    })();
-    </script>
+<script src="<c:url value='/js/common/placeholderLinks.js'/>"></script>
+<script src="<c:url value='/js/admin/adminMypageService.js'/>"></script>
+<script src="<c:url value='/js/views/adminPage.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

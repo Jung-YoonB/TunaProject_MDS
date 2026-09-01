@@ -15,7 +15,6 @@
                             소중한 사람에게<br>
                             취향을 담은 선물을 전해보세요.
                         </p>
-                        <a href="#" class="banner-button">선물 둘러보기</a>
                     </div>
                     <!-- TODO(assets): 실제 배너 이미지 확보되면 이 영역에 <img> 추가 -->
                     <div class="banner-image"></div>
@@ -57,7 +56,6 @@
         <div class="home-container">
             <div class="section-header">
                 <h2>선물 카테고리</h2>
-                <a href="#" class="section-more">전체보기 &gt;</a>
             </div>
             <div id="category-list">
                 <!-- 1 -->
@@ -237,117 +235,26 @@
         <div class="home-container">
             <div class="section-header">
                 <h2>인기 선물</h2>
-                <a href="#" class="section-more">전체보기 &gt;</a>
+                <a href="#" class="section-more">전체 상품 보기 &gt;</a>
             </div>
-            <div id="product-list">
-                <div class="product-card">
-                    <!-- TODO(assets): 실제 상품 이미지 확보되면 이 영역에 <img> 추가 -->
-                    <div class="product-img">
-                        <span class="product-badge">BEST</span>
-                        <button type="button" class="product-like" aria-label="찜하기">
-                            <svg class="product-like-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">프리미엄 선물세트</h3>
-                        <p class="product-description">정성을 담은 특별한 구성</p>
-                        <div class="product-price-row">
-                            <strong class="product-price">49,000원</strong>
-                            <button type="button" class="product-cart" aria-label="장바구니 담기">
-                                <svg class="product-cart-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-                                    <path d="M3 6h18"/>
-                                    <path d="M16 10a4 4 0 0 1-8 0"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <span class="product-rating">★ 4.9 (1,245)</span>
-                    </div>
-                </div>
-
-                <div class="product-card">
-                    <div class="product-img product-img-alt">
-                        <span class="product-badge">BEST</span>
-                        <button type="button" class="product-like" aria-label="찜하기">
-                            <svg class="product-like-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">한우 선물세트</h3>
-                        <p class="product-description">소중한 분께 전하는 깊은 맛</p>
-                        <div class="product-price-row">
-                            <strong class="product-price">89,000원</strong>
-                            <button type="button" class="product-cart" aria-label="장바구니 담기">
-                                <svg class="product-cart-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-                                    <path d="M3 6h18"/>
-                                    <path d="M16 10a4 4 0 0 1-8 0"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <span class="product-rating">★ 4.9 (892)</span>
-                    </div>
-                </div>
-
-                <div class="product-card">
-                    <div class="product-img">
-                        <span class="product-badge">BEST</span>
-                        <button type="button" class="product-like" aria-label="찜하기">
-                            <svg class="product-like-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">건강 선물세트</h3>
-                        <p class="product-description">매일의 건강을 위한 따뜻한 선택</p>
-                        <div class="product-price-row">
-                            <strong class="product-price">35,000원</strong>
-                            <button type="button" class="product-cart" aria-label="장바구니 담기">
-                                <svg class="product-cart-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-                                    <path d="M3 6h18"/>
-                                    <path d="M16 10a4 4 0 0 1-8 0"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <span class="product-rating">★ 4.8 (652)</span>
-                    </div>
-                </div>
-
-                <div class="product-card">
-                    <div class="product-img product-img-alt">
-                        <span class="product-badge">BEST</span>
-                        <button type="button" class="product-like" aria-label="찜하기">
-                            <svg class="product-like-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">프리미엄 디저트</h3>
-                        <p class="product-description">달콤한 마음을 담은 디저트</p>
-                        <div class="product-price-row">
-                            <strong class="product-price">28,000원</strong>
-                            <button type="button" class="product-cart" aria-label="장바구니 담기">
-                                <svg class="product-cart-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-                                    <path d="M3 6h18"/>
-                                    <path d="M16 10a4 4 0 0 1-8 0"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <span class="product-rating">★ 4.9 (1,103)</span>
-                    </div>
-                </div>
+            <!-- TODO(assets): 실제 상품 API 연동 전까지 static/js/product/homeProductService.js의
+                 목업 데이터로 채워짐(views/home.js가 렌더링) - 서버 연동 시 그 파일의
+                 fetchProducts() 내부만 실제 API 호출로 교체하면 됨. -->
+            <div id="product-list"></div>
+            <div class="product-load-more-wrap">
+                <button type="button" id="productLoadMore" class="btn-load-more">
+                    상품 더보기
+                    <svg class="btn-load-more-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
 
+
+<script src="<c:url value='/js/common/bannerSlider.js'/>"></script>
+<script src="<c:url value='/js/product/homeProductService.js'/>"></script>
 <script src="<c:url value='/js/views/home.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

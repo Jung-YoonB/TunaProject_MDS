@@ -99,26 +99,46 @@
                 <c:if test="${item.deliveryStatus != 'CANCELED'}">
                 <div class="order-progress">
 
+                    <%-- 체크 표시는 원래 유니코드 ✓ 글리프였으나 환경에 따라 컬러 이모지로
+                         렌더링돼 CSS color를 무시하는 문제가 있어 SVG로 통일함(2026-09-01).
+                         .step-icon이 미완료 단계에서 color:transparent로 감추는 구조라
+                         stroke:currentColor인 SVG도 동일하게 감춰진다. --%>
                     <div class="progress-step ${stepIndex > 1 ? 'is-complete' : (stepIndex == 1 ? 'is-current status-preparing' : 'is-upcoming')}">
-                        <span class="step-icon">${stepIndex > 1 ? '✓' : ''}</span>
+                        <span class="step-icon">
+                            <c:if test="${stepIndex > 1}">
+                                <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5"/></svg>
+                            </c:if>
+                        </span>
                         <span class="step-label">배송준비중</span>
                     </div>
                     <div class="progress-line ${stepIndex > 1 ? 'is-complete' : ''}"></div>
 
                     <div class="progress-step ${stepIndex > 2 ? 'is-complete' : (stepIndex == 2 ? 'is-current status-shipped' : 'is-upcoming')}">
-                        <span class="step-icon">${stepIndex > 2 ? '✓' : ''}</span>
+                        <span class="step-icon">
+                            <c:if test="${stepIndex > 2}">
+                                <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5"/></svg>
+                            </c:if>
+                        </span>
                         <span class="step-label">배송중</span>
                     </div>
                     <div class="progress-line ${stepIndex > 2 ? 'is-complete' : ''}"></div>
 
                     <div class="progress-step ${stepIndex > 3 ? 'is-complete' : (stepIndex == 3 ? 'is-current status-out_for_delivery' : 'is-upcoming')}">
-                        <span class="step-icon">${stepIndex > 3 ? '✓' : ''}</span>
+                        <span class="step-icon">
+                            <c:if test="${stepIndex > 3}">
+                                <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5"/></svg>
+                            </c:if>
+                        </span>
                         <span class="step-label">배송출발</span>
                     </div>
                     <div class="progress-line ${stepIndex > 3 ? 'is-complete' : ''}"></div>
 
                     <div class="progress-step ${stepIndex == 4 ? 'is-complete' : 'is-upcoming'}">
-                        <span class="step-icon">${stepIndex == 4 ? '✓' : ''}</span>
+                        <span class="step-icon">
+                            <c:if test="${stepIndex == 4}">
+                                <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5"/></svg>
+                            </c:if>
+                        </span>
                         <span class="step-label">배송완료</span>
                     </div>
 
