@@ -2,6 +2,8 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
+<div class="order-complete-page">
+<div class="order-complete-card">
         <!-- 주문 완료 제목 -->
         <div id="title">
 
@@ -18,7 +20,9 @@
         <div id="OrderComplete">
 
             <div class="complete-icon">
-                ✓
+                <svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M20 6L9 17l-5-5"/>
+                </svg>
             </div>
 
             <div class="complete-message">
@@ -141,5 +145,7 @@
             </button>
 
         </div>
+</div>
+</div>
 
 		<jsp:include page="/WEB-INF/views/common/footer.jsp"/>

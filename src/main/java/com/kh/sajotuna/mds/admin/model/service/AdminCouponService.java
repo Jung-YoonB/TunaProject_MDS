@@ -3,7 +3,7 @@ package com.kh.sajotuna.mds.admin.model.service;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 
 public interface AdminCouponService {
 

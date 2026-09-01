@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.kh.sajotuna.mds.admin.model.dto.CouponDeleteRequestDTO;
 import com.kh.sajotuna.mds.admin.model.service.AdminCouponService;
-import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.util.AdminAuthUtil;
 import com.kh.sajotuna.mds.util.dto.ApiResponse;
 

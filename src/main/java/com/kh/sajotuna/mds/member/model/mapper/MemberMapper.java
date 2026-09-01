@@ -5,11 +5,9 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
-import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 
 @Mapper
 public interface MemberMapper {
@@ -40,12 +38,6 @@ public interface MemberMapper {
 
 	// 위 조회 조건의 전체 건수 (페이지네이션 계산용)
 	int countCouponsByMemberId(@Param("memberId") Long memberId);
-	
-	// 멤버 아이디를 통한 찜 목록 조회
-	List<MyPageWishDTO> selectWishesByMemberId(Long memberId);
-	
-	// 멤버 아이디를 통한 장바구니 조회
-	List<MyPageCartDTO> selectCartsByMemberId(Long memberId);
 	
 	// 회원 정보 수정
 	int updateNickname(@Param("memberId") Long memberId, @Param("nickname") String nickname);

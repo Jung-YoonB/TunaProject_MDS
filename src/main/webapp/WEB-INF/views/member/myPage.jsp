@@ -201,13 +201,7 @@
 </div>
 </div>
 
-<%-- 대응 화면이 없는 placeholder 링크(href="#")는 클릭해도 페이지 이동/점프가 없도록 처리 (adminPage.jsp와 동일 패턴) --%>
-<script>
-(function () {
-    document.querySelectorAll('.member-mypage-page a[href="#"]').forEach(function (a) {
-        a.addEventListener('click', function (e) { e.preventDefault(); });
-    });
-})();
-</script>
+<script src="<c:url value='/js/common/placeholderLinks.js'/>"></script>
+<script src="<c:url value='/js/views/myPage.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

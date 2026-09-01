@@ -22,8 +22,25 @@
         }
     }
 
-    // TODO(data binding): 실제로는 Cart가 pop_id(옵션 단위) 기준이라 상품+옵션 조합마다 별도 행이어야 함.
-    // 현재는 productId+optionName 조합을 임시 키로 사용해 같은 상품이라도 옵션이 다르면 합치지 않음.
+    // 저장은 항상 헤더 배지 갱신과 짝이라 한 곳에 묶어둔다. cart.jsp/wish.jsp가 각자
+    // 갖고 있던 saveCartItems/saveWishItems가 이것과 똑같은 코드였어서 여기로 합쳤다.
+    function saveCartItems(items) {
+        localStorage.setItem('cartItems', JSON.stringify(items));
+        if (typeof window.refreshCartBadge === 'function') window.refreshCartBadge();
+    }
+
+    function saveWishList(items) {
+        localStorage.setItem('wishItems', JSON.stringify(items));
+        if (typeof window.refreshCartBadge === 'function') window.refreshCartBadge();
+    }
+
+    // 상품+옵션 조합의 임시 유일키. addToCart와 장바구니 화면이 같은 규칙을 써야 해서 공용으로 둔다.
+    // TODO(data binding): 실제로는 Cart.pop_id(옵션 단위)가 이 역할을 함.
+    function getCartKey(item) {
+        return item.productId + '::' + (item.optionName || '기본 옵션');
+    }
+
+    // 같은 상품이라도 옵션이 다르면 합치지 않는다(위 getCartKey 규칙).
     function addToCart(item) {
         var items = getCartItems();
         var optionName = item.optionName || '기본 옵션';
@@ -35,8 +52,7 @@
         } else {
             items.push({ productId: item.productId, name: item.name, optionName: optionName, price: item.price, qty: item.qty || 1 });
         }
-        localStorage.setItem('cartItems', JSON.stringify(items));
-        if (typeof window.refreshCartBadge === 'function') window.refreshCartBadge();
+        saveCartItems(items);
     }
 
     function toggleWish(item) {
@@ -54,8 +70,7 @@
             list.splice(idx, 1);
             active = false;
         }
-        localStorage.setItem('wishItems', JSON.stringify(list));
-        if (typeof window.refreshCartBadge === 'function') window.refreshCartBadge();
+        saveWishList(list);
         return active;
     }
 
@@ -71,6 +86,9 @@
     window.CartWishService = {
         getCartItems: getCartItems,
         getWishList: getWishList,
+        saveCartItems: saveCartItems,
+        saveWishList: saveWishList,
+        getCartKey: getCartKey,
         addToCart: addToCart,
         toggleWish: toggleWish,
         isWished: isWished
