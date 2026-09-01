@@ -2,6 +2,8 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
+<div class="delivery-page">
+<div class="delivery-card">
         <!-- 제목 -->
         <div id="title">
             배송지 추가
@@ -148,9 +150,7 @@
             </div>
 
         </form>
+</div>
+</div>
 
-    </main>
-
-</body>
-
-</html>
+<jsp:include page="/WEB-INF/views/common/footer.jsp"/>

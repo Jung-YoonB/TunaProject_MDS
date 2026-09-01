@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.sajotuna.mds.admin.model.mapper.AdminCouponMapper;
-import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 
 import lombok.RequiredArgsConstructor;
 

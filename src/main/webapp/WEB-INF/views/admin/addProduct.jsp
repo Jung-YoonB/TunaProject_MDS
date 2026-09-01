@@ -372,12 +372,15 @@
 
             <h3>태그 추가</h3>
 
+            <%-- 원래 "×" 글리프였으나 사이트 전체 아이콘 SVG 통일에 맞춤(2026-09-01).
+                 텍스트가 없어져서 스크린리더용 이름은 aria-label로 준다. --%>
             <button
                 type="button"
                 class="modal-close"
                 id="modalCloseButton"
+                aria-label="닫기"
             >
-                ×
+                <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
 
         </div>

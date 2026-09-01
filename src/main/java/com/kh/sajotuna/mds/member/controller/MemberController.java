@@ -14,12 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
-import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 import com.kh.sajotuna.mds.util.SessionConst;
 import com.kh.sajotuna.mds.util.dto.ApiResponse;
 
@@ -102,37 +101,6 @@ public class MemberController {
 			return "admin/admincouponView";
 		}
 		// 유저는 couponList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
-	}
-	
-	@GetMapping("/wish")
-	public String wishlistForm(HttpSession session, Model model) {
-		
-		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-		
-		if(member.getRole().equals("USER")) {
-			model.addAttribute("wishList", (service.listWish(member.getMemberId())));
-			System.out.println("찜하기용 모델로 저장" + (List<MyPageWishDTO>)model.getAttribute("wishList")); // 추적용 출력
-			return "product/wish"; 
-		}  else {
-			return "admin/adminPage"; // 관리자용 찜 화면이 없어 대시보드로
-		} 
-		
-		// 유저는 wishList에 List<MyPageWishDTO> 가 모델에 최신화 되어 넘어감
-	}
-	
-	@GetMapping("/cart")
-	public String cartForm(HttpSession session, Model model) {
-		
-		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-				
-		if(member.getRole().equals("USER")) {
-			model.addAttribute("cartList", (service.listCart(member.getMemberId())));
-			System.out.println("장바구니용 모델로 저장" + (List<MyPageCartDTO>)model.getAttribute("cartList")); // 추적용 출력
-			return "product/cart"; 
-		}  else {
-			return "admin/adminPage"; // 관리자용 장바구니 화면이 없어 대시보드로
-		} 
-		// 유저는 cartList에 List<MyPageCartDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	@GetMapping("/orderDelivery")

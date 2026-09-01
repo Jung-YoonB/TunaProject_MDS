@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.ibatis.type.Alias;
 
-import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
