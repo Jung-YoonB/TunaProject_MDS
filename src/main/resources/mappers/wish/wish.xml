@@ -19,7 +19,7 @@
     <select id="getWishList" parameterType="Long" resultType="WishListDTO">
         select w.WISH_ID, w.MEMBER_ID, w.PRODUCT_ID, p.PRODUCT_TITLE, pi.PRODUCT_IMAGE_SAVE_NAME as title_image
         from WISH w join product p on w.PRODUCT_ID = p.PRODUCT_ID
-        join productimage pi on p.PRODUCT_ID = pi.PRODUCT_ID
+        left join productimage pi on p.PRODUCT_ID = pi.PRODUCT_ID
         where pi.PRODUCT_TITLE_IMAGE = 0 and w.MEMBER_ID = #{memberId}
     </select>
 </mapper>
