@@ -3,6 +3,11 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
+<%-- header.jsp가 모든 CSS를 전역으로 로드하므로, 이 페이지의 배경/폭 스타일이 다른 페이지의
+     공용 <body>/<main>에 새지 않도록 이 wrapper 안에서만 적용되게 스코프한다 --%>
+<div class="product-detail-page">
+<div class="product-detail-page-card">
+
     <!-- 상품 카테고리 -->
     <div id="product-category">결혼·집들이</div>
 
@@ -34,16 +39,18 @@
             </div>
 
             <!-- 리뷰 / 찜 -->
-            <%--
-                 백엔드 확인 필요: ProductDetailDTO 에 아래 필드 추가돼야 함
-                   - avgScore    (평균 평점, Double)
-                   - reviewCount (리뷰 개수, Long)
-                   - wishCount   (찜 개수, Long)
-            --%>
             <div id="product-stats">
-                <div class="product-stat">★ ${detail.product.avgScore}</div>
+                <%-- 별/하트는 원래 유니코드 글리프(★/♡)였으나 환경에 따라 컬러 이모지로
+                     렌더링돼 CSS color를 무시하는 문제가 있어 SVG로 통일함(2026-09-01). --%>
+                <div class="product-stat">
+                    <svg class="icon-star icon-inline" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
+                    ${detail.product.avgScore}
+                </div>
                 <div class="product-stat">리뷰 ${detail.product.reviewCount}개</div>
-                <div class="product-stat">♡ 찜 <span id="wish-count">${detail.product.wishCount}</span></div>
+                <div class="product-stat">
+                    <svg class="icon-heart icon-inline" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+                    찜 <span id="wish-count">${detail.product.wishCount}</span>
+                </div>
             </div>
 
             <!-- 가격 -->
@@ -81,10 +88,6 @@
                 <%--
                      value = POP_ID (장바구니 / 주문이 참조하는 값)
                      재고 표시 규칙: 50개 미만일 때만 "N개 남음", 0개면 "품절" + disabled
-
-                     백엔드 확인 필요: OptionDTO 에 아래 필드 추가돼야 함
-                       - popId (OPTIONDETAIL.POP_ID, Long) -- 지금은 optionId만 있음
-                       - stock (PRODUCTOPTION.OPTION_STOCK, int) -- 지금은 없음
                 --%>
                 <select id="product-option">
                     <c:forEach items="${detail.option}" var="opt" varStatus="status">
@@ -127,7 +130,11 @@
                    - 클릭 시 찜 등록/삭제 API 호출 후 서버 응답으로 #wish-count 값 갱신
             --%>
             <div id="product-buttons">
-                <button type="button" class="product-btn" id="wish-button" aria-label="찜하기">♡</button>
+                <%-- 하트는 SVG 한 개만 두고, 찜 on/off는 views/productdetail.js가
+                     .is-filled 클래스로 채움 여부만 바꾼다(글리프 교체 방식에서 변경). --%>
+                <button type="button" class="product-btn" id="wish-button" aria-label="찜하기">
+                    <svg class="icon-heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+                </button>
                 <button type="button" class="product-btn" id="cart-button">장바구니</button>
                 <button type="button" class="product-btn" id="buy-button">바로 구매</button>
             </div>
@@ -168,8 +175,6 @@
              백엔드 확인 필요: detailPage() 컨트롤러에서 이미 있는 ProductServiceImpl.getReviewList(productId, memberId)를
              한 번 더 호출해서 model.addAttribute("reviewList", ...) 로 얹어주면 됨 (DetailPageDTO에 새 필드 추가할 필요 없음,
              /mds/review/{productId} 에서 이미 하는 것과 동일한 패턴).
-             단, detailPage.xml의 getReviewList 쿼리 자체에 조인 버그 있음 (r.OD_ID = od.OPTION_ID 비교, member의 전체
-             주문/주문상세를 다 끌어옴) - 이건 리뷰탭 데이터 정확도에 영향을 주니 같이 확인 필요.
         --%>
         <div class="tab-panel" data-tab-panel="review">
             <c:if test="${empty reviewList}">
@@ -179,7 +184,10 @@
                 <div class="review-item">
                     <div class="review-item-header">
                         <span class="review-writer">${review.nickname}</span>
-                        <span class="review-score">★ ${review.score}</span>
+                        <span class="review-score">
+                            <svg class="icon-star icon-inline" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
+                            ${review.score}
+                        </span>
                         <span class="review-date">${review.writeDate}</span>
                     </div>
                     <div class="review-images">
@@ -193,6 +201,9 @@
         </div>
     </div>
 
-<script src="/js/product/productdetail.js"></script>
+</div>
+</div>
+
+<script src="<c:url value='/js/views/productdetail.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

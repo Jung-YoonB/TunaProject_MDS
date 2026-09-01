@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.sajotuna.mds.wish.model.mapper.WishMapper">
+
+    <insert id="insertWish" parameterType="findWishInfoDTO">
+        insert into wish values(SEQ_WISH_ID.nextval, #{memberId}, #{productId})
+    </insert>
+
+    <select id="findWishById" resultType="int" parameterType="findWishInfoDTO">
+        select count(*) from wish where MEMBER_ID = #{memberId} and PRODUCT_ID = #{productId}
+    </select>
+    <delete id="removeWish" parameterType="findWishInfoDTO">
+        delete from wish where member_id = #{memberId} and PRODUCT_ID = #{productId}
+    </delete>
+
+    <select id="getWishList" parameterType="Long" resultType="WishListDTO">
+        select w.WISH_ID, w.MEMBER_ID, w.PRODUCT_ID, p.PRODUCT_TITLE, pi.PRODUCT_IMAGE_SAVE_NAME as title_image
+        from WISH w join product p on w.PRODUCT_ID = p.PRODUCT_ID
+        left join productimage pi on p.PRODUCT_ID = pi.PRODUCT_ID
+        where pi.PRODUCT_TITLE_IMAGE = 0 and w.MEMBER_ID = #{memberId}
+    </select>
+</mapper>
