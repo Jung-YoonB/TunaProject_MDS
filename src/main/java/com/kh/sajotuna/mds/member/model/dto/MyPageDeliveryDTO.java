@@ -1,0 +1,47 @@
+package com.kh.sajotuna.mds.member.model.dto;
+
+import java.time.LocalDate;
+
+import org.apache.ibatis.type.Alias;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Alias("MyPageDeliveryDTO")
+public class MyPageDeliveryDTO {
+
+	// 딜리버리 테이블
+	private Long deliveryId;
+	private String company;
+	private String trackingNo;
+	private String deliveryStatus;
+	private String detailAddressFix;
+	private String addressNameFix;
+	
+	// 주문 테이블
+	private Long orderId;
+	private Long totalPrice;
+	private String orderStatus;
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private LocalDate orderDate;
+
+	private String orderDateStr;
+
+	// 대표 상품 정보 (ORDERDETAIL 중 OD_ID가 가장 작은 1건)
+	private Long odId; // 리뷰 작성(/review/write?odId=) 연결용
+	private String productName;
+	private String productImagePath;
+	private String productImageSaveName;
+	private Integer qty;
+	private Integer productCount; // 주문에 포함된 상품 건수 (2건 이상이면 "외 N건" 표시용)
+	private boolean hasReview; // 대표 상품(odId)에 대한 리뷰를 이미 작성했는지 여부
+}

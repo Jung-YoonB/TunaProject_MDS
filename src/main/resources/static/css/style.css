@@ -1,0 +1,423 @@
+@charset "utf-8";
+
+/* ===== Golden Summer Fields palette =====
+   브랜드/텍스트·보더/상태/반경 4개 카테고리로 나눈 공용 색상 변수. 정말 한 번만 쓰는
+   강조색(배지 등)만 리터럴 hex 예외로 허용한다. */
+:root {
+	/* 브랜드 */
+	--gsf-sage: #ccd5ae;
+	--gsf-sage-dark: #adb594;
+	--gsf-sage-light: #dce3c4;
+	--gsf-sage-pale: #e6e4d1;
+	--gsf-tan: #f0dfc0;
+	--gsf-caramel: #d4a373;
+	--gsf-ivory: #fefae0;
+	--gsf-peach: #faedcd;
+	--gsf-peach-pale: #f4eada;
+	--gsf-beige: #e9edc9;
+	--gsf-cream: #fffcf4;
+	--gsf-ink: #3f4a33;
+	/* 텍스트 / 보더 (중립 톤) */
+	--gsf-text: #51483b;
+	--gsf-subtext: #8d8475;
+	--gsf-border: #e6dfcf;
+	/* 상태 */
+	--gsf-success: #6b8f5c;
+	--gsf-danger: #b5533f;
+	/* 반경 */
+	--radius-sm: 8px;
+	--radius-md: 14px;
+	--radius-lg: 20px;
+	--radius-pill: 999px;
+}
+
+/* ===== Page scaffold =====
+   헤더는 position:fixed로 뷰포트 상단에 고정 - 본문에 헤더 실측 높이만큼 padding-top을 줘서
+   콘텐츠가 가리지 않게 한다. 푸터는 일반 흐름 그대로 둬서 스크롤해야(또는 콘텐츠가 짧으면
+   화면 바로 아래에) 나타나게 하고, flex + min-height로 짧은 페이지에서도 화면 하단에 붙게 한다. */
+body {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	padding-top: 69px;
+}
+main {
+	flex: 1 0 auto;
+}
+
+/* ===== 배경(hero) - 9개 페이지 공유 규칙 =====
+   header.jsp가 요청 경로를 보고 body에 클래스를 붙여준다. 산수화 이미지 대신 단색
+   배경(--gsf-cream)을 쓴다. */
+body.home-hero,
+body.login-hero,
+body.signup-hero,
+body.order-hero,
+body.order-complete-hero,
+body.product-detail-hero,
+body.review-write-hero,
+body.coupon-hero,
+body.delivery-hero {
+	background-color: var(--gsf-cream);
+}
+
+/* 홈페이지만 배경을 별도 톤으로 지정(다른 8개 hero 페이지는 공용 --gsf-cream 그대로 유지) */
+body.home-hero {
+	background-color: #FDFBF9;
+}
+
+
+/* ===== 공용 SVG 아이콘 (2026-09-01 규격화) =====
+   원래 사이트 곳곳에서 ★ / ♡ / ♥ / ✓ / × 같은 유니코드 글리프를 아이콘으로 쓰고 있었는데,
+   환경(폰트)에 따라 컬러 이모지로 렌더링되면 CSS color가 무시되고 세로 정렬도 어긋난다.
+   헤더(#site-header .icon-svg)와 홈 카드에서 먼저 SVG로 바꿨던 것(HANDOFF 3-39-1/3-39-2)을
+   나머지 화면 전체에 적용하면서, 반복되는 아이콘을 여기 공용 클래스로 모았다.
+
+   크기는 전부 1em이라 각 자리의 기존 font-size를 그대로 따라간다 - 즉 글리프였을 때의
+   크기 규칙(font-size)을 안 건드리고 모양만 SVG로 바꾼 것. 색도 currentColor라
+   기존 color 규칙이 그대로 먹는다.
+
+   선(stroke) 계열은 헤더와 같은 규격(fill:none; stroke:currentColor; stroke-width:1.8,
+   단 체크/닫기는 작은 크기에서도 보이도록 2.5), 채움 계열(별)은 fill:currentColor. */
+.icon-check,
+.icon-close {
+	width: 1em;
+	height: 1em;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.icon-star {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.icon-heart {
+	width: 1em;
+	height: 1em;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* 찜이 켜진 상태 - 헤더/홈과 동일하게 같은 path를 채워서 표현한다. */
+.icon-heart.is-filled {
+	fill: currentColor;
+}
+
+/* 텍스트와 나란히 놓이는 아이콘용.
+   (1) SVG의 기본 baseline은 아이콘 박스의 맨 아래라 그대로 두면 글자 기준선보다 위로 떠
+       보인다(홈 카드에서 겪은 것과 같은 문제 - .product-rating-star 주석 참고).
+   (2) 같은 font-size라도 SVG가 글리프보다 커 보인다 - 글리프는 em 박스 안에 자체 여백을
+       갖고 있어서 실제 잉크가 박스보다 작기 때문. 그래서 0.9em으로 줄여서 원래 ★/♡
+       글자와 비슷한 덩치가 되게 맞춘다.
+   ⚠️ (1)(2) 둘 다 코드로 계산한 근사치라 화면에서 미세 조정이 필요할 수 있다. */
+.icon-inline {
+	width: 0.9em;
+	height: 0.9em;
+	vertical-align: -0.15em;
+}
+/* ===== Header container =====
+   다른 페이지 전용 CSS(style_addProduct.css 등)가 #site-header/.icon-item/#search_box 같은
+   전역 선택자를 스코프 없이 재정의하고 있어, 이 파일이 먼저 로드돼도 나중에 로드되는 파일에
+   덮어써질 수 있다. 그래서 헤더 내부 요소는 항상 "#site-header " 접두사를 붙여 우선순위를
+   높여둔다 (다른 팀원 파일을 건드리지 않고 이 파일만으로 방어). */
+header#site-header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 500;
+	display: flex;
+	align-items: center;
+	gap: 32px;
+	padding: 12px 40px;
+	background-color: #faf8f4;
+	border-bottom: 1px solid var(--gsf-border);
+	box-sizing: border-box;
+}
+
+/* ===== Logo ===== */
+#site-header #logo_img a {
+	font-family: "Hahmlet", "Malgun Gothic", serif;
+	font-size: 22px;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	color: #222;
+	white-space: nowrap;
+	text-decoration: none;
+}
+#site-header #logo_img a:hover {
+	text-decoration: none;
+	color: var(--gsf-caramel);
+}
+
+/* ===== Search box =====
+   style_addProduct.css가 같은 id(#search_box)에 width/height/border/background를
+   전역으로 걸어두고 있어, 여기서 명시적으로 덮어써서 새어 들어오지 않게 한다. */
+#site-header #search_box {
+	width: auto;
+	height: auto;
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: none;
+}
+#site-header #search_box form {
+	position: relative;
+	width: 100%;
+	max-width: 580px;
+}
+#site-header .search-input {
+	width: 100%;
+	height: 44px;
+	padding: 0 46px 0 20px;
+	border: 1px solid var(--gsf-border);
+	border-radius: 999px;
+	font-size: 14px;
+	color: #333;
+	outline: none;
+	background-color: #FDFBF9;
+	transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
+}
+#site-header .search-input::placeholder {
+	color: #999;
+}
+#site-header .search-input:focus {
+	border-color: var(--gsf-caramel);
+	background-color: #fff;
+	box-shadow: 0 6px 18px rgba(212, 163, 115, .25);
+}
+#site-header .search-submit {
+	position: absolute;
+	top: 50%;
+	right: 6px;
+	transform: translateY(-50%);
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #8d8475;
+	cursor: pointer;
+}
+#site-header .search-submit:hover {
+	color: var(--gsf-caramel);
+}
+#site-header .search-submit svg {
+	width: 18px;
+	height: 18px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* ===== Icon row (찜 / 장바구니 / 마이페이지) + 로그인 ===== */
+#site-header .header-actions {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+}
+#site-header .icon {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+#site-header .icon-item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #555;
+	text-decoration: none;
+}
+#site-header .icon-badge {
+	position: absolute;
+	top: -6px;
+	right: -8px;
+	min-width: 16px;
+	height: 16px;
+	padding: 0 4px;
+	border-radius: 999px;
+	background-color: var(--gsf-caramel);
+	color: #fff;
+	font-size: 10px;
+	line-height: 16px;
+	text-align: center;
+}
+#site-header .icon-item:hover {
+	color: var(--gsf-caramel);
+	text-decoration: none;
+}
+#site-header .icon-svg {
+	width: 22px;
+	height: 22px;
+	display: block;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+#site-header .icon-label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+/* ===== Login / Sign up ===== */
+#site-header .sign {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	white-space: nowrap;
+}
+#site-header .sign a {
+	font-size: 13px;
+	color: #555;
+	text-decoration: none;
+}
+#site-header .sign a:hover {
+	color: var(--gsf-caramel);
+	text-decoration: none;
+}
+#site-header .sign-divider {
+	color: var(--gsf-border);
+	font-size: 12px;
+}
+
+/* ===== Footer =====
+   헤더와 마찬가지로 다른 페이지 CSS(.site-footer, .footer-top, .footer-divider 등)가
+   같은 클래스를 스코프 없이 재정의하고 있어, "footer.site-footer" 처럼 요소+클래스로
+   우선순위를 방어해둔다 (같은 로드 순서에서도 specificity로 항상 이기도록). */
+footer.site-footer {
+	width: 100%;
+	padding: 18px 40px 12px;
+	background-color: #f7f3ec;
+	color: var(--gsf-ink);
+	border-top: 1px solid var(--gsf-border);
+	box-sizing: border-box;
+}
+.site-footer .footer-top {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	flex-wrap: wrap;
+	gap: 24px;
+}
+.site-footer .company-info .footer-brand {
+	margin: 0 0 8px;
+	font-size: 16px;
+	font-weight: 700;
+	color: #222;
+}
+.site-footer .company-info address {
+	font-style: normal;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 0;
+}
+.site-footer .company-info address p {
+	margin: 0;
+	font-size: 12px;
+	color: var(--gsf-ink);
+	line-height: 1.4;
+}
+.site-footer .footer-nav {
+	align-self: center;
+}
+.site-footer .footer-nav ul {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.site-footer .footer-nav a {
+	font-size: 13px;
+	color: #555;
+	text-decoration: none;
+}
+.site-footer .footer-nav a:hover {
+	color: var(--gsf-caramel);
+	text-decoration: none;
+}
+.site-footer .footer-contact {
+	text-align: right;
+}
+.site-footer .footer-contact .cs-phone {
+	margin: 0 0 4px;
+	font-size: 14px;
+	font-weight: 700;
+	color: #222;
+}
+.site-footer .footer-contact .cs-hours {
+	margin: 0 0 8px;
+	font-size: 12px;
+	color: var(--gsf-ink);
+}
+.site-footer .footer-social {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+}
+.site-footer .footer-social a {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	background-color: var(--gsf-sage-pale);
+	color: var(--gsf-ink);
+	transition: background-color .2s ease, color .2s ease;
+}
+.site-footer .footer-social a:hover {
+	background-color: var(--gsf-sage-light);
+	color: #222;
+}
+.site-footer .footer-social svg {
+	width: 16px;
+	height: 16px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.site-footer .footer-divider {
+	width: 100%;
+	border: none;
+	border-top: 1px solid var(--gsf-border);
+	margin: 10px 0 8px;
+}
+.site-footer .footer-bottom {
+	padding: 0;
+	text-align: center;
+}
+.site-footer .copyright {
+	margin: 0;
+	font-size: 12px;
+	color: #999;
+}

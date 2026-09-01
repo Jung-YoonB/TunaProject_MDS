@@ -1,0 +1,4884 @@
+/* ================================================================
+   style_user.css - 손님 페이지 CSS 통합본. 공통 팔레트/헤더·푸터/hero는 style.css 참고.
+   각 구간은 원래 파일명을 구분선 주석으로 표시했다.
+   ================================================================ */
+
+
+/* ===== User sub-palette: 반복되던 회색/보더 톤을 변수로 정리(값은 기존 그대로) ===== */
+:root {
+	/* surface: 카드/입력창 배경 */
+	--user-surface: #fff;
+	--user-bg-cream: #f8f6f2;
+	--user-bg-cream-alt: #f6efe4;
+	/* border */
+	--user-border: #d8d3cc;
+	--user-border-alt: #e5e0d8;
+	/* text (중립 톤 - 진한 것부터 옅은 것 순) */
+	--user-text: #333;
+	--user-text-muted: #777;
+	--user-text-faint: #999;
+	/* 상태 */
+	--user-danger: #c0392b;
+}
+
+
+/* ================================================================
+   ↓↓↓ style_home.css 원본 내용
+   ================================================================ */
+/* ivory/beige/peach/text/subtext는 전부 style.css의 --gsf-* 값과 동일해 전역 :root로 옮김. */
+
+/* home.jsp가 <main> 바로 아래에 섹션을 직접 두므로, 각 섹션 id는 이 페이지에서만 쓰인다.
+   섹션 자체는 투명하게 두고 콘텐츠 카드(.home-container)만 가운데 정렬해서, 카드 바깥
+   좌우 여백에는 body의 고정 산수화 배경이 그대로 비쳐 보이도록 한다. */
+.home-container {
+    width: min(1200px, 100% - 80px);
+    margin: 0 auto;
+}
+
+/* BANNER */
+#banner {
+    background-color: transparent;
+    padding: 0;
+}
+
+#banner .home-container {
+    background-color: #f5eee4;
+    border-radius: 0;
+    padding: 0;
+}
+
+.banner-slider {
+    position: relative;
+}
+
+/* 패딩은 텍스트 쪽(.banner-content)에만 준다. height를 명시해야 이미지의 height:100%가
+   실제로 계산된다 - min-height(auto 기반)로는 퍼센트 높이가 자동으로 취급돼 무시된다. */
+.banner-slide {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    height: 450px;
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .8s ease;
+}
+
+.banner-slide.is-active {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 텍스트 영역과 겹치지 않도록 우측 이미지 위 빈 공간(하단)에 배치 */
+.banner-dots {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+}
+
+.banner-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(81, 72, 59, .25);
+    cursor: pointer;
+    transition: background-color .2s ease, width .2s ease;
+}
+
+.banner-dot.is-active {
+    width: 20px;
+    border-radius: 4px;
+    background-color: var(--gsf-caramel);
+}
+
+.banner-content {
+    flex: 0 0 38%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 24px 32px 40px;
+}
+
+.banner-subtitle {
+    margin: 0 0 12px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--gsf-subtext);
+}
+
+.banner-content h1 {
+    margin: 0 0 20px;
+    font-size: 40px;
+    line-height: 1.35;
+    font-weight: 700;
+    color: var(--gsf-text);
+}
+
+.banner-description {
+    margin: 0 0 32px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--gsf-subtext);
+}
+
+/* 남는 폭을 끝까지 채움 (고정 aspect-ratio 대신 flex:1 + 행 높이(450px)로 비율이
+   자연스럽게 4:3 안팎이 되도록 함) */
+.banner-image {
+    flex: 1;
+    min-width: 0;
+    border-radius: 0;
+    background-image: linear-gradient(135deg, var(--gsf-sage-light), var(--gsf-peach));
+}
+
+/* SECTION HEADER (선물 카테고리 / 인기 선물 공통) */
+.section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 25px;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gsf-text);
+}
+
+/* #product 접두사로 명시도를 ID+클래스(1,1,0)까지 올림 - href="#"는 브라우저가 클릭 없이도
+   바로 :visited로 취급해서, default.css:22의 a:visited{color:#333}(명시도 0,1,1)가 순수
+   클래스 선택자(0,1,0)보다 이겨버리는 문제가 있음(.product-rating에서 실제로 겪은 버그와
+   동일한 원인 - 자세한 내용은 HANDOFF.md 참고). */
+#product .section-more {
+    font-size: 13px;
+    color: var(--gsf-subtext);
+    text-decoration: none;
+}
+
+#product .section-more:hover {
+    color: var(--gsf-caramel);
+    text-decoration: none;
+}
+
+/* CATEGORY - 섹션 자체는 투명, .home-container에만 흰 배경을 줘서
+   콘텐츠 바깥 좌우 여백에는 body의 고정 산수화 장식이 계속 비쳐 보이도록 함 */
+#category {
+    background-color: transparent;
+    padding-top: 0;
+}
+
+#category .home-container {
+    background-color: #fbf8f4;
+    padding: 40px 40px 32px;
+}
+
+#category-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 32px 24px;
+}
+
+.category-item {
+    text-align: center;
+    cursor: default;
+}
+
+.category-icon {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background-color: var(--gsf-beige);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color .2s ease;
+}
+
+/* 카테고리 원형 배경 - 세이지/피치 2톤 번갈아 표시 (톤 다운된 파스텔) */
+.category-item:nth-child(odd) .category-icon {
+    background-color: var(--gsf-sage-pale);
+}
+
+.category-item:nth-child(even) .category-icon {
+    background-color: var(--gsf-peach-pale);
+}
+
+.category-item:hover .category-icon {
+    background-color: var(--gsf-sage);
+}
+
+.category-icon-svg {
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: var(--gsf-ink);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.category-name {
+    display: block;
+    font-size: 14px;
+    color: var(--gsf-text);
+    white-space: nowrap;
+}
+
+/* PRODUCT - 카테고리와 마찬가지로 .home-container에만 흰 배경을 줘서 좌우 여백을 비워둠 */
+#product {
+    background-color: transparent;
+}
+
+#product .home-container {
+    background-color: #fbf8f4;
+    padding: 20px 20px 90px;
+    border-top: 1px solid var(--gsf-border);
+}
+
+/* 좌우 여백(위 padding)과 카드 사이 간격을 20px로 통일 - 남는 폭은 전부 카드(1fr)가 가져간다 */
+#product-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+/* 상품 더보기 버튼 - views/home.js가 클릭 시 8개 더 로드하고, 이후로는 스크롤 시 자동 로드
+   (버튼은 첫 클릭 후 숨김). 목업 데이터라 서버 호출 없이 클라이언트에서만 동작함. */
+.product-load-more-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+}
+
+.btn-load-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 28px;
+    border: 1px solid var(--gsf-border);
+    border-radius: var(--radius-pill);
+    background-color: #fff;
+    color: var(--gsf-text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+
+.btn-load-more:hover {
+    background-color: var(--gsf-peach-pale);
+    border-color: var(--gsf-caramel);
+}
+
+.btn-load-more-svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.product-card {
+    position: relative;
+    border: 1px solid var(--gsf-border);
+    border-radius: 16px;
+    background-color: #ffffff;
+    overflow: hidden;
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+
+.product-card:hover {
+    box-shadow: 0 12px 24px rgba(81, 72, 59, .12);
+    transform: translateY(-2px);
+}
+
+.product-img {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background-image: linear-gradient(135deg, var(--gsf-peach), var(--gsf-sage-light));
+}
+
+.product-img-alt {
+    background-image: linear-gradient(135deg, var(--gsf-sage-light), var(--gsf-tan));
+}
+
+/* 기본적으로 숨겨두고, 상품 이미지에 마우스를 올렸을 때만 보이게 함 */
+.product-badge {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background-color: var(--gsf-sage-pale);
+    color: var(--gsf-ink);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    opacity: 0;
+    transition: opacity .2s ease;
+}
+
+.product-img:hover .product-badge {
+    opacity: 1;
+}
+
+/* 카드 썸네일 오른쪽 위 퀵 액션 버튼 - 원래는 찜(하트)이었으나 장바구니로 교체(찜은
+   .product-wish-toggle로 이동, 아래 참고). 색상/위치/크기는 옛 .product-like 그대로 재사용. */
+.product-cart-quick {
+    position: absolute;
+    top: 13px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, .85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gsf-text);
+    cursor: pointer;
+}
+
+.product-cart-quick:hover {
+    color: var(--gsf-caramel);
+}
+
+.product-cart-quick-svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.product-info {
+    padding: 10px 13px;
+}
+
+.product-name {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gsf-text);
+}
+
+.product-description {
+    margin: 0 0 5px;
+    font-size: 16px;
+    color: var(--gsf-subtext);
+}
+
+.product-price-row {
+    display: flex;
+    align-items: center;
+    margin: 0 2px 2px 0;
+}
+
+.product-price {
+    display: block;
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--gsf-text);
+}
+
+/* 별점 + 찜 영역 - 예전보다 터치 영역을 넓혀서(패딩) 찜 표시를 그 자체로 찜 버튼처럼
+   누를 수 있게 함(.product-wish-toggle 참고). */
+.product-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 4px 2px;
+}
+
+/* .product-rating은 wish.jsp(.wishlist-container)도 같이 쓰는 공용 클래스라 여기서 구조를
+   바꾸면 그쪽까지 영향받는다 - 그래서 별/점수 분리 레이아웃은 #product-list 스코프에서만
+   켠다(다른 페이지의 .product-rating은 지금 그대로 단순 텍스트로 남아 영향 없음). */
+.product-rating {
+    color: var(--gsf-subtext);
+}
+
+/* 사용자님 요청으로 리뷰 보기 링크화 - .product-wish-toggle과 똑같은 pill 버튼 스타일을
+   써서 둘이 나란히 짝을 이루는 클릭 가능한 요소로 보이게 함(실제 href는 아직 상품 데이터가
+   없어 "#" - 상품 연동 시 리뷰 섹션으로 교체 필요, 위 home.jsp TODO 참고).
+   text-decoration:none은 명시적으로 다시 선언 - default.css의 전역 a:hover 규칙이
+   hover 시 밑줄을 강제로 붙여서(버튼인 .product-wish-toggle과 달리 <a> 태그라 영향받음),
+   아이콘 버튼처럼 보이려면 이걸 덮어써야 함.
+   color도 여기서 다시 선언 - href="#"는 현재 페이지 자신을 가리켜서 브라우저가 클릭 없이도
+   바로 :visited로 취급하는데, default.css:22의 a:visited{color:#333}가 타입+가상클래스라
+   명시도(0,1,1)가 .product-rating 단독(0,1,0)보다 높아 검게 이기고 있었음(실제 원인,
+   사용자님이 DevTools로 확인). #product-list .product-rating은 ID+클래스라 명시도(1,1,0)로
+   a:visited를 확실히 이김. */
+#product-list .product-rating {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 4px 10px;
+    color: var(--gsf-subtext);
+    /* pill의 자체 padding-left(10px) + .product-meta의 padding-left(2px)만큼 왼쪽으로
+       당겨서, 이 줄의 시작(별 아이콘)이 위 상품명/설명/가격과 같은 왼쪽 선에 맞게 함 -
+       hover 히트 영역은 padding 그대로라 넓게 유지됨. */
+    margin-left: -12px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color .2s ease, color .2s ease;
+}
+
+#product-list .product-rating:hover,
+#product-list .product-rating:focus,
+#product-list .product-rating:active {
+    background-color: var(--gsf-peach-pale);
+    color: var(--gsf-caramel);
+    text-decoration: none;
+}
+
+/* 유니코드 ★ 대신 SVG로 통일(찜 하트와 같은 이유) - ★는 원래 채워진(칠해진) 모양이라
+   하트(outline, stroke)와 달리 fill:currentColor로 채움. 찜 하트(.product-wish-icon)와
+   같은 19px, 점수 텍스트(.product-rating-score)는 찜 개수(.product-wish-count-num)와
+   같은 15px로 맞춰서 두 줄(별점/찜)의 아이콘·글자 크기가 서로 짝이 맞게 함. */
+.product-rating-star {
+    width: 19px;
+    height: 19px;
+    fill: currentColor;
+    /* SVG의 기본 baseline은 아이콘 박스의 맨 아래 가장자리인데, 이 별 path는 실제 별
+       모양(잉크)이 박스 아래쪽에서 3.85/24 만큼 비어있어서(뾰족한 별 모양이라 위/아래
+       여백이 비대칭) 그대로 두면 글자 기준선보다 위로 떠 보인다. 그 여백만큼(19px 기준
+       약 3px) 아래로 내려서 별 잉크의 밑선이 실제 텍스트 기준선에 오게 함. */
+    transform: translateY(3px);
+}
+
+.product-rating-score {
+    font-size: 15px;
+}
+
+/* 옛 .product-wish-count(단순 텍스트)를 버튼으로 교체 - 찜 개수 표시 + 찜 토글을
+   겸함. 하트 아이콘(.product-wish-icon)만 오른쪽 위 장바구니 퀵버튼의 아이콘(20px)과
+   비슷한 크기로 키우고, 개수 숫자(.product-wish-count-num)는 별점과 같은 크기 유지. */
+.product-wish-toggle {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 4px 10px;
+    border: none;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--gsf-subtext);
+    cursor: pointer;
+    transition: background-color .2s ease, color .2s ease;
+}
+
+/* 하트 모양을 header.jsp의 찜 아이콘(#site-header .icon-svg)과 똑같은 SVG path로 통일 -
+   유니코드 ♡ 글자 대신 outline 하트 아이콘을 써서 헤더와 생김새가 같아지게 함. */
+.product-wish-icon {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    /* .product-rating-star와 같은 원인(SVG 기본 baseline=아이콘 박스 맨 아래) - 별과 같은
+       양만큼 내려서 텍스트 기준선에 맞춤. */
+    transform: translateY(3px);
+}
+
+.product-wish-count-num {
+    font-size: 15px;
+}
+
+.product-wish-toggle:hover {
+    background-color: var(--gsf-peach-pale);
+    color: var(--gsf-caramel);
+}
+
+/* 배경 산수화(hero)는 style.css의 body.home-hero::before/::after 공통 규칙(9개 페이지가
+   공유)이 처리한다 - 자세한 내용/이유는 style.css 해당 주석 참고. */
+
+/* ================================================================
+   ↓↓↓ style_member.css 원본 내용
+   ================================================================ */
+/* ================================
+   공통
+================================ */
+
+/* 원본은 스코프 없는 body{} 였음(사이트 전역에 leak) - 로그인/회원가입은 이미 style.css의
+   body.login-hero/signup-hero가 배경을 담당하고, margin:0은 default.css가 이미 전역 리셋
+   하고 있어 그 외엔 불필요한 규칙이라 삭제함. 자세한 내용은 HANDOFF.md 참고. */
+
+#title {
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+/* 로그인/회원가입 2단 패널 - 왼쪽 그라데이션 비주얼(.auth-visual) + 오른쪽 폼(.auth-form-panel). */
+.auth-shell {
+    width: min(920px, 100% - 40px);
+    margin: 60px auto;
+    display: flex;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(81, 72, 59, .18);
+    background-color: #fff;
+}
+
+.auth-shell-wide {
+    width: min(1000px, 100% - 40px); /* 회원가입 전용 - 필드가 많아서 더 넓음 */
+}
+
+.auth-visual {
+    flex: 0 0 320px; /* 고정 폭 - 폼이 넓어져도 패널은 그대로 */
+    display: flex;
+    align-items: center;
+    background-image: linear-gradient(160deg, var(--gsf-sage) 0%, var(--gsf-caramel) 100%);
+    color: #fff;
+}
+
+.auth-visual-inner {
+    padding: 48px 36px;
+}
+
+.auth-visual-mark {
+    display: inline-block;
+    margin-bottom: 24px;
+    padding: 6px 14px;
+    border: 1px solid rgba(255, 255, 255, .6);
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.auth-visual-inner h2 {
+    margin: 0 0 12px;
+    font-size: 24px;
+    line-height: 1.4;
+}
+
+.auth-visual-inner p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, .9);
+}
+
+.auth-form-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+
+
+/* ================================
+   로그인
+================================ */
+
+.login-card {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 48px 32px;
+    box-sizing: border-box;
+}
+
+.login-card #title {
+    margin-bottom: 35px;
+}
+
+.login-field {
+    margin-bottom: 20px;
+}
+
+.login-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.login-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    font-size: 15px;
+    outline: none;
+}
+
+.login-input:focus {
+    border-color: var(--gsf-caramel);
+}
+
+#SignIn {
+    margin-top: 30px;
+}
+
+#SignIn button {
+    width: 100%;
+    height: 52px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--gsf-caramel);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+#SignIn button:hover {
+    background-color: var(--gsf-ink);
+}
+
+#AccountInfo {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+#AccountInfo button {
+    padding: 0 12px;
+    background: none;
+    border: none;
+    border-right: 1px solid #ddd;
+    color: #777;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+#AccountInfo button:last-child {
+    border-right: none;
+}
+
+#AccountInfo button:hover {
+    color: #222;
+}
+
+
+/* ================================
+   회원가입
+================================ */
+
+.signup-card {
+    width: 100%;
+    max-width: 460px;
+    margin: 0 auto;
+    padding: 48px 40px;
+    box-sizing: border-box;
+}
+
+.signup-card #title {
+    margin-bottom: 35px;
+}
+
+#Name,
+#Birth,
+#Gender,
+#Nickname,
+#Username,
+#Password,
+#ConfirmPassword,
+#PhoneNumber,
+#Email {
+    margin-bottom: 20px;
+}
+
+.signup-card label:not(.gender-pill) {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.signup-input {
+    width: 100%;
+    height: 45px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+}
+
+.signup-input:focus {
+    border-color: var(--gsf-caramel);
+}
+
+.id-input-box {
+    display: flex;
+    gap: 8px;
+}
+
+.id-input-box .signup-input {
+    flex: 1;
+}
+
+.dup-check-btn,
+.CheckBox {
+    width: 90px;
+    height: 45px;
+    border: 1px solid var(--gsf-caramel);
+    border-radius: 6px;
+    background-color: white;
+    color: #555;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+.dup-check-btn:hover,
+.CheckBox:hover {
+    background-color: #f8f6f2;
+}
+
+.msg-success,
+.msg-error,
+.success-message,
+.error-message {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+.msg-success,
+.success-message {
+    color: #2f9d5c;
+}
+
+.msg-error,
+.error-message {
+    color: #c0392b;
+}
+
+#Gender {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#Gender span {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.gender-pill-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* 알약형(pill) 토글 - display:none 대신 클립으로 숨겨 키보드/스크린리더 접근성을 유지한다. */
+.gender-radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.gender-pill {
+    padding: 10px 24px;
+    border: 1px solid var(--gsf-border);
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    font-weight: normal;
+    color: var(--gsf-text);
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+
+.gender-radio:checked + .gender-pill {
+    background-color: var(--gsf-sage);
+    border-color: var(--gsf-sage);
+}
+
+.gender-radio:focus-visible + .gender-pill {
+    outline: 2px solid var(--gsf-caramel);
+    outline-offset: 2px;
+}
+
+#PrivacyBox {
+    display: flex;
+    align-items: center;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+#PrivacyBox input {
+    margin-right: 8px;
+}
+
+#PrivacyBox label {
+    display: inline;
+    margin: 0;
+    font-size: 13px;
+    font-weight: normal;
+}
+
+#PrivacyPolicy {
+    margin-bottom: 25px;
+}
+
+#PrivacyPolicy a {
+    font-size: 13px;
+    color: #777;
+    text-decoration: underline;
+}
+
+#PrivacyPolicy a:hover {
+    color: #222;
+}
+
+#SignUp {
+    margin-top: 25px;
+}
+
+#SignUp button {
+    width: 100%;
+    height: 52px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--gsf-caramel);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+#SignUp button:hover {
+    background-color: var(--gsf-ink);
+}
+
+#Login {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#Login button {
+    border: none;
+    background: none;
+    color: #777;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+#Login button:hover {
+    color: #222;
+}
+
+
+/* ================================
+   회원정보 수정
+================================ */
+
+/* style_myPage.css의 bare "body"/"main"/"#title" 규칙이 모든 페이지에 새어 들어오므로
+   이 페이지에서만 되돌림 (style_cart.css/style_search.css와 동일한 기존 관례) */
+body:has(.update-page) {
+    background-color: #f8f6f2;
+}
+
+main:has(.update-page) {
+    width: 500px;
+    margin: 60px auto;
+}
+
+.update-page {
+    padding: 40px;
+    background-color: white;
+    border: 1px solid #e5e0d8;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.update-page #title {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-bottom: 35px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+    color: #222;
+}
+
+.password-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #888;
+}
+
+/* ---- 아이디 고정 블록 (변경 불가) ---- */
+.fixed-id-block {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    background-color: #f3f1ec;
+    border: 1px solid #e5e0d8;
+    border-radius: 10px;
+}
+
+.fixed-id-label {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: bold;
+    color: #888;
+}
+
+.fixed-id-value {
+    flex: 1;
+    margin-left: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #555;
+}
+
+.fixed-id-badge {
+    flex-shrink: 0;
+    padding: 3px 10px;
+    background-color: #e5e0d8;
+    color: #777;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* ---- 항목별 펼침/수정 리스트 (구글 계정 정보 화면과 동일한 UX) ---- */
+.info-edit-list {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.info-edit-item {
+    border-bottom: 1px solid #f2ede4;
+}
+
+.info-edit-item:last-child {
+    border-bottom: none;
+}
+
+.info-edit-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 16px 20px;
+    background: none;
+    border: none;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.info-edit-header:hover,
+.info-edit-header:focus {
+    background-color: #faf7f2;
+}
+
+.info-edit-label {
+    width: 90px;
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.info-edit-current {
+    flex: 1;
+    font-size: 14px;
+    color: #777;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.info-edit-chevron {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: #999;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform .15s;
+}
+
+.info-edit-header[aria-expanded="true"] .info-edit-chevron {
+    transform: rotate(180deg);
+}
+
+.info-edit-panel {
+    padding: 4px 20px 20px;
+    background-color: #fbf9f5;
+}
+
+.info-edit-panel[hidden] {
+    display: none;
+}
+
+.info-edit-panel .signup-input {
+    margin-bottom: 10px;
+}
+
+.info-edit-panel .signup-input:last-child {
+    margin-bottom: 0;
+}
+
+.address-default-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #555;
+    font-weight: normal;
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.btn-save-field {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    background-color: #e9edc9;
+    color: #3f4a33;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* style_myPage.css의 전역 "button:hover" 규칙이 이 버튼의 hover 배경만 덮어써 글자가 잘
+   안 보이는 문제가 있어(specificity가 더 높음), 여기서 명시적으로 재정의해 되돌림 */
+.btn-save-field:hover,
+.btn-save-field:focus {
+    background-color: #ccd5ae;
+    color: #3f4a33;
+}
+
+.btn-cancel-edit {
+    padding: 10px 18px;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    background-color: white;
+    color: #555;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-cancel-edit:hover {
+    background-color: #f8f6f2;
+}
+
+#Cancel {
+    text-align: center;
+    margin-top: 15px;
+}
+
+#Cancel a {
+    color: #777;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+#Cancel a:hover {
+    color: #222;
+    text-decoration: underline;
+}
+
+#WithdrawLink {
+    text-align: center;
+    margin-top: 8px;
+}
+
+#WithdrawLink a {
+    color: #aaa;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+#WithdrawLink a:hover {
+    color: #c0392b;
+    text-decoration: underline;
+}
+
+
+/* ================================
+   회원 탈퇴 완료
+================================ */
+
+/* 원래 이 페이지는 header.jsp를 include하지 않고 <body class="withdraw-page"><main>
+   구조를 직접 갖고 있어서 ".withdraw-page main"(main이 후손)이 성립했음. 2026-09-01
+   규격화로 header/footer include + wrapper div 방식으로 바꾸면서 main이 이제 조상이 되어
+   그 선택자가 더는 안 맞음 - 형제 페이지 .update-page와 같은 패턴으로 재구성함
+   (배경은 body:has(), 폭은 main:has(), 카드 스타일은 wrapper 자신). HANDOFF.md 3-5/3-6/3-42 참고. */
+body:has(.withdraw-page) {
+    background-color: #f8f6f2;
+}
+
+main:has(.withdraw-page) {
+    width: 480px;
+    margin: 100px auto;
+}
+
+.withdraw-page {
+    padding: 40px;
+    text-align: center;
+    background-color: white;
+    border: 1px solid #e5e0d8;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.withdraw-page #title h1 {
+    margin-bottom: 10px;
+    font-size: 26px;
+}
+
+.withdraw-page #title p {
+    margin: 0 0 30px;
+    color: #777;
+}
+
+.withdraw-page #WithdrawComplete {
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background-color: #f8f6f2;
+}
+
+.withdraw-page .complete-icon {
+    margin-bottom: 15px;
+    font-size: 40px;
+    color: #6b8f71;
+}
+
+.withdraw-page .complete-message strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.withdraw-page .complete-message p {
+    margin: 0;
+    font-size: 13px;
+    color: #888;
+}
+
+.withdraw-page #WithdrawActions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.withdraw-page .btn-outline,
+.withdraw-page .btn-solid {
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.withdraw-page .btn-outline {
+    border: 1px solid #d8d3cc;
+    background-color: white;
+    color: #555;
+}
+
+.withdraw-page .btn-outline:hover {
+    background-color: #f8f6f2;
+}
+
+.withdraw-page .btn-solid {
+    border: none;
+    background-color: #222;
+    color: white;
+}
+
+.withdraw-page .btn-solid:hover {
+    background-color: #444;
+}
+/* ================================================================
+   ↓↓↓ style_myPage.css 원본 내용
+   ================================================================ */
+@charset "utf-8";
+
+/* ================================
+   회원 - 마이페이지
+   (admin/style_admin_mypage.css의 프로필 카드 + 아이콘 타일 그리드 형식을 그대로 가져와 통일)
+================================ */
+
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .member-mypage-page로 스코프할 것 */
+.member-mypage-page {
+    background-color: #f6efe4;
+    min-height: 100vh;
+}
+
+.member-mypage-page .page-content {
+    width: 720px;
+    margin: 0 auto;
+    padding: 40px 0 80px;
+}
+
+.member-mypage-page .page-title {
+    margin: 0 0 24px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* ---- 공통 카드 ---- */
+.member-mypage-page .card {
+    padding: 24px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+/* ---- 프로필 카드 ---- */
+.member-mypage-page .profile-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #f2ede4;
+}
+
+.member-mypage-page .profile-identity {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.member-mypage-page .avatar-circle {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ececec;
+    border-radius: 50%;
+}
+
+.member-mypage-page .avatar-icon-svg {
+    width: 32px;
+    height: 32px;
+    fill: none;
+    stroke: #999;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.member-mypage-page .profile-name-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.member-mypage-page .profile-name-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.member-mypage-page .profile-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+}
+
+.member-mypage-page .profile-grade-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background-color: #f6efe4;
+    color: #a8834f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.member-mypage-page .profile-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #888;
+}
+
+.member-mypage-page .btn-edit-member {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #555;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.member-mypage-page .btn-edit-member:hover {
+    background-color: #f8f6f2;
+    text-decoration: none;
+}
+
+/* ---- 라벨/값 행 ---- */
+.member-mypage-page .info-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.member-mypage-page .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f2ede4;
+}
+
+.member-mypage-page .info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.member-mypage-page .info-label {
+    font-size: 13px;
+    color: #888;
+}
+
+.member-mypage-page .info-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #222;
+}
+
+.member-mypage-page .info-row-link {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.member-mypage-page .info-row-link:hover {
+    text-decoration: none;
+}
+
+.member-mypage-page .info-row-link:hover .info-label,
+.member-mypage-page .info-row-link:hover .info-value {
+    color: #a8834f;
+}
+
+.member-mypage-page .info-chevron {
+    color: #ccc;
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* ---- 아이콘 타일 그리드(빠른 메뉴 / 내 선물 관리 / 고객센터 공용) ---- */
+.member-mypage-page .quick-menu-section {
+    margin-top: 8px;
+}
+
+.member-mypage-page .section-title {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.member-mypage-page .quick-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    padding: 0;
+    margin: 0 0 24px;
+    list-style: none;
+}
+
+.member-mypage-page .quick-menu-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px 12px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color .15s, border-color .15s;
+}
+
+.member-mypage-page .quick-menu-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background-color: #f6efe4;
+    color: #a8834f;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.member-mypage-page .quick-menu-tile:hover,
+.member-mypage-page .quick-menu-tile:focus {
+    background-color: #fbf8f2;
+    border-color: #e2d9c8;
+    text-decoration: none;
+}
+
+.member-mypage-page .quick-menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #f6efe4;
+    border-radius: 8px;
+}
+
+.member-mypage-page .quick-menu-icon svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: #a8834f;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.member-mypage-page .quick-menu-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+}
+
+/* ---- 리스트형 메뉴(주문관리 / 고객센터) ---- */
+.member-mypage-page .list-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.member-mypage-page .list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f2ede4;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color .15s;
+}
+
+.member-mypage-page .list-row:last-child {
+    border-bottom: none;
+}
+
+.member-mypage-page .list-row:hover,
+.member-mypage-page .list-row:focus {
+    background-color: #fbf8f2;
+    text-decoration: none;
+}
+
+.member-mypage-page .list-row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.member-mypage-page .list-row-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+}
+
+.member-mypage-page .list-row-desc {
+    font-size: 13px;
+    color: #999;
+}
+
+.member-mypage-page .list-row-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.member-mypage-page .list-row-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background-color: #f6efe4;
+    color: #a8834f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.member-mypage-page .list-row-chevron {
+    color: #ccc;
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* ---- 리뷰 작성 CTA 카드 ---- */
+.member-mypage-page .review-cta-card {
+    text-align: center;
+}
+
+.member-mypage-page .review-cta-desc {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: #666;
+}
+
+.member-mypage-page .review-cta-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 6px;
+    background-color: #e9dcc6;
+    color: #5c4a2f;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.member-mypage-page .review-cta-badge:hover {
+    background-color: #ddc9a3;
+    text-decoration: none;
+}
+
+.member-mypage-page .review-cta-link {
+    display: block;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #888;
+    text-decoration: none;
+}
+
+.member-mypage-page .review-cta-link:hover {
+    color: #5c4a2f;
+    text-decoration: underline;
+}
+
+/* ================================================================
+   ↓↓↓ style_cart.css 원본 내용
+   ================================================================ */
+@charset "utf-8";
+
+/* style_myPage.css의 bare "body"/"main" 규칙이 모든 페이지에 새어 들어오므로 이 페이지에서만 되돌림 */
+body:has(.cart-container) {
+	background-color: #f6efe4;
+}
+main:has(.cart-container) {
+	width: 800px;
+	margin: 0 auto;
+}
+
+/* 이 파일의 모든 규칙은 .cart-container로 스코프함: .item-checkbox/.btn-solid 같은
+   범용 클래스명이 wish.jsp 등 다른 페이지의 동일 클래스명과 충돌해 CSS가 새는 것을 방지 */
+.cart-container {
+	padding: 40px 0 80px;
+}
+/* [hidden] 속성은 display:flex를 지정한 요소에서는 기본 UA 스타일이 무시되므로 명시적으로 되살림 */
+.cart-container .cart-controls[hidden],
+.cart-container .cart-itemlist[hidden],
+.cart-container .cart-action[hidden] {
+	display: none;
+}
+.cart-container .page-title {
+	margin: 0 0 24px;
+	font-size: 28px;
+	font-weight: 700;
+	color: #222;
+	text-align: center;
+}
+
+/* ===== 상단 컨트롤 (전체 선택 / 선택상품 삭제) ===== */
+.cart-container .cart-controls {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+	font-size: 14px;
+	color: #555;
+}
+.cart-container .checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+}
+.cart-container .checkbox-label input {
+	width: 16px;
+	height: 16px;
+	accent-color: var(--gsf-caramel);
+}
+.cart-container #delete-btn {
+	border: none;
+	background: none;
+	color: #888;
+	font-size: 13px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* ===== 상품 목록 ===== */
+.cart-container .cart-itemlist {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-bottom: 20px;
+}
+.cart-container .cart-item {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px 20px;
+	background-color: #fff;
+	border: 1px solid #eee;
+	border-radius: 10px;
+}
+.cart-container .item-checkbox {
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	accent-color: var(--gsf-caramel);
+	cursor: pointer;
+}
+.cart-container .item-thumbnail {
+	width: 70px;
+	height: 70px;
+	flex-shrink: 0;
+	background-color: #f0f0f0;
+	border-radius: 6px;
+}
+.cart-container .item-info {
+	flex: 1;
+	min-width: 0;
+}
+.cart-container .item-title {
+	margin: 0 0 6px;
+	font-size: 15px;
+	font-weight: 700;
+	color: #222;
+}
+.cart-container .item-option {
+	margin: 0 0 6px;
+	font-size: 13px;
+	color: #888;
+}
+.cart-container .item-price-info .price-final {
+	font-size: 14px;
+	color: #555;
+}
+.cart-container .item-control {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 8px;
+}
+.cart-container .qty-control {
+	display: flex;
+	align-items: center;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	overflow: hidden;
+}
+.cart-container .btn-qty-decrease,
+.cart-container .btn-qty-increase {
+	width: 28px;
+	height: 28px;
+	border: none;
+	background-color: #fafafa;
+	color: #555;
+	font-size: 14px;
+	cursor: pointer;
+}
+.cart-container .btn-qty-decrease:hover,
+.cart-container .btn-qty-increase:hover {
+	background-color: #eee;
+}
+.cart-container .input-qty {
+	width: 36px;
+	height: 28px;
+	border: none;
+	border-left: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+	text-align: center;
+	font-size: 13px;
+	-moz-appearance: textfield;
+}
+.cart-container .input-qty::-webkit-outer-spin-button,
+.cart-container .input-qty::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+.cart-container .delete-item-btn {
+	border: none;
+	background: none;
+	color: #999;
+	font-size: 12px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* ===== 결제 예상 금액 ===== */
+.cart-container .cart-summary-box {
+	padding: 24px;
+	margin-bottom: 16px;
+	background-color: #fff;
+	border: 1px solid #eee;
+	border-radius: 10px;
+}
+.cart-container .cart-summary-box h4 {
+	margin: 0 0 16px;
+	font-size: 16px;
+	font-weight: 700;
+	color: #333;
+}
+.cart-container .summary-row {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 8px;
+	font-size: 14px;
+	color: #777;
+}
+.cart-container .summary-total {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid #eee;
+	font-size: 16px;
+	font-weight: 700;
+	color: #222;
+}
+.cart-container .summary-total strong {
+	font-size: 22px;
+}
+
+/* ===== 경고 메시지 ===== */
+.cart-container .cart-warning {
+	margin-bottom: 16px;
+	padding: 12px;
+	background-color: #fbe4e4;
+	color: #c0392b;
+	font-size: 14px;
+	text-align: center;
+	border-radius: 8px;
+}
+
+/* ===== 하단 액션 버튼 ===== */
+.cart-container .cart-action {
+	display: flex;
+	gap: 12px;
+}
+.cart-container .btn-outline,
+.cart-container .btn-solid {
+	flex: 1;
+	height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	font-size: 15px;
+	cursor: pointer;
+	text-decoration: none;
+}
+.cart-container .btn-outline {
+	background-color: #fff;
+	border: 1px solid #ddd;
+	color: #555;
+}
+.cart-container .btn-outline:hover {
+	text-decoration: none;
+	border-color: var(--gsf-caramel);
+	color: var(--gsf-caramel);
+}
+.cart-container .btn-solid {
+	background-color: var(--gsf-caramel);
+	border: none;
+	color: #222;
+	font-weight: 700;
+}
+.cart-container .btn-solid:hover {
+	background-color: #b48b62;
+	text-decoration: none;
+	color: #222;
+}
+
+/* ===== 빈 장바구니 ===== */
+.cart-container .cart-empty {
+	padding: 80px 20px;
+	text-align: center;
+}
+.cart-container .cart-empty-title {
+	margin: 0 0 6px;
+	font-size: 16px;
+	color: #333;
+}
+.cart-container .cart-empty-desc {
+	margin: 0 0 20px;
+	font-size: 13px;
+	color: #999;
+}
+.cart-container .cart-empty .btn-solid {
+	display: inline-flex;
+	flex: none;
+	padding: 0 24px;
+}
+/* ================================================================
+   ↓↓↓ style_wish.css 원본 내용
+   ================================================================ */
+@charset "utf-8";
+
+/* style_myPage.css의 bare "body"/"main" 규칙이 모든 페이지에 새어 들어오므로 이 페이지에서만 되돌림 */
+body:has(.wishlist-container) {
+	background-color: #f6efe4;
+}
+main:has(.wishlist-container) {
+	width: 1100px;
+	margin: 0 auto;
+}
+
+/* 이 파일의 모든 규칙은 .wishlist-container로 스코프함: .product-card/.item-checkbox 같은
+   범용 클래스명이 home.jsp/cart.jsp 등 다른 페이지의 동일 클래스명과 충돌해 CSS가 새는 것을 방지 */
+.wishlist-container {
+	padding: 50px 0 80px;
+}
+
+/* ===== 상단 제목 ===== */
+.wishlist-container .wishlist-header {
+	margin-bottom: 30px;
+	text-align: center;
+}
+.wishlist-container .wishlist-header h1 {
+	margin: 0 0 8px;
+	font-size: 32px;
+	font-weight: 700;
+	color: #222;
+}
+.wishlist-container .wishlist-header p {
+	margin: 0;
+	font-size: 14px;
+	color: #888;
+}
+
+/* ===== 전체 선택 / 선택 상품 삭제 ===== */
+.wishlist-container .wishlist-controls[hidden] {
+	display: none;
+}
+.wishlist-container .wishlist-controls {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+	font-size: 14px;
+	color: #555;
+}
+.wishlist-container #wish-delete-btn {
+	border: none;
+	background: none;
+	color: #888;
+	font-size: 13px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* ===== 개수 표시 + 정렬 필터 ===== */
+.wishlist-container .wishlist-filter[hidden] {
+	display: none;
+}
+.wishlist-container .wishlist-filter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 20px;
+	font-size: 14px;
+}
+.wishlist-container .total-count {
+	font-weight: 700;
+	color: #333;
+}
+.wishlist-container .short-options {
+	display: flex;
+	gap: 18px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.wishlist-container .short-options li {
+	color: #999;
+	cursor: pointer;
+}
+.wishlist-container .short-options li:hover {
+	color: var(--gsf-caramel);
+}
+.wishlist-container .short-options li.is-active {
+	color: #222;
+	font-weight: 700;
+}
+
+/* ===== 상품 그리드 ===== */
+.wishlist-container .product-grid[hidden] {
+	display: none;
+}
+.wishlist-container .product-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 24px;
+}
+.wishlist-container .product-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	background-color: #fff;
+	border: 1px solid #eee;
+	border-radius: 10px;
+	overflow: hidden;
+	transition: opacity 0.3s ease;
+}
+.wishlist-container .product-card.is-removing {
+	opacity: 0;
+}
+.wishlist-container .product-link {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+}
+.wishlist-container .product-link:hover {
+	text-decoration: none;
+}
+.wishlist-container .product-thumbnail {
+	width: 100%;
+	height: 180px;
+	background-color: #f5f5f5;
+}
+.wishlist-container .item-checkbox {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 18px;
+	height: 18px;
+	accent-color: var(--gsf-caramel);
+	cursor: pointer;
+}
+.wishlist-container .btn-wish-toggle {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: none;
+	padding: 0;
+	cursor: pointer;
+}
+.wishlist-container .wish-heart {
+	width: 20px;
+	height: 20px;
+	fill: none;
+	stroke: var(--gsf-caramel);
+	stroke-width: 2;
+}
+.wishlist-container .btn-wish-toggle.is-active .wish-heart {
+	fill: var(--gsf-caramel);
+}
+.wishlist-container .product-info {
+	padding: 16px;
+	flex: 1;
+}
+.wishlist-container .product-name {
+	margin: 0 0 8px;
+	font-size: 15px;
+	font-weight: 700;
+	color: #222;
+}
+.wishlist-container .product-rating {
+	margin: 0;
+	font-size: 14px;
+	color: #d4a373;
+	font-weight: 700;
+}
+.wishlist-container .product-rating .rating-count {
+	font-weight: 400;
+	color: #999;
+}
+.wishlist-container .product-actions {
+	padding: 0 16px 16px;
+}
+.wishlist-container .btn-cart {
+	width: 100%;
+	height: 40px;
+	border: none;
+	border-radius: 6px;
+	background-color: var(--gsf-caramel);
+	color: #222;
+	font-size: 13px;
+	font-weight: 700;
+	cursor: pointer;
+}
+.wishlist-container .btn-cart:hover {
+	background-color: #b48b62;
+}
+
+/* ===== 빈 찜 목록 ===== */
+.wishlist-container .wishlist-empty {
+	padding: 100px 20px;
+	text-align: center;
+}
+.wishlist-container .wishlist-empty-title {
+	margin: 0 0 6px;
+	font-size: 16px;
+	color: #333;
+}
+.wishlist-container .wishlist-empty-desc {
+	margin: 0 0 20px;
+	font-size: 13px;
+	color: #999;
+}
+.wishlist-container .wishlist-empty .btn-solid {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 44px;
+	padding: 0 24px;
+	border: none;
+	border-radius: 8px;
+	background-color: var(--gsf-caramel);
+	color: #222;
+	font-weight: 700;
+	text-decoration: none;
+}
+.wishlist-container .wishlist-empty .btn-solid:hover {
+	background-color: #b48b62;
+	text-decoration: none;
+}
+/* ================================================================
+   ↓↓↓ style_search.css 원본 내용
+   ================================================================ */
+@charset "utf-8";
+
+/* ===== Search result page scoping ===== */
+/* style_myPage.css의 bare "main" 규칙(width:900px, margin:50px auto)이 모든 페이지에 새어 들어와
+   이 페이지의 main 폭/여백을 덮어써서 :has()로 이 페이지에서만 되돌림 */
+main:has(.search-result-page) {
+	width: 1200px;
+	margin: 0 auto;
+}
+.search-result-page {
+	padding-bottom: 60px;
+}
+
+/* 사이드바 배너 - 콘텐츠(1200px) 오른쪽 여백에 고정. 여백이 넉넉한 화면에서만 노출한다. */
+.sp-sidebar-banner {
+	display: none;
+	position: fixed;
+	top: 110px;
+	left: calc(50% + 624px);
+	width: 260px;
+}
+@media (min-width: 1600px) {
+	.sp-sidebar-banner {
+		display: block;
+	}
+}
+.sp-sidebar-banner .banner-slider {
+	border-radius: 16px;
+	overflow: hidden;
+	box-shadow: 0 12px 30px rgba(63, 74, 51, .12);
+}
+.sp-sidebar-banner .banner-slide {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0;
+	background-color: var(--gsf-ivory);
+}
+.sp-sidebar-banner .banner-image {
+	aspect-ratio: 4 / 3;
+	border-radius: 0;
+}
+.sp-sidebar-banner .banner-content {
+	padding: 18px 20px 34px;
+}
+.sp-sidebar-banner .banner-content h2 {
+	margin: 0;
+	font-size: 17px;
+	line-height: 1.4;
+	font-weight: 700;
+	color: var(--gsf-text);
+}
+.sp-sidebar-banner .banner-subtitle {
+	margin: 0 0 6px;
+	font-size: 12px;
+	letter-spacing: 1px;
+}
+.sp-sidebar-banner .banner-dots {
+	bottom: 14px;
+}
+
+/* ===== Visually-hidden accessibility utility ===== */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* ===== Category selector (pinned directly under header) ===== */
+.sp-category-section {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	padding: 16px 0;
+	background-color: #f7f7f7;
+}
+.sp-category-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+.sp-category-item {
+	appearance: none;
+	border: none;
+	border-radius: 8px;
+	background-color: var(--gsf-sage-light);
+	color: #333;
+	font-size: 14px;
+	padding: 10px 18px;
+	cursor: pointer;
+}
+.sp-category-item:hover,
+.sp-category-item.is-active {
+	background-color: var(--gsf-caramel);
+	color: #222;
+}
+
+/* ===== Tag section (가격대·선호 등 상품 속성, 중복 선택 가능, 메인 카테고리 바로 아래) ===== */
+.sp-tag-section {
+	margin-top: 20px;
+}
+.sp-tag-selector {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.sp-tag-btn {
+	border: 1px solid var(--gsf-tan);
+	border-radius: 999px;
+	background-color: #fff;
+	color: #555;
+	font-size: 13px;
+	padding: 8px 16px;
+	cursor: pointer;
+}
+.sp-tag-btn:hover {
+	border-color: var(--gsf-caramel);
+	color: var(--gsf-caramel);
+}
+.sp-tag-btn.is-active {
+	background-color: var(--gsf-caramel);
+	border-color: var(--gsf-caramel);
+	color: #222;
+}
+
+/* ===== Search box + quick filter (인기/신상품/할인) ===== */
+.sp-search-filter {
+	margin-top: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+.sp-search-form {
+	display: flex;
+	gap: 8px;
+}
+.sp-search-input {
+	width: 320px;
+	height: 40px;
+	padding: 0 16px;
+	border: 1px solid var(--gsf-caramel);
+	border-radius: 999px;
+	background-color: #fff;
+	font-size: 14px;
+	outline: none;
+}
+.sp-search-input::placeholder {
+	color: #999;
+}
+.sp-search-btn {
+	height: 40px;
+	padding: 0 20px;
+	border: none;
+	border-radius: 999px;
+	background-color: var(--gsf-caramel);
+	color: #222;
+	font-size: 14px;
+	cursor: pointer;
+}
+.sp-search-btn:hover {
+	background-color: #b48b62;
+}
+.sp-quick-filter {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.sp-filter-btn {
+	border: none;
+	border-radius: 999px;
+	background-color: #eee;
+	color: #666;
+	font-size: 13px;
+	padding: 8px 16px;
+	cursor: pointer;
+}
+.sp-filter-btn:hover {
+	background-color: var(--gsf-caramel);
+	color: #222;
+}
+
+/* ===== Product grid ===== */
+.sp-product-section {
+	margin-top: 40px;
+}
+.sp-product-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 24px;
+}
+.sp-product-card {
+	position: relative;
+	border: 1px solid #e5e5e5;
+	background-color: #fff;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+.sp-product-link {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+}
+.sp-product-link:hover {
+	text-decoration: none;
+}
+.sp-product-thumb {
+	position: relative;
+	margin: 0;
+}
+.sp-product-img {
+	width: 100%;
+	height: 220px;
+	border-bottom: 1px solid #e5e5e5;
+	background-color: #fafafa;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #aaa;
+	font-size: 13px;
+}
+.sp-btn-wishlist {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: none;
+	padding: 0;
+	cursor: pointer;
+}
+.sp-btn-wishlist:hover {
+	background: none;
+}
+.search-result-page .wish-heart {
+	width: 20px;
+	height: 20px;
+	fill: none;
+	stroke: var(--gsf-caramel);
+	stroke-width: 2;
+}
+.sp-btn-wishlist.is-active .wish-heart {
+	fill: var(--gsf-caramel);
+}
+.sp-product-info {
+	padding: 16px;
+	flex: 1;
+}
+.sp-product-name {
+	margin: 0 0 8px;
+	font-size: 15px;
+	font-weight: 700;
+	color: #222;
+}
+.sp-product-price {
+	margin: 0 0 6px;
+	font-size: 14px;
+	font-weight: 700;
+	color: #333;
+}
+.sp-product-category {
+	display: inline-block;
+	margin: 0;
+	font-size: 11px;
+	padding: 3px 8px;
+	border-radius: 999px;
+	background-color: var(--gsf-sage-light);
+	color: #555;
+}
+
+/* ===== 상품 카드 호버 시 뜨는 태그 팝업 (태그가 많아져도 이미지가 아닌 아래쪽 설명 영역 방향으로 늘어남) ===== */
+.sp-tag-popup {
+	position: absolute;
+	left: 8px;
+	right: 8px;
+	top: calc(100% - 48px);
+	z-index: 5;
+	display: flex;
+	gap: 4px;
+	flex-wrap: wrap;
+	padding: 6px;
+	border-radius: 6px;
+	background-color: rgba(0, 0, 0, 0.5);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.15s ease;
+	pointer-events: none;
+}
+.sp-product-card:hover .sp-tag-popup {
+	opacity: 1;
+	visibility: visible;
+}
+.sp-tag-popup .sp-product-tag {
+	font-size: 11px;
+	padding: 3px 8px;
+	border-radius: 999px;
+	background-color: rgba(255, 255, 255, 0.9);
+	color: #555;
+}
+.sp-product-actions {
+	padding: 0 16px 16px;
+}
+.sp-btn-cart {
+	width: 100%;
+	height: 38px;
+	border: none;
+	border-radius: 4px;
+	background-color: var(--gsf-sage);
+	color: #222;
+	font-size: 13px;
+	cursor: pointer;
+}
+.sp-btn-cart:hover {
+	background-color: var(--gsf-caramel);
+	color: #222;
+}
+
+/* ===== Pagination ===== */
+.sp-pagination {
+	margin-top: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+}
+.sp-pagination ol {
+	display: flex;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	gap: 6px;
+}
+.sp-page-btn,
+.sp-btn-prev,
+.sp-btn-next {
+	appearance: none;
+	border: 1px solid var(--gsf-tan);
+	background-color: #fff;
+	color: #555;
+	font-size: 13px;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+.sp-page-btn.is-current {
+	background-color: var(--gsf-caramel);
+	border-color: var(--gsf-caramel);
+	color: #222;
+}
+.sp-btn-prev:hover,
+.sp-btn-next:hover,
+.sp-page-btn:hover {
+	border-color: var(--gsf-caramel);
+	color: var(--gsf-caramel);
+}
+.sp-page-btn.is-current:hover {
+	color: #fff;
+}
+/* ================================================================
+   ↓↓↓ style_coupon.css 원본 내용
+   ================================================================ */
+@charset "utf-8";
+
+/* ================================
+   내 쿠폰 (admin/style_admincouponView.css와 동일한 형식으로 통일)
+================================ */
+
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .coupon-view-page로 스코프할 것.
+   admin과 동일하게 바깥 배경은 .coupon-view-page에, 흰 카드는 그 안의 .coupon-view-page-card에 나눠 담는다 */
+.coupon-view-page {
+    background-color: #f8f6f2;
+    min-height: 100vh;
+    padding: 50px 0;
+    box-sizing: border-box;
+}
+
+.coupon-view-page-card {
+    width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: #fff;
+    border: 1px solid #e5e0d8;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.coupon-view-page #title {
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* 쿠폰 검색 */
+.coupon-view-page #SearchCoupons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 30px;
+}
+
+.coupon-view-page #coupon-search {
+    flex: 1;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    outline: none;
+    font-size: 14px;
+}
+
+.coupon-view-page #coupon-search:focus {
+    border-color: #b59b7b;
+}
+
+.coupon-view-page #search-button {
+    width: 80px;
+    height: 42px;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.coupon-view-page #search-button:hover {
+    background-color: #faf9f7;
+}
+
+/* 보유 쿠폰 목록 제목 */
+.coupon-view-page .coupon-list-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.coupon-view-page .coupon-list-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.coupon-view-page .coupon-count {
+    color: #888;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+/* 쿠폰 카드 */
+.coupon-view-page .coupon-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+    padding: 18px 20px;
+    border: 1px solid #e3ded7;
+    border-radius: 10px;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.coupon-view-page .coupon-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.coupon-view-page .coupon-name {
+    margin-bottom: 7px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.coupon-view-page .coupon-description {
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #777;
+}
+
+.coupon-view-page .coupon-deadline {
+    font-size: 12px;
+    color: #999;
+}
+
+.coupon-view-page .coupon-discount {
+    flex-shrink: 0;
+    min-width: 60px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    color: #806746;
+}
+
+.coupon-view-page .coupon-empty[hidden] {
+    display: none;
+}
+
+.coupon-view-page .coupon-empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+/* 페이지네이션 (admin의 .pagination 색상/톤에 맞춤) */
+.coupon-view-page .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.coupon-view-page .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #555;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.coupon-view-page .page-link:hover {
+    border-color: #b59b7b;
+    text-decoration: none;
+}
+
+.coupon-view-page .page-link.is-active {
+    background-color: #f0dfc0;
+    border-color: #f0dfc0;
+    color: #5c4a2f;
+    font-weight: 700;
+}
+
+/* 마이페이지로 돌아가기 */
+.coupon-view-page .coupon-back {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.coupon-view-page .btn-back-mypage {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    padding: 0 28px;
+    border: 1px solid #d8d3cc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #555;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.coupon-view-page .btn-back-mypage:hover {
+    background-color: #f8f6f2;
+    text-decoration: none;
+}
+
+/* ================================
+   반응형
+================================ */
+
+@media (max-width: 850px) {
+    .coupon-view-page-card {
+        width: calc(100% - 30px);
+        margin: 0 auto;
+        padding: 25px;
+    }
+}
+
+@media (max-width: 600px) {
+    .coupon-view-page .coupon-card {
+        flex-wrap: wrap;
+    }
+
+    .coupon-view-page .coupon-info {
+        width: 100%;
+        flex-basis: 100%;
+    }
+}
+
+/* ================================================================
+   ↓↓↓ style_payment.css 원본 내용
+   ================================================================ */
+/* 원본은 스코프 없는 body{margin:0;font-family:Arial;color:#333} 였음 - 사이트 전역
+   글꼴/글자색을 Arial/#333로 덮어써서 default.css의 기본 글꼴을 leak시키고 있었음(주문/
+   결제 페이지는 이미 style.css의 body.order-hero가 배경을 담당). 필요 없는 규칙이라 삭제함.
+   자세한 내용은 HANDOFF.md 참고. */
+
+        /* outer wrapper는 투명하게, 폭/배경은 안쪽 카드(.order-card)에만 준다 -
+           main 태그에 직접 폭을 주면 hero 배경이 스크롤 시 깨진다. */
+        .order-page {
+            padding: 50px 0;
+        }
+
+        /* 결제 전체 영역 */
+        .order-card {
+            width: 600px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: white;
+            border: 1px solid #e5e0d8;
+            border-radius: 12px;
+            box-sizing: border-box;
+        }
+
+        /* 제목 */
+        #title {
+            text-align: center;
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 35px;
+        }
+
+        /* 각 섹션 */
+        #ProductInfo, #Price, #point, #Coupon, #MembershipTier,
+		#DeliveryAddress, #PaymentMethod, #Checkbox {
+            padding: 22px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 섹션 제목 */
+        .order-card h2 {
+            margin: 0 0 18px;
+            font-size: 18px;
+        }
+
+        /* 주문 상품 */
+        .order-card .product-item {
+            padding: 18px;
+            background-color: #faf9f7;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        .order-card .product-name, .order-card .product-quantity, .order-card .price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .order-card .product-name:last-child, .order-card .product-quantity:last-child,
+        .order-card .price-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 상품 이름 */
+        #product_name {
+            font-weight: bold;
+        }
+
+        /* 상품 수량 */
+        #qty {
+            font-weight: bold;
+        }
+
+        /* 상품 금액 */
+        #Price {
+            padding-top: 25px;
+        }
+
+        .price-item span:last-child {
+            font-weight: bold;
+        }
+
+        /* 포인트 */
+        #point {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #point label {
+            margin-right: auto;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        #used_point {
+            width: 130px;
+            height: 40px;
+            padding: 0 10px;
+            box-sizing: border-box;
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        #used_point:focus {
+            border-color: #b59b7b;
+        }
+
+        /* 쿠폰 */
+        #Coupon {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #Coupon label {
+            margin-right: auto;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        #coupon_id {
+            width: 280px;
+            height: 40px;
+            padding: 0 10px;
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+            background-color: white;
+            outline: none;
+        }
+
+        /* 회원 등급 할인 */
+        #MembershipTier {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #MembershipTier span:first-child {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        #grade_discount {
+            color: #9b805f;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 최종 결제 금액 */
+        #TotalPayment {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 25px;
+            background-color: #f8f6f2;
+            border-radius: 8px;
+        }
+
+        #TotalPayment span {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        #final_price {
+            font-size: 24px;
+        }
+
+        /* 배송지 정보 */
+        #DeliveryAddress h2 {
+            margin-bottom: 15px;
+        }
+
+        .address-item {
+            padding: 18px;
+            background-color: #faf9f7;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        .address-name {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .address-name span:last-child {
+            font-weight: bold;
+        }
+
+        .address-detail {
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .address-detail span:first-child {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        /* 기본 배송지 표시 */
+        #is_default {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #eee7dd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* 배송지 추가 버튼 */
+        #add-address {
+            width: 100%;
+            height: 42px;
+            margin-top: 12px;
+            background-color: white;
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #add-address:hover {
+            background-color: #f8f6f2;
+        }
+
+        /* 결제수단 */
+        #PaymentMethod h2 {
+            margin-bottom: 15px;
+        }
+
+        .payment-method {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        /* 실제 라디오 버튼 숨기기 */
+        .payment-method input {
+            display: none;
+        }
+
+        /* 결제수단 버튼 */
+        .payment-method label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        /* 선택된 결제수단 */
+        .payment-method input:checked + label {
+            border-color: var(--gsf-caramel);
+            background-color: var(--gsf-ivory);
+            font-weight: bold;
+        }
+
+        /* 결제 동의 */
+        #Checkbox {
+            padding-bottom: 25px;
+        }
+
+        #Checkbox > div {
+            margin-bottom: 12px;
+        }
+
+        #Checkbox label {
+            font-size: 13px;
+        }
+
+        /* 약관 링크 */
+        #Terms, #PrivacyPolicy {
+            display: inline-block;
+            margin-right: 15px;
+        }
+
+        #Terms a, #PrivacyPolicy a {
+            color: #777;
+            font-size: 12px;
+            text-decoration: underline;
+        }
+
+        /* 결제 버튼 영역 */
+        #Confirm {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        #Confirm button {
+            height: 52px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 최종 결제 */
+        #Confirm button[type="submit"] {
+            flex: 2;
+            border: none;
+            background-color: var(--gsf-caramel);
+            color: white;
+        }
+
+        #Confirm button[type="submit"]:hover {
+            background-color: var(--gsf-ink);
+        }
+
+        /* 결제 취소 */
+        #Confirm button[type="button"] {
+            flex: 1;
+            border: 1px solid #d8d3cc;
+            background-color: white;
+            color: #555;
+        }
+
+        #Confirm button[type="button"]:hover {
+            background-color: #f8f6f2;
+        }
+/* ================================================================
+   ↓↓↓ style_orderComplete.css 원본 내용
+   ================================================================ */
+/* outer wrapper는 투명하게 두고 폭/배경은 안쪽 카드에만 준다 - main 태그에 직접 폭을 주면
+   hero 배경이 스크롤 시 깨진다. */
+.order-complete-page {
+    padding: 50px 0 80px;
+}
+
+.order-complete-card {
+    width: min(700px, 100% - 40px);
+    margin: 0 auto;
+    padding: 48px 40px;
+    background-color: #fff;
+    border: 1px solid var(--gsf-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 12px 30px rgba(63, 74, 51, .1);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* 제목 */
+#title h1 {
+    margin: 0 0 10px;
+    font-size: 26px;
+}
+
+#title p {
+    margin: 0 0 40px;
+    color: var(--gsf-subtext);
+}
+
+/* 주문 완료 안내 */
+#OrderComplete {
+    padding: 30px;
+    margin-bottom: 40px;
+    background-color: var(--gsf-ivory);
+    border-radius: var(--radius-md);
+}
+
+.complete-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 15px;
+    background-color: var(--gsf-sage);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* "✓" 글리프에서 SVG로 바꾸면서(2026-09-01) 크기 보정 - 글리프는 em 박스 안 여백 때문에
+   font-size보다 작게 보이는데 SVG는 박스를 꽉 채운다. ⚠️ 근사치라 화면 확인 필요. */
+.complete-icon .icon-check {
+    width: .7em;
+    height: .7em;
+}
+
+.complete-message strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.complete-message p {
+    margin: 0;
+    color: var(--gsf-subtext);
+}
+
+/* 공유 영역 */
+#ShareLink {
+    margin-bottom: 40px;
+}
+
+#ShareLink h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+}
+
+#ShareLink > p {
+    margin: 0;
+    color: var(--gsf-subtext);
+    font-size: 13px;
+}
+
+/* 공유 버튼 3개 가로 배열 */
+#ShareButtons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+#ShareButtons > div {
+    width: 150px;
+    height: 130px;
+}
+
+#ShareButtons button {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    background-color: #fff;
+    border: 1px solid var(--gsf-border);
+    border-radius: var(--radius-md);
+    color: var(--gsf-text);
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+#ShareButtons button:hover {
+    background-color: #faf9f7;
+}
+
+.share-icon {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--gsf-caramel);
+}
+
+/* 공유 링크 */
+#ShareUrl {
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+#ShareUrl label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.share-url-box {
+    display: flex;
+    gap: 8px;
+}
+
+#share-url {
+    flex: 1;
+    height: 42px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    color: var(--gsf-subtext);
+}
+
+.share-url-box button {
+    padding: 0 20px;
+    border: 1px solid var(--gsf-border);
+    border-radius: 6px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.share-url-box button:hover {
+    background-color: #faf9f7;
+}
+
+/* 하단 버튼 */
+#OrderHistory {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+#OrderHistory button {
+    padding: 12px 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#OrderHistory button:first-child {
+    border: none;
+    background-color: var(--gsf-caramel);
+    color: #fff;
+}
+
+#OrderHistory button:first-child:hover {
+    background-color: var(--gsf-ink);
+}
+
+#OrderHistory button:last-child {
+    border: 1px solid var(--gsf-border);
+    background-color: #fff;
+    color: var(--gsf-text);
+}
+
+#OrderHistory button:last-child:hover {
+    background-color: #faf9f7;
+}
+
+/* ================================================================
+   ↓↓↓ style_addreview.css 원본 내용
+   ================================================================ */
+/* ==========================================================================
+   리뷰 작성 페이지 스타일
+   컨셉: Dry Sage / Beige / Cornsilk / Papaya Whip / Light Bronze
+   방향: 자극적인 꾸밈 없이, 여백과 절제된 포인트로 정리
+   ========================================================================== */
+
+/* 원본은 스코프 없는 :root{}였음 - 이 페이지 전용 톤(--ink 등)이 커스텀 프로퍼티라 상속을 타고
+   사이트 전역에 leak되고 있었음. body.review-write-hero로 스코프해서 이 페이지 안에서만
+   유효하게 함(리뷰 작성 페이지 전체가 이 body의 후손이라 하위 선택자는 그대로 동작). */
+body.review-write-hero {
+  /* sage/cornsilk/bronze는 style.css의 --gsf-* 값과 동일해 참조로 교체 (radius-*는
+     전역 :root를 그대로 물려받도록 재선언 제거). 나머지는 이 페이지 전용 톤. */
+  --sage: var(--gsf-sage);
+  --beige: #e9edc9;
+  --cornsilk: var(--gsf-ivory);
+  --papaya: #faedcd;
+  --bronze: var(--gsf-caramel);
+
+  --ink: #3f3a34;       /* 본문 텍스트 - 완전한 검정 대신 따뜻한 다크 톤 */
+  --muted: #8f8676;     /* 보조 텍스트 */
+  --line: #e4ddc9;      /* 구분선/보더 */
+  --danger: #c2694a;    /* 글자수 초과 등 경고 */
+
+  --bg-page: transparent; /* 배경 hero(body.review-write-hero)가 비쳐 보이도록 투명 처리 */
+
+  --shadow-card: 0 2px 10px rgba(63, 58, 52, 0.06);
+  --shadow-float: 0 4px 16px rgba(212, 163, 115, 0.25);
+
+  --font-base: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+
+  /* header.jsp와 동일한 max-width/gutter를 쓴다는 전제. 다르면 이 값만 맞추면 됨 */
+  --page-max: 1440px;
+  --page-gutter: 40px;
+  --content-max: 760px; /* 모든 섹션(히어로 포함)이 맞추는 공통 폭 라인 */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body.review-write-hero {
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--ink);
+  font-family: var(--font-base);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 레이아웃 컨테이너 (flex column - 그리드보다 단순하고 안정적) ---------- */
+#review-form {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 56px var(--page-gutter) 80px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.subtitle {
+  margin: 50px 0 0;
+  font-size: 17px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+#review-form h3 {
+  margin: 0 0 16px;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- 히어로: 소개글 + 상품 카드를 나란히 배치 ---------- */
+.review-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 40px;
+  max-width: var(--content-max); /* 아래 섹션들과 같은 폭 라인 - 카드가 오른쪽으로 튀어나오지 않도록 */
+  width: 100%;
+}
+
+.review-hero .intro {
+  flex: 0 1 auto;
+  min-width: 180px;
+}
+
+.review-hero .gift-summary {
+  flex: 1 1 320px; /* 남는 공간을 채워서 아래 별점/텍스트 섹션과 오른쪽 끝이 맞춰짐 */
+  min-width: 320px;
+  width: 100%;
+}
+
+/* ---------- 상품 정보 카드 (가로로 넓고 낮은 배너형 비율) ---------- */
+.review-product-card {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  background: var(--papaya);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-card);
+  /* 좌측 세이지 스트라이프 제거함 */
+}
+
+.product-thumbnail {
+  flex: 0 0 100px;
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--cornsilk);
+}
+
+.product-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.review-product-card .product-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.review-product-card .product-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.product-option-name {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-price {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- 이하 입력 섹션들: 히어로와 동일한 폭 상한 ---------- */
+.star-rating-section,
+.review-text-section,
+.photo-upload-section,
+.form-actions-bottom {
+  max-width: var(--content-max);
+  width: 100%;
+}
+
+/* ---------- 별점 입력 ---------- */
+.star-rating-section {
+  text-align: center;
+  padding: 32px 24px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.star-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.star-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 44px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--line); /* 기본: 빈 별 */
+  transition: color 0.12s ease, transform 0.12s ease;
+}
+
+/* 별 SVG는 버튼의 font-size(44px)를 1em으로 그대로 따라간다. inline이면 글자 descender
+   만큼 아래 여백이 생겨 버튼 높이가 커지므로 block으로 둔다. */
+.star-btn .icon-star {
+  display: block;
+}
+
+.star-btn.is-filled {
+  color: var(--bronze); /* 호버/선택 시: 채워진 별 */
+}
+
+.star-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ---------- 텍스트 후기 ---------- */
+.textarea-wrapper {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 18px 20px 16px;
+  transition: border-color 0.15s ease;
+}
+
+.textarea-wrapper:focus-within {
+  border-color: var(--bronze);
+}
+
+#review_text {
+  width: 100%;
+  min-height: 160px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-base);
+  font-size: 16px;
+  color: var(--ink);
+  background: transparent;
+}
+
+#review_text::placeholder {
+  color: #b9b0a0;
+}
+
+.char-count {
+  margin-top: 10px;
+  text-align: right;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.char-count.is-limit,
+.char-count.is-limit #current-char-count {
+  color: var(--danger);
+}
+
+/* ---------- 사진 첨부 ---------- */
+.photo-upload-section .text-muted {
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.upload-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.upload-box-btn {
+  flex: 0 0 140px;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed var(--sage);
+  border-radius: var(--radius-sm);
+  background: var(--beige);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.upload-box-btn:hover {
+  background: var(--sage);
+  border-color: var(--bronze);
+}
+
+.plus-icon {
+  font-size: 34px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.photo-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.photo-preview-list li {
+  position: relative;
+  flex: 0 0 140px;
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--papaya);
+  border: 1px solid var(--line);
+}
+
+.photo-preview-list li img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-preview-list li .remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(63, 58, 52, 0.65);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  /* "×" 글리프에서 SVG로 바꾸면서(2026-09-01) 가운데 정렬을 flex로 명시. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* ⚠️ 근사치라 화면 확인 필요 - style.css의 .icon-close 주석 참고. */
+.photo-preview-list li .remove-btn .icon-close {
+  width: .85em;
+  height: .85em;
+}
+
+/* ---------- 제출 버튼 ---------- */
+.solid-large-btn {
+  width: 100%;
+  padding: 18px 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--bronze);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: var(--shadow-float);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.solid-large-btn:hover {
+  background: #c08f5f;
+}
+
+.solid-large-btn:active {
+  transform: translateY(1px);
+}
+
+.solid-large-btn:disabled {
+  background: var(--line);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ---------- 접근성 ---------- */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+label:focus-within {
+  outline: 2px solid var(--bronze);
+  outline-offset: 2px;
+}
+
+@media (max-width: 960px) {
+  :root {
+    --page-gutter: 24px;
+  }
+
+  .review-hero {
+    flex-direction: column;
+  }
+
+  .review-hero .gift-summary {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+/* ================================================================
+   ↓↓↓ style_myReviews.css 원본 내용
+   ================================================================ */
+@charset "utf-8";
+
+/* ================================
+   내가 쓴 리뷰
+================================ */
+
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .my-reviews-page로 스코프할 것 */
+.my-reviews-page {
+    background-color: #f6efe4;
+    min-height: 100vh;
+}
+
+.my-reviews-page .page-content {
+    width: 800px;
+    margin: 0 auto;
+    padding: 50px 0 80px;
+}
+
+.my-reviews-page .page-title {
+    margin: 0 0 24px;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    color: #222;
+}
+
+.my-reviews-page .flash-message {
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.my-reviews-page .flash-success {
+    background-color: #dcf1e2;
+    color: #2f9d5c;
+}
+
+.my-reviews-page .flash-error {
+    background-color: #fbe3d3;
+    color: #c1592f;
+}
+
+.my-reviews-page .review-list[hidden] {
+    display: none;
+}
+
+.my-reviews-page .review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.my-reviews-page .review-card {
+    padding: 20px 24px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.my-reviews-page .review-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.my-reviews-page .review-thumb {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    background-color: #f0ece3;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.my-reviews-page .review-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.my-reviews-page .review-thumb .no-image-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #aaa;
+    text-align: center;
+}
+
+.my-reviews-page .review-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.my-reviews-page .review-product-name {
+    margin: 0 0 2px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+}
+
+.my-reviews-page .review-option-name {
+    margin: 0 0 6px;
+    font-size: 13px;
+    color: #888;
+}
+
+.my-reviews-page .review-stars {
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.my-reviews-page .review-stars .star {
+    color: #ddd;
+}
+
+.my-reviews-page .review-stars .star.is-filled {
+    color: #e0a832;
+}
+
+.my-reviews-page .review-date {
+    flex-shrink: 0;
+    font-size: 13px;
+    color: #999;
+}
+
+.my-reviews-page .review-text {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    white-space: pre-wrap;
+}
+
+.my-reviews-page .review-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.my-reviews-page .review-image {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.my-reviews-page .review-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 12px;
+    border-top: 1px dashed #eee;
+}
+
+.my-reviews-page .btn-delete-review {
+    padding: 8px 16px;
+    border: 1px solid #e5b0ac;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #c0392b;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.my-reviews-page .btn-delete-review:hover {
+    background-color: #fdf1f0;
+}
+
+.my-reviews-page .review-empty[hidden] {
+    display: none;
+}
+
+.my-reviews-page .review-empty {
+    padding: 80px 20px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+/* 페이지네이션 (style_order.css의 .pagination과 동일한 형식) */
+.my-reviews-page .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 32px;
+}
+
+.my-reviews-page .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #e5e0d8;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #777;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.my-reviews-page .page-link:hover {
+    border-color: #d8c3a5;
+    text-decoration: none;
+}
+
+.my-reviews-page .page-link.is-active {
+    background-color: #e9dcc6;
+    border-color: #e9dcc6;
+    color: #5c4a2f;
+    font-weight: 700;
+}
+
+.my-reviews-page .page-prev,
+.my-reviews-page .page-next {
+    color: #555;
+}
+
+.my-reviews-page .review-back {
+    margin-top: 32px;
+    text-align: center;
+}
+
+.my-reviews-page .btn-back-mypage {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    padding: 0 28px;
+    border: 1px solid #d8d3cc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #555;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.my-reviews-page .btn-back-mypage:hover {
+    background-color: #f8f6f2;
+    text-decoration: none;
+}
+
+/* ================================================================
+   ↓↓↓ style_productdetail.css 원본 내용
+   ================================================================ */
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .product-detail-page로 스코프할 것.
+   원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, 바깥 배경은 .product-detail-page에,
+   흰 카드는 그 안의 .product-detail-page-card에 나눠 담는다 */
+.product-detail-page {
+    background-color: #f8f8f8;
+    min-height: 100vh;
+    padding: 40px 0;
+    box-sizing: border-box;
+}
+
+/* 전체 영역 */
+.product-detail-page-card {
+    width: 1100px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+/* 카테고리 */
+#product-category {
+    margin-bottom: 15px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* 상품 이동 경로 */
+#breadcrumb {
+    margin-bottom: 30px;
+    font-size: 13px;
+    color: #888;
+}
+
+/* 상품 메인 영역 */
+#product-area {
+    display: flex;
+    gap: 45px;
+}
+
+/* 이미지 영역 */
+#product-images {
+    width: 500px;
+}
+
+/* 메인 이미지 */
+#product-main-image {
+    display: block;
+    width: 500px;
+    height: 500px;
+    object-fit: cover;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+/* 서브 이미지 (등록된 개수만큼 나오는데, 줄바꿈하면 마지막 줄 정렬이 어긋나서
+   한 줄 가로 스크롤로 처리 - 개수가 몇 개든 항상 정렬이 맞음 */
+#product-sub-images {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 10px;
+    margin-top: 12px;
+    padding-bottom: 4px;
+}
+
+.product-sub-image {
+    display: block;
+    flex: 0 0 80px;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.product-sub-image.is-active {
+    border: 2px solid #222;
+}
+
+/* 상품 정보 */
+#product-info {
+    flex: 1;
+}
+
+/* 상품 제목 */
+.product-title {
+    margin: 0 0 15px;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+/* 상품 설명 */
+.product-detail-page-card .product-description {
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #777;
+}
+
+/* 리뷰 / 찜 */
+#product-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    font-size: 13px;
+}
+
+.product-stat {
+    padding: 7px 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #fafafa;
+}
+
+/* 가격 영역 */
+#price-info {
+    padding: 20px 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.price-row:last-child {
+    margin-bottom: 0;
+}
+
+.price-label {
+    font-size: 14px;
+    color: #666;
+}
+
+/* 등급 배지 */
+.grade-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    font-size: 11px;
+    font-weight: bold;
+    color: #666;
+    vertical-align: middle;
+}
+
+.original-price {
+    font-size: 15px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.discount-rate {
+    margin-right: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #e64545;
+}
+
+.sale-price {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 필드 라벨 (옵션 / 수량 공용) */
+.field-title {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* 옵션 */
+#option-area {
+    margin-top: 25px;
+}
+
+#product-option {
+    width: 100%;
+    height: 45px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+#product-option option:disabled {
+    color: #bbb;
+}
+
+/* 수량 */
+#quantity-area {
+    margin-top: 20px;
+}
+
+#product-quantity {
+    width: 100px;
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+#product-quantity:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* 배송 안내 */
+#delivery-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #666;
+}
+
+/* 총 상품 금액 */
+#total-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+}
+
+.total-label {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+#total-product-price {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+/* 버튼 */
+#product-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.product-btn {
+    height: 50px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#wish-button {
+    width: 55px;
+}
+
+/* 아이콘만 있는 버튼이라 본문 글자 크기(14px)에 맞추면 너무 작다 - 헤더 아이콘(22px)과
+   비슷하게 보이도록 1.5em으로 키운다. ⚠️ 근사치라 화면 확인 필요. */
+#wish-button .icon-heart {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+#wish-button.is-active {
+    color: #e64545;
+    border-color: #e64545;
+}
+
+#cart-button {
+    flex: 1;
+}
+
+#buy-button {
+    flex: 1;
+    background-color: #222;
+    color: white;
+    border-color: #222;
+}
+
+/* 비활성화 상태 */
+.product-btn:disabled {
+    background-color: #eee;
+    border-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+#buy-button:disabled {
+    background-color: #eee;
+    border-color: #ddd;
+    color: #aaa;
+}
+
+/* 상품 상세 탭 */
+#product-detail-tabs {
+    margin-top: 50px;
+}
+
+.tab-menu {
+    display: flex;
+    border-top: 1px solid #222;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab-menu-item {
+    flex: 1;
+    padding: 16px 0;
+    border: none;
+    background-color: white;
+    font-size: 15px;
+    color: #999;
+    cursor: pointer;
+}
+
+.tab-menu-item.is-active {
+    color: #222;
+    font-weight: bold;
+    border-bottom: 2px solid #222;
+    margin-bottom: -1px;
+}
+
+.tab-panel {
+    display: none;
+    padding: 30px 10px;
+}
+
+.tab-panel.is-active {
+    display: block;
+}
+
+.tab-content-text {
+    margin: 0 0 10px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #555;
+}
+
+.tab-content-image {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* 리뷰 */
+.review-item {
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-item-header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.review-writer {
+    font-weight: bold;
+}
+
+.review-score {
+    color: #e64545;
+}
+
+.review-date {
+    color: #999;
+}
+
+.review-images {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.review-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.review-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+}
+/* ================================================================
+   ↓↓↓ style_deliveryAddress.css 원본 내용
+   ================================================================ */
+/* 배송지 추가 페이지 - outer wrapper는 투명하게, 폭/배경은 안쪽 카드에만 준다. */
+.delivery-page {
+    padding: 50px 0 80px;
+}
+
+.delivery-card {
+    width: min(560px, 100% - 40px);
+    margin: 0 auto;
+    padding: 40px;
+    background-color: #fff;
+    border: 1px solid var(--gsf-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 12px 30px rgba(63, 74, 51, .1);
+    box-sizing: border-box;
+}
+
+.delivery-card #title {
+    margin-bottom: 30px;
+    font-size: 26px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.form-item {
+    margin-bottom: 20px;
+}
+
+.form-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.form-item input {
+    width: 100%;
+    height: 45px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+}
+
+.form-item input:focus {
+    border-color: var(--gsf-caramel);
+}
+
+.address-search {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.address-search #zipcode {
+    flex: 1;
+}
+
+.address-search button {
+    width: 110px;
+    height: 45px;
+    border: 1px solid var(--gsf-caramel);
+    border-radius: 6px;
+    background-color: #fff;
+    color: #555;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+.address-search button:hover {
+    background-color: #f8f6f2;
+}
+
+.form-item #address {
+    margin-bottom: 10px;
+}
+
+#default-address {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 25px;
+}
+
+#default-address label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+#buttonArea {
+    display: flex;
+    gap: 10px;
+}
+
+#buttonArea button {
+    flex: 1;
+    height: 50px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#cancel-button {
+    border: 1px solid var(--gsf-border);
+    background-color: #fff;
+    color: var(--gsf-text);
+}
+
+#cancel-button:hover {
+    background-color: #f8f6f2;
+}
+
+#add-button {
+    border: none;
+    background-color: var(--gsf-caramel);
+    color: #fff;
+}
+
+#add-button:hover {
+    background-color: var(--gsf-ink);
+}
+
+/* ================================================================
+   ↓↓↓ style_order.css 원본 중 주문/배송내역(.order-delivery-page) 구간만 - 결제/주문완료
+   구간은 옛 body-class 방식 유물이라 폐기(위 payment/orderComplete 구간이 대체).
+   ================================================================ */
+/* ================================
+   주문/배송내역 페이지
+================================ */
+
+.order-delivery-page {
+    background-color: #f6efe4;
+    min-height: 100vh;
+}
+
+.order-delivery-page .page-content {
+    width: 800px;
+    margin: 0 auto;
+    padding: 50px 0 80px;
+}
+
+.order-delivery-page .page-title {
+    margin: 0 0 24px;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    color: #222;
+}
+
+/* 상태 필터 탭 */
+.order-delivery-page .status-filter {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.order-delivery-page .status-filter a {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    border: 1px solid #e5e0d8;
+    border-radius: 999px;
+    background-color: #fff;
+    color: #777;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.order-delivery-page .status-filter a:hover {
+    border-color: #d8c3a5;
+    text-decoration: none;
+}
+
+.order-delivery-page .status-filter a.is-active {
+    background-color: #e9dcc6;
+    border-color: #e9dcc6;
+    color: #5c4a2f;
+    font-weight: 700;
+}
+
+/* 주문 목록 */
+.order-delivery-page .order-list[hidden] {
+    display: none;
+}
+
+.order-delivery-page .order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.order-delivery-page .order-card {
+    padding: 20px 24px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.order-delivery-page .order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #999;
+}
+
+.order-delivery-page .order-number strong {
+    margin-left: 4px;
+    color: #555;
+}
+
+.order-delivery-page .order-body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.order-delivery-page .item-thumb {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    background-color: #f0ece3;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.order-delivery-page .item-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-delivery-page .item-thumb .no-image-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #aaa;
+    text-align: center;
+}
+
+.order-delivery-page .order-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.order-delivery-page .product-name {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+}
+
+.order-delivery-page .product-detail {
+    margin: 0;
+    font-size: 13px;
+    color: #888;
+}
+
+/* 배송 상태 배지 */
+.order-delivery-page .status-badge {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.order-delivery-page .status-badge.status-preparing {
+    background-color: #fbe3d3;
+    color: #c1592f;
+}
+
+.order-delivery-page .status-badge.status-shipped {
+    background-color: #dce8fb;
+    color: #2f6fd9;
+}
+
+.order-delivery-page .status-badge.status-out_for_delivery {
+    background-color: #faedd3;
+    color: #b9791f;
+}
+
+.order-delivery-page .status-badge.status-delivered {
+    background-color: #dcf1e2;
+    color: #2f9d5c;
+}
+
+.order-delivery-page .status-badge.status-canceled {
+    background-color: #eee;
+    color: #888;
+}
+
+/* 배송 진행 단계 */
+.order-delivery-page .order-progress {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.order-delivery-page .progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 90px;
+    flex-shrink: 0;
+}
+
+.order-delivery-page .step-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 11px;
+    border: 2px solid #ddd;
+    background-color: #fff;
+    color: transparent;
+}
+
+/* "✓" 글리프에서 SVG로 바꾸면서(2026-09-01) 크기 보정. 22px 원 안에 들어가야 해서
+   font-size(11px) 기준 1em을 그대로 쓴다. stroke:currentColor라 위 color:transparent가
+   그대로 먹어서, 미완료 단계에선 예전과 똑같이 안 보인다. ⚠️ 화면 확인 필요. */
+.order-delivery-page .step-icon .icon-check {
+    width: 1em;
+    height: 1em;
+}
+
+.order-delivery-page .progress-step.is-complete .step-icon {
+    background-color: #222;
+    border-color: #222;
+    color: #fff;
+}
+
+.order-delivery-page .progress-step.is-current .step-icon {
+    border-width: 6px;
+}
+
+.order-delivery-page .progress-step.is-current.status-preparing .step-icon {
+    border-color: #e5484d;
+}
+
+.order-delivery-page .progress-step.is-current.status-shipped .step-icon {
+    border-color: #2f6fd9;
+}
+
+.order-delivery-page .progress-step.is-current.status-out_for_delivery .step-icon {
+    border-color: #d99b2f;
+}
+
+.order-delivery-page .step-label {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.order-delivery-page .progress-step.is-complete .step-label {
+    color: #333;
+}
+
+.order-delivery-page .progress-step.is-current.status-preparing .step-label {
+    color: #e5484d;
+    font-weight: 700;
+}
+
+.order-delivery-page .progress-step.is-current.status-shipped .step-label {
+    color: #2f6fd9;
+    font-weight: 700;
+}
+
+.order-delivery-page .progress-step.is-current.status-out_for_delivery .step-label {
+    color: #d99b2f;
+    font-weight: 700;
+}
+
+.order-delivery-page .progress-line {
+    flex: 1;
+    height: 0;
+    margin-top: 11px;
+    border-top: 2px dashed #ddd;
+}
+
+.order-delivery-page .progress-line.is-complete {
+    border-top-style: solid;
+    border-top-color: #222;
+}
+
+/* 택배사/송장번호, 배송지 정보 */
+.order-delivery-page .delivery-info {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #eee;
+}
+
+.order-delivery-page .info-row {
+    margin: 0;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.7;
+}
+
+.order-delivery-page .info-label {
+    font-weight: 700;
+    color: #333;
+}
+
+.order-delivery-page .info-divider {
+    margin: 0 8px;
+    color: #ddd;
+}
+
+/* 배송완료 주문의 리뷰 작성 버튼 */
+.order-delivery-page .order-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.order-delivery-page .btn-review {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    background-color: #e9dcc6;
+    color: #5c4a2f;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.order-delivery-page .btn-review:hover {
+    background-color: #ddc9a3;
+    text-decoration: none;
+}
+
+.order-delivery-page .review-done-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 6px;
+    background-color: #f0ece3;
+    color: #999;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* 빈 상태 */
+.order-delivery-page .order-empty[hidden] {
+    display: none;
+}
+
+.order-delivery-page .order-empty {
+    padding: 80px 20px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+/* 페이지네이션 */
+.order-delivery-page .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 32px;
+}
+
+.order-delivery-page .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #e5e0d8;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #777;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.order-delivery-page .page-link:hover {
+    border-color: #d8c3a5;
+    text-decoration: none;
+}
+
+.order-delivery-page .page-link.is-active {
+    background-color: #e9dcc6;
+    border-color: #e9dcc6;
+    color: #5c4a2f;
+    font-weight: 700;
+}
+
+.order-delivery-page .page-prev,
+.order-delivery-page .page-next {
+    color: #555;
+}
+
+/* 마이페이지로 돌아가기 */
+.order-delivery-page .order-back {
+    margin-top: 32px;
+    text-align: center;
+}
+
+.order-delivery-page .btn-back-mypage {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    padding: 0 28px;
+    border: 1px solid #d8d3cc;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #555;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.order-delivery-page .btn-back-mypage:hover {
+    background-color: #f8f6f2;
+    text-decoration: none;
+}
