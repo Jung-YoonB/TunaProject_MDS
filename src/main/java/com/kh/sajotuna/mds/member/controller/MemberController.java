@@ -297,9 +297,6 @@ public class MemberController {
 	return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 	}
 	boolean isUpdate = service.nicknameUpdate(member.getMemberId(), nickname);
-			if (isUpdate) {
-				member.setNickname(nickname); // 세션 동기화
-			}
 
 			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패하셨습니다.";
 			return ApiResponse.success(message, isUpdate);
@@ -318,10 +315,6 @@ public class MemberController {
 			}
 			boolean isUpdate = service.phoneUpdate(member.getMemberId(), phone);
 
-			if (isUpdate) {
-				member.setPhone(phone); // 세션 동기화
-			}
-
 			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
 			return ApiResponse.success(message, isUpdate);
 		} catch (IllegalArgumentException | IllegalStateException e) {
@@ -338,10 +331,6 @@ public class MemberController {
 				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 			}
 			boolean isUpdate = service.emailUpdate(member.getMemberId(), email);
-
-			if (isUpdate) {
-				member.setEmail(email); // 세션 동기화
-			}
 
 			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
 			return ApiResponse.success(message, isUpdate);
@@ -381,10 +370,6 @@ public class MemberController {
 			}
 			boolean isUpdate = service.birthUpdate(member.getMemberId(), birth);
 
-			if (isUpdate) {
-				member.setBirth(java.time.LocalDate.parse(birth)); // LocalDate 타입으로 세션 동기화
-			}
-
 			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
 			return ApiResponse.success(message, isUpdate);
 		} catch (IllegalArgumentException | IllegalStateException e) {
@@ -401,10 +386,6 @@ public class MemberController {
 				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 			}
 			boolean isUpdate = service.genderUpdate(member.getMemberId(), gender);
-
-			if (isUpdate) {
-				member.setGender(gender); // 세션 동기화
-			}
 
 			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
 			return ApiResponse.success(message, isUpdate);

@@ -46,8 +46,6 @@ public class MemberDTO {
 	private String birthStr;
 	private String createdAtStr;
 	
-	private Long issue;
-	
 	public MemberDTO(Long memberId, String memberName, String role) {
 		this.memberId = memberId;
 		this.memberName = memberName;
