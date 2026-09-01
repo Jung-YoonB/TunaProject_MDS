@@ -14,6 +14,7 @@
 	--gsf-ivory: #fefae0;
 	--gsf-peach: #faedcd;
 	--gsf-peach-pale: #f4eada;
+	--gsf-peach-dark: #e9d4b1;
 	--gsf-beige: #e9edc9;
 	--gsf-cream: #fffcf4;
 	--gsf-ink: #3f4a33;
@@ -49,19 +50,23 @@ main {
    header.jsp가 요청 경로를 보고 body에 클래스를 붙여준다. 산수화 이미지 대신 단색
    배경(--gsf-cream)을 쓴다. */
 body.home-hero,
-body.login-hero,
-body.signup-hero,
 body.order-hero,
 body.order-complete-hero,
-body.product-detail-hero,
 body.review-write-hero,
 body.coupon-hero,
 body.delivery-hero {
 	background-color: var(--gsf-cream);
 }
 
-/* 홈페이지만 배경을 별도 톤으로 지정(다른 8개 hero 페이지는 공용 --gsf-cream 그대로 유지) */
+/* 홈페이지만 배경을 별도 톤으로 지정(다른 5개 hero 페이지는 공용 --gsf-cream 그대로 유지) */
 body.home-hero {
+	background-color: #FDFBF9;
+}
+
+/* 로그인/회원가입/상품상세만 세부 페이지 배경 기준(#FDFBF9, 홈페이지 body와 동일)으로 별도 지정 */
+body.login-hero,
+body.signup-hero,
+body.product-detail-hero {
 	background-color: #FDFBF9;
 }
 

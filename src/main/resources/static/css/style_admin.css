@@ -31,14 +31,18 @@
 ================================ */
 
 .admin-mypage-page {
-    background-color: #f6efe4;
+    background-color: #FDFBF9;
     min-height: 100vh;
 }
 
 .admin-mypage-page .page-content {
-    width: 720px;
+    width: min(800px, 100% - 80px);
     margin: 0 auto;
-    padding: 40px 0 80px;
+    padding: 40px 40px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
 }
 
 .admin-mypage-page .page-title {
@@ -80,26 +84,6 @@
     gap: 16px;
 }
 
-.admin-mypage-page .avatar-circle {
-    flex-shrink: 0;
-    width: 64px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #ececec;
-    border-radius: 50%;
-}
-
-.admin-mypage-page .avatar-icon-svg {
-    width: 32px;
-    height: 32px;
-    fill: none;
-    stroke: #999;
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
 
 .admin-mypage-page .profile-name-wrap {
     display: flex;
@@ -299,14 +283,18 @@
 ================================ */
 
 .admin-order-delivery-page {
-    background-color: #f6efe4;
+    background-color: #FDFBF9;
     min-height: 100vh;
 }
 
 .admin-order-delivery-page .page-content {
-    width: 1100px;
+    width: min(1350px, 100% - 80px);
     margin: 0 auto;
-    padding: 40px 0 80px;
+    padding: 40px 40px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
 }
 
 .admin-order-delivery-page .page-title {
@@ -792,7 +780,7 @@
    원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, 바깥 배경은 .admin-coupon-view-page에,
    흰 카드는 그 안의 .admin-coupon-view-page-card에 나눠 담는다 */
         .admin-coupon-view-page {
-            background-color: #f8f6f2;
+            background-color: #FDFBF9;
             min-height: 100vh;
             padding: 50px 0;
             box-sizing: border-box;
@@ -804,11 +792,11 @@
         ================================= */
 
         .admin-coupon-view-page-card {
-            width: 800px;
+            width: min(800px, 100% - 80px);
             margin: 0 auto;
             padding: 40px;
 
-            background-color: white;
+            background-color: #fbf8f4;
             border: 1px solid #e5e0d8;
             border-radius: 12px;
 
@@ -1520,14 +1508,25 @@ button,input,textarea,select{font-family:inherit}
    다른 페이지의 공용 <body>까지 덮어써버린다 — 반드시 .product-register로 스코프할 것.
    (min-height:100vh는 넣지 않음 - style.css가 이미 body를 flex column + main{flex:1 0 auto}로
    sticky-footer 레이아웃을 잡아주고 있어서, 여기서 또 100vh를 강제하면 그 위에 겹쳐져 페이지가
-   불필요하게 길어지고 잘려 보이는 원인이 됨) */
+   불필요하게 길어지고 잘려 보이는 원인이 됨)
+
+   다만 .product-register는 폭이 제한적이라 좌우로 <body>가 드러나는데, addProduct.jsp는
+   hero 배경 대상이 아니라 <body>에 배경색이 없어 다크모드 브라우저에서 그 틈이 검게 보인다.
+   userUpdateInfo.jsp와 같은 body:has() 스코프로 <body> 배경을 명시해 해결 */
+body:has(.product-register) {
+    background-color: #FDFBF9;
+}
+
 .product-register{
-    width:1000px;
+    width:min(1000px, 100% - 80px);
     margin:0 auto;
     /* 좌우 패딩이 0이라 내부 콘텐츠가 바깥 배경 박스 가장자리에 딱 붙어 보이던 것을,
        addCoupon.jsp의 카드(.add-coupon-page-card{padding:40px})와 같은 여유값으로 맞춤 */
     padding:70px 40px 100px;
-    background:#f8f6f2;
+    background:#fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
     color:#333;
     font-family:Arial,"Noto Sans KR",sans-serif
 }
@@ -1999,7 +1998,7 @@ button,input,textarea,select{font-family:inherit}
 /* ================= RESPONSIVE ================= */
 
 @media(max-width:1050px){
-    .product-register{width:calc(100% - 40px)}
+    .product-register{width:calc(100% - 80px)}
 }
 @media(max-width:700px){
     .product-register{padding-top:40px}
@@ -2033,7 +2032,7 @@ button,input,textarea,select{font-family:inherit}
    원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, JSP 쪽엔 wrapper가 하나뿐이라
    바깥 배경은 .add-coupon-page에, 흰 카드는 그 안의 .add-coupon-page-card에 나눠 담는다 */
 .add-coupon-page {
-           background-color: #f8f6f2;
+           background-color: #FDFBF9;
            min-height: 100vh;
            padding: 70px 0;
            box-sizing: border-box;
@@ -2041,10 +2040,10 @@ button,input,textarea,select{font-family:inherit}
 
        /* 전체 영역 (흰 카드) */
        .add-coupon-page-card {
-           width: 600px;
+           width: min(600px, 100% - 80px);
            margin: 0 auto;
            padding: 40px;
-           background-color: white;
+           background-color: #fbf8f4;
            border: 1px solid #e5e0d8;
            border-radius: 12px;
            box-sizing: border-box;
