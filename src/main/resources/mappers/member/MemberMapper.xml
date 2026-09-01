@@ -126,11 +126,11 @@
   			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS HAS_REVIEW
   		FROM PRODUCTORDER PO
   		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
-  		<!-- 주문별 "아직 리뷰 안 쓴 주문상세 중 최소 OD_ID" (REVIEWHISTORY 기준 - 삭제해도 남음) -->
+  		<!-- 주문별 "아직 리뷰 안 쓴 주문상세 중 최소 OD_ID". REVIEW_STATUS는 안 본다 - 삭제한 것도 계속 제외 -->
   		LEFT JOIN (
   			SELECT od2.ORDER_ID, MIN(od2.OD_ID) AS NEXT_OD_ID
   			FROM ORDERDETAIL od2
-  			WHERE NOT EXISTS (SELECT 1 FROM REVIEWHISTORY rh WHERE rh.OD_ID = od2.OD_ID)
+  			WHERE NOT EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od2.OD_ID)
   			GROUP BY od2.ORDER_ID
   		) nr ON nr.ORDER_ID = PO.ORDER_ID
   		LEFT JOIN (
@@ -178,8 +178,8 @@
   		JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
   		WHERE po.MEMBER_ID = #{memberId}
   		  AND d.DELIVERY_STATUS = 'DELIVERED'
-  		  <!-- REVIEWHISTORY 기준 - 삭제한 주문상세도 계속 제외 -->
-  		  AND NOT EXISTS (SELECT 1 FROM REVIEWHISTORY rh WHERE rh.OD_ID = od.OD_ID)
+  		  <!-- REVIEW_STATUS는 안 본다 - 삭제한 주문상세도 계속 제외(재작성 차단과 같은 기준) -->
+  		  AND NOT EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od.OD_ID)
   	</select>
   	
   	<update id="updateNickname" parameterType="String">
