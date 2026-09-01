@@ -58,7 +58,9 @@
   	</select>
   	
 
-  	<!-- 보유 쿠폰 중 사용 가능한(만료 안 된) 것만 조회. 만료 쿠폰은 유저 화면에 아예 노출하지 않기로 함 -->
+  	<!-- 보유 쿠폰 중 사용 가능한(만료 안 된) 것만 조회. 만료 쿠폰은 유저 화면에 아예 노출하지 않기로 함.
+  	     비페이징 버전 - 결제 화면(order)의 쿠폰 선택 드롭다운이 전체 목록을 써야 해서 필요하다
+  	     (OrderServiceImpl 2곳에서 호출). 삭제하지 말 것. -->
   	<select id="selectAllCouponsByMemberId" resultType="CouponDTO">
 		SELECT C.COUPON_ID, C.COUPON_NAME, C.COUPON_VALUE, C.COUPON_TEXT, C.CREATED_AT, C.DEADLINE,
 			CH.CHIST_ID,
@@ -67,6 +69,22 @@
 		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
 		WHERE CH.MEMBER_ID = #{memberId} AND CH.TYPE='ISSUE' AND C.DEADLINE >= TRUNC(SYSDATE)
 		ORDER BY C.DEADLINE ASC
+  	</select>
+
+  	<!-- 위와 동일한 조건 + 페이지 단위로 잘라서 조회. 마이페이지 쿠폰함(/member/couponView)이 쓴다.
+  	     OFFSET/FETCH 패턴은 이 파일의 selectDeliveriesByMemberId와 동일하게 맞췄다.
+  	     주의: 이 문과 위 비페이징 문은 용도가 달라 둘 다 필요하다. 과거에 위 문의 id를 이쪽 이름으로
+  	     바꾸고 OFFSET 줄을 지우는 식으로 하나를 없앤 적이 있는데(0d46824), 그러면 컴파일은 통과하지만
+  	     MemberServiceImpl.listCoupon() 호출 시점에 BindingException으로 500이 난다. -->
+  	<select id="selectCouponsByMemberId" resultType="CouponDTO">
+		SELECT C.COUPON_ID, C.COUPON_NAME, C.COUPON_VALUE, C.COUPON_TEXT, C.CREATED_AT, C.DEADLINE,
+			CH.CHIST_ID,
+			TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR,
+			TO_CHAR(C.DEADLINE, 'YYYY-MM-DD') AS DEAD_LINE_STR
+		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
+		WHERE CH.MEMBER_ID = #{memberId} AND CH.TYPE='ISSUE' AND C.DEADLINE >= TRUNC(SYSDATE)
+		ORDER BY C.DEADLINE ASC
+		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
   	</select>
 
   	<!-- 위 조회와 동일한 조건(사용 가능한 쿠폰만)의 전체 건수 (페이지네이션 계산용) -->
