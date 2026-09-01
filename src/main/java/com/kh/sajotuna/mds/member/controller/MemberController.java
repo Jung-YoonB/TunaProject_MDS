@@ -152,6 +152,11 @@ public class MemberController {
 		// 유저는 deliveryList에 List<MyPageDeliveryDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
+	@GetMapping("/userWithdraw")
+	public String userWithdraw() {
+	    return "member/userWithdraw";
+	}
+	
 	
 	// POST: CUD 기능
 	

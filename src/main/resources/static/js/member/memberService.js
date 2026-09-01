@@ -85,20 +85,33 @@
             return response.json();
         });
     }
+	
+	function withdraw() {
+	    return fetch('/member/withdraw', {
+	        method: 'POST',
+	        headers: {
+	            'X-Requested-With': 'XMLHttpRequest'
+	        }
+	    }).then(function (response) {
+	        return response.json();
+	    });
+	}
 
     window.MemberService = {
         checkId: checkId,
         checkNickname: checkNickname,
         checkEmail: checkEmail,
         checkPhone: checkPhone,
-
+		
         updateName: updateName,
         updateBirth: updateBirth,
         updateGender: updateGender,
         updateNickname: updateNickname,
         updatePhone: updatePhone,
         updateEmail: updateEmail,
-        updatePassword: updatePassword
+        updatePassword: updatePassword,
+		
+		withdraw: withdraw
     };
 
 })();

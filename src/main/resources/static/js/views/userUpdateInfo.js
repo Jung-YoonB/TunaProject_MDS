@@ -483,15 +483,33 @@ document.querySelectorAll(".btn-save-field").forEach(function (btn) {
 
 
 /* ---- 회원 탈퇴 ---- */
-// TODO(server binding): 확인 후 탈퇴 완료 안내 화면(member/userWithdraw)으로 이동만 한다.
-// 백엔드 POST /member/withdraw(#BE014)가 이미 있으므로, 연동 시 확인 이후 이 위치에서 먼저
-// 요청을 보내고 성공 응답을 받은 뒤에만 이동하도록 바꿔야 한다.
 const withdrawLink = document.querySelector("#withdrawLink");
+
 if (withdrawLink) {
-    withdrawLink.addEventListener("click", function (e) {
+    withdrawLink.addEventListener("click", async function (e) {
         e.preventDefault();
-        if (confirm("정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+
+        if (!confirm("정말로 회원 탈퇴를 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+            return;
+        }
+
+        try {
+            const result = await window.MemberService.withdraw();
+
+            if (!result.data) {
+                alert(result.message || "회원 탈퇴에 실패했습니다.");
+                return;
+            }
+
+            alert(result.message || "회원 탈퇴가 완료되었습니다.");
+
+            // 탈퇴 성공 후 탈퇴 완료 페이지로 이동
             window.location.href = this.href;
+
+        } catch (error) {
+            console.error(error);
+            alert("회원 탈퇴 처리 중 오류가 발생했습니다.");
         }
     });
+
 }
