@@ -114,6 +114,7 @@
                 <svg class="info-edit-chevron" viewBox="0 0 24 24" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="info-edit-panel" hidden>
+				<input type="password" id="currentPassword" class="signup-input" placeholder="현재 비밀번호">
                 <input type="password" id="newPassword" class="signup-input" placeholder="새 비밀번호">
                 <span id="pwRegCheckMsg"></span>
                 <input type="password" id="newPasswordConfirm" class="signup-input" placeholder="새 비밀번호 확인">

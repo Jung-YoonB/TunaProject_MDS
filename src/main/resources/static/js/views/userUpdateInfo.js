@@ -1,14 +1,13 @@
 /* 회원정보 수정 페이지 - 구글 계정 정보 화면처럼 항목을 탭하면 하위 패널에서 수정/저장한다.
-   중복확인 서버 통신은 member/memberService.js(window.MemberService)가 담당하고,
-   이 파일은 DOM 인터랙션만 다룬다. */
+   중복확인 및 회원정보 수정 서버 통신은 member/memberService.js(window.MemberService)가 담당하고,
+   이 파일은 DOM 인터랙션과 입력값 검증을 담당한다.
 
-/* TODO(server binding): "저장" 버튼은 아직 화면 표시값만 갱신하는 no-op이다.
-   백엔드는 이미 준비돼 있으므로(MemberController #BE014) 연동 시 각 분기에서 아래 엔드포인트를
-   호출하고 성공 응답을 받은 뒤에만 collapsePanel()을 부르도록 바꾸면 된다:
-     name/birth/gender/nickname/phone/email/password
-       -> POST /member/updateName, /updateBirth, /updateGender, /updateNickname,
-                /updatePhone, /updateEmail, /updatePassword
-   배송지(address)만은 대응하는 백엔드가 없어 완전한 목업이다. */
+   이름/생년월일/성별/닉네임/휴대폰/이메일/비밀번호는 저장 시 실제 서버 API를 호출한다.
+   서버 저장 성공 후에만 화면의 현재값을 갱신하고 패널을 닫는다.
+
+   배송지(address)는 아직 대응하는 백엔드가 없어 화면에서만 처리한다.
+*/
+
 
 const nicknameInput = document.querySelector("#nickname");
 const phoneInput = document.querySelector("#phone");
@@ -114,6 +113,7 @@ phoneInput.addEventListener("input", function () {
 });
 
 /* ---- 새 비밀번호 (선택 입력 - 비워두면 변경하지 않음) ---- */
+const currentPassword = document.querySelector("#currentPassword");
 const newPassword = document.querySelector("#newPassword");
 const newPasswordConfirm = document.querySelector("#newPasswordConfirm");
 const pwRegCheckMsg = document.querySelector("#pwRegCheckMsg");
@@ -207,78 +207,280 @@ document.querySelectorAll(".btn-cancel-edit").forEach(function (btn) {
 });
 
 /* ---- 항목별 저장 ----
-   중복확인이 필요한 3개 항목(닉네임/휴대폰/이메일)은 흐름이 같아서 한 곳에서 처리하고,
-   나머지는 항목마다 검증/표시 규칙이 달라 개별 분기로 둔다. */
+   저장 버튼을 누르면 해당 API를 호출하고,
+   서버 저장에 성공한 경우에만 화면의 현재값을 갱신하고 패널을 닫는다.
+
+   닉네임/휴대폰/이메일은 저장 전에 중복확인이 필요하다.
+*/
 const CHECKED_FIELDS = {
-    nickname: { input: nicknameInput, display: "#current-nickname", alert: "닉네임 중복확인을 진행해주세요." },
-    phone:    { input: phoneInput,    display: "#current-phone",    alert: "휴대폰 번호 중복확인을 진행해주세요." },
-    email:    { input: emailInput,    display: "#current-email",    alert: "이메일 중복확인을 진행해주세요." }
+    nickname: {
+        input: nicknameInput,
+        display: "#current-nickname",
+        alert: "닉네임 중복확인을 진행해주세요.",
+        update: function (value) {
+            return window.MemberService.updateNickname(value);
+        }
+    },
+
+    phone: {
+        input: phoneInput,
+        display: "#current-phone",
+        alert: "휴대폰 번호 중복확인을 진행해주세요.",
+        update: function (value) {
+            return window.MemberService.updatePhone(value);
+        }
+    },
+
+    email: {
+        input: emailInput,
+        display: "#current-email",
+        alert: "이메일 중복확인을 진행해주세요.",
+        update: function (value) {
+            return window.MemberService.updateEmail(value);
+        }
+    }
 };
 
 document.querySelectorAll(".btn-save-field").forEach(function (btn) {
-    btn.addEventListener("click", function () {
+
+    btn.addEventListener("click", async function () {
+
         const field = btn.dataset.field;
         const panel = btn.closest(".info-edit-panel");
 
+        /* --------------------------------
+           닉네임 / 휴대폰 / 이메일
+           -------------------------------- */
         if (CHECKED_FIELDS[field]) {
+
             const conf = CHECKED_FIELDS[field];
             const value = checked[field];
-            if (!value) { alert(conf.alert); return; }
 
-            currentValues[field] = value;
-            document.querySelector(conf.display).textContent = value;
-            conf.input.dataset.currentValue = value;
-            collapsePanel(panel);
+            if (!value) {
+                alert(conf.alert);
+                return;
+            }
 
+            try {
+
+                const result = await conf.update(value);
+
+                if (!result.data) {
+                    alert(result.message || "정보 변경에 실패했습니다.");
+                    return;
+                }
+				
+				alert(result.message || "정보가 변경되었습니다.");
+
+                // 서버 저장 성공 후 화면 갱신
+                currentValues[field] = value;
+                document.querySelector(conf.display).textContent = value;
+                conf.input.dataset.currentValue = value;
+
+                collapsePanel(panel);
+
+            } catch (error) {
+
+                console.error(error);
+                alert("정보 변경 중 오류가 발생했습니다.");
+            }
+
+        /* --------------------------------
+           이름
+           -------------------------------- */
         } else if (field === "name") {
-            const value = document.querySelector("#member_name").value.trim();
-            if (!value) { alert("이름을 입력해주세요."); return; }
-            document.querySelector("#current-name").textContent = value;
-            document.querySelector("#member_name").dataset.currentValue = value;
-            collapsePanel(panel);
 
+            const input = document.querySelector("#member_name");
+            const value = input.value.trim();
+
+            if (!value) {
+                alert("이름을 입력해주세요.");
+                return;
+            }
+
+            try {
+
+                const result = await window.MemberService.updateName(value);
+
+                if (!result.data) {
+                    alert(result.message || "정보 변경에 실패했습니다.");
+                    return;
+                }
+				
+				alert(result.message || "정보가 변경되었습니다.");
+
+                document.querySelector("#current-name").textContent = value;
+                input.dataset.currentValue = value;
+
+                collapsePanel(panel);
+
+            } catch (error) {
+
+                console.error(error);
+                alert("이름 변경 중 오류가 발생했습니다.");
+            }
+
+        /* --------------------------------
+           생년월일
+           -------------------------------- */
         } else if (field === "birth") {
-            const value = document.querySelector("#birth").value;
-            document.querySelector("#current-birth").textContent = value;
-            document.querySelector("#birth").dataset.currentValue = value;
-            collapsePanel(panel);
 
+            const input = document.querySelector("#birth");
+            const value = input.value;
+
+            if (!value) {
+                alert("생년월일을 입력해주세요.");
+                return;
+            }
+
+            try {
+
+                const result = await window.MemberService.updateBirth(value);
+
+                if (!result.data) {
+                    alert(result.message || "정보 변경에 실패했습니다.");
+                    return;
+                }
+				
+				alert(result.message || "정보가 변경되었습니다.");
+
+                document.querySelector("#current-birth").textContent = value;
+                input.dataset.currentValue = value;
+
+                collapsePanel(panel);
+
+            } catch (error) {
+
+                console.error(error);
+                alert("생년월일 변경 중 오류가 발생했습니다.");
+            }
+
+        /* --------------------------------
+           성별
+           -------------------------------- */
         } else if (field === "gender") {
+
             const male = document.querySelector("#gender-male");
             const female = document.querySelector("#gender-female");
-            document.querySelector("#current-gender").textContent = male.checked ? "남성" : "여성";
-            male.dataset.currentChecked = String(male.checked);
-            female.dataset.currentChecked = String(female.checked);
-            collapsePanel(panel);
 
+            const value = male.checked ? "M" : "F";
+
+            try {
+
+                const result = await window.MemberService.updateGender(value);
+
+                if (!result.data) {
+                    alert(result.message || "정보 변경에 실패했습니다.");
+                    return;
+                }
+				
+				alert(result.message || "정보가 변경되었습니다.");
+
+                document.querySelector("#current-gender").textContent =
+                    value === "M" ? "남성" : "여성";
+
+                male.dataset.currentChecked = String(male.checked);
+                female.dataset.currentChecked = String(female.checked);
+
+                collapsePanel(panel);
+
+            } catch (error) {
+
+                console.error(error);
+                alert("성별 변경 중 오류가 발생했습니다.");
+            }
+
+        /* --------------------------------
+           비밀번호
+           -------------------------------- */
         } else if (field === "password") {
-            if (!checkPw) { alert("새 비밀번호 형식을 확인하거나 일치 여부를 확인해주세요."); return; }
-            newPassword.value = "";
-            newPasswordConfirm.value = "";
-            pwRegCheckMsg.textContent = "";
-            pwCheckMsg.textContent = "";
-            collapsePanel(panel);
 
+            // 새 비밀번호를 둘 다 비워두면 변경하지 않음
+            if (!newPassword.value && !newPasswordConfirm.value) {
+                collapsePanel(panel);
+                return;
+            }
+
+            // 새 비밀번호를 변경하는 경우 현재 비밀번호 필수
+            if (!currentPassword.value.trim()) {
+                alert("현재 비밀번호를 입력해주세요.");
+                return;
+            }
+
+            // 새 비밀번호 형식/일치 검사
+            if (!checkPw) {
+                alert("새 비밀번호 형식 또는 일치 여부를 확인해주세요.");
+                return;
+            }
+
+            try {
+
+                const result = await window.MemberService.updatePassword(
+                    currentPassword.value,
+                    newPassword.value
+                );
+
+                if (!result.data) {
+                    alert(result.message || "비밀번호 변경에 실패했습니다.");
+                    return;
+                }
+
+                alert(result.message || "비밀번호가 변경되었습니다.");
+
+                currentPassword.value = "";
+                newPassword.value = "";
+                newPasswordConfirm.value = "";
+
+                pwRegCheckMsg.textContent = "";
+                pwCheckMsg.textContent = "";
+
+                collapsePanel(panel);
+
+            } catch (error) {
+
+                console.error(error);
+                alert("비밀번호 변경 중 오류가 발생했습니다.");
+            }
+
+        /* --------------------------------
+           배송지
+           -------------------------------- */
         } else if (field === "address") {
-            const addressName = document.querySelector("#addressName").value.trim();
-            const detailAddress = document.querySelector("#detailAddress").value.trim();
-            const isDefault = document.querySelector("#isDefaultAddress").checked;
+
+            const addressName =
+                document.querySelector("#addressName").value.trim();
+
+            const detailAddress =
+                document.querySelector("#detailAddress").value.trim();
+
+            const isDefault =
+                document.querySelector("#isDefaultAddress").checked;
 
             if (!addressName || !detailAddress) {
                 alert("배송지 이름과 상세 주소를 모두 입력해주세요.");
                 return;
             }
 
+            // 배송지는 아직 백엔드가 없으므로 화면에서만 처리
             let summary = addressName + " · " + detailAddress;
-            if (isDefault) summary += " (기본 배송지)";
+
+            if (isDefault) {
+                summary += " (기본 배송지)";
+            }
+
             document.querySelector("#current-address").textContent = summary;
 
-            document.querySelector("#addressName").dataset.currentValue = addressName;
-            document.querySelector("#detailAddress").dataset.currentValue = detailAddress;
+            document.querySelector("#addressName")
+                .dataset.currentValue = addressName;
+
+            document.querySelector("#detailAddress")
+                .dataset.currentValue = detailAddress;
+
             collapsePanel(panel);
         }
     });
 });
+
 
 /* ---- 회원 탈퇴 ---- */
 // TODO(server binding): 확인 후 탈퇴 완료 안내 화면(member/userWithdraw)으로 이동만 한다.
