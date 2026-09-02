@@ -17,7 +17,7 @@ public interface OrderMapper {
 	PaymentViewDTO selectByMemberIdForPay(Long memberId);
 	
 	// 카트id들 정보 받아오기
-	List<OrderItemDTO> selectCartIds(@Param("cartIds") List<Long> cartIds);
+	List<OrderItemDTO> selectCartIds(@Param("memberId") Long memberId, @Param("cartIds") List<Long> cartIds);
 	
 	// popId로 검색해오기
 	OrderItemDTO selectPopId(Long popId);
@@ -29,7 +29,7 @@ public interface OrderMapper {
 	List<OrderItemDTO> selectItems(@Param("itemList") List<OrderItemDTO> itemList);
 	
 	// 쿠폰히스토리id로 쿠폰 할인율 받아오기
-	BigDecimal selectByChistId(@Param("memberId") Long memberId,@Param("chistId") Long chistId);
+	BigDecimal selectByChistId(@Param("memberId") Long memberId, @Param("chistId") Long chistId);
 	
 	// 검증한 데이터로 productorder테이블에 입력
 	int insertProductOrder(CheckoutDTO verifiedData);
@@ -60,4 +60,7 @@ public interface OrderMapper {
 	
 	// 결제 후 장바구니에서 제거
 	int deleteCartItems(@Param("memberId") Long memberId,@Param("cartIds") List<Long> cartIds);
+	
+	// 멤버 ID와 주문ID 일치 확인
+	Long getOrderIdForMember(@Param("memberId") Long memberId, @Param("orderId") Long orderId);
 }

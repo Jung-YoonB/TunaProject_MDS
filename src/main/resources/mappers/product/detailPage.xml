@@ -99,26 +99,42 @@
 		po.OPTION_PRICE,
 		m.NICKNAME,
 		orderd.QTY,
-		r.LIKE_COUNT,
-		CASE WHEN rl.MEMBER_ID IS NOT NULL THEN 1 ELSE 0 END AS is_liked
+
+		<!-- REVIEWLIKE 테이블에서 현재 리뷰(r.REVIEW_ID)의 총 좋아요 수 -->
+		(SELECT COUNT(*) FROM REVIEWLIKE WHERE REVIEW_ID = r.REVIEW_ID) AS like_count,
+
+		<!-- 로그인한 유저가 좋아요 눌렀는지 체크 -->
+		<choose>
+			<when test="memberId != null">
+				CASE WHEN rl.MEMBER_ID IS NOT NULL THEN 1 ELSE 0 END AS is_liked
+			</when>
+			<otherwise>
+				0 AS is_liked
+			</otherwise>
+		</choose>
 
 		FROM review r
 
 		JOIN orderdetail orderd ON r.OD_ID = orderd.OD_ID
-
 		JOIN OPTIONDETAIL od ON orderd.POP_ID = od.POP_ID
-
 		JOIN PRODUCTOPTION po ON po.OPTION_ID = od.OPTION_ID
 		JOIN product p ON p.PRODUCT_ID = od.PRODUCT_ID
-
 		JOIN member m ON m.MEMBER_ID = r.MEMBER_ID
 
-		LEFT JOIN REVIEWLIKE rl
-		ON r.REVIEW_ID = rl.REVIEW_ID
-		AND rl.MEMBER_ID = #{memberId}
+		<if test="memberId != null">
+			LEFT JOIN REVIEWLIKE rl
+			ON r.REVIEW_ID = rl.REVIEW_ID
+			AND rl.MEMBER_ID = #{memberId}
+		</if>
 
-		WHERE p.PRODUCT_ID = #{productId}
+		WHERE p.PRODUCT_ID = #{productId} AND r.REVIEW_STATUS = 1
+
+		ORDER BY r.WRITE_DATE DESC
+
+		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
 	</select>
+
+
 	<select id="getReviewImages" resultType="ReviewImagesDTO" >
 		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_image
 		from REVIEWIMAGE ri join REVIEW r on ri.REVIEW_ID = r.REVIEW_ID
@@ -127,9 +143,6 @@
 	</foreach>
 	</select>
 
-	<update id="updateLikeCount" parameterType="Long">
-		update REVIEW set LIKE_COUNT = LIKE_COUNT+1 where REVIEW_ID = #{reviewId}
-	</update>
 
 	<insert id="insertReviewLike">
 		insert into REVIEWLIKE values (SEQ_REVIEW_LIKE_ID.nextval, #{reviewId}, #{memberId})
@@ -142,15 +155,20 @@
 		</if>
 	</select>
 
-	<update id="updateLikeDiscount" parameterType="Long">
-		update REVIEW set LIKE_COUNT = LIKE_COUNT-1 where REVIEW_ID = #{reviewId}
-	</update>
 
 	<delete id="deleteReviewLike">
 		delete REVIEWLIKE where review_id = #{reviewId}
 		<if test="memberId != null">
 			and MEMBER_ID = #{memberId}
 		</if>
-
 	</delete>
+
+	<select id="countReviews" resultType="int">
+		select count(*)
+		from REVIEW r join ORDERDETAIL od on r.OD_ID = od.OD_ID
+		join OPTIONDETAIL opd on od.POP_ID = opd.POP_ID
+		join product p on opd.PRODUCT_ID = p.PRODUCT_ID
+		where p.PRODUCT_ID = #{productId}
+		AND r.REVIEW_STATUS = 1
+	</select>
 </mapper>

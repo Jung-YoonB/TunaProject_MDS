@@ -13,6 +13,63 @@ const CLOSE_ICON_SVG =
     '</svg>';
 
 /* ==================================================
+   입력 글자 수 표시
+
+   화면엔 아무 표시가 없고 서버 검증도 없어서, 한도를 넘기면 DB가 뱉는 ORA-12899가
+   그대로 노출됐다(실제로 겪은 오류). 남은 글자 수를 보여주고 초과 입력은 잘라낸다.
+
+   제한 값은 DB 컬럼이 BYTE 단위인 점을 감안해 잡았다 - 전부 한글로 채워도(1자=3byte)
+   컬럼 안에 들어간다. AdminProductServiceImpl 의 MAX_* 상수와 반드시 같은 값이어야 한다.
+     상품명    50자 (PRODUCT_NAME    VARCHAR2(150))
+     제목      60자 (PRODUCT_TITLE   VARCHAR2(200))
+     상품설명 1300자 (PRODUCT_CONTENT VARCHAR2(4000))
+     옵션명    30자 (OPTION_NAME     VARCHAR2(100))
+   대상은 data-maxchars 를 가진 input/textarea 전부 - 동적으로 추가되는 옵션 행도 포함된다.
+   ================================================== */
+
+// 이모지처럼 서로게이트 쌍으로 이뤄진 문자도 1자로 센다(String.length는 2로 셈).
+// 서버의 codePointCount 와 같은 기준이라 화면 카운터와 검증 결과가 어긋나지 않는다.
+function charLength(str){
+    return [...str].length;
+}
+
+// 글자 단위로 잘라낸다(서로게이트 쌍 중간이 잘려 깨지지 않도록)
+function truncateToChars(str, maxChars){
+    return [...str].slice(0, maxChars).join("");
+}
+
+function updateCharCounter(field){
+    const max = Number(field.dataset.maxchars);
+    if(!max) return;
+
+    if(charLength(field.value) > max){
+        field.value = truncateToChars(field.value, max);
+    }
+
+    // 카운터 위치는 두 가지다.
+    //  - id가 있으면 [data-for="<id>"] 로 찾는다(상품설명처럼 textarea와 떨어져 있는 경우)
+    //  - 없으면 같은 부모 안의 .char-counter(동적으로 만든 옵션 행)
+    const counter = (field.id && document.querySelector('.char-counter[data-for="' + field.id + '"]'))
+        || (field.parentElement && field.parentElement.querySelector('.char-counter'));
+    if(!counter) return;
+
+    const used = charLength(field.value);
+    counter.textContent = used + " / " + max + "자";
+    counter.classList.toggle("is-near-limit", used >= max * 0.9);
+}
+
+// 동적으로 추가되는 옵션 행까지 받도록 문서 단위 위임
+document.addEventListener("input", function(event){
+    const field = event.target;
+    if(field && field.dataset && field.dataset.maxchars){
+        updateCharCounter(field);
+    }
+});
+
+// 최초 진입 시 0 / N 을 먼저 보여준다
+document.querySelectorAll("[data-maxchars]").forEach(updateCharCounter);
+
+/* ==================================================
    태그 관리
    ================================================== */
 
@@ -173,6 +230,7 @@ function createCurrentTag(name, color, isCustom){
     }
 
     tag.style.backgroundColor = color;
+    applyTagTextColor(tag);
 
     const text = document.createElement("span");
     text.textContent = name;
@@ -288,23 +346,72 @@ function updateColorPreview(){
 }
 
 
+// 태그 칩의 글자색을 배경 밝기에 맞춰 칠한다.
+// 배경색은 등록자가 고르는 값이라 CSS로 하나 고정하면 연한 색 아니면 진한 색 중 한쪽이 반드시
+// 묻힌다. 칩을 만들거나 색을 바꾸는 모든 지점에서 이 함수를 거치게 한다.
+function applyTagTextColor(tagElement){
+
+    const color = tagElement.dataset.tagColor;
+
+    // #RRGGBB 형태가 아니면(빈 값/DB의 예전 표기 등) CSS 기본색을 그대로 둔다
+    if(!/^#[0-9a-fA-F]{6}$/.test(color || "")) return;
+
+    tagElement.style.color = getContrastColor(color);
+}
+
+
+// 태그 배경 위에 올릴 글자색으로 진한색/흰색 중 더 잘 읽히는 쪽을 고른다.
+//
+// 예전엔 (r*299+g*587+b*114)/1000 > 160 으로 갈랐는데, 팔레트에 중간 톤 색(#f36e6e 같은)이
+// 많아 임계값 바로 옆 색들이 자꾸 어두운 쪽으로 잘못 떨어졌다. 밝기 대신 WCAG 명암비를
+// 실제로 계산해 큰 쪽을 쓴다.
+const TAG_TEXT_DARK = "#1f1b18";
+const TAG_TEXT_LIGHT = "#ffffff";
+
+// WCAG 상대 휘도. sRGB 값을 감마 보정한 뒤 사람 눈의 색별 민감도로 가중합한다.
+function relativeLuminance(hex){
+
+    const channel = function(value){
+        const c = value / 255;
+        return c <= 0.03928
+            ? c / 12.92
+            : Math.pow((c + 0.055) / 1.055, 2.4);
+    };
+
+    const r = channel(parseInt(hex.substring(1,3),16));
+    const g = channel(parseInt(hex.substring(3,5),16));
+    const b = channel(parseInt(hex.substring(5,7),16));
+
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+
+function contrastRatio(hexA, hexB){
+
+    const a = relativeLuminance(hexA);
+    const b = relativeLuminance(hexB);
+
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+
+// 진한 글자가 흰 글자를 "확실히" 이길 때만 진한 글자를 쓴다.
+//
+// 명암비만 그대로 비교하면 채도 높은 중간 톤(보라 #975fff, 진한 빨강 #ee3434 같은)에서
+// 진한 글자가 근소한 차이로 이겨버리는데, 실제로 보면 그쪽이 훨씬 안 읽힌다.
+// 그래서 진한 글자가 이 배수만큼 앞서야 채택되게 해서 경계를 흰 글자 쪽으로 당겼다.
+//
+// 값을 올리면 흰 글자를 쓰는 색이 늘어난다. 현재 태그 팔레트 기준 경계는
+//   1.13 = #975fff(60대+)   1.41 = #f15151   1.61 = #f0603a   1.85 = #a97aff
+// 이므로 1.25는 #975fff 와 #ee3434 까지만 흰 글자로 넘긴다.
+// 빨강 계열까지 흰 글자로 돌리려면 1.7 정도로 올리면 된다.
+const TAG_TEXT_WHITE_BIAS = 1.25;
+
 function getContrastColor(hex){
 
-    const r =
-        parseInt(hex.substring(1,3),16);
-
-    const g =
-        parseInt(hex.substring(3,5),16);
-
-    const b =
-        parseInt(hex.substring(5,7),16);
-
-    const brightness =
-        (r * 299 + g * 587 + b * 114) / 1000;
-
-    return brightness > 160
-        ? "#4b433d"
-        : "#ffffff";
+    return contrastRatio(hex, TAG_TEXT_DARK) >= contrastRatio(hex, TAG_TEXT_LIGHT) * TAG_TEXT_WHITE_BIAS
+        ? TAG_TEXT_DARK
+        : TAG_TEXT_LIGHT;
 }
 
 
@@ -380,6 +487,8 @@ function addNewTag(){
     existingTag.style.backgroundColor =
         color;
 
+    applyTagTextColor(existingTag);
+
 
     const text =
         document.createElement("span");
@@ -419,23 +528,9 @@ function addNewTag(){
 }
 
 
-/* ==================================================
-   상품 설명 글자 수
-   ================================================== */
-
-const textarea =
-    document.getElementById("productContent");
-
-const counter =
-    document.getElementById("counter");
-
-
-textarea.addEventListener("input", function(){
-
-    counter.textContent =
-        this.value.length + " / 2000";
-});
-
+/* 상품 설명 글자 수 카운터는 위 "입력 길이 표시(바이트 기준)"로 통합됐다.
+   기존 구현은 this.value.length + " / 2000" 이라 글자 수를 셌는데, PRODUCT_CONTENT가
+   VARCHAR2(4000 BYTE)라 한글로는 1333자가 한계여서 표시와 실제 한계가 어긋나 있었다. */
 
 /* ==================================================
    추가 이미지 / 설명 이미지 (개수 제한 없는 동적 업로드)
@@ -637,6 +732,156 @@ function clearMainImage(){
 
 
 /* ==================================================
+   옵션 (개수 제한 없는 동적 행 - 최소 1개)
+   행 하나 = 옵션 하나 = PRODUCTOPTION 1건 + OPTIONDETAIL 1건 (HANDOFF 3-48)
+   ================================================== */
+
+const optionList = document.getElementById("optionList");
+
+
+function createOptionRow(){
+
+    const row = document.createElement("div");
+    row.className = "option-row";
+
+    const indexBadge = document.createElement("span");
+    indexBadge.className = "option-row-index";
+
+    const nameField = document.createElement("div");
+    nameField.className = "option-field option-field-name";
+    // 카운터를 입력칸 아래에 두면 이 칸만 높아져서 판매가격/재고와 아래끝 정렬이 어긋난다.
+    // 라벨과 같은 줄 오른쪽에 붙여 세 칸의 높이를 맞춘다.
+    nameField.innerHTML =
+        '<div class="option-field-head">' +
+            '<span class="option-field-label">옵션명</span>' +
+            '<span class="char-counter"></span>' +
+        '</div>' +
+        '<input type="text" class="option-name" data-maxchars="30" placeholder="예: 기본, 단품">';
+
+    const priceField = document.createElement("div");
+    priceField.className = "option-field";
+    priceField.innerHTML =
+        '<span class="option-field-label">판매가격</span>' +
+        '<input type="number" class="option-price" placeholder="0" min="0">';
+
+    const stockField = document.createElement("div");
+    stockField.className = "option-field";
+    stockField.innerHTML =
+        '<span class="option-field-label">재고</span>' +
+        '<input type="number" class="option-stock" placeholder="0" min="0">';
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "tag-remove option-remove";
+    removeButton.setAttribute("aria-label", "옵션 삭제");
+    removeButton.innerHTML = CLOSE_ICON_SVG;
+    removeButton.addEventListener("click", function(){
+
+        // 옵션이 1개뿐이면 버튼을 감춰두지만, 스타일이 밀려 보이는 경우가 있어 동작으로도 막는다
+        if(optionList.querySelectorAll(".option-row").length <= 1) return;
+
+        row.remove();
+        updateOptionRows();
+    });
+
+    row.appendChild(indexBadge);
+    row.appendChild(nameField);
+    row.appendChild(priceField);
+    row.appendChild(stockField);
+    row.appendChild(removeButton);
+
+    return row;
+}
+
+
+function addOptionRow(){
+
+    const row = createOptionRow();
+    optionList.appendChild(row);
+    // 새 행의 옵션명 카운터에도 "0 / 100 bytes"를 바로 표시한다
+    row.querySelectorAll("[data-maxchars]").forEach(updateCharCounter);
+    updateOptionRows();
+}
+
+
+// 옵션은 최소 1개가 있어야 상품이 성립하므로, 하나만 남으면 삭제 버튼을 감춘다.
+// 번호는 화면에만 쓰는 값이라 매번 다시 매긴다(중간 행을 지워도 1,2,3...이 유지됨).
+function updateOptionRows(){
+
+    const rows = optionList.querySelectorAll(".option-row");
+
+    rows.forEach(function(row, index){
+
+        const removeButton = row.querySelector(".option-remove");
+        removeButton.hidden = (rows.length === 1);
+
+        // 검증 실패 메시지가 "옵션 2의 ..." 형태라 화면에도 같은 번호가 보여야 찾아갈 수 있다
+        row.querySelector(".option-row-index").textContent = index + 1;
+    });
+}
+
+
+document
+    .getElementById("addOptionButton")
+    .addEventListener("click", addOptionRow);
+
+
+// 화면에서 입력한 옵션들을 서버로 보낼 형태로 모은다.
+// 유효하지 않으면 alert 문구를 반환하고, 정상이면 null을 반환한다(호출부에서 판정).
+function collectOptions(){
+
+    const options = [];
+    const rows = optionList.querySelectorAll(".option-row");
+
+    for(let i = 0; i < rows.length; i++){
+
+        const row = rows[i];
+        const label = "옵션 " + (i + 1) + "의 ";
+
+        const optionName = row.querySelector(".option-name").value.trim();
+        const price = row.querySelector(".option-price").value;
+        const stock = row.querySelector(".option-stock").value;
+
+        if(!optionName){
+            return { error: label + "옵션명을 입력해 주세요." };
+        }
+        if(price === ""){
+            return { error: label + "판매가격을 입력해 주세요." };
+        }
+        if(stock === ""){
+            return { error: label + "재고를 입력해 주세요." };
+        }
+        if(Number(price) < 0){
+            return { error: label + "판매가격은 0 이상이어야 합니다." };
+        }
+        if(Number(stock) < 0){
+            return { error: label + "재고는 0 이상이어야 합니다." };
+        }
+
+        // 같은 상품 안에서 옵션명이 겹치면 구매 화면에서 구분이 안 되므로 미리 막는다
+        const duplicated = options.some(function(option){
+            return option.optionName === optionName;
+        });
+
+        if(duplicated){
+            return { error: "옵션명 \"" + optionName + "\"이(가) 중복됩니다." };
+        }
+
+        options.push({
+            optionName: optionName,
+            price: Number(price),
+            stock: Number(stock)
+        });
+    }
+
+    if(options.length === 0){
+        return { error: "옵션을 최소 1개 이상 등록해 주세요." };
+    }
+
+    return { options: options };
+}
+
+/* ==================================================
    취소
    ================================================== */
 
@@ -662,9 +907,6 @@ function registerProduct(){
 
     const productName = document.getElementById("productNameInput").value.trim();
     const productTitle = document.getElementById("productTitleInput").value.trim();
-    const optionName = document.getElementById("optionNameInput").value.trim();
-    const price = document.getElementById("priceInput").value;
-    const stock = document.getElementById("stockInput").value;
     const categoryId = document.getElementById("categorySelect").value;
     const productContent = document.getElementById("productContent").value;
 
@@ -676,18 +918,13 @@ function registerProduct(){
         alert("상품 게시글 제목을 입력해 주세요.");
         return;
     }
-    if(!optionName){
-        alert("옵션명을 입력해 주세요.");
+
+    const optionResult = collectOptions();
+    if(optionResult.error){
+        alert(optionResult.error);
         return;
     }
-    if(!price){
-        alert("판매가격을 입력해 주세요.");
-        return;
-    }
-    if(!stock){
-        alert("재고를 입력해 주세요.");
-        return;
-    }
+
     if(!categoryId){
         alert("카테고리를 선택해 주세요.");
         return;
@@ -731,9 +968,7 @@ function registerProduct(){
     const formData = new FormData();
     formData.append("productName", productName);
     formData.append("productTitle", productTitle);
-    formData.append("optionName", optionName);
-    formData.append("price", price);
-    formData.append("stock", stock);
+    formData.append("optionsJson", JSON.stringify(optionResult.options));
     formData.append("categoryId", categoryId);
     formData.append("productContent", productContent);
     formData.append("tagsJson", JSON.stringify(tagData));
@@ -769,5 +1004,12 @@ function registerProduct(){
    ================================================== */
 
 updateColorPreview();
+addOptionRow();
+
+// 기존 태그 목록은 addProduct.jsp가 서버에서 그리므로 배경색만 있고 글자색이 없다.
+// 여기서 한 번 훑어 배경 밝기에 맞는 글자색을 입힌다.
+document
+    .querySelectorAll("#existingTagList .product-tag")
+    .forEach(applyTagTextColor);
 
 })();

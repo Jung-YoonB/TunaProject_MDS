@@ -22,7 +22,8 @@ public interface AdminProductMapper {
 	// 상품 본문 등록 (PRODUCT 테이블 - product.model.dto.detail.ProductDetailDTO와 공용)
 	int insertProduct(ProductDetailDTO product);
 
-	// 기본 옵션(가격/재고) 등록 + 상품-옵션 연결 (PRODUCTOPTION 테이블 - product.model.dto.detail.OptionDTO와 공용)
+	// 옵션(가격/재고) 1건 등록 + 상품-옵션 연결. 상품 하나에 옵션이 여러 개면 이 둘을 반복 호출한다
+	// (PRODUCTOPTION 테이블 - product.model.dto.detail.OptionDTO와 공용)
 	int insertProductOption(OptionDTO option);
 
 	int insertOptionDetail(@Param("productId") Long productId, @Param("optionId") Long optionId);

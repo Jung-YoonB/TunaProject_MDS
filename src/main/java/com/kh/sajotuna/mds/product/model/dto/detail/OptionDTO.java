@@ -21,7 +21,7 @@ public class OptionDTO {
 	private Long popId; // OPTIONDETAIL.POP_ID - 상품 상세페이지 조회 전용, 관리자 등록 흐름에선 안 씀
 	private int stock;
 
-	// admin.AdminProductService의 상품 등록도 PRODUCTOPTION 테이블에 기본 옵션 1개를 만드는데,
-	// 같은 테이블을 참조하는 DTO(ProductOptionInsertDTO)가 따로 있어서 이쪽으로 합침(ReviewDTO와 동일한 방식).
-	// 등록 시점엔 optionId/optionName/price/stock만 채우고 popId는 비워둠(OPTIONDETAIL 연결은 별도 insert)
+	// admin 상품 등록도 이 DTO로 PRODUCTOPTION 행을 만든다(옵션 개수만큼 반복). 같은 테이블을 가리키는
+	// DTO가 따로 있어서 이쪽으로 합침(ReviewDTO와 동일한 방식).
+	// 등록 시점엔 optionName/price/stock만 채우고 optionId는 selectKey가, popId는 별도 insert가 채운다
 }

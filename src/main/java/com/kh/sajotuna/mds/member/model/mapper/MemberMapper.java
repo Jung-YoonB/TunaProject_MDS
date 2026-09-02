@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.member.model.mapper;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -8,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageOrderItemDTO;
 
 @Mapper
 public interface MemberMapper {
@@ -44,7 +46,7 @@ public interface MemberMapper {
 	int updatePhone(@Param("memberId") Long memberId, @Param("phone") String phone);
 	int updateEmail(@Param("memberId") Long memberId, @Param("email") String email);
 	int updateName(@Param("memberId") Long memberId, @Param("memberName") String memberName);
-	int updateBirth(@Param("memberId") Long memberId, @Param("birth") String birth);
+	int updateBirth(@Param("memberId") Long memberId, @Param("birth") LocalDate birth);
 	int updateGender(@Param("memberId") Long memberId, @Param("gender") String gender);
 	int updatePassword(@Param("memberId") Long memberId, @Param("newPassword") String newPassword);
 	
@@ -55,6 +57,10 @@ public interface MemberMapper {
 	List<MyPageDeliveryDTO> selectDeliveriesByMemberId(@Param("memberId") Long memberId, @Param("status") String status,
 			@Param("offset") int offset, @Param("pageSize") int pageSize);
 
+	// 주문 카드를 펼쳤을 때 보여줄 품목 목록. 주문마다 따로 부르면 N+1이므로
+	// 한 페이지에 보이는 주문 ID를 모아 한 번에 조회한다 (orderIds가 비면 호출하지 말 것)
+	List<MyPageOrderItemDTO> selectOrderItemsByOrderIds(@Param("orderIds") List<Long> orderIds);
+
 	// 위 조회 조건(회원+상태)에 해당하는 전체 건수 (페이지네이션 계산용)
 	int countDeliveriesByMemberId(@Param("memberId") Long memberId, @Param("status") String status);
 
@@ -63,4 +69,7 @@ public interface MemberMapper {
 
 	// 마이페이지 "리뷰 작성" 배지용 - 배송완료된 주문 상세 중 아직 리뷰를 안 쓴 건수
 	int countReviewableOrderDetails(@Param("memberId") Long memberId);
+
+	// 위 건수와 같은 조건에서 가장 먼저 리뷰를 쓸 주문상세 1건 (없으면 null)
+	Long selectNextReviewableOdId(@Param("memberId") Long memberId);
 }
