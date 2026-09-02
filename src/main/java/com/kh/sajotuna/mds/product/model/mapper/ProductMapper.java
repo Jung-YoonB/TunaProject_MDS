@@ -35,10 +35,6 @@ public interface ProductMapper {
 	List<ReviewDTO> getReviewList(@Param("productId") Long productId, @Param("memberId") Long memberId);
 	List<ReviewImagesDTO> getReviewImages(List<Long> reviewId);
 
-	//ReviewLike
-	int updateLikeCount(Long reviewId);
-	void updateLikeDiscount(Long reviewId);
-
 	int insertReviewLike(@Param("reviewId") Long reviewId,  @Param("memberId") Long memberId);
 	void deleteReviewLike(@Param("reviewId") Long reviewId, @Param("memberId") Long memberId);
 	Long checkLike(@Param("reviewId") Long reviewId,  @Param("memberId") Long memberId);

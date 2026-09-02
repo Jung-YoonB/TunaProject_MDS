@@ -28,7 +28,7 @@ public class ProductController {
 	public String getList(Model model, SearchDTO searchDTO) {
 		
 		MainPageDTO list = service.getList(searchDTO);
-		
+		System.out.println("searchDTO = " + searchDTO);
 		model.addAttribute("productList", list);
 		System.out.println("컨트롤러 :: " + list);
 		return"home/home";
