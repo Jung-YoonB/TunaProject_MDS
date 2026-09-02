@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
 import com.kh.sajotuna.mds.order.model.dto.CheckoutDTO;
 import com.kh.sajotuna.mds.order.model.dto.OrderItemDTO;
@@ -128,4 +129,52 @@ public class OrderController {
 	        return "redirect:/order/payment";
 	    }
 	}
+	
+	@GetMapping("/userOrderDelivery")
+	public String userOrderDelivery(
+	        HttpSession session,
+	        Model model,
+	        @RequestParam(defaultValue = "all") String status,
+	        @RequestParam(defaultValue = "1") int page) {
+
+	    MemberDTO member =
+	            (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+
+	    if (member == null) {
+	        return "redirect:/member/login";
+	    }
+
+	    Long memberId = member.getMemberId();
+
+	    List<MyPageDeliveryDTO> deliveryList =
+	            memberService.listDelivery(memberId, status, page);
+
+	    int totalPages =
+	            memberService.totalDeliveryPages(memberId, status);
+
+	    int currentPage =
+	            Math.max(1, Math.min(page, totalPages));
+
+	    int pageWindowSize = 5;
+
+	    int pageWindowStart =
+	            ((currentPage - 1) / pageWindowSize)
+	            * pageWindowSize + 1;
+
+	    int pageWindowEnd =
+	            Math.min(
+	                    pageWindowStart + pageWindowSize - 1,
+	                    totalPages
+	            );
+
+	    model.addAttribute("deliveryList", deliveryList);
+	    model.addAttribute("currentStatus", status);
+	    model.addAttribute("currentPage", currentPage);
+	    model.addAttribute("totalPages", totalPages);
+	    model.addAttribute("pageWindowStart", pageWindowStart);
+	    model.addAttribute("pageWindowEnd", pageWindowEnd);
+
+	    return "order/userOrderDelivery";
+	}
+
 }
