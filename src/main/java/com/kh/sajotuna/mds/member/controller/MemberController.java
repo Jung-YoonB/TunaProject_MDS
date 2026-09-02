@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryAddressDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
@@ -158,7 +159,16 @@ public class MemberController {
 	public String userWithdraw() {
 	    return "member/userWithdraw";
 	}
-	
+
+	@GetMapping("/deliveryAddress")
+	public String deliveryAddressForm(HttpSession session, RedirectAttributes redirectAttr) {
+	    if (session.getAttribute(SessionConst.LOGIN_SESSION) == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
+	    return "utill/deliveryAddress";
+	}
+
 	
 	// POST: CUD 기능
 	
@@ -427,6 +437,39 @@ public class MemberController {
 	    }
 	}
 	
+	// 스키마(DELIVERYADDRESS)에 수취인/전화번호/우편번호 컬럼이 없어 zipcode+address+detailAddress를
+	// DETAIL_ADDRESS 한 문자열로 합쳐서 저장한다 (recipient/phone은 저장할 컬럼이 없어 미반영).
+	@PostMapping("/addAddress")
+	public String addAddress(
+	        HttpSession session,
+	        @RequestParam String addressName,
+	        @RequestParam String zipcode,
+	        @RequestParam String address,
+	        @RequestParam(required = false) String detailAddress,
+	        @RequestParam(required = false) String isDefault,
+	        RedirectAttributes redirectAttr) {
+
+	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	    if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
+
+	    String combinedDetailAddress = ("[" + zipcode + "] " + address
+	            + (detailAddress == null || detailAddress.isBlank() ? "" : " " + detailAddress)).trim();
+
+	    DeliveryAddressDTO deliveryAddress = new DeliveryAddressDTO();
+	    deliveryAddress.setMemberId(member.getMemberId());
+	    deliveryAddress.setAddressName(addressName);
+	    deliveryAddress.setDetailAddress(combinedDetailAddress);
+	    deliveryAddress.setIsDefault("Y".equals(isDefault) ? "Y" : "N");
+
+	    service.addDeliveryAddress(deliveryAddress);
+
+	    redirectAttr.addFlashAttribute("addAddressSuccess", "배송지가 추가되었습니다.");
+	    return "redirect:/member/updateInfo";
+	}
+
 	@PostMapping("/withdraw")
 	@ResponseBody
 	public ApiResponse<Boolean> withdraw(HttpSession session) {

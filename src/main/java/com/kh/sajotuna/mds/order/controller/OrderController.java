@@ -83,8 +83,14 @@ public class OrderController {
 	// 장바구니 화면 경로. 예전 "redirect:/product/cart"는 컨트롤러가 없어 404였다.
 	private static final String CART_URL = "redirect:/cart/my-cart";
 
+	// ✅ 조치 완료(2026-09-03): 예전엔 이 POST가 뷰(order/payment)를 직접 그렸다 - 그러면 브라우저
+	// 히스토리의 이 항목 자체가 POST라서, 다른 화면(배송지 추가 등)에 갔다가 "취소"(history.back())로
+	// 돌아오거나 새로고침하면 "양식을 다시 제출하시겠습니까?"/ERR_CACHE_MISS가 떴다(사용자님이 실제
+	// 재현: 결제 화면에서 배송지 추가 후 취소하고 나오면 이 화면이 뜸). Post-Redirect-Get으로 바꿔서
+	// 세션에 저장만 하고 GET /order/payment(paymentResume, 아래)로 리다이렉트 - 그 GET이 이미
+	// PENDING_CHECKOUT을 읽어 똑같은 화면을 그려주므로 로직 중복 없이 히스토리 항목만 GET이 된다.
 	@PostMapping("/payment")
-	public String paymentForm(HttpSession session, Model model,
+	public String paymentForm(HttpSession session,
 			@RequestParam(value = "cartId", required = false) List<Long> cartIds,
 			@ModelAttribute OrderItemDTO orderItem,
 			RedirectAttributes redirectAttr) {
@@ -114,8 +120,7 @@ public class OrderController {
 		// 화면이 아니라 선택만 담아야 다시 열 때 가격·재고·포인트가 최신으로 다시 계산된다.
 		session.setAttribute(SessionConst.PENDING_CHECKOUT, pending);
 
-		model.addAttribute("pvData", buildPaymentView(loginMember.getMemberId(), pending));
-		return "order/payment";
+		return "redirect:/order/payment";
 	}
 
 
@@ -175,6 +180,17 @@ public class OrderController {
 		return service.directPrepare(memberId, item);
 	}
 	
+	// ✅ 조치 완료(2026-09-03, 사용자 보고): /order/checkout은 원래 POST 전용(주문은 결제 버튼
+	// 클릭으로만 일어나야 하고, 새로고침/뒤로가기로 재실행되면 안 되므로 GET을 열어주는 게 오히려
+	// 위험함 - /order/payment처럼 GET 매핑을 추가하는 건 정답이 아니다). 다만 새로고침이나
+	// 주소창 재입력 등으로 실수로 GET이 들어오면 지금까지는 날것의 405 에러 페이지가 떴다.
+	// 결제 화면으로 돌려보내서 다시 진행하게 한다(진행 중인 결제가 세션에 남아있으면
+	// paymentResume이 그대로 이어서 보여준다).
+	@GetMapping("/checkout")
+	public String checkoutWrongMethod() {
+		return "redirect:/order/payment";
+	}
+
 	@PostMapping("/checkout")
 	public String checkout(HttpSession session,
 	                       @ModelAttribute CheckoutDTO checkoutData,

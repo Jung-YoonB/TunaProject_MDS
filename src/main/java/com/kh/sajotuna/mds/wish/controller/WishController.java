@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
@@ -55,6 +56,19 @@ public class WishController {
         model.addAttribute("message", message);
         System.out.println("removeWishMessage :: " + message);
         return "redirect:/wish/my-wish";
+    }
+
+    // 헤더 찜 뱃지용 - header.js가 페이지 로드마다 호출해서 실제 WISH 기준 개수를 보여준다
+    // (AUDIT 신규 버그: 뱃지가 localStorage 목업이라 메인 페이지 등에서 실제 찜 개수와 안 맞던 것
+    // 조치). 비로그인이면 0.
+    @GetMapping("/count")
+    @ResponseBody
+    public int count(HttpSession session) {
+        MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+        if (member == null) {
+            return 0;
+        }
+        return service.getWishList(member.getMemberId()).size();
     }
 
     @GetMapping("/my-wish")

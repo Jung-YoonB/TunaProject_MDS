@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryAddressDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageOrderItemDTO;
@@ -434,6 +435,15 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	public Long nextReviewableOdId(Long memberId) {
 		return mapper.selectNextReviewableOdId(memberId);
+	}
+
+	@Override
+	@Transactional
+	public void addDeliveryAddress(DeliveryAddressDTO address) {
+		if ("Y".equalsIgnoreCase(address.getIsDefault())) {
+			mapper.clearDefaultAddress(address.getMemberId());
+		}
+		mapper.insertDeliveryAddress(address);
 	}
 }
 

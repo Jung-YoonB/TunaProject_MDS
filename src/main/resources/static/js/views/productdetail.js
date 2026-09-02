@@ -264,42 +264,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
         wishButton.addEventListener('click', function () {
 
-            const liked =
-                wishButton.classList.toggle('is-active');
+            if (typeof window.toggleWish !== 'function') return;
 
+            const productId = wishButton.dataset.productId;
 
-            // SVG 하트 채우기
-            const heart =
-                wishButton.querySelector('.icon-heart');
+            // common/cartWishService.js가 실제 WishController(POST /wish/insert-wish,
+            // GET /wish/remove-wish)를 호출한다. 비로그인이면 /member/login으로 이동하고
+            // 버튼 상태는 그대로 둔다(cart-button과 동일 패턴). 방향은 버튼의 현재 is-active
+            // (서버가 최초 렌더링 때 실제 WISH 데이터 기준으로 채워준 상태)로 판단한다 -
+            // 로그아웃 후 재로그인해도 이미 찜한 상품을 정확히 "찜 해제" 방향으로 처리한다.
+            const wasWished = wishButton.classList.contains('is-active');
 
-            if (heart) {
+            window.toggleWish({ productId: productId }, wasWished).then(function (liked) {
 
-                heart.classList.toggle(
-                    'is-filled',
-                    liked
+                wishButton.classList.toggle('is-active', liked);
+
+                const heart =
+                    wishButton.querySelector('.icon-heart');
+
+                if (heart) {
+                    heart.classList.toggle('is-filled', liked);
+                }
+
+                wishButton.setAttribute(
+                    'aria-label',
+                    liked ? '찜 해제' : '찜하기'
                 );
-            }
 
+                if (wishCount) {
 
-            // 접근성
-            wishButton.setAttribute(
-                'aria-label',
-                liked ? '찜 해제' : '찜하기'
-            );
+                    const count =
+                        parseInt(wishCount.textContent, 10) || 0;
 
-
-            // 현재는 화면에서만 숫자 변경
-            // TODO: 찜 API 연결
-            if (wishCount) {
-
-                const count =
-                    parseInt(wishCount.textContent, 10) || 0;
-
-                wishCount.textContent =
-                    liked
-                        ? count + 1
-                        : Math.max(0, count - 1);
-            }
+                    wishCount.textContent =
+                        liked
+                            ? count + 1
+                            : Math.max(0, count - 1);
+                }
+            });
         });
     }
 
@@ -441,13 +443,139 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* =========================
        장바구니
-    =========================
-    
-       주의:
-       현재 백엔드에서 바로구매는 /order/payment로
-       연결되어 있지만, 장바구니 API는 여기서 확인되지 않음.
-       
-       그래서 기존 cartButton 동작은 건드리지 않음.
+
+       CartController
+       @PostMapping("/cart/add-cart")
+       CartDTO cart (popId, qty - memberId는 세션에서 서버가 채운다)
+
+       "바로 구매"와 완전히 같은 패턴(hidden form + submit)으로 실제 서버에 담는다.
+       예전엔 여기 아무 핸들러도 없어서(주석만 남아있었음), 로그인 여부와 무관하게
+       header.jsp의 localStorage 목업 뱃지만 눈에 보이는 채로 남는 문제가 있었다.
+       CartController가 이미 로그인 가드를 갖고 있어(비로그인 시 /member/login으로
+       리다이렉트) 여기서 따로 로그인 체크를 하지 않아도 서버가 막아준다.
     ========================= */
+
+    if (cartButton) {
+
+        cartButton.addEventListener('click', function () {
+
+            const selected =
+                getSelectedOption();
+
+            if (!selected || selected.stock <= 0) {
+
+                alert('품절된 상품입니다.');
+                return;
+            }
+
+            let qty =
+                parseInt(
+                    quantityInput.value,
+                    10
+                );
+
+            if (isNaN(qty) || qty < 1) {
+                qty = 1;
+            }
+
+            if (qty > selected.stock) {
+
+                alert('재고 수량을 초과했습니다.');
+
+                quantityInput.value =
+                    selected.stock;
+
+                update(true);
+
+                return;
+            }
+
+            const form =
+                document.createElement('form');
+
+            form.method = 'post';
+
+            form.action =
+                '/cart/add-cart';
+
+            const popIdInput =
+                document.createElement('input');
+
+            popIdInput.type = 'hidden';
+            popIdInput.name = 'popId';
+            popIdInput.value =
+                selected.popId;
+
+            const qtyInput =
+                document.createElement('input');
+
+            qtyInput.type = 'hidden';
+            qtyInput.name = 'qty';
+            qtyInput.value = qty;
+
+            form.appendChild(popIdInput);
+            form.appendChild(qtyInput);
+
+            document.body.appendChild(form);
+
+            form.submit();
+        });
+    }
+
+
+    /* =========================
+       리뷰 좋아요
+
+       ProductController
+       @GetMapping("/mds/review/like/{reviewId}")
+
+       응답은 "on"/"off"(토글 결과) 또는 "login-required"(비로그인) 텍스트다.
+       ========================= */
+
+    document.querySelectorAll('.review-like-btn').forEach(function (likeButton) {
+
+        likeButton.addEventListener('click', function () {
+
+            const reviewId =
+                likeButton.dataset.reviewId;
+
+            fetch('/mds/review/like/' + reviewId, { credentials: 'same-origin' })
+                .then(function (res) { return res.text(); })
+                .then(function (result) {
+
+                    if (result === 'login-required') {
+                        alert('로그인이 필요합니다.');
+                        window.location.href = '/member/login';
+                        return;
+                    }
+
+                    const liked = result === 'on';
+
+                    likeButton.classList.toggle('is-active', liked);
+
+                    likeButton.setAttribute(
+                        'aria-label',
+                        liked ? '좋아요 취소' : '좋아요'
+                    );
+
+                    const countEl =
+                        likeButton.querySelector('.review-like-count');
+
+                    if (countEl) {
+
+                        const count =
+                            parseInt(countEl.textContent, 10) || 0;
+
+                        countEl.textContent =
+                            liked
+                                ? count + 1
+                                : Math.max(0, count - 1);
+                    }
+                })
+                .catch(function () {
+                    alert('좋아요 처리에 실패했습니다.');
+                });
+        });
+    });
 
 });

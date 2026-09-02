@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.kh.sajotuna.mds.admin.model.dto.TagOptionDTO;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.MemberGradeDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
@@ -18,7 +19,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ProductMapper {
 	//상품 리스트
-	List<ProductListDTO> getList(@Param("search")SearchDTO search,  @Param("offset")int offset, @Param("pageSize") int pageSize);
+	List<ProductListDTO> getList(@Param("search")SearchDTO search,  @Param("offset")int offset, @Param("pageSize") int pageSize, @Param("memberId") Long memberId);
 
 	List<BannerDTO> bannerList();
 
@@ -31,11 +32,12 @@ public interface ProductMapper {
 	List<TagOptionDTO> selectAllTags();
 
 	//상품 상세 페이지
-	ProductDetailDTO productDetail(Long productId);
+	ProductDetailDTO productDetail(@Param("productId") Long productId, @Param("memberId") Long memberId);
 	String getThumbnail(Long productId);
 	List<String> getImages (Long productId);
 	List<String> getDetailContents (Long productId);
 	List<CouponDTO> getCoupons();
+	MemberGradeDTO getMemberGrade(Long memberId);
 
 	//쿠폰
 	List<OptionDTO> getOptionList(Long productId);

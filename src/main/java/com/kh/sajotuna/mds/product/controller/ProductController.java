@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
-import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
 import com.kh.sajotuna.mds.product.model.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,29 +28,36 @@ public class ProductController {
 	private final ProductService service;
 	private final int MY_REVIEWS_PAGE_SIZE = 5;
 	
-	@GetMapping("/list")
-	public String getList(Model model) {
-		
-		MainPageDTO list = service.getList();
-		model.addAttribute("productList", list);
-		System.out.println("컨트롤러 :: " + list);
-
-		return"home/home";
-	}
-	
 	@GetMapping("/detail/{productId}")
 	public String detailPage(@PathVariable Long productId, Model model, HttpSession session,
 							@RequestParam(defaultValue = "1") int page) {
 		// 상품 정보(이미지/옵션/쿠폰)와 리뷰를 한 번에 담는다. 예전에는 조회만 하고 model에 안 실어서
 		// JSP의 ${detail...}이 전부 빈 값으로 나왔고, 리뷰는 /mds/review/{id}로 따로 들어가야만 보였다.
-		DetailPageDTO detail = service.detailPage(productId);
+		Long memberId = getMemberId(session);
+		DetailPageDTO detail = service.detailPage(productId, memberId);
 		if (detail == null) { // 없는 상품 번호 - 500 대신 목록으로 돌려보낸다
 			return "redirect:/mds/searchList";
 		}
 		model.addAttribute("detail", detail);
+		addMemberGrade(model, memberId);
 
 		addReviewPage(model, session, productId, page);
 		return"product/productDetail";
+	}
+
+	// 세션 키는 LOGIN_SESSION(부록 A) - 비로그인이면 null을 그대로 돌려주고, 호출부(쿼리)가
+	// "= NULL" 비교로 자연히 false/0 처리하게 둔다(등급 할인·찜 여부 조회에서 공통으로 씀).
+	private Long getMemberId(HttpSession session) {
+		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+		return (user != null) ? user.getMemberId() : null;
+	}
+
+	// 등급 할인 표시(정상가/할인가) - 로그인 상태일 때만 실제 회원 등급을 조회한다. 비로그인이면
+	// model에 아예 안 실어서 JSP의 <c:if test="${not empty memberGrade}">가 그 줄 전체를 숨긴다.
+	private void addMemberGrade(Model model, Long memberId) {
+		if (memberId != null) {
+			model.addAttribute("memberGrade", service.getMemberGrade(memberId));
+		}
 	}
 
 	// 상세 페이지와 /mds/review/{productId}가 같은 JSP를 쓰므로 리뷰 목록 + 페이지 정보를
@@ -94,11 +100,13 @@ public class ProductController {
 	@GetMapping("/review/{productId}")
 	public String reviewPage(@PathVariable Long productId, Model model, HttpSession session,
 							@RequestParam(defaultValue = "1") int page) {
-		DetailPageDTO detail = service.detailPage(productId);
+		Long memberId = getMemberId(session);
+		DetailPageDTO detail = service.detailPage(productId, memberId);
 		if (detail == null) {
 			return "redirect:/mds/searchList";
 		}
 		model.addAttribute("detail", detail);
+		addMemberGrade(model, memberId);
 		addReviewPage(model, session, productId, page);
 		return"product/productDetail";
 	}
@@ -120,7 +128,7 @@ public class ProductController {
 
 
 	@GetMapping("/searchList")
-	public String getSearchList(Model model, SearchDTO searchDTO, @RequestParam(defaultValue = "1") int page) {
+	public String getSearchList(Model model, HttpSession session, SearchDTO searchDTO, @RequestParam(defaultValue = "1") int page) {
 		int totalPages = service.totalPages(searchDTO);
 		int currentPage = Math.min(Math.max(page, 1), totalPages);
 		int windowSize = 5;
@@ -128,7 +136,7 @@ public class ProductController {
 		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
 		windowStart = Math.max(1, windowEnd - windowSize + 1);
 
-		List<ProductListDTO> searchList = service.getSearchList(searchDTO, currentPage);
+		List<ProductListDTO> searchList = service.getSearchList(searchDTO, currentPage, getMemberId(session));
 
 		model.addAttribute("searchList", searchList);
 		model.addAttribute("categoryList", service.getCategories());

@@ -9,7 +9,7 @@
 <div class="order-delivery-page">
 <div class="page-content">
 
-    <h1 class="page-title">주문/배송내역</h1>
+    <h1 class="page-title" id="pageTitle">주문/배송내역</h1>
 
     <%-- 주문이 쌓여도 느려지지 않도록 상태 필터/페이징을 서버에서 처리하므로, 탭은 쿼리 파라미터를 바꿔서
          페이지를 새로 요청하는 링크로 구성한다(필터 바꿀 땐 1페이지부터 다시 보여줌) --%>
@@ -246,13 +246,13 @@
     <c:if test="${totalPages > 1}">
     <nav class="pagination" aria-label="페이지 이동">
         <c:if test="${currentPage > 1}">
-        <a class="page-link page-prev" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage - 1}'/></c:url>">이전</a>
+        <a class="page-link page-prev" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage - 1}'/></c:url>#pageTitle">이전</a>
         </c:if>
         <c:forEach begin="${pageWindowStart}" end="${pageWindowEnd}" var="p">
-        <a class="page-link ${p == currentPage ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${p}'/></c:url>">${p}</a>
+        <a class="page-link ${p == currentPage ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${p}'/></c:url>#pageTitle">${p}</a>
         </c:forEach>
         <c:if test="${currentPage < totalPages}">
-        <a class="page-link page-next" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage + 1}'/></c:url>">다음</a>
+        <a class="page-link page-next" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage + 1}'/></c:url>#pageTitle">다음</a>
         </c:if>
     </nav>
     </c:if>

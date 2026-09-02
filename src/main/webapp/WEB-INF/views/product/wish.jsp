@@ -14,12 +14,22 @@
 		<p>마음에 드는 상품을 모아두었어요</p>
 	</div>
 
+	<%-- 체크박스는 평소엔 숨겨두고 "상품 선택"을 눌렀을 때만 보인다(admin/admincouponView.jsp의
+	     선택 모드와 동일한 로직) - 예전엔 항상 노출돼 있었다. --%>
 	<div class="wishlist-controls" id="wishlist-controls">
-		<label class="checkbox-label">
-			<input type="checkbox" id="wish-check-all">
-			<span>전체 선택</span>
-		</label>
-		<button type="button" id="wish-delete-btn">선택 상품 삭제</button>
+		<div class="select-menu" id="wishSelectionControls" hidden>
+			<label class="checkbox-label">
+				<input type="checkbox" id="wish-check-all">
+				<span>전체 선택</span>
+			</label>
+		</div>
+		<%-- ✅ 조치 완료(2026-09-03, 사용자 보고): 선택 모드에 "선택 삭제"만 있고 "장바구니 담기"가
+		     없어서, 여러 개를 골라 한 번에 장바구니로 옮기는 게 불가능했다(카드 낱개 퀵버튼만 가능). --%>
+		<div class="list-control-actions">
+			<button type="button" id="wish-cart-btn" hidden>선택 상품 장바구니 담기</button>
+			<button type="button" id="wish-delete-btn" hidden>선택 상품 삭제</button>
+			<button type="button" id="toggleWishSelectButton">상품 선택</button>
+		</div>
 	</div>
 
 	<div class="wishlist-filter" id="wishlist-filter">
@@ -33,6 +43,10 @@
 	</div>
 
 	<div class="product-grid" id="wish-product-grid"></div>
+
+	<%-- 이미 서버에서 다 받아온 목록을 화면에서만 자르는 클라이언트 페이징(wish.js) - 검색 결과
+	     화면과 같은 .sp-pagination 스타일을 재사용한다. --%>
+	<nav class="sp-pagination" id="wish-pagination" aria-label="페이지 탐색" hidden></nav>
 
 	<div class="wishlist-empty" id="wishlist-empty" hidden>
 		<p class="wishlist-empty-title">찜한 상품이 없습니다.</p>
@@ -52,7 +66,8 @@
 			imageUrl: "<c:out value='${item.imagePath}'/><c:out value='${item.titleImage}'/>",
 			price: ${item.price},
 			rating: ${item.score},
-			reviewCount: ${item.reviewCount}
+			reviewCount: ${item.reviewCount},
+			popId: ${item.popId != null ? item.popId : 'null'}
 		}<c:if test="${!status.last}">,</c:if>
 		</c:forEach>
 	];

@@ -21,4 +21,8 @@ public class WishListDTO {
     private int price;
     private double score;
     private int reviewCount;
+
+    // 찜 카드의 "장바구니 담기" 퀵버튼이 옵션 선택 없이 바로 담을 때 쓸 대표 옵션
+    // (상세 페이지와 같은 기준: OPTION_ID가 가장 작은 옵션).
+    private Long popId;
 }

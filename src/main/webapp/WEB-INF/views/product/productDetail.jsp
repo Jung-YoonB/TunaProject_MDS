@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
@@ -8,11 +9,15 @@
 <div class="product-detail-page">
 <div class="product-detail-page-card">
 
+    <%-- ✅ 조치 완료(2026-09-03): 카테고리/이동경로가 실제 상품과 무관하게 항상 "결혼·집들이 /
+         코토나 타월 핸드타월 세트"로 고정돼 있었다(어느 상품을 봐도 똑같이 나옴) - 카테고리를
+         전혀 조회하지 않던 detailPage 쿼리에 product.xml getList의 CAT_AGG와 같은 방식으로
+         추가해서 실데이터로 교체. 카테고리가 없는 상품이면 빈 문자열로 보인다. --%>
     <!-- 상품 카테고리 -->
-    <div id="product-category">결혼·집들이</div>
+    <div id="product-category">${detail.product.categoryNames}</div>
 
     <!-- 상품 이동 경로 -->
-    <div id="breadcrumb">홈 &gt; 결혼·집들이 &gt; 코토나 타월 핸드타월 세트</div>
+    <div id="breadcrumb">홈 &gt; ${detail.product.categoryNames} &gt; ${detail.product.productTitle}</div>
 
     <!-- 상품 이미지 + 상품 정보 -->
     <div id="product-area">
@@ -34,8 +39,11 @@
 
             <h1 class="product-title">${detail.product.productTitle}</h1>
 
+            <%-- ✅ 조치 완료(2026-09-03): "집들이 수건 선물 세트"가 모든 상품에 고정으로 박혀
+                 있었다 - productDetail 쿼리가 이미 조회해서 DTO에 담고 있던 productName(짧은
+                 부제 성격 필드)이 화면 어디에도 안 쓰이고 있었을 뿐이라 그걸로 교체. --%>
             <div class="product-description">
-                집들이 수건 선물 세트
+                ${detail.product.productName}
             </div>
 
             <!-- 리뷰 / 찜 -->
@@ -54,31 +62,31 @@
             </div>
 
             <!-- 가격 -->
-            <%--
-                 등급 할인은 로그인 시에만 노출.
-                 data-discount-rate: 0.02 형태의 소수. 비로그인이면 0
-                 TODO: 세션 연동 후 아래 두 줄을 EL 로 교체
-                       data-discount-rate="${not empty sessionScope.loginMember ? discountRate : 0}"
-                       <c:if test="${not empty sessionScope.loginMember and discountRate > 0}">
-            --%>
-            <div id="price-info" data-discount-rate="0.02">
+            <%-- ✅ 조치 완료(2026-09-03): 등급 할인이 로그인 여부/실제 등급과 무관하게 항상
+                 "BRONZE / 2%"로 고정돼 있었다(예: PLATINUM 15% 회원이 봐도 2%로 표시, 비로그인도
+                 노출됨). ProductController가 세션 회원의 실제 GRADE.DISCOUNT_RATE를 memberGrade로
+                 담아주도록 수정 - 비로그인이면 memberGrade 자체가 모델에 없어서(EL이 empty로 처리)
+                 할인 줄이 안 보이고 data-discount-rate도 0으로 떨어져 productdetail.js의
+                 applyDiscount()가 자연히 할인 없이 계산한다. --%>
+            <div id="price-info" data-discount-rate="${not empty memberGrade ? memberGrade.discountRate : 0}">
 
-                <%-- 로그인 + 등급 할인 있을 때만 노출되는 줄 --%>
                 <div class="price-row">
                     <span class="price-label">정상가</span>
                     <span class="original-price" id="original-price">0원</span>
                 </div>
 
+                <c:if test="${not empty memberGrade and memberGrade.discountRate > 0}">
                 <div class="price-row">
                     <span class="price-label">
                         할인가
-                        <span class="grade-badge">BRONZE</span>
+                        <span class="grade-badge">${memberGrade.gradeName}</span>
                     </span>
                     <div>
-                        <span class="discount-rate">2%</span>
+                        <span class="discount-rate"><fmt:formatNumber value="${memberGrade.discountRate * 100}" maxFractionDigits="0"/>%</span>
                         <span class="sale-price" id="sale-price">0원</span>
                     </div>
                 </div>
+                </c:if>
 
             </div>
 
@@ -124,16 +132,18 @@
 
             <!-- 상품 버튼 -->
             <%--
-                 백엔드 확인 필요: 찜 버튼 클릭 시 등록/삭제 API 연동 필요 (지금은 productdetail.js 에서
-                 버튼 색/찜 개수(#wish-count)를 클라이언트에서만 낙관적으로 +-1, 새로고침하면 원복됨)
-                   - 로그인 + 이미 찜한 상품이면 최초 렌더링부터 wish-button 에 is-active 클래스 필요
-                   - 클릭 시 찜 등록/삭제 API 호출 후 서버 응답으로 #wish-count 값 갱신
+                 ✅ 조치 완료(2026-09-03): 클릭 시 common/cartWishService.js의 window.toggleWish()가
+                 실제 WishController(POST /wish/insert-wish, GET /wish/remove-wish)를 호출한다
+                 (비로그인이면 /member/login으로 리다이렉트, cart-button과 동일 패턴).
+                 로그인 + 이미 찜한 상품이면 최초 렌더링부터 is-active를 붙인다(detail.product.wished,
+                 detailPage.xml의 WISHED 서브쿼리) - 예전엔 항상 "찜 안 한" 상태로 시작해서, 로그아웃 후
+                 재로그인하면 이미 찜한 상품도 다시 찜할 수 있는 것처럼 보였다(AUDIT 신규 버그).
             --%>
             <div id="product-buttons">
                 <%-- 하트는 SVG 한 개만 두고, 찜 on/off는 views/productdetail.js가
                      .is-filled 클래스로 채움 여부만 바꾼다(글리프 교체 방식에서 변경). --%>
-                <button type="button" class="product-btn" id="wish-button" aria-label="찜하기">
-                    <svg class="icon-heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+                <button type="button" class="product-btn${detail.product.wished ? ' is-active' : ''}" id="wish-button" aria-label="${detail.product.wished ? '찜 해제' : '찜하기'}" data-product-id="${detail.product.productId}">
+                    <svg class="icon-heart${detail.product.wished ? ' is-filled' : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
                 </button>
                 <button type="button" class="product-btn" id="cart-button">장바구니</button>
                 <button type="button" class="product-btn" id="buy-button">바로 구매</button>
@@ -189,8 +199,20 @@
                             ${review.score}
                         </span>
                         <span class="review-date">${review.writeDate}</span>
+                        <%-- ✅ 조치 완료(2026-09-03, 사용자 보고): 리뷰 좋아요 버튼이 화면에 아예
+                             없었다 - 백엔드(ProductController.reviewLike, GET /mds/review/like/{id})와
+                             집계(ReviewDTO.likeCount/liked)는 이미 있었는데 호출하는 UI가 없었다.
+                             비로그인이면 클릭 시 로그인으로 안내(productdetail.js). --%>
+                        <button type="button" class="review-like-btn${review.liked ? ' is-active' : ''}"
+                                data-review-id="${review.reviewId}"
+                                aria-label="${review.liked ? '좋아요 취소' : '좋아요'}">
+                            <svg class="icon-heart-small" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+                            <span class="review-like-count">${review.likeCount}</span>
+                        </button>
                     </div>
                     <div class="review-images">
+                        <%-- ✅ 조치 완료(2026-09-03, 사용자 보고): reviewImagePath가 서버에서 비어
+                             내려와 상대경로로 깨졌었다 - detailPage.xml의 getReviewImages 쿼리 수정 --%>
                         <c:forEach items="${review.reviewImages}" var="reviewImg">
                             <img class="review-image" src="${reviewImg.reviewImagePath}${reviewImg.reviewImage}" alt="리뷰 이미지">
                         </c:forEach>

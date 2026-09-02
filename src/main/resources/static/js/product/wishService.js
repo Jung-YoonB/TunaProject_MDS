@@ -22,6 +22,7 @@
                 price: row.price,
                 rating: row.rating,
                 reviewCount: row.reviewCount,
+                popId: row.popId,
                 addedAt: Date.now() - idx * 1000
             };
         });

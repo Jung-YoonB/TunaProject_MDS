@@ -27,7 +27,12 @@ public class CartServiceImpl implements CartService{
         }
         int checkCart = mapper.findCartById(findInfo);
         if(checkCart == 1) {
-            return "이미 장바구니에 있는 상품입니다.";
+            // ✅ 조치 완료(2026-09-03): 이미 담긴 옵션을 다시 담으면(퀵버튼 반복 클릭, 또는 상세
+            // 페이지에서 같은 옵션으로 재차 담기) 예전엔 여기서 그냥 끝나서 수량이 전혀 안 늘었다
+            // (퀵버튼/상세 페이지 둘 다 이 메서드 하나를 공유해서 두 경로 다 같은 증상이었음).
+            // 표준적인 "장바구니 담기" 동작대로 기존 수량에 얹는다.
+            result = mapper.incrementQty(cart.getMemberId(), cart.getPopId(), cart.getQty());
+            return result > 0 ? "이미 담긴 상품의 수량을 추가했습니다." : "수량 추가에 실패했습니다.";
         }else if(cart.getQty() <= 0){
              return "갯수를 지정해주세요";
         }else {
@@ -60,5 +65,14 @@ public class CartServiceImpl implements CartService{
         }else {
             return "장바구니 제외에 실패했습니다.";
         }
+    }
+
+    @Override
+    public String updateQty(Long memberId, Long popId, int qty) {
+        if (qty < 1) {
+            return "수량은 1개 이상이어야 합니다.";
+        }
+        int result = mapper.updateQty(memberId, popId, qty);
+        return result > 0 ? "수량이 변경되었습니다." : "수량 변경에 실패했습니다.";
     }
 }

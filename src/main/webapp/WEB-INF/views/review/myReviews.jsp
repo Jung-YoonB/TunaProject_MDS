@@ -8,7 +8,7 @@
 <div class="my-reviews-page">
 <div class="page-content">
 
-    <h1 class="page-title">내가 쓴 리뷰</h1>
+    <h1 class="page-title" id="pageTitle">내가 쓴 리뷰</h1>
 
     <c:if test="${not empty success}">
     <div class="flash-message flash-success">${success}</div>
@@ -69,13 +69,13 @@
     <c:if test="${totalPages > 1}">
     <nav class="pagination" aria-label="페이지 이동">
         <c:if test="${currentPage > 1}">
-        <a class="page-link page-prev" href="<c:url value='/review/myReviews'><c:param name='page' value='${currentPage - 1}'/></c:url>">이전</a>
+        <a class="page-link page-prev" href="<c:url value='/review/myReviews'><c:param name='page' value='${currentPage - 1}'/></c:url>#pageTitle">이전</a>
         </c:if>
         <c:forEach begin="${pageWindowStart}" end="${pageWindowEnd}" var="p">
-        <a class="page-link ${p == currentPage ? 'is-active' : ''}" href="<c:url value='/review/myReviews'><c:param name='page' value='${p}'/></c:url>">${p}</a>
+        <a class="page-link ${p == currentPage ? 'is-active' : ''}" href="<c:url value='/review/myReviews'><c:param name='page' value='${p}'/></c:url>#pageTitle">${p}</a>
         </c:forEach>
         <c:if test="${currentPage < totalPages}">
-        <a class="page-link page-next" href="<c:url value='/review/myReviews'><c:param name='page' value='${currentPage + 1}'/></c:url>">다음</a>
+        <a class="page-link page-next" href="<c:url value='/review/myReviews'><c:param name='page' value='${currentPage + 1}'/></c:url>#pageTitle">다음</a>
         </c:if>
     </nav>
     </c:if>

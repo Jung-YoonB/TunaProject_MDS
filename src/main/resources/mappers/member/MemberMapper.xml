@@ -266,5 +266,19 @@
         	PHONE = '9' || MEMBER_ID
     	WHERE MEMBER_ID = #{memberId}
 	</update>
-	
+
+	<!-- 기존 기본 배송지 해제 - 새 배송지를 기본으로 체크했을 때만 서비스가 호출한다 -->
+	<update id="clearDefaultAddress" parameterType="long">
+		UPDATE DELIVERYADDRESS SET IS_DEFAULT = 'N'
+		WHERE MEMBER_ID = #{memberId} AND UPPER(IS_DEFAULT) = 'Y'
+	</update>
+
+	<insert id="insertDeliveryAddress" parameterType="DeliveryAddressDTO">
+		<selectKey keyProperty="addId" resultType="long" order="BEFORE">
+			SELECT SEQ_ADD_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO DELIVERYADDRESS (ADD_ID, MEMBER_ID, ADDRESS_NAME, DETAIL_ADDRESS, IS_DEFAULT)
+		VALUES (#{addId}, #{memberId}, #{addressName}, #{detailAddress}, #{isDefault})
+	</insert>
+
 </mapper>

@@ -132,28 +132,41 @@
          포인트 사용
     ====================================================== -->
 
+    <%-- ✅ 조치 완료(2026-09-03, 사용자 보고): 예전엔 #point 전체가 display:flex 한 줄이라
+         라벨/입력칸/안내문 6개가 전부 가로 한 줄에 욱여넣어져 있었다(1P만 입력해도 안내문이
+         입력칸 옆에 붙어 줄바꿈되며 깨져 보인 원인). 입력 행(.point-input-row)만 flex로 묶고
+         안내문들은 그 아래 세로로 쌓이게 분리. 안내문 자체도 "1,000P 이상부터 사용 가능"을
+         정적 안내(.point-guide)와 동적 경고(#point-warning) 둘 다에서 중복해서 말하고 있었어서,
+         정적 안내는 입력값과 무관한 규칙(0P=미사용 처리)만 남기고 "얼마 이상 입력하세요" 류는
+         입력칸 바로 아래(#point-warning) 한 곳에서만 갈아끼운다(payment.js). --%>
     <div id="point">
 
-        <label for="used_point">
-            포인트 사용
-        </label>
+        <div class="point-input-row">
+            <label for="used_point">
+                포인트 사용
+            </label>
 
-        <%-- 보유 포인트가 최소 단위 미만이면 입력 자체를 막는다. 입력만 받고 제출에서 튕기면
-             왜 안 되는지 알 수 없다(서버도 같은 조건으로 다시 검증한다). --%>
-        <input
-            type="number"
-            id="used_point"
-            name="usedPoint"
-            value="0"
-            min="0"
-            max="${pvData.point}"
-            ${pvData.point lt pvData.pointMinUse ? 'disabled' : ''}
-        >
+            <%-- 보유 포인트가 최소 단위 미만이면 입력 자체를 막는다. 입력만 받고 제출에서 튕기면
+                 왜 안 되는지 알 수 없다(서버도 같은 조건으로 다시 검증한다). --%>
+            <input
+                type="number"
+                id="used_point"
+                name="usedPoint"
+                value="0"
+                min="0"
+                max="${pvData.point}"
+                ${pvData.point lt pvData.pointMinUse ? 'disabled' : ''}
+            >
 
-        <span>
-            포인트
-        </span>
+            <span>
+                포인트
+            </span>
+        </div>
 
+        <p id="point-warning"
+           class="point-warning"
+           hidden>
+        </p>
 
         <p>
             보유 포인트 :
@@ -175,16 +188,9 @@
                     (<strong><fmt:formatNumber value="${pointMin - pvData.point}" pattern="#,##0"/>P</strong> 더 필요)
                 </c:when>
                 <c:otherwise>
-                    포인트는 <strong><fmt:formatNumber value="${pointMin}" pattern="#,##0"/>P 이상</strong>부터 사용할 수 있습니다.<br>
                     0P는 사용하지 않는 것으로 처리됩니다.
                 </c:otherwise>
             </c:choose>
-        </p>
-
-
-        <p id="point-warning"
-           class="point-warning"
-           hidden>
         </p>
 
     </div>
@@ -399,9 +405,13 @@
         >
 
 
+        <%-- ✅ 조치 완료(2026-09-03): 클릭해도 아무 반응이 없던 것(AUDIT 신규 버그) - 실제
+             배송지 추가 화면(utill/deliveryAddress.jsp, PROJECT_AUDIT 버그 10번)으로 이동하도록
+             연결. deliveryAddress.jsp의 "취소" 버튼과 같은 인라인 onclick 패턴을 그대로 씀. --%>
         <button
             type="button"
-            id="add-address">
+            id="add-address"
+            onclick="location.href='<c:url value="/member/deliveryAddress"/>'">
 
             + 배송지 추가
 

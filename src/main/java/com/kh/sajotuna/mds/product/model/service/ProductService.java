@@ -6,6 +6,7 @@ import com.kh.sajotuna.mds.product.model.dto.mainPage.CategoryDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.MemberGradeDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
 import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
 import java.util.List;
@@ -13,9 +14,12 @@ import java.util.List;
 
 public interface ProductService {
 	
-	MainPageDTO getList();
-	
-	DetailPageDTO detailPage(Long productId);
+	MainPageDTO getList(Long memberId);
+
+	DetailPageDTO detailPage(Long productId, Long memberId);
+
+	// 로그인 회원의 등급/할인율 - 상품 상세 페이지의 "등급 할인" 표시용(비로그인이면 호출하지 않음)
+	MemberGradeDTO getMemberGrade(Long memberId);
 
 	List<ReviewDTO> getReviewList(Long productId, Long memberId, int page);
 
@@ -26,7 +30,7 @@ public interface ProductService {
 
 	int totalPages(SearchDTO searchDTO);
 
-	List<ProductListDTO> getSearchList(SearchDTO search, int page);
+	List<ProductListDTO> getSearchList(SearchDTO search, int page, Long memberId);
 
 	// 검색 화면 카테고리/태그 칩 목록
 	List<CategoryDTO> getCategories();

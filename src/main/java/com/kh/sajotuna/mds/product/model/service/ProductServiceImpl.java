@@ -3,6 +3,7 @@ package com.kh.sajotuna.mds.product.model.service;
 import com.kh.sajotuna.mds.admin.model.dto.TagOptionDTO;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
+import com.kh.sajotuna.mds.product.model.dto.detail.MemberGradeDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
@@ -36,20 +37,20 @@ public class ProductServiceImpl implements ProductService{
 	private static final int NO_PAGING = 0;
 
 	@Override
-	public MainPageDTO getList() {
+	public MainPageDTO getList(Long memberId) {
 		SearchDTO searchDTO = new SearchDTO();
-		List<ProductListDTO> list = mapper.getList(searchDTO, 0, NO_PAGING);
+		List<ProductListDTO> list = mapper.getList(searchDTO, 0, NO_PAGING, memberId);
 		List<BannerDTO> bannerList = mapper.bannerList();
 		MainPageDTO dto = new MainPageDTO(list, bannerList);
 		System.out.println("product list:: " + list.toString());
 		System.out.println("banner list :: " + bannerList.toString());
-		
+
 		return dto;
 	}
 
 	@Override
-	public DetailPageDTO detailPage(Long productId) {
-		ProductDetailDTO dto = mapper.productDetail(productId);
+	public DetailPageDTO detailPage(Long productId, Long memberId) {
+		ProductDetailDTO dto = mapper.productDetail(productId, memberId);
 		// 없는 상품 번호로 들어오면(주소창 직접 입력 등) 여기서 null이라 아래 setThumbnail에서
 		// NPE -> 500 페이지가 떴다. 호출부가 "없음"을 판단할 수 있게 null로 돌려준다.
 		if (dto == null) {
@@ -66,10 +67,12 @@ public class ProductServiceImpl implements ProductService{
 		dto.setDetailContents(detailContents);
 		System.out.println("service detail :: " + dto);
 		List<OptionDTO> optionList = mapper.getOptionList(productId);
-		for(OptionDTO o : optionList) {
-			o.setPrice(o.getPrice() - dto.getPrice());
-		}
 		return new DetailPageDTO(dto, optionList, coupons);
+	}
+
+	@Override
+	public MemberGradeDTO getMemberGrade(Long memberId) {
+		return mapper.getMemberGrade(memberId);
 	}
 
 	@Override
@@ -149,10 +152,10 @@ public class ProductServiceImpl implements ProductService{
 
 
 	@Override
-	public List<ProductListDTO> getSearchList(SearchDTO search, int page) {
+	public List<ProductListDTO> getSearchList(SearchDTO search, int page, Long memberId) {
 		int safePage = Math.max(page, 1);
 		int offset = (safePage - 1) * SEARCH_PAGE_SIZE;
-		List<ProductListDTO> list = mapper.getList(search, offset, SEARCH_PAGE_SIZE);
+		List<ProductListDTO> list = mapper.getList(search, offset, SEARCH_PAGE_SIZE, memberId);
 		System.out.println("search list :: " + list);
 		return list;
 	}

@@ -31,6 +31,14 @@
                       from OPTIONDETAIL od
                       join PRODUCTOPTION po on od.OPTION_ID = po.OPTION_ID
                      where od.PRODUCT_ID = p.PRODUCT_ID), 0) as PRICE,
+               <!-- 찜 카드 "장바구니 담기" 퀵버튼용 대표 옵션 - 상세 페이지 기준(OPTION_ID가 가장 작은
+                    옵션)과 맞춘다. PRICE는 최저가 기준이라 서로 다른 옵션일 수 있어 별도로 뽑는다. -->
+               (select od.POP_ID
+                      from OPTIONDETAIL od
+                      join PRODUCTOPTION po on od.OPTION_ID = po.OPTION_ID
+                     where od.PRODUCT_ID = p.PRODUCT_ID
+                     order by po.OPTION_ID asc
+                     fetch first 1 row only) as POP_ID,
                NVL((select ROUND(AVG(r.SCORE), 1)
                       from REVIEW r
                       join ORDERDETAIL rod on r.OD_ID = rod.OD_ID

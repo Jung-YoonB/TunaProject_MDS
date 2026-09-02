@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
@@ -81,7 +82,8 @@
                         id="zipcode"
                         name="zipcode"
                         placeholder="우편번호"
-                        readonly>
+                        readonly
+                        required>
 
                     <button
                         type="button"
@@ -98,7 +100,8 @@
                     id="address"
                     name="address"
                     placeholder="기본 주소"
-                    readonly>
+                    readonly
+                    required>
 
                 <!-- 상세 주소 -->
                 <input
@@ -151,5 +154,8 @@
         </form>
 </div>
 </div>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="<c:url value='/js/views/deliveryAddress.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

@@ -5,6 +5,7 @@ import java.util.List;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryAddressDTO;
 
 public interface MemberService {
 
@@ -58,4 +59,7 @@ public interface MemberService {
 
 	// 빠른메뉴 "리뷰 작성" 타일이 바로 보낼 주문상세 1건 (없으면 null)
 	Long nextReviewableOdId(Long memberId);
+
+	// 배송지 추가 (utill/deliveryAddress.jsp) - isDefault='Y'면 기존 기본 배송지를 먼저 해제한다
+	void addDeliveryAddress(DeliveryAddressDTO address);
 }

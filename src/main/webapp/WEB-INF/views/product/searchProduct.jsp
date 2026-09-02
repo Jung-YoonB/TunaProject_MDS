@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
@@ -98,7 +99,7 @@
 
 	<!-- 상품 카드 그리드: ProductController.getSearchList가 담은 searchList(ProductListDTO)를 반복 출력 -->
 	<%-- ProductListDTO 필드 = productId, productTitle, wishCount, imagePath, titleImage, price, categoryNames, tagData, score --%>
-	<section class="sp-product-section" aria-label="검색 결과">
+	<section class="sp-product-section" id="searchResults" aria-label="검색 결과">
 		<div class="sp-product-grid">
 
 			<%-- 카드 구조/아이콘을 홈페이지 상품 카드(static/js/views/home.js의 buildCard)와 통일함(2026-09-02):
@@ -106,7 +107,7 @@
 			     가격은 홈과 마찬가지로 화면에 안 보이고, 장바구니 담기에 필요해 data-price로만 들고 있음.
 			     sp-* 클래스는 views/searchProduct.js의 기존 셀렉터 호환을 위해 그대로 같이 붙여둠. --%>
 			<c:forEach items="${searchList}" var="product">
-				<article class="product-card sp-product-card" data-product-id="${product.productId}" data-price="${product.price}">
+				<article class="product-card sp-product-card" data-product-id="${product.productId}" data-price="${product.price}" data-pop-id="${product.popId}">
 					<div class="product-img">
 						<a class="sp-product-link" href="<c:url value='/mds/detail/${product.productId}'/>" aria-label="${product.productTitle} 상세 보기">
 							<%-- 이미지 주소는 경로+저장명을 이어붙인다(주문/리뷰 화면과 동일한 규칙).
@@ -121,16 +122,28 @@
 								<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
 							</svg>
 						</button>
+						<%-- 이미지 호버 시 뜨는 태그 팝업. TAG_DATA는 "이름|색상,이름|색상,..." 형태로
+						     LISTAGG된 문자열이라(product.xml getList) 콤마로 자른 뒤 각 조각을 다시
+						     "|"로 잘라 이름만 쓴다(색상은 .sp-tag-popup CSS가 고정 sage-pale로 그림). --%>
+						<c:if test="${not empty product.tagData}">
+						<div class="sp-tag-popup">
+							<c:forEach items="${fn:split(product.tagData, ',')}" var="tagPair">
+								<span class="sp-product-tag">${fn:split(tagPair, '|')[0]}</span>
+							</c:forEach>
+						</div>
+						</c:if>
 					</div>
 					<div class="product-info">
 						<a class="sp-product-link" href="<c:url value='/mds/detail/${product.productId}'/>"><h3 class="product-name sp-product-name">${product.productTitle}</h3></a>
 						<p class="product-description">${product.categoryNames}</p>
 						<div class="product-meta">
-							<a href="#" class="product-rating" aria-label="리뷰 보기">
+							<a href="<c:url value='/mds/detail/${product.productId}'/>#review" class="product-rating" aria-label="리뷰 보기">
 								<svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
 								<span class="product-rating-score">${product.score}</span>
 							</a>
-							<button type="button" class="product-wish-toggle sp-btn-wishlist" aria-label="찜하기">
+							<%-- ✅ 조치 완료(2026-09-03): 로그인 회원이 이미 찜한 상품이면 최초 렌더링부터
+							     하트를 채워서 보여준다(home.jsp와 동일한 조치, AUDIT 신규 버그). --%>
+							<button type="button" class="product-wish-toggle sp-btn-wishlist${product.wished ? ' is-active' : ''}" aria-label="${product.wished ? '찜 해제' : '찜하기'}">
 								<svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
 								<span class="product-wish-count-num">${product.wishCount}</span>
 							</button>
@@ -144,23 +157,24 @@
 
 	<!-- 하단 영역: 페이지 번호. 컨트롤러(getSearchList)가 계산해 둔 현재 페이지/전체 페이지/
 	     표시할 번호 구간(pageWindowStart~End)을 그대로 쓴다. 페이지를 옮겨도 검색어가 유지되도록
-	     모든 링크에 keyword를 같이 실어 보낸다. -->
+	     모든 링크에 keyword를 같이 실어 보낸다. #searchResults 앵커는 home.jsp 페이지네이션과
+	     같은 이유(전체 페이지 이동 시 브라우저가 최상단/배너로 스크롤을 되돌리는 것 방지)로 붙임. -->
 	<c:if test="${totalPages > 1}">
 		<nav class="sp-pagination" aria-label="페이지 탐색">
 			<c:if test="${currentPage > 1}">
-				<a class="sp-btn-prev" href="<c:url value='/mds/searchList'><c:param name='keyword' value='${param.keyword}'/><c:param name='category' value='${param.category}'/><c:forEach items='${paramValues.tag}' var='t'><c:param name='tag' value='${t}'/></c:forEach><c:param name='page' value='${currentPage - 1}'/></c:url>">이전</a>
+				<a class="sp-btn-prev" href="<c:url value='/mds/searchList'><c:param name='keyword' value='${param.keyword}'/><c:param name='category' value='${param.category}'/><c:forEach items='${paramValues.tag}' var='t'><c:param name='tag' value='${t}'/></c:forEach><c:param name='page' value='${currentPage - 1}'/></c:url>#searchResults">이전</a>
 			</c:if>
 			<ol>
 				<c:forEach begin="${pageWindowStart}" end="${pageWindowEnd}" var="p">
 					<li>
 						<a class="sp-page-btn ${p == currentPage ? 'is-current' : ''}"
 						   <c:if test="${p == currentPage}">aria-current="page"</c:if>
-						   href="<c:url value='/mds/searchList'><c:param name='keyword' value='${param.keyword}'/><c:param name='category' value='${param.category}'/><c:forEach items='${paramValues.tag}' var='t'><c:param name='tag' value='${t}'/></c:forEach><c:param name='page' value='${p}'/></c:url>">${p}</a>
+						   href="<c:url value='/mds/searchList'><c:param name='keyword' value='${param.keyword}'/><c:param name='category' value='${param.category}'/><c:forEach items='${paramValues.tag}' var='t'><c:param name='tag' value='${t}'/></c:forEach><c:param name='page' value='${p}'/></c:url>#searchResults">${p}</a>
 					</li>
 				</c:forEach>
 			</ol>
 			<c:if test="${currentPage < totalPages}">
-				<a class="sp-btn-next" href="<c:url value='/mds/searchList'><c:param name='keyword' value='${param.keyword}'/><c:param name='category' value='${param.category}'/><c:forEach items='${paramValues.tag}' var='t'><c:param name='tag' value='${t}'/></c:forEach><c:param name='page' value='${currentPage + 1}'/></c:url>">다음</a>
+				<a class="sp-btn-next" href="<c:url value='/mds/searchList'><c:param name='keyword' value='${param.keyword}'/><c:param name='category' value='${param.category}'/><c:forEach items='${paramValues.tag}' var='t'><c:param name='tag' value='${t}'/></c:forEach><c:param name='page' value='${currentPage + 1}'/></c:url>#searchResults">다음</a>
 			</c:if>
 		</nav>
 	</c:if>

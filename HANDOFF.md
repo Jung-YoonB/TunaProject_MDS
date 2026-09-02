@@ -4,7 +4,8 @@ Claude Code와 함께 진행한 작업을 시간순으로 쌓아온 **누적 작
 
 **이 문서를 읽는 법**
 - `HANDOFF.md`(작업 로그) / `PROJECT_AUDIT.md`(버그·정책·위험 목록) / `HANDOFF_NEXT_SESSION_PROMPT.txt`(다음 세션 시작 프롬프트) + `메종드사조_스타일가이드.pdf` 4개는 **사용자가 직접 관리하는 문서**이고, 커밋도 항상 사용자가 직접 한다(Claude가 먼저 커밋하지 않는 것이 이 프로젝트의 규칙).
-  - **2026-09-01 경위**: 원래 "git commit 대상이 아님"이었는데 `a9bdcfa` 커밋에 4개가 함께 포함돼 `origin/frontfix`까지 올라갔다(`.gitignore`엔 등록된 적이 없어 그동안은 단지 스테이징을 안 했을 뿐이었음). → **`main`으로 올라가기 전에 다시 추적에서 빼고 로컬에서만 관리하기로 최종 결정**(3-43/3-44). 현재 4개 모두 untracked 상태다.
+  - **2026-09-01 경위**: 원래 "git commit 대상이 아님"이었는데 `a9bdcfa` 커밋에 4개가 함께 포함돼 `origin/frontfix`까지 올라갔다(`.gitignore`엔 등록된 적이 없어 그동안은 단지 스테이징을 안 했을 뿐이었음). → **`main`으로 올라가기 전에 다시 추적에서 빼고 로컬에서만 관리하기로 최종 결정**(3-43/3-44).
+  - **2026-09-03 아침 갱신**: 집↔회사 두 PC를 오가며 이어서 작업하려고 **다시 일부러 4개를 같이 커밋해서 GitHub에 올리는 중이다.** 현재 4개 모두 tracked 상태(의도한 것, 사고 아님). **`main`으로 병합하기 직전에만** 다시 추적에서 빼고 커밋할 것 — 그 전까지는 이 방식(GitHub로 동기화)이 맞다.
 
 > ## ⛔ 이 문서들의 편집 권한 (2026-09-01 확정)
 >
@@ -29,10 +30,10 @@ Claude Code와 함께 진행한 작업을 시간순으로 쌓아온 **누적 작
 | ✅ 과도기 해소 | **product 전달 목록(3-47) 7건이 이번 병합으로 들어왔다.** 누락됐던 1건(상세 평균별점·리뷰수 `REVIEW_STATUS` 필터)은 3-57에서 보완. `ORA-00904`로 상세가 깨지던 문제 해소 — 상품 상세 200 확인 |
 | 아직 다른 브랜치 | `JJY_Work` / `JWC_works` / `KGH_works` / `product_images` / `origin/KCH_works` — 팀원 개인 작업 브랜치라 각자 `main`을 받아가면 해소됨(3-43 매퍼 수정도 그때 따라감) |
 | 테스트 서버 | **`http://192.168.30.24:8797/`** — 가동 중, 3-42/3-43 결과물 배포 반영 확인 완료. **로컬 개발 서버와 포트가 같으니 헷갈리지 말 것**(`localhost:8797` = devtools 로컬) |
-| 진행 중인 작업 | **3-56 완료** — 결제 화면 금액 안내(#TB019_TC-29), 결제 재개(헤더 영수증 아이콘), 배송비/포인트 기준 단일 출처화 |
-| 미커밋 변경 | **23개 파일** — 3-56 결제 작업분 + `JWC_works` 병합분(21개) + 3-57 수정 4개. **관리 문서 4종은 현재 git 추적 중**(이동 중 백업 목적으로 의도한 것 — 집 밖에서 커밋할 때 제거 후 재커밋 예정) |
-| 다음 단계 | **(1) 좋아요(`REVIEWLIKE`) 더미 데이터 넣기 ← 최우선.** 현재 **0행**이라 상세 화면의 좋아요 수·`is_liked` 표시가 전부 0이어서 불러오는 쪽을 검증할 수 없다. `sql/dummy_order_review.sql`에 INSERT를 추가하는 방식(시퀀스 `SEQ_REVIEW_LIKE_ID`, `UK_REVIEWLIKE(REVIEW_ID, MEMBER_ID)`로 중복 방지, 계정은 `dummy_rv01~06`/`dummy_buyer` 등 pw `1234`). **작성은 Claude, 실행은 사용자.** → (2) 병합 커밋 → (3) 좋아요 버튼 화면 연동(`fetch`로 `/mds/review/like/{id}` 호출, 서버는 3-57에서 정상화됨) → (4) 내일 시연 대비 전체 점검. 남은 것: AUDIT 24번, 20번(`#id` 102개) |
-| 로컬 이미지 없음 | 상품 등록을 **테스트 서버(192.168.30.24)** 로 했기 때문에 업로드 파일이 그 장비에만 있다. 로컬(`localhost:8797`)에서는 `uploads/product`가 없어 **썸네일이 전부 깨져 보이는 것이 정상** — 버그 아님 |
+| 진행 중인 작업 | **3-60 대규모 라운드 완료**(상품 상세/장바구니·찜 선택모드+페이징/결제 PRG+405/리뷰 이미지·좋아요/드롭다운 화살표, AUDIT 27·29~48 전부 조치) — `PROJECT_AUDIT.md` 버그 항목 **48개 전부 조치 완료, 미해결 0** |
+| 미커밋 변경 | **약 45개 파일**(3-60) + 이전 라운드분 누적(3-56 결제/`JWC_works` 병합/3-57~59). **관리 문서 4종(`HANDOFF.md`/`PROJECT_AUDIT.md`/`HANDOFF_NEXT_SESSION_PROMPT.txt`/스타일가이드 PDF)은 현재 git 추적 중**(2026-09-03 아침부터 의도적 — 집↔회사 두 PC를 GitHub로 동기화하려는 목적. **`main` 병합 직전에만** 다시 추적 제거 후 재커밋 예정). `docs/ADMIN_BINDING_HANDOVER.md`는 삭제 예정 문서라 무시 |
+| 다음 단계 | AUDIT "버그" 섹션은 전부 닫혔음. 남은 것은 다른 섹션 — **정책적 고려가 필요한 부분**(product 영역 집계 3곳 필터 미반영) / **잠재적 위험 요소**(20번 `style_user.css` 최상위 `#id` 102개, 24번 추가 이미지 표시/검증 불일치). 좋아요(`REVIEWLIKE`) 더미 데이터가 여전히 0행이면 3-60에서 새로 단 좋아요 버튼도 화면상 항상 0으로 보일 수 있음 — 확인 필요 |
+| ✅ 로컬 이미지 있음 | 이번 병합(`JWC_works`)으로 `uploads/product`(701개)가 git 추적에 포함돼 로컬(`localhost:8797`)에서도 상품 썸네일이 정상 표시된다(3-58에서 실제 200 확인). 위 "로컬 이미지 없음"은 병합 전 상태였음 — 더는 유효하지 않음 |
 | ✅ cart/wish 연결됨 | 4경로 전부 404였던 것이 **`JWC_works` 병합으로 해소** — `wish/my-wish`·`cart/my-cart` 로그인 상태 200 확인(AUDIT 버그 16번 닫힘) |
 | CSS 구성 | `default.css` / `style.css` / `style_user.css` / `style_admin.css` 4개, `header.jsp`가 전 페이지에 전부 로드 |
 | JS 컨벤션 | 인터랙션 → `static/js/views/<페이지>.js`, 비즈니스·데이터 → `static/js/<도메인>/<기능>Service.js` |
@@ -67,7 +68,10 @@ Claude Code와 함께 진행한 작업을 시간순으로 쌓아온 **누적 작
 | `3-54` | 2026-09-02 | **뷰 수정 묶음 + 주문 다품목 표시 + 테스트 더미 데이터** — `ReviewMapper.xml` 병합 회귀 복구, **마이페이지 리뷰 타일(AUDIT 18) 해소**, 관리자 상품등록 4건 + 서버 길이 검증, 태그 글자색 명암비 계산, 주문/배송 **총수량 + 품목 드롭다운**, `dummy_order_review.sql` 신규 |
 | `3-55` | 2026-09-02 | **헤더 닉네임 노출(#TB006_TC-12) + 품목별 리뷰 상태** — 세션 DTO에 닉네임 추가(변경 시 세션 갱신 포함), 배송완료 카드 기본 펼침 + `리뷰 작성 완료/미작성`, **`hasReview` 이름 충돌을 `allReviewed`로 분리**, 주석 정리 |
 | `3-56` | 2026-09-02 | **결제 화면 금액 안내(#TB019_TC-29) + 결제 재개 + 배송비 정돈** — **화면·서버 계산 불일치(67%·최대 2원) 해소**, 포인트 최소/상한 안내, 배송비·포인트 매직넘버 단일 출처화, **헤더 영수증 아이콘 = 진행 중인 결제 재개**(세션 30분), 깨진 경로 3건 수정 |
-| `3-57` | 2026-09-02 밤 | **`JWC_works` 병합 충돌 해결 + product 전달 목록 검수 + AUDIT 버그 1번 조치** — `productdetail.js` 중복 선언 사고 차단, 누락된 `REVIEW_STATUS` 필터 보완, 세션 키 3곳 정정으로 좋아요·쿠폰 500 해소, 체크리스트 A~D 전부 통과 ← 최신 |
+| `3-57` | 2026-09-02 밤 | **`JWC_works` 병합 충돌 해결 + product 전달 목록 검수 + AUDIT 버그 1번 조치** — `productdetail.js` 중복 선언 사고 차단, 누락된 `REVIEW_STATUS` 필터 보완, 세션 키 3곳 정정으로 좋아요·쿠폰 500 해소, 체크리스트 A~D 전부 통과 |
+| `3-58` | 2026-09-03 | **메인페이지(`home.jsp`) 서버 연동** — 정적 목업(카테고리/상품 하드코딩) → `ProductService` 실데이터 SSR 전환, 죽은 `/mds/list` 라우트 정리, 카테고리 아이콘 이름 매칭 재배치 |
+| `3-59` | 2026-09-03 | **화면 확인 3건 조치** — 상품 상세 장바구니를 실제 `POST /cart/add-cart`로 연결(비로그인 시 로그인 요구), 홈 "더보기"를 진짜 추가 노출(8→16)+페이지네이션으로 재설계("전체 상품 보기"와 겹치던 기능 분리), 이미지 호버 태그 팝업(`.sp-tag-popup`) 마크업 누락 보완 |
+| `3-60` | 2026-09-03 | **대규모 라운드 — AUDIT 27, 29~48 전부 조치** 상품 상세(옵션가격/카테고리/설명/등급할인/대표이미지 500), 검색·찜 카드 리뷰 링크, 장바구니·찜 선택모드+페이지네이션 전면 개편, 장바구니 개별삭제·재담기 수량증가·헤더뱃지 즉시반영, 찜 로그아웃 후 상태 동기화, 결제 PRG(취소/뒤로가기 재제출 확인)+`/checkout` 405 우회+포인트 안내/레이아웃, 리뷰 이미지 경로 누락+좋아요 버튼 신설, 드롭다운 화살표 위치. **버그 섹션 48개 전부 조치 완료 ← 최신** |
 | 부록 A | — | 참고 메모리(환경/함정 메모) |
 
 ---
@@ -3381,6 +3385,204 @@ GET /order/payment (신규)  ... 세션의 선택으로 화면을 다시 만든�
   product/controller/ProductController.java    (세션 키 3곳 + null 가드 + @ResponseBody)
   mappers/product/detailPage.xml               (평균별점·리뷰수 서브쿼리에 REVIEW_STATUS = 1)
 병합으로 함께 들어온 것: 21개 파일 + docs/ADMIN_BINDING_HANDOVER.md (JWC1226 작성)
+```
+
+---
+
+## 3-58. 2026-09-03: 메인페이지(`home.jsp`) 서버 연동 — 정적 목업 → 실데이터
+
+가장 급한 것으로 지목된 건. `home.jsp`가 그동안 **완전 정적 목업**이었다(카테고리 15개 하드코딩, 상품 카드는 `homeProductService.js`의 목업 8종을 무한스크롤로 순환). 서버 쪽(product 담당)이 검색 페이지를 이미 실데이터로 연동해둔 상태라, 그 기반을 그대로 재사용해 홈도 연동했다.
+
+### 발견: 라우팅이 이미 이중으로 쪼개져 있었다
+
+- `/`(`HomeController`)는 모델 데이터 없는 빈 스텁, `/mds/list`(`ProductController`)는 `MainPageDTO`(상품+배너)를 담아 **`home/home`으로 반환**하는 완성된 코드가 있었다 — 그런데 **`/mds/list`를 호출하는 화면이 프로젝트 전체에 0건**이었다(죽은 라우트). 지난 세션들에서 반복됐던 "같은 화면에 경로가 두 개"류 문제의 또 다른 사례.
+- 조치: `/mds/list`를 삭제하고, **`/`(`HomeController`) 하나로 통합**. `MainPageDTO.getList()`(전체 130건, 배너 포함)는 홈이 원하는 모양(찜 많은 순 상위 8개, 배너 없음)과 안 맞아서 안 쓰고, **검색 페이지가 이미 쓰는 `getSearchList(SearchDTO, page)`를 그대로 재사용**했다(찜 많은 순 정렬이라 "인기 선물" 문구와도 맞아떨어짐).
+
+### 무엇을 바꿨나
+
+| 파일 | 변경 |
+|---|---|
+| `util/controller/HomeController.java` | `ProductService` 주입, `service.getSearchList(new SearchDTO(), 1)` + `service.getCategories()`를 모델에 담아 `home/home` 렌더 |
+| `product/controller/ProductController.java` | 죽은 `/mds/list`(`getList`) 삭제, 미사용 `MainPageDTO` import 정리 |
+| `home/home.jsp` | 카테고리 15개 하드코딩 → `<c:forEach items="${categoryList}">`. 상품 카드(JS 무한스크롤 8종 목업) → `<c:forEach items="${productList}" end="7">` SSR, 카드 마크업은 `searchProduct.jsp`와 완전히 동일하게 맞춤(`.product-card`/`.product-img`/`.product-meta` 등 — 3-42/3-57에서 이미 두 화면이 같은 클래스 체계를 쓰기로 확정돼 있었다) |
+| `js/product/homeProductService.js`, `js/views/home.js` | **삭제** — SSR로 바뀌면서 참조 0건이 됨(orphan 파일 방지 관례) |
+
+### 카테고리 아이콘 재배치 (수작업, 화면 확인 필요)
+
+`categoryList`는 DB 실데이터라 이름이 확정 15종(`reset_category_tag.sql` 기준: 생일/명절/기념일/합격・응원/상품권/맛있는 선물/가벼운 선물/출산・돌/결혼・집들이/주류/화장품/패션・주얼리/명품선물/스포츠/건강)과 정확히 일치하는데, **옛 목업 카테고리 15개와는 이름이 다르다**(옛 목업엔 "육아용품"/"리빙·키친"이 있고 DB엔 없음, DB엔 "명절"/"기념일"이 있고 옛 목업엔 없음, `·`(U+00B7)/`・`(U+30FB) 점 문자도 다름).
+
+- 기존에 손으로 그려둔 SVG 아이콘 13개는 **이름으로 매칭**해서 그대로 재사용(`<c:choose>`/`<c:when test="${category.categoryName == '...'}">`).
+- DB에만 있는 "기념일"은 아이콘이 없어서, **옛 목업에서 쓸 곳이 없어진 "리빙·키친" 아이콘(소파 모양)을 재사용**했다(`<c:otherwise>`). 주제가 안 맞는 임시 배치 — 실제 아이콘 확보 전까지의 땜빵.
+- DB에만 있는 "명절"은 옛 목업의 "육아용품" 아이콘(유모차 모양)을 재사용했는데, 이건 우연히 이름 매칭이 아니라 **하드코딩 순서가 우연히 그렇게 배치**된 것 — 실제로는 `<c:when>`에 "명절" 조건을 추가로 만들어 유모차 아이콘을 명시적으로 배정했다.
+- **⚠️ 화면 확인 필요: 아이콘-이름 매칭이 시각적으로 괜찮은지, 특히 "명절"(유모차 아이콘)·"기념일"(소파 아이콘)은 명백히 임시라 교체가 필요할 수 있음.**
+
+### "더보기" 단순화
+
+목업 시절엔 8개씩 무한스크롤로 계속 불러왔는데, 실데이터는 SSR 8개 고정 + **"상품 더보기"/"전체 상품 보기" 둘 다 `/mds/searchList`(실제 페이지네이션이 있는 검색 결과 페이지)로 보내는 링크**로 바꿨다. 무한스크롤 UX를 유지하려면 JSON API를 새로 만들어야 하는데, 이미 완성된 검색 페이지로 보내는 쪽이 새 코드 없이 더 안전하다고 판단했다.
+
+### 검증
+
+`clean compile` → BUILD SUCCESS. 별도 포트(8798)로 띄워 확인:
+
+| 항목 | 결과 |
+|---|---|
+| `/` | 200, `category-item` 15개(DB 이름과 1:1 일치), `product-card` 8개(실제 상품명/실제 `productId`) |
+| 카테고리 아이콘 매칭 | 15개 전부 자기 이름에 맞는 `<c:when>` 분기를 탔고(각 아이콘의 첫 `<path>`로 식별), "기념일"만 의도대로 `<c:otherwise>` 폴백 |
+| `/mds/detail/6`(카드 링크) | 200 |
+| `/mds/searchList?category=7`(카테고리 링크) | 200 |
+| 상품 이미지(`/uploads/product/...`) | 200 (실제 파일 응답 확인) |
+| 회귀 스모크(로그인, 회원가입, admin 4종, 검색, 마이페이지) | 전부 200 |
+| 사용자 로컬 서버(8797) | 영향 없음, 200 유지 |
+
+### 남은 것
+
+- 카테고리 아이콘(명절/기념일) 실제 그림 교체 — 위 참고
+- "인기 선물" 정렬 기준이 찜 많은 순인데, 실제 서비스라면 판매량/최신순 등 다른 기준을 원할 수도 있음 — 확인 필요
+- 홈 상단 히어로 배너(3장 슬라이드)는 이번 범위에서 손대지 않음 — 마케팅 카피 고정 텍스트라 실데이터 연동 대상이 아니라고 판단했음(3-40에서 이미 결론 낸 부분과 같은 맥락)
+
+### 신규/수정 파일
+
+```
+수정:
+  src/main/java/.../util/controller/HomeController.java       (실데이터 연동)
+  src/main/java/.../product/controller/ProductController.java (죽은 /mds/list 삭제)
+  src/main/webapp/WEB-INF/views/home/home.jsp                 (카테고리/상품 SSR 전환)
+삭제:
+  src/main/resources/static/js/product/homeProductService.js
+  src/main/resources/static/js/views/home.js
+```
+
+---
+
+## 3-59. 2026-09-03: 화면 확인 3건 — 비로그인 장바구니, 홈 더보기 중복 기능, 이미지 호버 태그
+
+3-58(홈 서버 연동) 직후 화면을 확인한 사용자가 지적한 3건. 전부 조치 완료.
+
+### ① 비로그인 상태에서 상품 상세 "장바구니"가 실제로 담기고, 뒤로가기해도 헤더 뱃지가 안 지워짐
+
+**원인**: `productdetail.js`의 `#cart-button`에 **클릭 핸들러가 아예 없었다**(파일 끝에 "장바구니 API는 여기서 확인되지 않아 기존 동작을 건드리지 않는다"는 주석만 남아 있었음). 그런데 서버 쪽엔 이미 완성된 진짜 장바구니가 있었다 — `CartController.insertCart()`(`POST /cart/add-cart`)가 `CartDTO(popId, qty)`를 받아 실제 `CART` 테이블에 넣고, **비로그인이면 서버가 `/member/login`으로 리다이렉트**하는 로그인 가드까지 이미 갖추고 있었다. 이 실제 엔드포인트를 호출하는 화면이 **프로젝트 전체에 0건**이었다(죽은 엔드포인트).
+- 그 대신 `searchProduct.jsp`/`wish.jsp`의 장바구니 담기 버튼은 전부 `window.addToCart()`(`common/cartWishService.js`)라는 **localStorage 임시 목업**을 호출하고 있었는데, 이건 로그인 여부를 전혀 안 본다 — 그래서 "비로그인인데 담기고 헤더 뱃지가 올라가는" 증상이 나온 것.
+- **조치**: 상품 상세 페이지의 `#cart-button`을 "바로 구매"(`#buy-button`)와 완전히 같은 패턴(hidden form 생성 → `POST /cart/add-cart` submit)으로 실제 서버에 연결했다. 재고/수량 검증도 바로구매와 동일하게 클라이언트에서 먼저 확인한다.
+- 결과: 비로그인 상태로 누르면 브라우저가 `/member/login`으로 이동한다(로컬스토리지를 아예 안 건드리므로 헤더 뱃지도 원래 안 올라간다 — "뒤로가기해도 안 지워짐" 문제가 애초에 발생할 여지가 없어짐). 로그인 상태로 누르면 실제 `CART` 테이블에 들어가고 `/cart/my-cart`로 이동한다.
+- **범위 밖으로 남긴 것**: `searchProduct.jsp`/`wish.jsp`의 카드 퀵버튼은 여전히 localStorage 목업이다. 상품 상세 하나만 고쳐서 "장바구니 담기 경로가 페이지마다 다르게 동작"하는 상태가 생겼는데, 이번 요청 범위가 상세 페이지였고 나머지 두 곳은 카드 UI(수량 지정 없음, 옵션 목록에서 어떤 옵션을 담을지 카드만 봐선 알 수 없음)라 서버 연동 방식이 또 달라야 해서 별도 확인 후 진행하는 게 맞다고 판단해 손대지 않았다. **다음에 반드시 정리할 것**(AUDIT에 기록).
+
+### ② 홈 "상품 더보기"가 상단 "전체 상품 보기"와 목적지가 같아 기능이 겹침
+
+3-58에서 "더보기"를 그냥 `/mds/searchList` 링크로 단순화했는데, 상단 "전체 상품 보기"도 같은 링크라 **버튼 두 개가 같은 곳으로 가는 죽은 UX**였다는 지적. "더보기 누르면 실제로 8개가 더 보이고, 그 다음부턴 번호 페이지네이션"으로 다시 만들었다.
+
+- `HomeController`가 이제 `page` 쿼리 파라미터를 받는다. 새 쿼리를 만들지 않고 `service.getList()`가 이미 주는 전체 목록(찜 많은 순, 페이징 없음, 130건)을 그대로 받아 Java에서 8개 단위로 잘라 쓴다.
+  - `page=1`(기본): 1~8번 8개 + "더보기" 버튼(`?page=2`로 링크)
+  - `page=2`: 1~16번 16개를 **누적**해서 한 화면에(더보기를 누른 그 순간엔 8개가 "더" 나타난 것처럼 보임) + 더보기 버튼은 사라지고 번호 페이지네이션이 뜬다
+  - `page=3` 이상: 그때부터는 누적하지 않고 8개짜리 구간만(`(page-1)*8` ~ `page*8`) — `page=3`의 시작 지점이 정확히 16번째 다음이라 앞서 보여준 16개와 자연스럽게 이어진다
+- 페이지네이션 마크업은 `searchProduct.jsp`가 쓰는 `.sp-pagination`/`.sp-page-btn`/`.sp-btn-prev`/`.sp-btn-next` 클래스를 그대로 재사용(새 CSS 없음), 링크만 `/mds/searchList` 대신 `/`로 바뀐다.
+- 상단 "전체 상품 보기"는 그대로 `/mds/searchList`를 가리킨다 — "전체(검색/필터 가능한 카탈로그)로 가고 싶다"와 "인기 선물 목록을 이어서 더 보고 싶다"가 이제 서로 다른 동작이라 더는 겹치지 않는다.
+
+> **화면 확인 필요**: 페이지 번호 배분 규칙(8/16/8...)이 사용자가 원한 그림과 맞는지, "더보기"를 누른 직후(16개 화면)에 스크롤 위치가 어색하지 않은지는 실제로 눌러봐야 안다.
+
+### ③ 상품 이미지 호버 시 떠야 하는 태그가 안 보임
+
+CSS(`style_user.css`)에 `.sp-tag-popup`(이미지 호버 시 아래쪽에서 올라오는 태그 pill 목록)이 **이미 완성돼 있었는데**, 정작 그 요소를 렌더링하는 JSP 마크업이 어디에도 없었다 — `searchProduct.jsp`(3-58 이전부터), `home.jsp`(3-58에서 그 구조를 그대로 복사했으니 같이 없음) 둘 다.
+
+- `ProductListDTO.tagData`는 `"이름|색상,이름|색상,..."` 형태로 LISTAGG된 문자열(`product.xml`의 `getList` 쿼리). 두 파일에 `fn` 태그리이브러리를 추가하고, `.product-img` 안에 `fn:split(tagData, ',')` → 각 조각을 다시 `fn:split(..., '|')[0]`로 이름만 뽑아 `.sp-tag-popup` 안에 `.sp-product-tag` pill로 뿌리는 마크업을 추가했다. 색상 값은 안 쓴다(CSS가 이미 고정 sage-pale 색으로 그리도록 설계돼 있었음).
+- 호버 트리거는 CSS가 `.sp-product-card:hover .sp-tag-popup`로 걸려 있어서, `home.jsp` 카드에 빠져 있던 **`sp-product-card` 클래스도 같이 추가**했다(`searchProduct.jsp`엔 원래 있었음).
+
+### 검증
+
+`clean compile` → BUILD SUCCESS. 별도 포트(8798)로 확인:
+
+| 항목 | 결과 |
+|---|---|
+| `/`(page=1) | 8카드, 더보기 버튼 O, 페이지네이션 X |
+| `/?page=2` | 16카드(누적), 더보기 X, 페이지네이션 O(현재 2, 1~5 창) |
+| `/?page=3` | 8카드, 페이지네이션 O(이전 링크 `page=2`) |
+| 비로그인 `POST /cart/add-cart` | 302 → `/member/login` |
+| 로그인(`dummy_buyer`) 후 실제 담기 | 302 → `/cart/my-cart`, `CART` 테이블에 실제 행 생성 확인 → 검증 후 삭제(잔존 0건) |
+| `.sp-tag-popup` 렌더 | 홈 8/8, 검색 20/20, 태그 이름 정상 분리(`|`/색상 잔존 0건) |
+| 회귀 스모크 | 로그인·회원가입·검색·상세·마이페이지·admin 4종 전부 200 |
+| 사용자 로컬 서버(8797) | 영향 없음 |
+
+### 신규/수정 파일
+
+```
+수정:
+  src/main/java/.../util/controller/HomeController.java        (page 파라미터 + 8/16/8 페이징 로직)
+  src/main/resources/static/js/views/productdetail.js          (#cart-button → 실제 POST /cart/add-cart)
+  src/main/webapp/WEB-INF/views/home/home.jsp                  (더보기/페이지네이션 + 태그 팝업 + sp-product-card)
+  src/main/webapp/WEB-INF/views/product/searchProduct.jsp      (fn 태그리이브러리 + 태그 팝업 마크업)
+```
+
+---
+
+## 3-60. 2026-09-03: "담당자 구분 없이 발견한 건 다 고친다" 대규모 라운드 — 상품 상세/장바구니/찜/결제/리뷰 (AUDIT 27, 29~48)
+
+3-59 이후 사용자가 "요청한 것 말고도 찾아서 다 처리해달라"고 범위를 넓혀서, 여러 차례에 걸쳐 스크린샷·직접 재현으로 신고한 것 + 자체 발견분을 묶어 처리한 가장 큰 라운드. `PROJECT_AUDIT.md`에 **27, 29~48번**으로 전부 기록돼 있고(각 항목에 근본 원인·조치 내용 상세), 여기는 영역별 요약만.
+
+### 상품 상세 페이지 (AUDIT 29~33) — "상세 페이지가 심각하다"는 지적으로 전체 재검토
+
+- **가장 심각**: 옵션 가격이 `(실제가 - 대표가)`로 계산돼 기본 옵션이 항상 "0원"으로 보이던 버그 (`ProductServiceImpl`의 불필요한 차감 루프 제거)
+- 카테고리/이동경로/짧은 설명이 전 상품 공통 하드코딩 텍스트였던 것 → 실제 DTO 필드(`categoryNames`, `productName`)로 교체
+- 등급 할인율 하드코딩 → `getMemberGrade` 신설해 실제 등급별 `DISCOUNT_RATE` 반영
+- 대표이미지가 2건 이상이면(`PRODUCT_TITLE_IMAGE` DB 제약 없음) `TooManyResultsException`으로 상세 페이지 전체 500 → `ROWNUM=1` 방어
+- **비로그인 상태에서 할인 없이 정상가만 취소선 그어져 보이던 것**(사용자가 "오히려 버그 같다"고 지적) — 할인가 행이 아예 없을 땐 정상가 취소선도 걸리지 않도록 `#price-info:has(.sale-price)`로 스코프 좁힘
+
+### 검색/찜 카드 리뷰 링크 + 같은 계열 점검 (AUDIT 34)
+
+검색 결과 카드는 리뷰를 눌러도 안 움직이던 것 확인(`href="#"` 방치) — 메인 카드와 같은 컴포넌트인데 링크만 안 걸려 있었음. 같은 계열로 찜 카드도 점검해 동일하게 고침.
+
+### 장바구니/찜 선택모드 + 페이지네이션 전면 개편 (AUDIT 35~38)
+
+- 체크리스트가 항시 노출이던 것 → **어드민 쿠폰 화면과 동일한 "선택 모드" 로직**(`#toggleCartSelectButton`/`#toggleWishSelectButton` 토글 + `.selecting` 클래스로 체크박스 노출)으로 통일
+- 둘 다 페이지네이션이 없었음 → 서버가 이미 전체 목록을 한 번에 내려주는 구조(`window.serverCartItems`)를 이용해 **클라이언트 사이드 페이지네이션** 추가(`searchProduct.jsp`의 `.sp-pagination` 클래스 재사용). 선택 상태는 `checkedState` 객체로 전체 아이템 기준으로 관리(현재 페이지 DOM에만 의존하면 "전체선택"/일괄삭제가 안 보이는 페이지 항목을 누락시킴 — 어드민 쿠폰 화면에서 이미 겪었던 것과 같은 함정)
+- **장바구니 개별 삭제 버튼이 실행이 안 되던 것** — `cartService.js`의 `save()`가 빈 스텁이라 로컬 배열을 지워도 `render()`가 매번 `window.serverCartItems`(서버 원본, 안 바뀜)를 다시 읽어 원상복구되고 있었음. `removeFromServer`/`updateQtyOnServer`로 실제 `POST` 후 DOM 갱신하도록 재작성
+- 찜 선택모드에 "장바구니로 넘기는 기능"은 문구만 있고 실제 담기 버튼이 없던 것 → `#wish-cart-btn` 신설, `addToCart(item, silent)`에 `silent` 옵션을 추가해 N건을 `Promise.all`로 조용히 담고 결과 요약 alert 하나만 띄움
+
+### 장바구니/찜 상태 동기화 버그 2건 (사용자가 화면 사용 중 발견, AUDIT 41 외)
+
+- **같은 상품을 퀵아이콘/상세페이지 옵션 선택 양쪽으로 재담기해도 수량이 안 늘어남** — `CartServiceImpl.insertCartInfo()`가 중복 `popId`를 만나면 안내 문구만 반환하고 실제 DB 갱신을 안 하고 있었음(죽은 분기). `mapper.incrementQty()` 신설해 실제로 수량을 더하도록 수정. 두 진입 경로(퀵아이콘/상세페이지)가 완전히 같은 `POST /cart/add-cart` → `insertCartInfo()` 코드를 타는 것 확인해 한 번의 수정으로 둘 다 해소
+- **헤더 장바구니 뱃지가 퀵 담기 직후 바로 반영 안 됨** — `cartWishService.js`의 `addToCart()` 성공 분기에 `window.refreshCartBadge()` 호출이 아예 없었음(누락)
+- **로그아웃 후 재로그인하면 이미 찜한 상품의 하트가 다시 빈 상태로 보이고, 누르면 "찜 해제"가 아니라 "찜 추가"를 시도** — `toggleWish()`가 방향 판단을 `localStorage` 캐시(`isWished()`)로 하고 있어서 로그아웃/재로그인으로 캐시가 비면 서버의 실제 상태와 어긋났음. 호출부(DOM의 `is-active` 클래스, 서버가 최초 렌더링 때 실제 `WISH` 데이터로 채움)가 판단한 `wasWished`를 인자로 넘기는 방식으로 변경 — 근본 원인은 `ProductListDTO`/`ProductDetailDTO`에 `wished` 필드가 아예 없어서 목록/상세 조회 쿼리가 "이 회원이 찜했는지"를 애초에 안 내려주던 것(`product.xml`/`detailPage.xml`에 `WISHED` 서브쿼리 추가로 근본 해결, JS 캐시 판단 로직은 부수적으로 같이 정리)
+
+### 결제 페이지 (AUDIT 39~40, 42~46)
+
+- **취소/뒤로가기 시 "양식 다시 제출 확인"(`ERR_CACHE_MISS`)** — `OrderController.paymentForm()`(`POST /order/payment`)이 뷰를 직접 렌더링해서 그 POST 자체가 브라우저 히스토리에 남아 있었음(PRG 패턴 미적용). GET으로 이미 같은 화면을 그리는 `paymentResume()`이 있어서, POST 핸들러를 `redirect:/order/payment`로 바꿔 해결 — 취소 버튼/뒤로가기 둘 다 동일 원인, 한 번에 해소
+- **`GET /order/checkout` 405 Whitelabel 에러**(사용자가 결제 중 직접 재현) — `/order/checkout`은 결제 실행용 `POST` 전용인데 새로고침/뒤로가기로 GET 접근하면 그대로 405가 떴음. "로그아웃된 것 같다"는 사용자 추측은 코드상 배제(로그아웃이면 로그인 페이지지 405가 아님) → 원인은 순수 HTTP 메서드 불일치. **결제 로직 자체는 여전히 POST 전용으로 남기고**, `GET /order/checkout` 하나만 `redirect:/order/payment`로 안전하게 우회
+- 포인트 1P만 입력했을 때 안내 문구가 겹쳐 보이던 것 — `#point` 레이아웃을 `point-input-row` + `#point-warning`으로 재구성, "0P는 사용 안 함" 문구와 "1,000P 이상부터 가능" 문구가 중복 노출되던 것을 정리
+- 결제 페이지 폭이 좁아 상품명 줄바꿈 시 라벨까지 밀리던 것(`.order-card` 680px로 확대, `baseline` 정렬), 할인정보 섹션에 구분선 이후 여백이 아예 없던 것(`#DiscountInfo`가 공용 padding/border 규칙에서 빠져 있었음 — 추가)
+
+### 리뷰 (AUDIT 47~48, 사용자 스크린샷)
+
+- **리뷰 이미지가 전부 깨진 아이콘으로 나오던 것** — `detailPage.xml`의 `getReviewImages` 쿼리가 `REVIEW_IMAGE_PATH` 컬럼을 아예 안 뽑고 있어서 `<img src="${path}${name}">`가 파일명만 있는 무효 URL이 됐음. 같은 프로젝트의 `ReviewMapper.xml`(마이페이지 리뷰용)엔 이미 올바른 패턴이 있어서 그대로 가져와 추가
+- **리뷰에 좋아요(하트) 인터랙션이 화면에 아예 없던 것** — 백엔드(`GET /mds/review/like/{reviewId}`, `ReviewDTO.isLiked`/`likeCount`)는 이미 다 있었는데(3-57에서 세션 키 버그까지 고쳐 정상 동작 중이었음) `productDetail.jsp`에 렌더링하는 버튼 마크업 자체가 없었음. `.review-like-btn` + 하트 SVG + `.review-like-count` 추가하고 기존 엔드포인트에 연결
+
+### 드롭다운 화살표 위치 (AUDIT 27) — 앞서 "화면 확인 필요"로 미확인 남겨뒀던 것
+
+사용자가 스크린샷으로 위치를 특정(상품 상세 "상품 옵션" 드롭다운). 확인해보니 `style_admin.css`의 `.input-area select`(이미 `appearance:none` + SVG 배경으로 처리됨)와 달리, `style_user.css`의 `#product-option`은 **애초에 그 처리가 전혀 없는 순수 네이티브 select**였음 — 네이티브 화살표가 상자 오른쪽 끝에 딱 붙어 그려지는 증상. 동일 패턴(`appearance:none` + `padding-right:38px` + 인라인 SVG 화살표, `background-position:right 14px center`)을 적용. 같은 계열 점검 중 결제 페이지 쿠폰 선택(`#coupon_id`)도 동일 문제라 같이 수정.
+
+### 검증
+
+전 항목 별도 포트(8798)에서 `clean compile` → BUILD SUCCESS 확인 후 curl/jshell(ojdbc11)로 직접 DB 조회·API 호출 검증. 장바구니/찜 데이터 조작은 테스트 후 삭제(더미 계정 `dummy_buyer`의 기존 찜 더미 2건은 실수로 두 차례 같이 지웠다가 즉시 발견해 복구 — 아래 참고). 최종적으로 `PROJECT_AUDIT.md` 요약표 **버그 48개 — 조치 완료 48 · 미해결 0**.
+
+> **주의**: 이번 라운드 검증 중 `dummy_buyer`(MEMBER_ID=27)의 기존 찜 더미 데이터(상품 6·10 — 원래 지우지 말라고 지정된 계정)를 테스트 상품 ID와 우연히 겹쳐서 실수로 두 번 삭제했다가 두 번 다 직접 발견해서 복구함(`POST /wish/insert-wish`로 재삽입, `GET /wish/my-wish`로 존재 재확인). 다음에 이 계정으로 찜 관련 테스트할 때 상품 6/10은 건드리지 않도록 주의.
+
+### 신규/수정 파일 (관리 문서 3종 제외, 약 45개)
+
+```
+신규:
+  member/model/dto/DeliveryAddressDTO.java
+  product/model/dto/detail/MemberGradeDTO.java
+  static/js/views/deliveryAddress.js
+삭제:
+  static/js/product/homeProductService.js (죽은 파일 정리)
+  static/js/views/home.js → home.jsp 인라인/재구성 과정에서 정리(3-58 연장)
+주요 수정:
+  product/{controller,model/service,model/mapper,model/dto}/*         (memberId 전달 체인, wished 필드)
+  cart/{Controller,model/*}/*, resources/mappers/cart/cart.xml         (선택모드/페이징/삭제·수량변경/재담기 증가)
+  wish 쪽 JS/JSP(선택모드/페이징/장바구니 담기 버튼)
+  order/controller/OrderController.java, views/order/payment.jsp       (PRG, /checkout GET 우회, 포인트/레이아웃)
+  resources/mappers/product/{product,detailPage}.xml                  (WISHED 서브쿼리, REVIEW_IMAGE_PATH)
+  views/product/productDetail.jsp, static/js/views/productdetail.js   (가격/카테고리/설명/찜상태/리뷰이미지/좋아요버튼)
+  static/js/common/cartWishService.js                                 (addToCart silent, toggleWish(wasWished), 뱃지갱신)
+  static/css/style_user.css                                           (선택모드 CSS, 결제 레이아웃, #product-option/#coupon_id 화살표)
 ```
 
 ---

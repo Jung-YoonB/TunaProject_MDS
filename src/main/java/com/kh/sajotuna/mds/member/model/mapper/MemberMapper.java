@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryAddressDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageOrderItemDTO;
@@ -72,4 +73,10 @@ public interface MemberMapper {
 
 	// 위 건수와 같은 조건에서 가장 먼저 리뷰를 쓸 주문상세 1건 (없으면 null)
 	Long selectNextReviewableOdId(@Param("memberId") Long memberId);
+
+	// 새 배송지 추가 전, 기본 배송지로 체크했으면 기존 기본 배송지를 먼저 해제한다
+	// (UX_DELIVERYADDRESS_IS_DEFAULT 조건부 유니크 인덱스 - 회원당 Y는 1개뿐).
+	int clearDefaultAddress(@Param("memberId") Long memberId);
+
+	int insertDeliveryAddress(DeliveryAddressDTO address);
 }

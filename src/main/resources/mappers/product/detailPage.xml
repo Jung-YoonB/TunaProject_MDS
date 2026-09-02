@@ -5,7 +5,7 @@
   
 <mapper namespace="com.kh.sajotuna.mds.product.model.mapper.ProductMapper">
 
-	<select id="productDetail" resultType="ProductDetailDTO" parameterType="Long">
+	<select id="productDetail" resultType="ProductDetailDTO">
 		SELECT
 		p.product_id,
 		p.product_title,
@@ -35,7 +35,22 @@
 		SELECT COUNT(W.WISH_ID)
 		FROM WISH W
 		WHERE W.PRODUCT_ID = p.product_id
-		) AS wish_count
+		) AS wish_count,
+
+		<!-- 카테고리명(다중) - 상세 페이지 상단 카테고리 표시/이동경로가 지금까지 하드코딩("결혼·집들이"
+		     고정 문자열)이었던 것을 실데이터로 교체하기 위해 추가(product.xml getList의 CAT_AGG와
+		     동일한 패턴). 카테고리가 없는 상품이면 NULL - JSP에서 그대로 빈 문자열로 보임. -->
+		(SELECT LISTAGG(C.CATEGORY_NAME, ' · ') WITHIN GROUP (ORDER BY C.CATEGORY_ID)
+		   FROM CATEGORYDETAIL CD JOIN CATEGORY C ON CD.CATEGORY_ID = C.CATEGORY_ID
+		  WHERE CD.PRODUCT_ID = p.product_id) AS category_names,
+
+		<!-- 로그인 회원이 이 상품을 이미 찜했는지 - product.xml getList의 WISHED와 동일한 이유/패턴.
+		     로그아웃 후 재로그인해도 하트가 항상 빈 상태로 보여서 다시 찜을 누를 수 있던 문제
+		     (AUDIT 신규 버그) 조치 - 데이터 자체는 WishServiceImpl.insertWish가 중복을 막아줘서
+		     안 깨졌지만, 화면이 실제 상태를 안 보여주는 게 문제였다. -->
+		CASE WHEN EXISTS (
+		    SELECT 1 FROM WISH W WHERE W.PRODUCT_ID = p.product_id AND W.MEMBER_ID = #{memberId}
+		) THEN 1 ELSE 0 END AS WISHED
 
 		FROM product p
 		JOIN optiondetail o ON p.product_id = o.product_id
@@ -48,10 +63,22 @@
 		p.product_content
 	</select>
 	
+	<!-- 등급 할인 표시(정상가/할인가) - 지금까지 JSP에 "BRONZE"/"2%"가 고정 문자열로 박혀 있어서
+	     실제 로그인 회원의 등급과 무관하게 항상 같은 값이 보이던 것을 실데이터로 교체하기 위해 추가.
+	     order.OrderMapper의 selectByMemberIdForPay와 같은 조인(MEMBER-GRADE), 용도만 다름. -->
+	<select id="getMemberGrade" resultType="MemberGradeDTO" parameterType="Long">
+		SELECT G.GRADE_NAME, G.DISCOUNT_RATE
+		FROM MEMBER M JOIN GRADE G ON M.GRADE_ID = G.GRADE_ID
+		WHERE M.MEMBER_ID = #{memberId}
+	</select>
+
+	<!-- 대표이미지(product_title_image=0)는 DB 제약으로 "상품당 1건"이 강제되지 않아, 데이터가
+	     꼬여 2건 이상이면 resultType="String"(스칼라 기대)이라 TooManyResultsException으로
+	     상세 페이지 전체가 500이 난다. ROWNUM=1로 방어(wish.xml의 대표이미지 서브쿼리와 동일 패턴). -->
 	<select id="getThumbnail" resultType="String" parameterType="Long">
 	select product_image_save_name as thumbnail
 	from productimage
-	where product_id = #{productId} and product_title_image = 0
+	where product_id = #{productId} and product_title_image = 0 and ROWNUM = 1
 	</select>
 	
 	<select id="getImages" resultType="String" parameterType="Long">
@@ -139,8 +166,13 @@
 	</select>
 
 
+	<!-- ✅ 조치 완료(2026-09-03, 사용자 보고): REVIEW_IMAGE_PATH를 안 뽑아서 상품 상세 페이지의
+	     리뷰 이미지가 전부 깨져 나오고 있었다(ReviewImagesDTO.reviewImagePath가 항상 null이라
+	     <img src="${reviewImagePath}${reviewImage}">가 파일명만 남아 상대경로로 깨짐).
+	     마이페이지 "내가 쓴 리뷰"가 쓰는 ReviewMapper.selectReviewImagesByReviewIds와 동일한
+	     컬럼 구성으로 맞춤. -->
 	<select id="getReviewImages" resultType="ReviewImagesDTO" >
-		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_image
+		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_image, ri.REVIEW_IMAGE_PATH
 		from REVIEWIMAGE ri join REVIEW r on ri.REVIEW_ID = r.REVIEW_ID
 		where r.REVIEW_ID in <foreach collection="list" item="reviewId" open="(" separator=", " close=")">
 		#{reviewId}
