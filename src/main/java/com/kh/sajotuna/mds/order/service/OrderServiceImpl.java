@@ -21,9 +21,29 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor	
 public class OrderServiceImpl implements OrderService {
+
+	// 배송비 정책 (담당자 확정, 2026-09-02)
+	//
+	// 무료배송 여부는 "할인 전" 상품금액(옵션가 x 수량의 합)으로 판정한다.
+	// 쿠폰/등급 할인을 뺀 금액으로 판정하면 같은 장바구니가 쿠폰 유무에 따라 배송비가 달라져,
+	// 결제 화면에 보이던 금액과 실제 저장 금액이 어긋난다(실제로 주문 47번과 49번이 3,000원 갈렸음).
+	//
+	// 값을 바꿀 땐 화면 계산도 같이 고칠 것 - static/js/product/cartService.js 가 같은 기준을 쓴다.
+	private static final long FREE_SHIPPING_THRESHOLD = 50_000L;
+	private static final long SHIPPING_FEE = 3_000L;
+
+	// 포인트 최소 사용 단위. 화면(안내 문구·입력 검증)도 이 값을 써야 하므로
+	// PaymentViewDTO.pointMinUse 로 내려보낸다 - JSP/JS 에 숫자를 따로 적지 말 것.
+	private static final long POINT_MIN_USE = 1_000L;
+
 	private final OrderMapper mapper;
 	private final MemberMapper memberMapper;
-	
+
+	/** 배송비. 반드시 할인 전 상품금액을 넘길 것 */
+	private long calcDeliveryFee(long productTotalPriceBeforeDiscount) {
+		return productTotalPriceBeforeDiscount >= FREE_SHIPPING_THRESHOLD ? 0L : SHIPPING_FEE;
+	}
+
 	@Override
 	public PaymentViewDTO cartPrepare(Long memberId, List<Long> cartIds) {
 
@@ -40,8 +60,8 @@ public class OrderServiceImpl implements OrderService {
 	        totalPrice += i.getOptionPrice() * i.getQty();
 	    }
 
-	    // 배송비
-	    long deliveryFee = totalPrice >= 50000L ? 0L : 3000L;
+	    // 배송비 (아직 할인 적용 전 금액이라 그대로 넘기면 된다)
+	    long deliveryFee = calcDeliveryFee(totalPrice);
 
 	    // 보유 쿠폰 조회
 	    List<CouponDTO> couponList =
@@ -52,6 +72,7 @@ public class OrderServiceImpl implements OrderService {
 	    pvData.setTotalPrice(totalPrice);
 	    pvData.setDeliveryFee(deliveryFee);
 	    pvData.setCouponList(couponList);
+	    pvData.setPointMinUse(POINT_MIN_USE);
 
 	    // 장바구니 ID
 	    pvData.setCartIds(cartIds);
@@ -77,8 +98,8 @@ public class OrderServiceImpl implements OrderService {
 		    totalPrice += i.getOptionPrice() * i.getQty();
 		}
 
-		// 배송비
-		long deliveryFee = totalPrice >= 50000L ? 0L : 3000L;
+		// 배송비 (아직 할인 적용 전 금액이라 그대로 넘기면 된다)
+		long deliveryFee = calcDeliveryFee(totalPrice);
 
 		// 보유 쿠폰 조회
 		List<CouponDTO> couponList =
@@ -89,6 +110,7 @@ public class OrderServiceImpl implements OrderService {
 		pvData.setTotalPrice(totalPrice);
 		pvData.setDeliveryFee(deliveryFee);
 		pvData.setCouponList(couponList);
+		pvData.setPointMinUse(POINT_MIN_USE);
 
 		return pvData;
 	}
@@ -97,10 +119,10 @@ public class OrderServiceImpl implements OrderService {
 	@Transactional
 	public CheckoutDTO checkout(CheckoutDTO checkoutInputData) {
 	
-	// sql 조회 전 사용한 포인트 1000 이상인지 체크
+	// 최소 사용 단위 확인 (0은 "사용 안 함"이라 통과시킨다)
 	if (checkoutInputData.getUsedPoint() != null && checkoutInputData.getUsedPoint() != 0
-			&& checkoutInputData.getUsedPoint() < 1000) {  // 뷰에서 넘겨줄 데이터에 따라 null이나 0 조건 하나 삭제
-		throw new IllegalArgumentException("포인트는 1000 이상부터 사용할 수 있습니다.");
+			&& checkoutInputData.getUsedPoint() < POINT_MIN_USE) {
+		throw new IllegalArgumentException("포인트는 " + POINT_MIN_USE + "P 이상부터 사용할 수 있습니다.");
 	}
 		
 	// 회원 정보 조회
@@ -187,12 +209,10 @@ public class OrderServiceImpl implements OrderService {
 
 
 	// =====================================================
-	// 배송비
-	// 상품이 있으면 3,000원
+	// 배송비 - 할인 전 상품금액 기준
 	// =====================================================
 
-	long deliveryFee = productTotalPrice >= 50000L ? 0L : 3000L;
-
+	long deliveryFee = calcDeliveryFee(productTotalPrice);
 
 	verifiedData.setDeliveryFee(deliveryFee);
 

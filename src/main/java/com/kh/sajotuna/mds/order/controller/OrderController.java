@@ -17,6 +17,7 @@ import com.kh.sajotuna.mds.member.service.MemberService;
 import com.kh.sajotuna.mds.order.model.dto.CheckoutDTO;
 import com.kh.sajotuna.mds.order.model.dto.OrderItemDTO;
 import com.kh.sajotuna.mds.order.model.dto.PaymentViewDTO;
+import com.kh.sajotuna.mds.order.model.dto.PendingCheckoutDTO;
 import com.kh.sajotuna.mds.order.service.OrderService;
 import com.kh.sajotuna.mds.util.SessionConst;
 
@@ -75,32 +76,103 @@ public class OrderController {
 	    }
 	}
 	
+	// 진행 중인 결제를 세션에 붙잡아 두는 시간. 결제 화면을 잠깐 벗어났다가 헤더의 결제
+	// 아이콘으로 돌아와 이어서 결제할 수 있게 하기 위한 값이다.
+	private static final long PENDING_CHECKOUT_TTL_MS = 30 * 60 * 1000L;
+
+	// 장바구니 화면 경로. 예전 "redirect:/product/cart"는 컨트롤러가 없어 404였다.
+	private static final String CART_URL = "redirect:/cart/my-cart";
+
 	@PostMapping("/payment")
 	public String paymentForm(HttpSession session, Model model,
 			@RequestParam(value = "cartId", required = false) List<Long> cartIds,
 			@ModelAttribute OrderItemDTO orderItem,
 			RedirectAttributes redirectAttr) {
 
-		PaymentViewDTO pvData = null;
-		// 세션의 정보에서 memberId를 받아 회원 정보 받아오기
 		MemberDTO loginMember = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
-		
+
 		if (loginMember == null) {
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
 	        return "redirect:/member/login";
 	    }
-		
+
+		PendingCheckoutDTO pending = new PendingCheckoutDTO();
+
 		if (cartIds != null && !cartIds.isEmpty()) { // 장바구니로 넘어온 경우
-			pvData = service.cartPrepare(loginMember.getMemberId(), cartIds);
-			pvData.setCartIds(cartIds);
+			pending.setCartIds(cartIds);
 		} else if (orderItem.getPopId() != null) { // 바로구매로 넘어온 경우
-			pvData = service.directPrepare(loginMember.getMemberId(), orderItem);
+			pending.setPopId(orderItem.getPopId());
+			pending.setQty(orderItem.getQty());
 		} else { // 장바구니가 0 인채로 넘어왔거나 이상한 접근
 			redirectAttr.addFlashAttribute("error", "장바구니에 담은게 없거나 잘못된 접근입니다.");
-			return "redirect:/product/cart"; // 카트 주소 생기면 수정
+			return CART_URL;
 		}
-		model.addAttribute("pvData", pvData);
+
+		pending.setSavedAt(System.currentTimeMillis());
+
+		// 다른 화면에 갔다가 돌아올 수 있도록 "무엇을 사려던 중인지"를 남겨둔다.
+		// 화면이 아니라 선택만 담아야 다시 열 때 가격·재고·포인트가 최신으로 다시 계산된다.
+		session.setAttribute(SessionConst.PENDING_CHECKOUT, pending);
+
+		model.addAttribute("pvData", buildPaymentView(loginMember.getMemberId(), pending));
 		return "order/payment";
+	}
+
+
+	/**
+	 * 헤더의 결제 아이콘으로 돌아왔을 때 - 세션에 남은 선택으로 결제 화면을 다시 연다.
+	 * 담아둔 게 없거나 시간이 지났으면 장바구니로 보낸다.
+	 */
+	@GetMapping("/payment")
+	public String paymentResume(HttpSession session, Model model, RedirectAttributes redirectAttr) {
+
+		MemberDTO loginMember = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+
+		if (loginMember == null) {
+			redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
+			return "redirect:/member/login";
+		}
+
+		PendingCheckoutDTO pending =
+				(PendingCheckoutDTO) session.getAttribute(SessionConst.PENDING_CHECKOUT);
+
+		if (pending == null) {
+			redirectAttr.addFlashAttribute("error", "진행 중인 결제가 없습니다. 상품을 선택해 주세요.");
+			return CART_URL;
+		}
+
+		if (pending.isExpired(PENDING_CHECKOUT_TTL_MS)) {
+			session.removeAttribute(SessionConst.PENDING_CHECKOUT);
+			redirectAttr.addFlashAttribute("error", "결제 진행 시간이 지났습니다. 다시 선택해 주세요.");
+			return CART_URL;
+		}
+
+		try {
+			model.addAttribute("pvData", buildPaymentView(loginMember.getMemberId(), pending));
+		} catch (RuntimeException e) {
+			// 담아둔 사이에 상품이 내려갔거나 장바구니에서 빠진 경우
+			session.removeAttribute(SessionConst.PENDING_CHECKOUT);
+			redirectAttr.addFlashAttribute("error", "선택하신 상품을 다시 확인해 주세요.");
+			return CART_URL;
+		}
+
+		return "order/payment";
+	}
+
+
+	/** 장바구니/바로구매 어느 쪽이든 같은 결제 화면 데이터를 만든다 */
+	private PaymentViewDTO buildPaymentView(Long memberId, PendingCheckoutDTO pending) {
+
+		if (pending.isFromCart()) {
+			PaymentViewDTO pvData = service.cartPrepare(memberId, pending.getCartIds());
+			pvData.setCartIds(pending.getCartIds());
+			return pvData;
+		}
+
+		OrderItemDTO item = new OrderItemDTO();
+		item.setPopId(pending.getPopId());
+		item.setQty(pending.getQty());
+		return service.directPrepare(memberId, item);
 	}
 	
 	@PostMapping("/checkout")
@@ -120,6 +192,10 @@ public class OrderController {
 
 	    try {
 	        CheckoutDTO resultData = service.checkout(checkoutData);
+
+	        // 결제가 끝났으니 "진행 중인 결제"는 비운다.
+	        // 안 비우면 헤더의 결제 아이콘이 이미 산 주문을 다시 열어준다.
+	        session.removeAttribute(SessionConst.PENDING_CHECKOUT);
 
 	        return "redirect:/order/completed?orderId=" + resultData.getOrderId();
 

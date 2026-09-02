@@ -43,7 +43,7 @@
 
 	<div class="cart-action" id="cart-action">
 		<a class="btn-outline" href="<c:url value='/'/>">계속 쇼핑하기</a>
-		<%-- TODO(placeholder route): "/order/payment" 컨트롤러 미구현. 담당자가 @GetMapping("/order/payment")을 추가해야 함 --%>
+		<%-- views/cart.js가 선택한 cartId들을 담아 POST /order/payment 로 보낸다 --%>
 		<button type="button" class="btn-solid" id="btn-checkout">주문하기</button>
 	</div>
 

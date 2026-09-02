@@ -14,7 +14,9 @@
         { productId: '2', name: '전통 과일 선물세트', optionName: '중과 5호 / 3kg', price: 59000, qty: 2 }
     ];
 
+    // 서버 OrderServiceImpl 의 SHIPPING_FEE / FREE_SHIPPING_THRESHOLD 와 같은 값이어야 한다
     var SHIPPING_FEE = 3000;
+    var FREE_SHIPPING_THRESHOLD = 50000;
 
 	function getKey(item) {
 	    return String(item.cartId);
@@ -45,6 +47,10 @@
     }
 
     // 선택된 항목만 합산한다. 상품 금액이 0이면 배송비도 0.
+    //
+    // 배송비 기준은 서버(OrderServiceImpl.calcDeliveryFee)와 같아야 한다 -
+    // "할인 전" 상품금액이 FREE_SHIPPING_THRESHOLD 이상이면 무료.
+    // 한쪽만 바꾸면 장바구니에 보이던 배송비와 결제 금액이 어긋난다.
 	function calcTotals(items, selectedKeys) {
 	    var itemsTotal = 0;
 
@@ -54,7 +60,7 @@
 	        }
 	    });
 
-		var fee = itemsTotal >= 50000 ? 0 : (itemsTotal > 0 ? SHIPPING_FEE : 0);
+		var fee = itemsTotal >= FREE_SHIPPING_THRESHOLD ? 0 : (itemsTotal > 0 ? SHIPPING_FEE : 0);
 
 	    return {
 	        itemsTotal: itemsTotal,

@@ -98,6 +98,18 @@
 					<span class="icon-label">장바구니</span>
 				</a>
 
+				<%-- 진행 중인 결제로 돌아가기. 결제 화면은 "무엇을 사는지"가 있어야 열리므로
+				     GET /order/payment 가 세션(PENDING_CHECKOUT)에 남은 선택으로 다시 만들어 준다.
+				     담아둔 게 없거나 시간이 지났으면 장바구니로 안내한다. --%>
+				<a class="icon-item" href="<c:url value='/order/payment'/>">
+					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+						<path d="M7 3h10a1 1 0 0 1 1 1v17l-3-2-3 2-3-2-3 2V4a1 1 0 0 1 1-1z"/>
+						<path d="M9 8h6"/>
+						<path d="M9 12h6"/>
+					</svg>
+					<span class="icon-label">진행 중인 결제</span>
+				</a>
+
 				<a class="icon-item" href="<c:url value='/member/myPage'/>">
 					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 						<circle cx="12" cy="8" r="4"/>

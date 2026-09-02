@@ -146,7 +146,7 @@ public class MemberController {
 			model.addAttribute("totalPages", totalPages);
 			model.addAttribute("pageWindowStart", windowStart);
 			model.addAttribute("pageWindowEnd", windowEnd);
-			return "order/userOderDelivery";
+			return "order/userOrderDelivery";
 		}  else {
 			return "admin/adminOrderDelivery";
 		}
