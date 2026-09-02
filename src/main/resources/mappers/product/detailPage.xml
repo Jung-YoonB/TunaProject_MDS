@@ -100,10 +100,10 @@
 		m.NICKNAME,
 		orderd.QTY,
 
-<!--	REVIEWLIKE 테이블에서 현재 리뷰(r.REVIEW_ID)의 총 좋아요 수-->
+		<!-- REVIEWLIKE 테이블에서 현재 리뷰(r.REVIEW_ID)의 총 좋아요 수 -->
 		(SELECT COUNT(*) FROM REVIEWLIKE WHERE REVIEW_ID = r.REVIEW_ID) AS like_count,
 
-<!--			로그인한 유저가 좋아요 눌렀는지 체크-->
+		<!-- 로그인한 유저가 좋아요 눌렀는지 체크 -->
 		<choose>
 			<when test="memberId != null">
 				CASE WHEN rl.MEMBER_ID IS NOT NULL THEN 1 ELSE 0 END AS is_liked
@@ -127,7 +127,11 @@
 			AND rl.MEMBER_ID = #{memberId}
 		</if>
 
-		WHERE p.PRODUCT_ID = #{productId}
+		WHERE p.PRODUCT_ID = #{productId} AND r.REVIEW_STATUS = 1
+
+		ORDER BY r.WRITE_DATE DESC
+
+		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
 	</select>
 
 
@@ -157,6 +161,14 @@
 		<if test="memberId != null">
 			and MEMBER_ID = #{memberId}
 		</if>
-
 	</delete>
+
+	<select id="countReviews" resultType="int">
+		select count(*)
+		from REVIEW r join ORDERDETAIL od on r.OD_ID = od.OD_ID
+		join OPTIONDETAIL opd on od.POP_ID = opd.POP_ID
+		join product p on opd.PRODUCT_ID = p.PRODUCT_ID
+		where p.PRODUCT_ID = #{productId}
+		AND r.REVIEW_STATUS = 1
+	</select>
 </mapper>

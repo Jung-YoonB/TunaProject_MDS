@@ -33,10 +33,12 @@ public interface ProductMapper {
 	int insertCoupon(@Param("memberId") Long memberId, @Param("couponId") Long couponId);
 
 	//리뷰 관련
-	List<ReviewDTO> getReviewList(@Param("productId") Long productId, @Param("memberId") Long memberId);
+	List<ReviewDTO> getReviewList(@Param("productId") Long productId, @Param("memberId") Long memberId,
+								  @Param("offset")int offset, @Param("pageSize") int pageSize);
 	List<ReviewImagesDTO> getReviewImages(List<Long> reviewId);
 
 	int insertReviewLike(@Param("reviewId") Long reviewId,  @Param("memberId") Long memberId);
 	void deleteReviewLike(@Param("reviewId") Long reviewId, @Param("memberId") Long memberId);
 	Long checkLike(@Param("reviewId") Long reviewId,  @Param("memberId") Long memberId);
+	int countReviews(@Param("productId") Long productId);
 }
