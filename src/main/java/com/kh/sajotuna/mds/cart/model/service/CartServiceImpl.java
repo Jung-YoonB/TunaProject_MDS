@@ -18,15 +18,20 @@ public class CartServiceImpl implements CartService{
     private final CartMapper mapper;
     @Override
     public String insertCartInfo(CartDTO cart) {
-        int result = 0;
+        int result;
         System.out.println(cart);
 
         findInfoDTO findInfo = new  findInfoDTO(cart.getMemberId(), cart.getPopId());
+        if(cart.getQty() == 0 ) {
+            return "상품의 수량을 입력해주세요";
+        }
         int checkCart = mapper.findCartById(findInfo);
         if(checkCart == 1) {
             return "이미 장바구니에 있는 상품입니다.";
+        }else if(cart.getQty() <= 0){
+             return "갯수를 지정해주세요";
         }else {
-             result = mapper.insertCart(cart);
+            result = mapper.insertCart(cart);
         }
        return result > 0 ? "상품이 장바구니에 등록되었습니다." : "오류가 발생하였습니다. 다시 시도해주세요";
     }

@@ -16,4 +16,8 @@ public interface OrderService {
 	
 	// 정보 받아서 결제하기
 	CheckoutDTO checkout(CheckoutDTO checkoutInputData);
+	
+	// 로그인 회원이 실제 주문한건지 확인
+	Long getOrderIdForMember(Long orderId, Long memberId);
+
 }

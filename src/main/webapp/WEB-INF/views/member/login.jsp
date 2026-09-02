@@ -16,6 +16,12 @@
 		<div class="login-card">
 			<!-- 로그인 제목 -->
 			<div id="title">로그인</div>
+			
+			<c:if test="${not empty signUpSuccess}">
+			    <div class="success-message">
+			        ${signUpSuccess}
+			    </div>
+			</c:if>
 
 			<c:if test="${not empty error}">
 			    <div class="error-message">

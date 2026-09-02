@@ -32,7 +32,6 @@
 
 .admin-mypage-page {
     background-color: #FDFBF9;
-    min-height: 100vh;
 }
 
 .admin-mypage-page .page-content {
@@ -177,8 +176,10 @@
     transition: background-color .15s, border-color .15s;
 }
 
+/* :focus가 아니라 :focus-visible - 클릭 후 뒤로가기로 돌아오면 브라우저가 직전 포커스를
+   복원해서 :focus가 계속 맞고 눌린 잔상이 남는다. 키보드 이동은 그대로 표시됨(HANDOFF 3-51) */
 .admin-mypage-page .quick-menu-tile:hover,
-.admin-mypage-page .quick-menu-tile:focus {
+.admin-mypage-page .quick-menu-tile:focus-visible {
     background-color: #fbf8f2;
     border-color: #e2d9c8;
     text-decoration: none;
@@ -237,7 +238,7 @@
 }
 
 .admin-mypage-page .list-row:hover,
-.admin-mypage-page .list-row:focus {
+.admin-mypage-page .list-row:focus-visible {
     background-color: #fbf8f2;
     text-decoration: none;
 }
@@ -284,7 +285,6 @@
 
 .admin-order-delivery-page {
     background-color: #FDFBF9;
-    min-height: 100vh;
 }
 
 .admin-order-delivery-page .page-content {
@@ -781,7 +781,6 @@
    흰 카드는 그 안의 .admin-coupon-view-page-card에 나눠 담는다 */
         .admin-coupon-view-page {
             background-color: #FDFBF9;
-            min-height: 100vh;
             padding: 50px 0;
             box-sizing: border-box;
         }
@@ -1379,7 +1378,6 @@
 
 .admin-maintenance-page {
     background-color: #f6efe4;
-    min-height: 100vh;
 }
 
 .admin-maintenance-page .page-content {
@@ -1596,6 +1594,7 @@ body:has(.product-register) {
     flex:1;
     padding-right:30px
 }
+/* input과 select의 공통 뼈대 */
 .input-area input,
 .input-area select{
     width:100%;
@@ -1607,8 +1606,133 @@ body:has(.product-register) {
     color:#444;
     font-size:13px
 }
+
+/* 화살표는 select에만. 네이티브 화살표는 오른쪽 끝에 딱 붙어 그려져 위치를 못 잡으므로
+   appearance:none 으로 끄고 같은 모양의 SVG를 배경으로 깔아 안쪽으로 들여놓는다.
+   ⚠️ 화살표 위치(right:14px)는 근사치라 화면 확인 필요 */
+.input-area select{
+    /* 오른쪽 패딩은 화살표(10px) + 좌우 여백만큼 확보해 글자가 화살표에 겹치지 않게 한다 */
+    padding-right:38px;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    appearance:none;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    background-size:10px 10px
+}
+/* IE/Edge 레거시의 기본 화살표 중복 노출 방지 */
+.input-area select::-ms-expand{display:none}
 .input-area input:focus,
 .input-area select:focus{border-color:#b59b7e}
+
+/* 입력 글자 수 표시(views/addProduct.js). 한도의 90%부터 색으로 알려준다 */
+.product-register .char-counter{
+    display:block;
+    margin-top:6px;
+    color:#aaa19a;
+    font-size:11px;
+    text-align:right
+}
+.product-register .char-counter.is-near-limit{
+    color:#b5533f;
+    font-weight:600
+}
+/* 기본 정보 칸에서는 카운터가 .input-area 가 아니라 라벨 안(고정 문구 아래)에 온다.
+   .form-row 가 align-items:center 라서, 카운터를 입력칸 쪽에 두면 그 높이만큼 입력칸이
+   위로 밀려 보이기 때문. 라벨 쪽에 두면 입력칸 위치는 그대로다. */
+.product-register .form-row>label .char-counter{
+    margin-top:5px;
+    text-align:left
+}
+
+/* 옵션 행에서는 카운터가 입력칸 아래가 아니라 라벨과 같은 줄에 온다(.option-field-head).
+   기본 규칙의 margin-top 을 빼야 라벨과 밑선이 맞는다. */
+.product-register .option-field .char-counter{margin-top:0}
+
+/* ================= OPTION (개수 제한 없는 동적 행) =================
+   가격/재고가 PRODUCTOPTION에 달려 있어 옵션 단위로 입력받는다(HANDOFF 3-48).
+   주변 규칙(.form-row 등)은 스코프가 없지만, 신규분만이라도 .product-register로 스코프해
+   다른 페이지로 새지 않게 한다(3-5/3-6 재발 방지). */
+.product-register .option-area{
+    flex:1;
+    padding:22px 30px 22px 0
+}
+.product-register .option-description{
+    margin:0 0 18px;
+    color:#aaa19a;
+    font-size:11px
+}
+.product-register .option-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:14px
+}
+.product-register .option-row{
+    display:flex;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:12px;
+    padding:14px 16px;
+    background:#fdfbf8;
+    border:1px solid #e7e0d8
+}
+/* 행 번호 배지 - 검증 실패 메시지("옵션 2의 판매가격을...")와 화면을 맞추기 위한 표시.
+   입력칸(38px) 높이 가운데에 맞추는 margin 보정. ⚠️ 근사치라 화면 확인 필요 */
+.product-register .option-row-index{
+    width:22px;
+    height:22px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:9px;
+    background:#ece3d8;
+    border-radius:50%;
+    color:#7d6b5b;
+    font-size:11px;
+    font-weight:700
+}
+.product-register .option-field{
+    flex:1;
+    min-width:120px;
+    display:flex;
+    flex-direction:column;
+    gap:6px
+}
+/* 옵션명은 가격/재고보다 긴 값이 들어가므로 두 배 폭 */
+.product-register .option-field-name{flex:2}
+/* 옵션명 라벨 + 글자수 카운터를 한 줄에 놓는 머리줄.
+   가격/재고 칸은 라벨만 있으므로 세 칸의 머리줄 높이가 같아진다(행 아래끝 정렬 유지) */
+.product-register .option-field-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:8px
+}
+.product-register .option-field-label{
+    color:#918981;
+    font-size:11px
+}
+.product-register .option-field input{
+    width:100%;
+    height:38px;
+    padding:0 12px;
+    box-sizing:border-box;
+    background:#fff;
+    border:1px solid #ddd5cc;
+    outline:0;
+    color:#444;
+    font-size:13px
+}
+.product-register .option-field input:focus{border-color:#b59b7e}
+/* 25px 원형 버튼(.tag-remove)을 38px 입력칸 높이의 가운데에 맞추는 보정값.
+   ⚠️ 근사치라 화면 확인 필요 */
+.product-register .option-remove{margin-bottom:7px}
+/* 옵션이 1개뿐일 때 JS가 hidden으로 감추는데, 재사용한 .tag-remove의 display:flex가
+   브라우저 기본 [hidden]{display:none}(우선순위가 더 낮음)을 밀어내서 명시적으로 덮어쓴다 */
+.product-register .option-remove[hidden]{display:none}
 
 /* ================= TAG ================= */
 
@@ -1655,11 +1779,15 @@ body:has(.product-register) {
     gap:10px;
     border:1px solid rgba(0,0,0,.08);
     border-radius:22px;
-    color:#4b433d;
     font-size:14px;
     font-weight:500;
     cursor:pointer;
-    transition:.2s
+    transition:.2s;
+    /* 태그 배경색은 등록자가 자유롭게 고르는 값(연한 파스텔 ~ #eb1717 같은 진한 색)이라 글자색이
+       고정이면 한쪽에서 반드시 묻힌다. views/addProduct.js 의 getContrastColor()가 배경 밝기를
+       재서 이 색(밝은 배경) 또는 흰색(어두운 배경)을 inline 으로 덮어쓴다.
+       여기 값은 JS 실행 전/실패 시의 기본값. */
+    color:#1f1b18
 }
 #addedTagList .product-tag{padding:7px 10px 7px 15px}
 .product-tag:hover{
@@ -2033,7 +2161,6 @@ body:has(.product-register) {
    바깥 배경은 .add-coupon-page에, 흰 카드는 그 안의 .add-coupon-page-card에 나눠 담는다 */
 .add-coupon-page {
            background-color: #FDFBF9;
-           min-height: 100vh;
            padding: 70px 0;
            box-sizing: border-box;
        }

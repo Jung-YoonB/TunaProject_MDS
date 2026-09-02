@@ -36,7 +36,8 @@ public class WishController {
         String addWish = service.insertWish(findWishInfoDTO);
         model.addAttribute("message", addWish);
         System.out.println("addWishMessage :: " + addWish);
-        return "redirect:home/home";
+        return "/mds/detail/" + productId;
+
     }
 
     @GetMapping("/remove-wish")
@@ -53,7 +54,7 @@ public class WishController {
 
         model.addAttribute("message", message);
         System.out.println("removeWishMessage :: " + message);
-        return "redirect:home/home";
+        return "product/wish";
     }
 
     @GetMapping("/my-wish")
@@ -67,6 +68,6 @@ public class WishController {
             List<WishListDTO> list = service.getWishList(member.getMemberId());
         System.out.println("list :: " + list);
         model.addAttribute("list", list);
-        return "redirect:home/home";
+        return "product/wish";
     }
 }

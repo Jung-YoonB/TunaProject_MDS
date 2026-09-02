@@ -1,157 +1,332 @@
-/* 회원가입 페이지 인터랙션 - 중복확인 서버 통신은 member/memberService.js에 위임 */
+/* 회원가입 페이지 인터랙션
+ * 중복확인 서버 통신은 member/memberService.js에 위임
+ */
 
-// 비밀번호 일치 여부 확인
-const loginPw = document.querySelector("#login_pw");  // 비밀번호 입력창
-const loginPwConfirm = document.querySelector("#login_pw_confirm"); // 비밀번호 확인 입력창
 
-let checkReg = false; // 정규식 일치 여부 확인용
-let checkPw = false; // 비밀번호 일치 여부 확인용
+/* =========================================================
+ * 비밀번호 검사
+ * ========================================================= */
+
+const loginPw = document.querySelector("#login_pw");
+const loginPwConfirm = document.querySelector("#login_pw_confirm");
+
+let checkReg = false;
+let checkPw = false;
 
 function validatePassword() {
-    const confirmRegResult = document.querySelector("#pw-reg-check-notice");
-    confirmRegResult.textContent = "";
-    const pwRegex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()])[a-zA-Z0-9!@#$%^&*()]{8,16}$/;
 
-    // 1. 비밀번호 입력 여부 및 정규식 검사
+    const confirmRegResult =
+        document.querySelector("#pw-reg-check-notice");
+
+    const confirmResult =
+        document.querySelector("#pw-check-notice");
+
+    const pwRegex =
+        /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()])[a-zA-Z0-9!@#$%^&*()]{8,16}$/;
+
+
+    /* 비밀번호 형식 검사 */
+
     if (loginPw.value.length === 0) {
+
         confirmRegResult.textContent = "";
+        confirmRegResult.className = "";
         checkReg = false;
+
     } else if (pwRegex.test(loginPw.value)) {
+
+        confirmRegResult.textContent = "";
+        confirmRegResult.className = "";
         checkReg = true;
+
     } else {
-        confirmRegResult.textContent = "영어와 숫자, 특수문자가 최소 하나씩 들어가는 8~16자로 입력해주세요.";
+
+        confirmRegResult.textContent =
+            "비밀번호는 영어와 숫자, 특수문자가 최소 하나씩 들어가는 8~16자로 입력해주세요.";
+
         confirmRegResult.className = "error-message";
         checkReg = false;
     }
 
-    const confirmResult = document.querySelector("#pw-check-notice");
+
+    /* 비밀번호 확인 */
+
     confirmResult.textContent = "";
 
-    // 비밀번호 확인 입력창이 비어있을 경우 검사 x
     if (!loginPwConfirm.value.trim()) {
+
         checkPw = false;
-		confirmResult.textContent = "";
         return;
     }
 
-    let checkMatch = loginPw.value === loginPwConfirm.value;
+
+    const checkMatch =
+        loginPw.value === loginPwConfirm.value;
+
     checkPw = checkReg && checkMatch;
 
-    // 2. 삼항 연산자 문구 유지 및 클래스 동기화
-    confirmResult.textContent = checkPw ? "비밀번호가 정상적으로 확인되었습니다." : (!checkReg ? "비밀번호의 형식을 확인해주세요." : "입력하신 비밀번호가 동일하지 않습니다.");
-    // checkPw(최종 성공)일 때만 초록색(msg-success) 부여
-    confirmResult.className = checkPw ? "success-message" : "error-message";
+
+    if (checkPw) {
+
+        confirmResult.textContent =
+            "비밀번호가 정상적으로 확인되었습니다.";
+
+        confirmResult.className = "success-message";
+
+    } else if (!checkReg) {
+
+        confirmResult.textContent =
+            "비밀번호의 형식을 확인해주세요.";
+
+        confirmResult.className = "error-message";
+
+    } else {
+
+        confirmResult.textContent =
+            "입력하신 비밀번호가 동일하지 않습니다.";
+
+        confirmResult.className = "error-message";
+    }
 }
 
-loginPw.addEventListener('input', validatePassword);
-loginPwConfirm.addEventListener('input', validatePassword);
+loginPw.addEventListener("input", validatePassword);
+loginPwConfirm.addEventListener("input", validatePassword);
 
-let checkId = null;   // 아이디 중복체크 값
-const checkIdResult = document.querySelector("#id-check-notice");
-const loginIdInput = document.querySelector("#login_id");
+
+/* =========================================================
+ * 아이디 중복확인
+ * ========================================================= */
+
+let checkId = null;
+
+const checkIdResult =
+    document.querySelector("#id-message");
+
+const loginIdInput =
+    document.querySelector("#login_id");
+
+
 loginIdInput.addEventListener("input", function() {
+
     checkIdResult.textContent = "";
+    checkIdResult.className = "";
     checkId = null;
 });
 
-// 아이디 중복확인 버튼의 클릭 이벤트 리스너 추가
-const idCheckBtn = document.querySelector("#CheckId");
-idCheckBtn.addEventListener("click", async function() {
-    const loginId = loginIdInput.value.trim();
-    // 아이디 값이 입력되지 않았을 경우, 요청 x
-    if (loginId.length === 0) {
-        checkIdResult.textContent = "아이디를 입력해주세요.";
-        checkIdResult.className = "error-message"; // 오류용 css 적용을 위한 클래스 추가용
-        checkId = null;
-        return;
-    }
 
-    const idRegex = /^[a-z][a-z0-9]{5,19}$/;
-    if (!idRegex.test(loginId)) {
-        checkIdResult.textContent = "첫글자를 영어로 하는 6~20자로 입력해주세요.";
+const idCheckBtn =
+    document.querySelector("#CheckId");
+
+
+idCheckBtn.addEventListener("click", async function() {
+
+    const loginId = loginIdInput.value.trim();
+
+
+    /* 입력 여부 */
+
+    if (loginId.length === 0) {
+
+        checkIdResult.textContent =
+            "아이디를 입력해주세요.";
+
         checkIdResult.className = "error-message";
         checkId = null;
+
         return;
     }
 
-    // 입력된 아이디값이 중복되는 지 서버로 요청
+
+    /* DTO와 동일한 정규식 */
+
+    const idRegex =
+        /^[a-z][a-z0-9_]{5,19}$/;
+
+
+    if (!idRegex.test(loginId)) {
+
+        checkIdResult.textContent =
+            "아이디는 영문 소문자로 시작하며, 영문 소문자·숫자·언더바(_)를 사용한 6~20자로 입력해주세요.";
+
+        checkIdResult.className = "error-message";
+        checkId = null;
+
+        return;
+    }
+
+
+    /* 서버 중복확인 */
+
     try {
-        const result = await MemberService.checkId(loginId);
 
-        checkIdResult.textContent = result.message;
-        checkIdResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용
+        const result =
+            await MemberService.checkId(loginId);
 
-        checkId = result.data ? null : loginId;
+        checkIdResult.textContent =
+            result.message;
+
+        checkIdResult.className =
+            result.data
+                ? "error-message"
+                : "success-message";
+
+        checkId =
+            result.data
+                ? null
+                : loginId;
+
     } catch (error) {
+
         console.log(error);
 
-        checkIdResult.textContent = "중복 확인 중 오류가 발생했습니다.";
-        checkIdResult.className = "error-message"; // 오류용 css 적용을 위한 클래스 추가용
+        checkIdResult.textContent =
+            "중복 확인 중 오류가 발생했습니다.";
+
+        checkIdResult.className =
+            "error-message";
 
         checkId = null;
     }
-
 });
 
-let checkNickname = null;   // 닉네임 중복체크 값
-const checkNicknameResult = document.querySelector("#nickname-check-notice");
-const nicknameInput = document.querySelector("#nickname");
+
+/* =========================================================
+ * 닉네임 중복확인
+ * ========================================================= */
+
+let checkNickname = null;
+
+const checkNicknameResult =
+    document.querySelector("#nickname-message");
+
+const nicknameInput =
+    document.querySelector("#nickname");
+
+
 nicknameInput.addEventListener("input", function() {
+
     checkNicknameResult.textContent = "";
+    checkNicknameResult.className = "";
     checkNickname = null;
 });
 
-// 닉네임 중복확인 버튼의 클릭 이벤트 리스너 추가
-const nicknameCheckBtn = document.querySelector("#CheckNickname");
+
+const nicknameCheckBtn =
+    document.querySelector("#CheckNickname");
+
+
 nicknameCheckBtn.addEventListener("click", async function() {
-    const nickname = nicknameInput.value.trim();
-    // 닉네임 값이 입력되지 않았을 경우, 요청 x
+
+    const nickname =
+        nicknameInput.value.trim();
+
+
     if (nickname.length === 0) {
-        checkNicknameResult.textContent = "닉네임을 입력해주세요.";
-        checkNicknameResult.className = "error-message"; // 오류용 css 적용을 위한 클래스 추가용
+
+        checkNicknameResult.textContent =
+            "닉네임을 입력해주세요.";
+
+        checkNicknameResult.className =
+            "error-message";
+
         checkNickname = null;
+
         return;
     }
 
-    // 입력된 닉네임값이 중복되는 지 서버로 요청
+
+    /* DTO와 동일한 정규식 */
+
+    const nicknameRegex =
+        /^[가-힣a-zA-Z0-9_]{2,8}$/;
+
+
+    if (!nicknameRegex.test(nickname)) {
+
+        checkNicknameResult.textContent =
+            "닉네임은 한글, 영문, 숫자, 언더바(_)를 사용하여 2~8자로 입력해주세요.";
+
+        checkNicknameResult.className =
+            "error-message";
+
+        checkNickname = null;
+
+        return;
+    }
+
+
     try {
-        const result = await MemberService.checkNickname(nickname);
 
-        checkNicknameResult.textContent = result.message;
-        checkNicknameResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용
+        const result =
+            await MemberService.checkNickname(nickname);
 
-        checkNickname = result.data ? null : nickname;
+        checkNicknameResult.textContent =
+            result.message;
+
+        checkNicknameResult.className =
+            result.data
+                ? "error-message"
+                : "success-message";
+
+        checkNickname =
+            result.data
+                ? null
+                : nickname;
+
     } catch (error) {
+
         console.log(error);
 
-        checkNicknameResult.textContent = "중복 확인 중 오류가 발생했습니다.";
-        checkNicknameResult.className = "error-message"; // 오류용 css 적용을 위한 클래스 추가용
+        checkNicknameResult.textContent =
+            "중복 확인 중 오류가 발생했습니다.";
+
+        checkNicknameResult.className =
+            "error-message";
 
         checkNickname = null;
     }
-
 });
 
-let checkEmail = null;   // 이메일 중복체크 값
-const checkEmailResult = document.querySelector("#email-check-notice");
-const emailInput = document.querySelector("#email");
+
+/* =========================================================
+ * 이메일 중복확인
+ * 이메일은 선택사항
+ * ========================================================= */
+
+let checkEmail = null;
+
+const checkEmailResult =
+    document.querySelector("#email-message");
+
+const emailInput =
+    document.querySelector("#email");
+
+
 emailInput.addEventListener("input", function() {
+
+	this.value = this.value.replace(/\s/g, "");
+	
     checkEmailResult.textContent = "";
+    checkEmailResult.className = "";
     checkEmail = null;
 });
 
+
 const emailCheckBtn = document.querySelector("#CheckEmail");
+
 emailCheckBtn.addEventListener("click", async function() {
     const email = emailInput.value.trim();
 
+    // 이메일은 선택사항
     if (email.length === 0) {
-        checkEmailResult.textContent = "이메일을 입력해주세요.";
-        checkEmailResult.className = "error-message"; // 오류용 css 적용을 위한 클래스 추가용
-        checkEmail = null;
+        checkEmailResult.textContent = "이메일은 선택사항입니다.";
+        checkEmailResult.className = "success-message";
+        checkEmail = "";
         return;
     }
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
     if (!emailRegex.test(email)) {
         checkEmailResult.textContent = "올바른 이메일 형식이 아닙니다.";
         checkEmailResult.className = "error-message";
@@ -163,98 +338,236 @@ emailCheckBtn.addEventListener("click", async function() {
         const result = await MemberService.checkEmail(email);
 
         checkEmailResult.textContent = result.message;
-        checkEmailResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용
+        checkEmailResult.className =
+            result.data ? "error-message" : "success-message";
 
         checkEmail = result.data ? null : email;
+
     } catch (error) {
         console.log(error);
 
         checkEmailResult.textContent = "중복 확인 중 오류가 발생했습니다.";
-        checkEmailResult.className = "error-message"; // 오류용 css 적용을 위한 클래스 추가용
+        checkEmailResult.className = "error-message";
 
         checkEmail = null;
     }
-
 });
 
-let checkPhone = null;   // 연락처 중복체크 값
-const checkPhoneResult = document.querySelector("#phone-check-notice");
-const phoneInput = document.querySelector("#phone");
+
+/* =========================================================
+ * 연락처 중복확인
+ * ========================================================= */
+
+let checkPhone = null;
+
+const checkPhoneResult =
+    document.querySelector("#phone-message");
+
+const phoneInput =
+    document.querySelector("#phone");
+
+
 phoneInput.addEventListener("input", function() {
-    this.value = this.value.replace(/[^0-9]/g, '');  // 숫자 이외의 입력 막기
+
+    this.value =
+        this.value.replace(/[^0-9]/g, "");
+
     checkPhoneResult.textContent = "";
+    checkPhoneResult.className = "";
     checkPhone = null;
 });
 
-const phoneCheckBtn = document.querySelector("#CheckPhone");
+
+const phoneCheckBtn =
+    document.querySelector("#CheckPhone");
+
+
 phoneCheckBtn.addEventListener("click", async function() {
-    const phone = phoneInput.value.trim();
+
+    const phone =
+        phoneInput.value.trim();
+
 
     if (phone.length === 0) {
-        checkPhoneResult.textContent = "연락처를 입력해주세요.";
-        checkPhoneResult.className = "error-message"; // 오류용 css 적용을 위한 클래스 추가용
+
+        checkPhoneResult.textContent =
+            "연락처를 입력해주세요.";
+
+        checkPhoneResult.className =
+            "error-message";
+
         checkPhone = null;
+
         return;
     }
 
-    const phoneRegex = /^01[0-9]{8,9}$/;
+
+    /* DTO와 동일한 정규식 */
+
+    const phoneRegex =
+        /^01[0-9]{8,9}$/;
+
+
     if (!phoneRegex.test(phone)) {
-        checkPhoneResult.textContent = "올바른 전화번호 형식이 아닙니다.";
-        checkPhoneResult.className = "error-message";
+
+        checkPhoneResult.textContent =
+            "올바른 전화번호 형식이 아닙니다.";
+
+        checkPhoneResult.className =
+            "error-message";
+
         checkPhone = null;
+
         return;
     }
+
 
     try {
-        const result = await MemberService.checkPhone(phone);
 
-        checkPhoneResult.textContent = result.message;
-        checkPhoneResult.className = result.data ? "error-message" : "success-message"; // 성공 실패에 따른 css 적용을 위한 클래스 추가용
+        const result =
+            await MemberService.checkPhone(phone);
 
-        checkPhone = result.data ? null : phone;
+        checkPhoneResult.textContent =
+            result.message;
+
+        checkPhoneResult.className =
+            result.data
+                ? "error-message"
+                : "success-message";
+
+        checkPhone =
+            result.data
+                ? null
+                : phone;
+
     } catch (error) {
+
         console.log(error);
 
-        checkPhoneResult.textContent = "중복 확인 중 오류가 발생했습니다.";
-        checkPhoneResult.className = "error-message"; // 오류용 css 적용을 위한 클래스 추가용
+        checkPhoneResult.textContent =
+            "중복 확인 중 오류가 발생했습니다.";
+
+        checkPhoneResult.className =
+            "error-message";
 
         checkPhone = null;
     }
-
 });
 
 
-const signUpForm = document.querySelector("#SignUpForm");
+/* =========================================================
+ * 회원가입 제출 전 최종 검사
+ * ========================================================= */
+
+const signUpForm =
+    document.querySelector("#SignUpForm");
+
+
 signUpForm.addEventListener("submit", function(e) {
 
-    if (!checkId) {
-        e.preventDefault();   // 폼 제출 막기
-        alert("아이디 중복확인을 진행해주세요.");
+
+    /* 이름 */
+
+    const memberName =
+        document.querySelector("#member_name").value.trim();
+
+    const nameRegex =
+        /^[가-힣]{2,4}$/;
+
+
+    if (memberName.length === 0) {
+
+        e.preventDefault();
+        alert("이름을 입력해주세요.");
+
         return;
     }
+
+
+    if (!nameRegex.test(memberName)) {
+
+        e.preventDefault();
+        alert("이름은 한글 2~4자로 입력해주세요.");
+
+        return;
+    }
+
+
+    /* 아이디 */
+
+    if (!checkId) {
+
+        e.preventDefault();
+        alert("아이디 중복확인을 진행해주세요.");
+
+        return;
+    }
+
+
+    /* 비밀번호 */
 
     if (!checkPw) {
-        e.preventDefault();   // 폼 제출 막기
-        alert("비밀번호 형식을 확인하거나 일치 여부를 확인해주세요.");
+
+        e.preventDefault();
+        alert(
+            "비밀번호 형식을 확인하거나 일치 여부를 확인해주세요."
+        );
+
         return;
     }
+
+
+    /* 닉네임 */
 
     if (!checkNickname) {
-        e.preventDefault();   // 폼 제출 막기
+
+        e.preventDefault();
         alert("닉네임 중복확인을 진행해주세요.");
+
         return;
     }
 
-    if (!checkEmail) {
-        e.preventDefault();   // 폼 제출 막기
-        alert("이메일 중복확인을 진행해주세요.");
+
+    /* 이메일
+     * 선택사항이므로 비어 있으면 통과
+     * 입력했다면 반드시 중복확인까지 완료
+     */
+
+    if (emailInput.value.trim() !== "" && !checkEmail) {
+
+        e.preventDefault();
+        alert(
+            "입력한 이메일의 중복확인을 진행해주세요."
+        );
+
         return;
     }
+
+
+    /* 연락처 */
 
     if (!checkPhone) {
-        e.preventDefault();   // 폼 제출 막기
+
+        e.preventDefault();
         alert("연락처 중복확인을 진행해주세요.");
+
         return;
     }
 
+
+    /* 개인정보 동의 */
+
+    const privacyAgree =
+        document.querySelector("#privacy_agree");
+
+
+    if (!privacyAgree.checked) {
+
+        e.preventDefault();
+        alert(
+            "개인정보 수집 및 이용에 동의해주세요."
+        );
+
+        return;
+    }
 });

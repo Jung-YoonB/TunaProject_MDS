@@ -16,7 +16,7 @@ import lombok.ToString;
 @ToString
 @Setter
 @Alias("MainPageDTO")
-public class MainPageDTO {
+public class MainPageDTO{
 
 	private List<ProductListDTO> product;
 	private List<BannerDTO> banner;

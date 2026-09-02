@@ -35,8 +35,15 @@ public class PaymentViewDTO {
 	
 	// 총 가격
 	private long totalPrice;		// 결제창에 띄울 총 가격
+	private long itemTotalPrice;   // 상품 총 금액
+	private long deliveryFee;      // 배송비
+	private long discountPrice;    // 등급 할인 금액
+	private long couponDiscount;   // 쿠폰 할인 금액
+	private long pointUse;         // 포인트 사용 금액
+	private long finalPrice;       // 최종 결제 금액
 	
 	// 리스트
 	private List<OrderItemDTO> itemList;		// 구매할 것들 정보 (옵션id, 수량, 옵션 이름, 옵션가격, 상품 이름)
 	private List<CouponDTO> couponList;	// 사용자가 가지고 있는 쿠폰 목록
+	private List<Long> cartIds;
 }

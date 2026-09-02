@@ -33,16 +33,26 @@
             <!-- 상품명 -->
 
             <div class="form-row">
+                <%-- 글자 수 표시는 라벨 아래에 둔다. 입력칸이 있는 .input-area 안에 두면
+                     그만큼 세로로 공간을 차지해서 입력칸이 위로 밀려 보인다.
+                     aria-hidden: 라벨 안에 있으므로 그냥 두면 한 글자 칠 때마다 필드 이름이
+                     다시 읽힌다. 시각 표시 용도라 보조기기에서는 감춘다. --%>
                 <label>
                     상품명
                     <span class="required">*</span>
+                    <span class="char-counter" data-for="productNameInput" aria-hidden="true"></span>
                 </label>
 
+                <%-- data-maxchars: 입력 가능한 글자 수. views/addProduct.js 가 남은 수를 표시하고
+                     초과 입력을 잘라내며, AdminProductServiceImpl 이 서버에서도 같은 값으로 검증한다.
+                     제한 값은 DB 컬럼이 BYTE 단위인 걸 감안해 잡았다 - 전부 한글이어도(1자=3byte)
+                     컬럼 안에 들어간다. (PRODUCT_NAME VARCHAR2(150) ← 50자 x 3 = 150byte) --%>
                 <div class="input-area">
                     <input
                         type="text"
                         name="productName"
                         id="productNameInput"
+                        data-maxchars="50"
                         placeholder="상품명을 입력해 주세요"
                     >
                 </div>
@@ -55,6 +65,7 @@
                 <label>
                     상품 게시글 제목
                     <span class="required">*</span>
+                    <span class="char-counter" data-for="productTitleInput" aria-hidden="true"></span>
                 </label>
 
                 <div class="input-area">
@@ -62,67 +73,39 @@
                         type="text"
                         name="productTitle"
                         id="productTitleInput"
+                        data-maxchars="60"
                         placeholder="상품 목록/검색에 노출될 제목을 입력해 주세요"
                     >
                 </div>
             </div>
 
 
-            <!-- 옵션명 (PRODUCTOPTION.OPTION_NAME - 이 화면은 옵션 1개만 생성하므로 그 옵션의 이름) -->
+            <!-- 옵션 - PRODUCT엔 가격/재고 컬럼이 없고 PRODUCTOPTION에 있어서 옵션 단위로 등록한다.
+                 개수 제한 없이 추가 가능하고 최소 1개는 필수. 실제 행은 views/addProduct.js가 그린다 -->
 
             <div class="form-row">
                 <label>
-                    옵션명
+                    옵션
                     <span class="required">*</span>
                 </label>
 
-                <div class="input-area">
-                    <input
-                        type="text"
-                        name="optionName"
-                        id="optionNameInput"
-                        placeholder="예: 기본, 단품"
+                <div class="option-area">
+
+                    <p class="option-description">
+                        옵션마다 판매가격과 재고를 따로 등록합니다. 옵션이 하나뿐이면 "기본"처럼 입력해 주세요.
+                    </p>
+
+                    <div class="option-list" id="optionList"></div>
+
+                    <button
+                        type="button"
+                        class="add-tag-button add-option-button"
+                        id="addOptionButton"
                     >
-                </div>
-            </div>
+                        <span class="add-icon">＋</span>
+                        옵션 추가
+                    </button>
 
-
-            <!-- 가격 -->
-
-            <div class="form-row">
-                <label>
-                    판매가격
-                    <span class="required">*</span>
-                </label>
-
-                <div class="input-area">
-                    <input
-                        type="number"
-                        name="price"
-                        id="priceInput"
-                        placeholder="판매가격을 입력해 주세요"
-                        min="0"
-                    >
-                </div>
-            </div>
-
-
-            <!-- 재고 (PRODUCT 테이블엔 가격/재고 컬럼이 없고 PRODUCTOPTION(옵션)에 있어서,
-                 상품 등록 시 이 값으로 "기본 옵션" 1개를 자동 생성해 가격/재고를 담는다) -->
-            <div class="form-row">
-                <label>
-                    재고
-                    <span class="required">*</span>
-                </label>
-
-                <div class="input-area">
-                    <input
-                        type="number"
-                        name="stock"
-                        id="stockInput"
-                        placeholder="재고 수량을 입력해 주세요"
-                        min="0"
-                    >
                 </div>
             </div>
 
@@ -235,7 +218,7 @@
 
                     <div class="upload-icon">＋</div>
 
-                    <strong>대표 이미지</strong>
+                    <strong>대표 이미지 <span class="required">*</span></strong>
 
                     <p>
                         상품 목록에 표시되는<br>
@@ -264,7 +247,7 @@
             <div class="sub-image-area">
 
                 <div class="sub-image-title">
-                    <strong>추가 이미지</strong>
+                    <strong>추가 이미지 <span class="required">*</span></strong>
                     <span id="subImageCount">0장</span>
                 </div>
 
@@ -314,22 +297,26 @@
     <section class="register-section">
 
         <div class="section-title">
-            <h2>상품 설명</h2>
+            <h2>상품 설명 <span class="required">*</span></h2>
             <p>상품에 대한 상세한 설명을 입력해 주세요.</p>
         </div>
 
         <div class="description-box">
 
+            <%-- 기존 maxlength="2000"은 PRODUCT_CONTENT(VARCHAR2(4000 BYTE))의 실제 한계를 넘는 값이었다.
+                 한글 2000자면 6000byte라 카운터가 여유 있다고 표시한 채로 등록이 터진다. → 1300자로 조정 --%>
             <textarea
                 id="productContent"
                 name="productContent"
-                maxlength="2000"
+                data-maxchars="1300"
                 placeholder="상품의 특징, 구성, 배송 및 보관 방법 등을 입력해 주세요."
             ></textarea>
 
             <div class="textarea-bottom">
                 <span>상품 설명을 작성해 주세요.</span>
-                <span id="counter">0 / 2000</span>
+                <%-- 기존 "0 / 2000"은 글자 수 기준이라 실제 한계(한글 1333자)와 어긋났다.
+                     바이트 기준 카운터로 교체 --%>
+                <span class="char-counter" data-for="productContent"></span>
             </div>
 
         </div>
