@@ -64,7 +64,7 @@
 
 		<div id="search_box">
 			<%-- TODO(placeholder route): "/search" 컨트롤러 미구현 --%>
-			<form id="headerSearchForm" action="<c:url value='mds/searchList'/>" method="get">
+			<form id="headerSearchForm" action="<c:url value='/mds/searchList'/>" method="get">
 				<input type="search" id="headerSearchInput" name="keyword" class="search-input"
 					   placeholder="상품을 검색해보세요." aria-label="상품 검색" autocomplete="off">
 				<button type="submit" class="search-submit" aria-label="검색">
