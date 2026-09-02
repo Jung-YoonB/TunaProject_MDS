@@ -42,7 +42,80 @@ body {
 	min-height: 100vh;
 	padding-top: 69px;
 }
+
+/* 클릭 후 뒤로가기로 돌아오면 브라우저가 직전 포커스를 복원해서 a:focus가 계속 맞고,
+   default.css의 전역 a:focus{text-decoration:underline} 때문에 밑줄이 남는다.
+   default.css는 다른 팀과 공유하는 공통 규약이라 손대지 않고 여기서 명시도로 이긴다
+   ((0,2,1) > (0,1,1)). :focus:not(:focus-visible) = 마우스 클릭으로 생긴 포커스만 해당하므로
+   키보드 Tab(:focus-visible)과 hover의 밑줄은 그대로다. HANDOFF 3-51 참고. */
+a:focus:not(:focus-visible) {
+	text-decoration: none;
+}
+
 main {
+	flex: 1 0 auto;
+	/* 아래 "빈 띠" 규칙이 높이를 wrapper→카드로 흘려보낼 수 있도록 세로 flex 컨테이너로 (배치 결과는 기존과 동일) */
+	display: flex;
+	flex-direction: column;
+}
+
+/* ===== 콘텐츠가 짧을 때 카드 아래 생기던 빈 띠 제거 (HANDOFF 3-50) =====
+   main{flex:1 0 auto}가 이미 남는 높이를 갖고 있으므로, 그 높이를 wrapper → 카드까지
+   이어받게 한다(예전엔 wrapper마다 min-height:100vh를 걸어 페이지만 길어지고 카드는 안 늘어났다).
+   ※ 목록을 명시한 이유: JSP들이 </main> 직전에 <script>를 둬서 :last-child 류가 안 맞는다.
+   ※ main:has(.update-page) 처럼 main 자체가 카드인 페이지, 가운데 뜬 카드인 .auth-shell은 제외. */
+main > .member-mypage-page,
+main > .coupon-view-page,
+main > .review-write-page,
+main > .my-reviews-page,
+main > .order-delivery-page,
+main > .admin-mypage-page,
+main > .admin-order-delivery-page,
+main > .admin-maintenance-page,
+main > .admin-coupon-view-page,
+main > .add-coupon-page,
+main > .product-register,
+main > .update-page,
+main > .withdraw-page,
+main > .product-detail-page,
+main > .order-page,
+main > .order-complete-page,
+main > .cart-container,
+main > .search-result-page,
+main > .wishlist-container,
+main > .delivery-page,
+main > #product {
+	flex: 1 0 auto;
+}
+
+/* wrapper 안에 카드가 따로 있는 페이지 - 카드까지 높이를 넘긴다.
+   카드는 전부 width + margin:0 auto라 flex로 바꿔도 가로 위치는 그대로다. */
+main > .member-mypage-page,
+main > .coupon-view-page,
+main > .review-write-page,
+main > .my-reviews-page,
+main > .order-delivery-page,
+main > .admin-mypage-page,
+main > .admin-order-delivery-page,
+main > .admin-maintenance-page,
+main > .admin-coupon-view-page,
+main > .add-coupon-page,
+main > #product {
+	display: flex;
+	flex-direction: column;
+}
+
+.member-mypage-page > .page-content,
+.review-write-page > .page-content,
+.my-reviews-page > .page-content,
+.order-delivery-page > .page-content,
+.admin-mypage-page > .page-content,
+.admin-order-delivery-page > .page-content,
+.admin-maintenance-page > .page-content,
+.coupon-view-page > .coupon-view-page-card,
+.admin-coupon-view-page > .admin-coupon-view-page-card,
+.add-coupon-page > .add-coupon-page-card,
+#product > .home-container {
 	flex: 1 0 auto;
 }
 

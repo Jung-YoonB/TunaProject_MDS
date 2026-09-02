@@ -115,11 +115,21 @@
   			NVL(rep.PRODUCT_IMAGE_PATH, '/uploads/product/') AS PRODUCT_IMAGE_PATH,
   			NVL(rep.PRODUCT_IMAGE_SAVE_NAME, '') AS PRODUCT_IMAGE_SAVE_NAME,
   			rep.QTY AS QTY,
-  			rep.OD_ID AS OD_ID,
+  			<!-- 리뷰 링크는 대표가 아니라 "아직 안 쓴 것 중 첫 번째"로 건다. 대표 기준이면 상품이
+  			     2건 이상인 주문에서 나머지가 작성 경로를 잃는다(AUDIT 버그 17번). 다 썼으면 NULL이라 대표로 대체 -->
+  			NVL(nr.NEXT_OD_ID, rep.OD_ID) AS OD_ID,
   			NVL(rep.PRODUCT_COUNT, 0) AS PRODUCT_COUNT,
-  			CASE WHEN EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = rep.OD_ID) THEN 1 ELSE 0 END AS HAS_REVIEW
+  			<!-- 이 주문의 모든 상품을 다 썼을 때만 "작성 완료"로 잠금 -->
+  			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS HAS_REVIEW
   		FROM PRODUCTORDER PO
   		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
+  		<!-- 주문별 "아직 리뷰 안 쓴 주문상세 중 최소 OD_ID". REVIEW_STATUS는 안 본다 - 삭제한 것도 계속 제외 -->
+  		LEFT JOIN (
+  			SELECT od2.ORDER_ID, MIN(od2.OD_ID) AS NEXT_OD_ID
+  			FROM ORDERDETAIL od2
+  			WHERE NOT EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od2.OD_ID)
+  			GROUP BY od2.ORDER_ID
+  		) nr ON nr.ORDER_ID = PO.ORDER_ID
   		LEFT JOIN (
   			SELECT od.ORDER_ID, od.OD_ID, p.PRODUCT_NAME, od.QTY,
   				(SELECT pi.PRODUCT_IMAGE_PATH FROM PRODUCTIMAGE pi
@@ -165,7 +175,8 @@
   		JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
   		WHERE po.MEMBER_ID = #{memberId}
   		  AND d.DELIVERY_STATUS = 'DELIVERED'
-  		  AND NOT EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = od.OD_ID)
+  		  <!-- REVIEW_STATUS는 안 본다 - 삭제한 주문상세도 계속 제외(재작성 차단과 같은 기준) -->
+  		  AND NOT EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od.OD_ID)
   	</select>
   	
   	<update id="updateNickname">

@@ -28,7 +28,7 @@ public class CartController {
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             System.out.println(member);
             System.out.println(model.getAttribute("message"));
-            return "redirect:/login";
+            return "redirect:/member/login";
         }
 
         System.out.println("memberId :: " + member.getMemberId());
@@ -37,7 +37,7 @@ public class CartController {
         String message = service.insertCartInfo(cart);
         System.out.println("message :: " + message);
         model.addAttribute("message", message);
-        return "redirect:home/home";
+        return "home/home";
     }
 
     @GetMapping("/my-cart")
@@ -45,7 +45,7 @@ public class CartController {
         MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            return "redirect:/login";
+            return "redirect:/member/login";
         }
         ResponseCartListDTO cartList = service.getCartList(member.getMemberId());
         model.addAttribute("cartList", cartList);
@@ -60,6 +60,6 @@ public class CartController {
         String message = service.removeCart(member.getMemberId(), popId);
         System.out.println("message :: " + message);
         model.addAttribute("message", message);
-        return "redirect:home/home";
+        return "home/home";
     }
 }

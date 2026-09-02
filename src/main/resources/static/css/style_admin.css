@@ -32,7 +32,6 @@
 
 .admin-mypage-page {
     background-color: #FDFBF9;
-    min-height: 100vh;
 }
 
 .admin-mypage-page .page-content {
@@ -177,8 +176,10 @@
     transition: background-color .15s, border-color .15s;
 }
 
+/* :focus가 아니라 :focus-visible - 클릭 후 뒤로가기로 돌아오면 브라우저가 직전 포커스를
+   복원해서 :focus가 계속 맞고 눌린 잔상이 남는다. 키보드 이동은 그대로 표시됨(HANDOFF 3-51) */
 .admin-mypage-page .quick-menu-tile:hover,
-.admin-mypage-page .quick-menu-tile:focus {
+.admin-mypage-page .quick-menu-tile:focus-visible {
     background-color: #fbf8f2;
     border-color: #e2d9c8;
     text-decoration: none;
@@ -237,7 +238,7 @@
 }
 
 .admin-mypage-page .list-row:hover,
-.admin-mypage-page .list-row:focus {
+.admin-mypage-page .list-row:focus-visible {
     background-color: #fbf8f2;
     text-decoration: none;
 }
@@ -284,7 +285,6 @@
 
 .admin-order-delivery-page {
     background-color: #FDFBF9;
-    min-height: 100vh;
 }
 
 .admin-order-delivery-page .page-content {
@@ -781,7 +781,6 @@
    흰 카드는 그 안의 .admin-coupon-view-page-card에 나눠 담는다 */
         .admin-coupon-view-page {
             background-color: #FDFBF9;
-            min-height: 100vh;
             padding: 50px 0;
             box-sizing: border-box;
         }
@@ -1379,7 +1378,6 @@
 
 .admin-maintenance-page {
     background-color: #f6efe4;
-    min-height: 100vh;
 }
 
 .admin-maintenance-page .page-content {
@@ -1609,6 +1607,82 @@ body:has(.product-register) {
 }
 .input-area input:focus,
 .input-area select:focus{border-color:#b59b7e}
+
+/* ================= OPTION (개수 제한 없는 동적 행) =================
+   가격/재고가 PRODUCTOPTION에 달려 있어 옵션 단위로 입력받는다(HANDOFF 3-48).
+   주변 규칙(.form-row 등)은 스코프가 없지만, 신규분만이라도 .product-register로 스코프해
+   다른 페이지로 새지 않게 한다(3-5/3-6 재발 방지). */
+.product-register .option-area{
+    flex:1;
+    padding:22px 30px 22px 0
+}
+.product-register .option-description{
+    margin:0 0 18px;
+    color:#aaa19a;
+    font-size:11px
+}
+.product-register .option-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:14px
+}
+.product-register .option-row{
+    display:flex;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:12px;
+    padding:14px 16px;
+    background:#fdfbf8;
+    border:1px solid #e7e0d8
+}
+/* 행 번호 배지 - 검증 실패 메시지("옵션 2의 판매가격을...")와 화면을 맞추기 위한 표시.
+   입력칸(38px) 높이 가운데에 맞추는 margin 보정. ⚠️ 근사치라 화면 확인 필요 */
+.product-register .option-row-index{
+    width:22px;
+    height:22px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:9px;
+    background:#ece3d8;
+    border-radius:50%;
+    color:#7d6b5b;
+    font-size:11px;
+    font-weight:700
+}
+.product-register .option-field{
+    flex:1;
+    min-width:120px;
+    display:flex;
+    flex-direction:column;
+    gap:6px
+}
+/* 옵션명은 가격/재고보다 긴 값이 들어가므로 두 배 폭 */
+.product-register .option-field-name{flex:2}
+.product-register .option-field-label{
+    color:#918981;
+    font-size:11px
+}
+.product-register .option-field input{
+    width:100%;
+    height:38px;
+    padding:0 12px;
+    box-sizing:border-box;
+    background:#fff;
+    border:1px solid #ddd5cc;
+    outline:0;
+    color:#444;
+    font-size:13px
+}
+.product-register .option-field input:focus{border-color:#b59b7e}
+/* 25px 원형 버튼(.tag-remove)을 38px 입력칸 높이의 가운데에 맞추는 보정값.
+   ⚠️ 근사치라 화면 확인 필요 */
+.product-register .option-remove{margin-bottom:7px}
+/* 옵션이 1개뿐일 때 JS가 hidden으로 감추는데, 재사용한 .tag-remove의 display:flex가
+   브라우저 기본 [hidden]{display:none}(우선순위가 더 낮음)을 밀어내서 명시적으로 덮어쓴다 */
+.product-register .option-remove[hidden]{display:none}
 
 /* ================= TAG ================= */
 
@@ -2033,7 +2107,6 @@ body:has(.product-register) {
    바깥 배경은 .add-coupon-page에, 흰 카드는 그 안의 .add-coupon-page-card에 나눠 담는다 */
 .add-coupon-page {
            background-color: #FDFBF9;
-           min-height: 100vh;
            padding: 70px 0;
            box-sizing: border-box;
        }

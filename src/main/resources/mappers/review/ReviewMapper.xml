@@ -57,26 +57,31 @@
 	<!-- 마이페이지 "내가 쓴 리뷰" 목록: getReviewList(product 상세용)와 동일한 조인 패턴 + 상품 대표이미지 추가 -->
 	<select id="selectMyReviews" resultType="ReviewDTO">
 		SELECT
-			r.REVIEW_ID,
-			r.SCORE,
-			r.REVIEW_TEXT,
-			TO_CHAR(r.WRITE_DATE, 'YYYY-MM-DD') AS writeDate,
-			po.OPTION_NAME,
-			p.PRODUCT_NAME,
-			po.OPTION_PRICE,
-			orderd.QTY,
-			r.LIKE_COUNT,
-			r.OD_ID,
-			r.MEMBER_ID,
-			pi.PRODUCT_IMAGE_PATH,
-			pi.PRODUCT_IMAGE_SAVE_NAME
+		r.REVIEW_ID,
+		r.SCORE,
+		r.REVIEW_TEXT,
+		TO_CHAR(r.WRITE_DATE, 'YYYY-MM-DD') AS writeDate,
+		po.OPTION_NAME,
+		p.PRODUCT_NAME,
+		po.OPTION_PRICE,
+		orderd.QTY,
+		count(rl.REVIEW_ID) reviewCount,
+		r.OD_ID,
+		r.MEMBER_ID,
+		pi.PRODUCT_IMAGE_PATH,
+		pi.PRODUCT_IMAGE_SAVE_NAME
 		FROM REVIEW r
 		JOIN ORDERDETAIL orderd ON r.OD_ID = orderd.OD_ID
 		JOIN OPTIONDETAIL od ON orderd.POP_ID = od.POP_ID
 		JOIN PRODUCTOPTION po ON po.OPTION_ID = od.OPTION_ID
 		JOIN PRODUCT p ON p.PRODUCT_ID = od.PRODUCT_ID
+		left join REVIEWLIKE rl on r.REVIEW_ID = rl.REVIEW_ID
 		LEFT JOIN PRODUCTIMAGE pi ON pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0
 		WHERE r.MEMBER_ID = #{memberId}
+		group by r.REVIEW_ID, r.SCORE, r.REVIEW_TEXT,
+		r.WRITE_DATE, po.OPTION_NAME, p.PRODUCT_NAME,
+		po.OPTION_PRICE, orderd.QTY, r.OD_ID, r.MEMBER_ID,
+		pi.PRODUCT_IMAGE_PATH, pi.PRODUCT_IMAGE_SAVE_NAME
 		ORDER BY r.WRITE_DATE DESC
 		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
 	</select>
