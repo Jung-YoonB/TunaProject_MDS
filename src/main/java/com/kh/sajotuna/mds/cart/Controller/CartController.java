@@ -37,7 +37,7 @@ public class CartController {
         String message = service.insertCartInfo(cart);
         System.out.println("message :: " + message);
         model.addAttribute("message", message);
-        return "product/cart";
+        return "redirect:/cart/my-cart";
     }
 
     @GetMapping("/my-cart")
@@ -57,9 +57,13 @@ public class CartController {
     public String removeCart(HttpSession session, Model model, Long popId) {
         System.out.println("pop_id :: " + popId);
         MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+        if(member == null){
+            model.addAttribute("message", "로그인이 필요한 서비스입니다.");
+            return "redirect:/member/login";
+        }
         String message = service.removeCart(member.getMemberId(), popId);
         System.out.println("message :: " + message);
         model.addAttribute("message", message);
-        return "product/cart";
+        return "redirect:/cart/my-cart";
     }
 }

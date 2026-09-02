@@ -90,6 +90,17 @@ Spring Boot + JSP(JSTL) + MyBatis + Oracle 스택의 팀 실습 프로젝트야.
 ======================================================================
 3. 이번 세션에서 할 일
 ======================================================================
+[0단계] **좋아요(REVIEWLIKE) 더미 데이터 — 최우선. 여기부터 시작할 것.**
+  현재 `REVIEWLIKE` **0행**이라 상품 상세의 좋아요 수와 `is_liked`(내가 누른 표시)가 전부 0으로만
+  나온다. 불러오는 쪽(집계 서브쿼리 / LEFT JOIN)이 맞는지 확인이 안 되니 더미부터 넣는다.
+  - `sql/dummy_order_review.sql` 에 INSERT 추가하는 방식. 시퀀스는 `SEQ_REVIEW_LIKE_ID`,
+    `UK_REVIEWLIKE(REVIEW_ID, MEMBER_ID)` 가 있으니 같은 사람이 같은 리뷰에 두 번 넣지 말 것.
+  - 계정: `dummy_rv01~06` / `dummy_buyer` / `dummy_zero` / `dummy_many` / `dummy_nick8` (pw 전부 `1234`).
+    REVIEW 는 `REVIEW_STATUS=1` 74건 / `=0` 1건(REVIEW_ID 94, 상품 11) 있음.
+  - **작성은 Claude, 실행은 내가 직접.**
+  - 넣고 나서 확인할 것: 상세 화면 좋아요 수 표시 / 로그인 계정이 누른 리뷰의 하트 활성 상태 /
+    `/mds/review/like/{id}` 토글이 그 값을 실제로 바꾸는지.
+
 [1단계] **product 담당자 수정분이 병합되면 HANDOFF 3-53의 검증 체크리스트 A~D 실행**
   (A 재작성 차단 / B 표시·집계 제외 / C 좋아요 REVIEWLIKE 일원화 / D 회귀)
   상품 130건 + 리뷰 더미가 있으니 화면에서 바로 확인할 수 있어.

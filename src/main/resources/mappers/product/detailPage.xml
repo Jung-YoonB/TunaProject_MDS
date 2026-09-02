@@ -12,11 +12,14 @@
 		p.product_name,
 		p.product_content,
 		MIN(PO.OPTION_PRICE) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS PRICE,
+		<!-- 삭제된 리뷰(REVIEW_STATUS=0)는 평균 별점·리뷰 수에서 빠져야 한다(AUDIT 정책 11번).
+		     product.xml getList / wish.xml 의 같은 집계와 동일 기준 -->
 		NVL(( SELECT ROUND(AVG(R.SCORE), 1)
 		FROM REVIEW R
 		JOIN ORDERDETAIL OD_SUB ON R.OD_ID = OD_SUB.OD_ID
 		JOIN OPTIONDETAIL SUB_OD ON OD_SUB.POP_ID = SUB_OD.POP_ID
 		WHERE SUB_OD.PRODUCT_ID = p.product_id
+		AND R.REVIEW_STATUS = 1
 		), 0.0) AS avg_score,
 
 		(
@@ -25,6 +28,7 @@
 		JOIN ORDERDETAIL OD_SUB ON R.OD_ID = OD_SUB.OD_ID
 		JOIN OPTIONDETAIL SUB_OD ON OD_SUB.POP_ID = SUB_OD.POP_ID
 		WHERE SUB_OD.PRODUCT_ID = p.product_id
+		AND R.REVIEW_STATUS = 1
 		) AS review_count,
 
 		(

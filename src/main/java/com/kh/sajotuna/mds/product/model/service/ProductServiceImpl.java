@@ -1,10 +1,12 @@
 package com.kh.sajotuna.mds.product.model.service;
 
+import com.kh.sajotuna.mds.admin.model.dto.TagOptionDTO;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.OptionDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.ProductDetailDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.CategoryDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
@@ -23,12 +25,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService{
 	private final ProductMapper mapper;
-	private final int REVIEWS_PAGE_SIZE = 5;
+
+	// 페이지 크기는 화면마다 다르므로 용도별로 나눠 둔다(MemberServiceImpl의 COUPON/DELIVERY_PAGE_SIZE,
+	// ReviewServiceImpl의 MY_REVIEWS_PAGE_SIZE와 같은 방식).
+	// 상품 상세에 붙는 리뷰: 한 번에 5개
+	private static final int REVIEWS_PAGE_SIZE = 5;
+	// 검색 결과 상품: 한 페이지 20개
+	private static final int SEARCH_PAGE_SIZE = 20;
+	// 메인 화면 상품 목록은 페이징하지 않는다. 0을 넘기면 product.xml이 OFFSET/FETCH를 붙이지 않는다.
+	private static final int NO_PAGING = 0;
 
 	@Override
 	public MainPageDTO getList() {
 		SearchDTO searchDTO = new SearchDTO();
-		List<ProductListDTO> list = mapper.getList(searchDTO, 0, 0);
+		List<ProductListDTO> list = mapper.getList(searchDTO, 0, NO_PAGING);
 		List<BannerDTO> bannerList = mapper.bannerList();
 		MainPageDTO dto = new MainPageDTO(list, bannerList);
 		System.out.println("product list:: " + list.toString());
@@ -40,6 +50,11 @@ public class ProductServiceImpl implements ProductService{
 	@Override
 	public DetailPageDTO detailPage(Long productId) {
 		ProductDetailDTO dto = mapper.productDetail(productId);
+		// 없는 상품 번호로 들어오면(주소창 직접 입력 등) 여기서 null이라 아래 setThumbnail에서
+		// NPE -> 500 페이지가 떴다. 호출부가 "없음"을 판단할 수 있게 null로 돌려준다.
+		if (dto == null) {
+			return null;
+		}
 		String thumbnail = mapper.getThumbnail(productId);
 
 		List<String> images = mapper.getImages(productId);
@@ -129,16 +144,31 @@ public class ProductServiceImpl implements ProductService{
 	@Override
 	public int totalPages(SearchDTO searchDTO) {
 		int totalCount = mapper.countSearchProducts(searchDTO);
-		return Math.max(1, (int) Math.ceil((double) totalCount / REVIEWS_PAGE_SIZE));
+		return Math.max(1, (int) Math.ceil((double) totalCount / SEARCH_PAGE_SIZE));
 	}
 
 
 	@Override
 	public List<ProductListDTO> getSearchList(SearchDTO search, int page) {
 		int safePage = Math.max(page, 1);
-		int offset = (safePage - 1) * REVIEWS_PAGE_SIZE;
-		List<ProductListDTO> list = mapper.getList(search, offset, REVIEWS_PAGE_SIZE);
+		int offset = (safePage - 1) * SEARCH_PAGE_SIZE;
+		List<ProductListDTO> list = mapper.getList(search, offset, SEARCH_PAGE_SIZE);
 		System.out.println("search list :: " + list);
 		return list;
+	}
+
+	@Override
+	public List<CategoryDTO> getCategories() {
+		return mapper.selectAllCategories();
+	}
+
+	@Override
+	public List<TagOptionDTO> getTags() {
+		return mapper.selectAllTags();
+	}
+
+	@Override
+	public List<BannerDTO> getBanners() {
+		return mapper.bannerList();
 	}
 }

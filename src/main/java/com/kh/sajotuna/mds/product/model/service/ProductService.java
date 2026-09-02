@@ -1,5 +1,8 @@
 package com.kh.sajotuna.mds.product.model.service;
 
+import com.kh.sajotuna.mds.admin.model.dto.TagOptionDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.CategoryDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
@@ -24,4 +27,13 @@ public interface ProductService {
 	int totalPages(SearchDTO searchDTO);
 
 	List<ProductListDTO> getSearchList(SearchDTO search, int page);
+
+	// 검색 화면 카테고리/태그 칩 목록
+	List<CategoryDTO> getCategories();
+
+	List<TagOptionDTO> getTags();
+
+	// 배너용 상품 대표 이미지(최근 등록순 최대 5장). 메인은 MainPageDTO로 함께 받지만
+	// 검색 화면은 사이드바 배너만 필요해서 따로 꺼내 쓴다.
+	List<BannerDTO> getBanners();
 }

@@ -19,12 +19,12 @@
 
         <!-- 상품 이미지 -->
         <div id="product-images">
-            <img id="product-main-image" src="/upload/product/${detail.product.thumbnail}" alt="${detail.product.productTitle}">
+            <img id="product-main-image" src="<c:url value='/uploads/product/'/>${detail.product.thumbnail}" alt="${detail.product.productTitle}">
 
             <%-- 서브 이미지는 개수가 고정이 아니라 등록된 만큼 나와야 해서 forEach 로 처리 (0개~N개 전부 가능) --%>
             <div id="product-sub-images">
                 <c:forEach items="${detail.product.image}" var="img">
-                    <img class="product-sub-image" src="/upload/product/${img}" alt="상품 이미지">
+                    <img class="product-sub-image" src="<c:url value='/uploads/product/'/>${img}" alt="상품 이미지">
                 </c:forEach>
             </div>
         </div>
@@ -32,7 +32,7 @@
         <!-- 상품 상세 정보 -->
         <div id="product-info">
 
-            <h1 class="product-title">코토나 타월 핸드타월 세트</h1>
+            <h1 class="product-title">${detail.product.productTitle}</h1>
 
             <div class="product-description">
                 집들이 수건 선물 세트
@@ -155,7 +155,7 @@
         <div class="tab-panel is-active" data-tab-panel="info">
             <p class="tab-content-text">${detail.product.productContent}</p>
             <c:forEach items="${detail.product.detailContents}" var="img">
-                <img class="tab-content-image" src="/upload/product/${img}" alt="상품 상세 이미지">
+                <img class="tab-content-image" src="<c:url value='/uploads/product/'/>${img}" alt="상품 상세 이미지">
             </c:forEach>
         </div>
 
@@ -198,6 +198,29 @@
                     <p class="review-text">${review.reviewText}</p>
                 </div>
             </c:forEach>
+
+            <%-- 리뷰 페이지 번호. 한 페이지 5개(ProductServiceImpl.REVIEWS_PAGE_SIZE)라 리뷰가 많으면
+                 여기서 넘겨본다. 검색 결과 화면과 같은 .sp-pagination 스타일을 그대로 재사용한다.
+                 #review 해시는 페이지를 넘겨도 리뷰 탭이 열린 채로 돌아오게 하려는 것(productdetail.js가 처리). --%>
+            <c:if test="${totalPages > 1}">
+                <nav class="sp-pagination" aria-label="리뷰 페이지 탐색">
+                    <c:if test="${currentPage > 1}">
+                        <a class="sp-btn-prev" href="<c:url value='/mds/review/${productId}'/>?page=${currentPage - 1}#review">이전</a>
+                    </c:if>
+                    <ol>
+                        <c:forEach begin="${pageWindowStart}" end="${pageWindowEnd}" var="p">
+                            <li>
+                                <a class="sp-page-btn ${p == currentPage ? 'is-current' : ''}"
+                                   <c:if test="${p == currentPage}">aria-current="page"</c:if>
+                                   href="<c:url value='/mds/review/${productId}'/>?page=${p}#review">${p}</a>
+                            </li>
+                        </c:forEach>
+                    </ol>
+                    <c:if test="${currentPage < totalPages}">
+                        <a class="sp-btn-next" href="<c:url value='/mds/review/${productId}'/>?page=${currentPage + 1}#review">다음</a>
+                    </c:if>
+                </nav>
+            </c:if>
         </div>
     </div>
 

@@ -28,7 +28,7 @@ public class WishController {
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             System.out.println(model.getAttribute("message"));
-            return "redirect:/login";
+            return "redirect:/member/login";
         }
 
         findWishInfoDTO findWishInfoDTO = new findWishInfoDTO(member.getMemberId(), productId);
@@ -36,7 +36,7 @@ public class WishController {
         String addWish = service.insertWish(findWishInfoDTO);
         model.addAttribute("message", addWish);
         System.out.println("addWishMessage :: " + addWish);
-        return "/mds/detail/" + productId;
+        return "redirect:/mds/detail/" + productId;
 
     }
 
@@ -46,7 +46,7 @@ public class WishController {
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             System.out.println(model.getAttribute("message"));
-            return "redirect:/login";
+            return "redirect:/member/login";
         }
 
         findWishInfoDTO findWishInfoDTO = new findWishInfoDTO(member.getMemberId(), productId);
@@ -54,7 +54,7 @@ public class WishController {
 
         model.addAttribute("message", message);
         System.out.println("removeWishMessage :: " + message);
-        return "product/wish";
+        return "redirect:/wish/my-wish";
     }
 
     @GetMapping("/my-wish")
@@ -63,7 +63,7 @@ public class WishController {
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             System.out.println(model.getAttribute("message"));
-            return "redirect:/login";
+            return "redirect:/member/login";
         }
             List<WishListDTO> list = service.getWishList(member.getMemberId());
         System.out.println("list :: " + list);

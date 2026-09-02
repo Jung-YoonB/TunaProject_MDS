@@ -230,43 +230,31 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.tab-panel');
 
 
+    function activateTab(target) {
+        tabButtons.forEach(function (btn) {
+            const isActive = btn.dataset.tabTarget === target;
+            btn.classList.toggle('is-active', isActive);
+            btn.setAttribute('aria-selected', isActive);
+        });
+
+        tabPanels.forEach(function (panel) {
+            panel.classList.toggle('is-active', panel.dataset.tabPanel === target);
+        });
+    }
+
     tabButtons.forEach(function (button) {
 
         button.addEventListener('click', function () {
-
-            const target =
-                button.dataset.tabTarget;
-
-
-            // 버튼 상태 변경
-            tabButtons.forEach(function (btn) {
-
-                const isActive =
-                    btn === button;
-
-                btn.classList.toggle(
-                    'is-active',
-                    isActive
-                );
-
-                btn.setAttribute(
-                    'aria-selected',
-                    isActive
-                );
-            });
-
-
-            // 패널 변경
-            tabPanels.forEach(function (panel) {
-
-                panel.classList.toggle(
-                    'is-active',
-                    panel.dataset.tabPanel === target
-                );
-            });
+            activateTab(button.dataset.tabTarget);
         });
     });
 
+
+    // 리뷰 페이지 번호를 누르면 /mds/review/{id}?page=N#review 로 다시 들어온다.
+    // 기본이 "상품 상세" 탭이라, 해시가 있으면 리뷰 탭을 열어둔 채로 시작한다.
+    if (window.location.hash === '#review') {
+        activateTab('review');
+    }
 
     /* =========================
        찜 버튼

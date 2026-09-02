@@ -65,7 +65,10 @@
 		<div id="search_box">
 			<%-- TODO(placeholder route): "/search" 컨트롤러 미구현 --%>
 			<form id="headerSearchForm" action="<c:url value='/mds/searchList'/>" method="get">
+				<%-- 검색 결과 화면에서 검색어가 사라지지 않도록 현재 keyword를 그대로 채워둔다
+					 (검색 화면 안쪽 검색창과 동일). 다른 화면에서는 keyword가 없어 빈 값이 된다. --%>
 				<input type="search" id="headerSearchInput" name="keyword" class="search-input"
+					   value="<c:out value='${param.keyword}'/>"
 					   placeholder="상품을 검색해보세요." aria-label="상품 검색" autocomplete="off">
 				<button type="submit" class="search-submit" aria-label="검색">
 					<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

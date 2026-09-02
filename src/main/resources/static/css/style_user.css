@@ -320,6 +320,17 @@
     background-image: linear-gradient(135deg, var(--gsf-sage-light), var(--gsf-tan));
 }
 
+/* 카드에 실제 상품 이미지를 넣기 시작하면서(2026-09-02) 추가. <img>에 크기 규칙이 없으면
+   원본 크기 그대로 그려져서 4:3 박스를 넘어가고, 아래 .product-info(상품명/카테고리)를
+   덮어버린다. 박스를 꽉 채우되 비율은 유지하도록 잘라 넣는다.
+   검색 결과(searchProduct.jsp)와 찜 목록(views/wish.js) 카드가 함께 쓴다. */
+.product-img img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 /* 기본적으로 숨겨두고, 상품 이미지에 마우스를 올렸을 때만 보이게 함 */
 .product-badge {
     position: absolute;
@@ -2143,6 +2154,12 @@ main:has(.search-result-page) {
 .sp-sidebar-banner .banner-image {
 	aspect-ratio: 4 / 3;
 	border-radius: 0;
+	/* 배너 이미지를 실제 상품 대표 이미지로 바꾸면서(2026-09-02) JSP가 inline style로
+	   background-image를 넣는다. 원본 비율이 제각각이라 잘라서 꽉 채운다.
+	   이미지를 못 받아온 슬라이드는 위 .banner-image의 그라데이션이 그대로 보인다. */
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
 }
 .sp-sidebar-banner .banner-content {
 	padding: 18px 20px 34px;
@@ -2203,6 +2220,16 @@ main:has(.search-result-page) {
 .sp-category-item.is-active {
 	background-color: var(--gsf-caramel);
 	color: #222;
+}
+/* 카테고리 칩과 페이지 번호를 <button>에서 서버 링크(<a>)로 바꿨다(2026-09-02) - 클릭이 실제
+   검색 조건으로 넘어가야 해서. 위에 잡아둔 버튼 스타일이 앵커에도 그대로 먹도록
+   앵커 기본값(inline, 밑줄)만 덮어쓴다. */
+a.sp-category-item,
+a.sp-page-btn,
+a.sp-btn-prev,
+a.sp-btn-next {
+	display: inline-block;
+	text-decoration: none;
 }
 
 /* ===== Tag section (가격대·선호 등 상품 속성, 중복 선택 가능, 메인 카테고리 바로 아래) ===== */
@@ -2272,24 +2299,8 @@ main:has(.search-result-page) {
 .sp-search-btn:hover {
 	background-color: #b48b62;
 }
-.sp-quick-filter {
-	display: flex;
-	gap: 8px;
-	flex-wrap: wrap;
-}
-.sp-filter-btn {
-	border: none;
-	border-radius: 999px;
-	background-color: #eee;
-	color: #666;
-	font-size: 13px;
-	padding: 8px 16px;
-	cursor: pointer;
-}
-.sp-filter-btn:hover {
-	background-color: var(--gsf-caramel);
-	color: #222;
-}
+/* .sp-quick-filter / .sp-filter-btn(인기·신상품·할인) 규칙은 삭제함(2026-09-02).
+   버튼이 동작한 적이 없고 실제 필터 역할은 태그 칩이 하고 있어 JSP에서 함께 제거. */
 
 /* ===== Product grid ===== */
 .sp-product-section {

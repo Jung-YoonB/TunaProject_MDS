@@ -16,6 +16,7 @@ import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
 import com.kh.sajotuna.mds.product.model.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
@@ -39,37 +40,26 @@ public class ProductController {
 	}
 	
 	@GetMapping("/detail/{productId}")
-	public String detailPage(@PathVariable Long productId) {
-		System.out.println("컨트롤러 productId :: " + productId);
-
+	public String detailPage(@PathVariable Long productId, Model model, HttpSession session,
+							@RequestParam(defaultValue = "1") int page) {
+		// 상품 정보(이미지/옵션/쿠폰)와 리뷰를 한 번에 담는다. 예전에는 조회만 하고 model에 안 실어서
+		// JSP의 ${detail...}이 전부 빈 값으로 나왔고, 리뷰는 /mds/review/{id}로 따로 들어가야만 보였다.
 		DetailPageDTO detail = service.detailPage(productId);
-		System.out.println("컨트롤러 detail :: " + detail);
+		if (detail == null) { // 없는 상품 번호 - 500 대신 목록으로 돌려보낸다
+			return "redirect:/mds/searchList";
+		}
+		model.addAttribute("detail", detail);
+
+		addReviewPage(model, session, productId, page);
 		return"product/productDetail";
 	}
 
-	@GetMapping("/coupon/{couponId}")
-	public String getCoupon(HttpSession session, Model model, @PathVariable Long couponId) {
-		MemberDTO user = (MemberDTO)session.getAttribute(SessionConst.LOGIN_MEMBER);
+	// 상세 페이지와 /mds/review/{productId}가 같은 JSP를 쓰므로 리뷰 목록 + 페이지 정보를
+	// 담는 부분을 공유한다(한쪽만 고쳐서 어긋나는 걸 막는다).
+	private void addReviewPage(Model model, HttpSession session, Long productId, int page) {
+		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+		Long memberId = (user != null) ? user.getMemberId() : null;
 
-		if (user.getMemberId() == null) {
-			model.addAttribute("message", "로그인이 필요합니다.");
-			System.out.println(model.getAttribute("message"));
-			return "redirect:/member/login";
-		}
-		String message = service.getCoupons(user.getMemberId(), couponId);
-		System.out.println("message:: " + message);
-		return"home/home";
-	}
-
-	@GetMapping("/review/{productId}")
-	public String reviewPage(@PathVariable Long productId, Model model, HttpSession session,
-							@RequestParam(defaultValue = "1") int page) {
-		System.out.println("page Number :: " + page);
-		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
-		Long memberId  = null;
-		if(user != null) {
-			memberId = user.getMemberId();
-		}
 		int totalPages = service.totalReviewPages(productId);
 		int currentPage = Math.min(Math.max(page, 1), totalPages);
 		int windowSize = 5;
@@ -77,29 +67,55 @@ public class ProductController {
 		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
 		windowStart = Math.max(1, windowEnd - windowSize + 1);
 
-		List<ReviewDTO> reviewList = service.getReviewList(productId, memberId, currentPage);
-
-		model.addAttribute("reviewList", reviewList);
-		System.out.println("reviewList :: " + reviewList);
+		model.addAttribute("reviewList", service.getReviewList(productId, memberId, currentPage));
+		model.addAttribute("productId", productId);
 		model.addAttribute("currentPage", currentPage);
 		model.addAttribute("totalPages", totalPages);
 		model.addAttribute("pageWindowStart", windowStart);
 		model.addAttribute("pageWindowEnd", windowEnd);
+	}
+
+	@GetMapping("/coupon/{couponId}")
+	public String getCoupon(HttpSession session, Model model, @PathVariable Long couponId) {
+		// 세션 키는 LOGIN_SESSION (AUDIT 버그 1번 - LOGIN_MEMBER로 읽어 항상 null → NPE 500이었다)
+		MemberDTO user = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+
+		if (user == null) {
+			model.addAttribute("message", "로그인이 필요합니다.");
+			return "redirect:/member/login";
+		}
+		String message = service.getCoupons(user.getMemberId(), couponId);
+		System.out.println("message:: " + message);
+		return"home/home";
+	}
+
+	// 리뷰 페이지 번호를 눌렀을 때 들어오는 경로. 같은 JSP를 쓰므로 상품 정보도 함께 담아야
+	// 상단(이미지/옵션/가격)이 빈 화면이 되지 않는다.
+	@GetMapping("/review/{productId}")
+	public String reviewPage(@PathVariable Long productId, Model model, HttpSession session,
+							@RequestParam(defaultValue = "1") int page) {
+		DetailPageDTO detail = service.detailPage(productId);
+		if (detail == null) {
+			return "redirect:/mds/searchList";
+		}
+		model.addAttribute("detail", detail);
+		addReviewPage(model, session, productId, page);
 		return"product/productDetail";
 	}
 
 
+	// 좋아요 토글 결과("on"/"off")를 그대로 응답 본문으로 돌려준다.
+	// @ResponseBody가 없으면 반환 문자열이 뷰 이름으로 취급돼 화면을 못 찾는다.
 	@GetMapping("/review/like/{reviewId}")
+	@ResponseBody
 	public String reviewLike(@PathVariable Long reviewId, HttpSession session) {
-		Long memberId  = null;
-		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
-		if(user.getMemberId() != null) {
-			memberId = user.getMemberId();
+		// 세션 키는 LOGIN_SESSION이다. LOGIN_MEMBER는 Model attribute 이름이라 세션엔 절대 안 담긴다
+		// (AUDIT 버그 1번 - 이 자리에서 항상 null이라 바로 NPE 500이 났다).
+		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+		if (user == null) {
+			return "login-required";
 		}
-		String result = service.increaseReviewLike(reviewId, memberId);
-
-		System.out.println("result :: " + result);
-		return result;
+		return service.increaseReviewLike(reviewId, user.getMemberId());
 	}
 
 
@@ -112,10 +128,13 @@ public class ProductController {
 		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
 		windowStart = Math.max(1, windowEnd - windowSize + 1);
 
-		List<ProductListDTO> searchList = service.getSearchList(searchDTO, page);
+		List<ProductListDTO> searchList = service.getSearchList(searchDTO, currentPage);
 
 		model.addAttribute("searchList", searchList);
-		System.out.println("reviewList :: " + searchList);
+		model.addAttribute("categoryList", service.getCategories());
+		model.addAttribute("tagList", service.getTags());
+		model.addAttribute("bannerList", service.getBanners());
+		System.out.println("searchList :: " + searchList);
 		model.addAttribute("currentPage", currentPage);
 		model.addAttribute("totalPages", totalPages);
 		model.addAttribute("pageWindowStart", windowStart);

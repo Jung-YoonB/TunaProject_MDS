@@ -45,11 +45,38 @@
         });
     });
 
-    // TODO(data binding): 태그 선택은 아직 실제 검색/필터 요청과 연결되어 있지 않음, UI 토글만 동작
-    page.querySelectorAll('.sp-tag-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            btn.classList.toggle('is-active');
+    // 태그 필터 - 중복 선택이라 카테고리 칩(서버 링크)과 달리 여기서 주소를 조립한다.
+    // 켜져 있는 태그를 전부 모아 tag 파라미터 여러 개로 보내면 SearchDTO.tag(List<Long>)로 바인딩된다.
+    // 태그를 바꾸면 결과 개수가 달라지므로 page는 붙이지 않는다(항상 1페이지부터).
+    var SEARCH_URL = page.dataset.searchUrl;
+    var tagButtons = page.querySelectorAll('.sp-tag-btn');
+
+    if (tagButtons.length > 0) {
+        // 새로고침해도 선택이 유지되도록, 주소창에 실려온 tag 값으로 켜진 상태를 복원한다.
+        var currentParams = new URLSearchParams(window.location.search);
+        var selectedTags = currentParams.getAll('tag');
+
+        tagButtons.forEach(function (btn) {
+            if (selectedTags.indexOf(btn.dataset.tagId) !== -1) {
+                btn.classList.add('is-active');
+            }
+
+            btn.addEventListener('click', function () {
+                btn.classList.toggle('is-active');
+
+                var params = new URLSearchParams();
+                var keyword = currentParams.get('keyword');
+                if (keyword) params.set('keyword', keyword);
+                var category = currentParams.get('category');
+                if (category) params.set('category', category);
+
+                page.querySelectorAll('.sp-tag-btn.is-active').forEach(function (active) {
+                    params.append('tag', active.dataset.tagId);
+                });
+
+                window.location.href = SEARCH_URL + '?' + params.toString();
+            });
         });
-    });
+    }
 
 })();

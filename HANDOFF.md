@@ -24,16 +24,16 @@ Claude Code와 함께 진행한 작업을 시간순으로 쌓아온 **누적 작
 
 | 항목 | 상태 |
 |---|---|
-| 브랜치 상황 | `BJY_works`. 3-54/3-55 커밋 + `main` 병합 완료(최근 `06f6ad4`) — **병합 때마다 직전 작업물 생존 확인해 회귀 0건.** 현재 **3-56 작업분이 미커밋** |
+| 브랜치 상황 | `BJY_works`. **`JWC_works`(`3e4d83f`) 병합 중 — 충돌 2건 해결 완료, 미커밋**(3-57). 병합 회귀 확인 결과 직전 작업물 전부 생존 |
 | DB 상태 | **최신화 완료(3-53, 사용자 직접 실행).** `REVIEW_STATUS` 생성 / `LIKE_COUNT`·`REVIEWHISTORY`·`SEQ_REVIEW_RHIST_ID` 제거 / **CATEGORY 15 · TAG 58** / **`PRODUCT` 130건 등록 완료**(60건 예정 → 실제 130건) |
-| ⚠️ 과도기 | **코드 절반만 최신** — `REVIEW_STATUS` 대응이 member/review에만 있고 `product/`엔 0건. 3-47 전달 목록 7건 미수정이라 **상품을 등록하면 상세 화면이 `ORA-00904`로 깨짐.** product 담당자가 현재 수정 중(순서는 의도된 것) |
+| ✅ 과도기 해소 | **product 전달 목록(3-47) 7건이 이번 병합으로 들어왔다.** 누락됐던 1건(상세 평균별점·리뷰수 `REVIEW_STATUS` 필터)은 3-57에서 보완. `ORA-00904`로 상세가 깨지던 문제 해소 — 상품 상세 200 확인 |
 | 아직 다른 브랜치 | `JJY_Work` / `JWC_works` / `KGH_works` / `product_images` / `origin/KCH_works` — 팀원 개인 작업 브랜치라 각자 `main`을 받아가면 해소됨(3-43 매퍼 수정도 그때 따라감) |
 | 테스트 서버 | **`http://192.168.30.24:8797/`** — 가동 중, 3-42/3-43 결과물 배포 반영 확인 완료. **로컬 개발 서버와 포트가 같으니 헷갈리지 말 것**(`localhost:8797` = devtools 로컬) |
 | 진행 중인 작업 | **3-56 완료** — 결제 화면 금액 안내(#TB019_TC-29), 결제 재개(헤더 영수증 아이콘), 배송비/포인트 기준 단일 출처화 |
-| 미커밋 변경 | **수정 10 + 신규 1**(`order/model/dto/PendingCheckoutDTO.java`). 관리 문서 4종은 바탕화면에서 로컬 관리(레포에 없음) |
-| 다음 단계 | **(1) 3-56 작업분 커밋** → (2) product 담당자 수정분 병합(3-47 전달 목록 7건) → (3) 3-53 검증 체크리스트 A~D. 그 뒤 (4) AUDIT 24번 정리(추가 이미지 필수표시/검증 불일치), (5) `style_user.css` 최상위 `#id` 102개 정리(AUDIT 20번) |
+| 미커밋 변경 | **23개 파일** — 3-56 결제 작업분 + `JWC_works` 병합분(21개) + 3-57 수정 4개. **관리 문서 4종은 현재 git 추적 중**(이동 중 백업 목적으로 의도한 것 — 집 밖에서 커밋할 때 제거 후 재커밋 예정) |
+| 다음 단계 | **(1) 좋아요(`REVIEWLIKE`) 더미 데이터 넣기 ← 최우선.** 현재 **0행**이라 상세 화면의 좋아요 수·`is_liked` 표시가 전부 0이어서 불러오는 쪽을 검증할 수 없다. `sql/dummy_order_review.sql`에 INSERT를 추가하는 방식(시퀀스 `SEQ_REVIEW_LIKE_ID`, `UK_REVIEWLIKE(REVIEW_ID, MEMBER_ID)`로 중복 방지, 계정은 `dummy_rv01~06`/`dummy_buyer` 등 pw `1234`). **작성은 Claude, 실행은 사용자.** → (2) 병합 커밋 → (3) 좋아요 버튼 화면 연동(`fetch`로 `/mds/review/like/{id}` 호출, 서버는 3-57에서 정상화됨) → (4) 내일 시연 대비 전체 점검. 남은 것: AUDIT 24번, 20번(`#id` 102개) |
 | 로컬 이미지 없음 | 상품 등록을 **테스트 서버(192.168.30.24)** 로 했기 때문에 업로드 파일이 그 장비에만 있다. 로컬(`localhost:8797`)에서는 `uploads/product`가 없어 **썸네일이 전부 깨져 보이는 것이 정상** — 버그 아님 |
-| 알려진 미연결 | `cart`/`wish` 화면이 **4개 경로 전부 404**(뷰는 완성, 컨트롤러 진입점 없음). 서버 담당자가 달라 연결 전 — 인지된 상태이며 구현 요청 예정. AUDIT 버그 16번 |
+| ✅ cart/wish 연결됨 | 4경로 전부 404였던 것이 **`JWC_works` 병합으로 해소** — `wish/my-wish`·`cart/my-cart` 로그인 상태 200 확인(AUDIT 버그 16번 닫힘) |
 | CSS 구성 | `default.css` / `style.css` / `style_user.css` / `style_admin.css` 4개, `header.jsp`가 전 페이지에 전부 로드 |
 | JS 컨벤션 | 인터랙션 → `static/js/views/<페이지>.js`, 비즈니스·데이터 → `static/js/<도메인>/<기능>Service.js` |
 | 서버 | 포트 8797, `./mvnw spring-boot:run`(devtools 자동 재시작), admin 계정 `admin`/`1234` |
@@ -66,7 +66,8 @@ Claude Code와 함께 진행한 작업을 시간순으로 쌓아온 **누적 작
 | `3-53` | 2026-09-02 | **DB 최신화 실행 완료 + 상품 60건 일괄 등록 사전 점검** — DB 검증(카테고리 15·태그 58), product 미병합 과도기 확인, **product 병합 후 실행할 검증 체크리스트 A~D** |
 | `3-54` | 2026-09-02 | **뷰 수정 묶음 + 주문 다품목 표시 + 테스트 더미 데이터** — `ReviewMapper.xml` 병합 회귀 복구, **마이페이지 리뷰 타일(AUDIT 18) 해소**, 관리자 상품등록 4건 + 서버 길이 검증, 태그 글자색 명암비 계산, 주문/배송 **총수량 + 품목 드롭다운**, `dummy_order_review.sql` 신규 |
 | `3-55` | 2026-09-02 | **헤더 닉네임 노출(#TB006_TC-12) + 품목별 리뷰 상태** — 세션 DTO에 닉네임 추가(변경 시 세션 갱신 포함), 배송완료 카드 기본 펼침 + `리뷰 작성 완료/미작성`, **`hasReview` 이름 충돌을 `allReviewed`로 분리**, 주석 정리 |
-| `3-56` | 2026-09-02 | **결제 화면 금액 안내(#TB019_TC-29) + 결제 재개 + 배송비 정돈** — **화면·서버 계산 불일치(67%·최대 2원) 해소**, 포인트 최소/상한 안내, 배송비·포인트 매직넘버 단일 출처화, **헤더 영수증 아이콘 = 진행 중인 결제 재개**(세션 30분), 깨진 경로 3건 수정 ← 최신 |
+| `3-56` | 2026-09-02 | **결제 화면 금액 안내(#TB019_TC-29) + 결제 재개 + 배송비 정돈** — **화면·서버 계산 불일치(67%·최대 2원) 해소**, 포인트 최소/상한 안내, 배송비·포인트 매직넘버 단일 출처화, **헤더 영수증 아이콘 = 진행 중인 결제 재개**(세션 30분), 깨진 경로 3건 수정 |
+| `3-57` | 2026-09-02 밤 | **`JWC_works` 병합 충돌 해결 + product 전달 목록 검수 + AUDIT 버그 1번 조치** — `productdetail.js` 중복 선언 사고 차단, 누락된 `REVIEW_STATUS` 필터 보완, 세션 키 3곳 정정으로 좋아요·쿠폰 500 해소, 체크리스트 A~D 전부 통과 ← 최신 |
 | 부록 A | — | 참고 메모리(환경/함정 메모) |
 
 ---
@@ -3304,6 +3305,82 @@ GET /order/payment (신규)  ... 세션의 선택으로 화면을 다시 만든�
   views/order/payment.jsp                  천단위 구분자, 동적 포인트 안내, 입력 비활성화
   views/common/header.jsp                  영수증 아이콘 → /order/payment
   views/product/cart.jsp                   낡은 TODO 주석 정리
+```
+
+---
+
+## 3-57. 2026-09-02 밤: `JWC_works` 병합 충돌 해결 + product 전달 목록 검수 + AUDIT 버그 1번 조치
+
+집에서 작업분을 하나로 합치는 과정. `JWC_works`(`3e4d83f #종합버그 처리`)를 `BJY_works`에 병합하다 충돌 2건이 났고, 그 김에 **3-47 전달 목록 검수 + 3-53 체크리스트 A~D**까지 한 번에 진행했다.
+
+> **운영 방침 변경(2026-09-02 밤, 사용자 지시)**: **이제 담당자 구분 없이 발견한 건 우리가 다 고친다.** 내일부터 시연이라 "남의 영역이니 기록만" 하던 기존 규칙은 더 이상 적용하지 않는다.
+
+### 충돌 2건
+
+| 파일 | 성격 | 처리 |
+|---|---|---|
+| `order/OrderController.java` | **양쪽이 같은 버그를 각자 고침** — JWC는 리터럴 `"redirect:/cart/my-cart"`, 이쪽(3-56)은 같은 값을 `CART_URL` 상수로 추출 | 동작이 동일하므로 상수 쪽 유지 |
+| `js/views/productdetail.js` | JWC가 `activateTab()` 추출 + `#review` 해시로 리뷰 탭 열기(리뷰 페이지네이션에 필요)를 추가 | **JWC 쪽 채택하되 중복 선언 제거** |
+
+> **⚠️ 그대로 받았으면 상세 페이지 JS가 통째로 죽었다.** JWC 블록에 `const wishButton` / `const wishCount` 선언이 들어 있는데 **HEAD(3-42 작업)가 이미 파일 상단 13~14행에서 같은 이름을 선언**하고 있었다. 같은 스코프 중복 선언이라 `Identifier 'wishButton' has already been declared` → 파싱 단계에서 스크립트 전체가 죽는다. **컴파일은 통과하므로 안 드러난다** — 3-54-1/3-56-5와 같은 계열의 병합 사고.
+
+### 병합 회귀 확인 (프롬프트 2단계)
+
+최근 작업물이 되돌아가지 않았는지 전수 확인 — **전부 생존**.
+
+`style.css` main 세로 flex 4건(3-50) / `a:focus:not(:focus-visible)`(3-51-1) / `style_user.css`의 `.review-write-page` 50개 규칙(3-49) / `focus-visible` 10건(3-51) / 스코프 없는 `body{}`·`main{}` **0건** / `min-height:100vh` **0건** / `ReviewMapper.xml` 소프트 삭제(3-54-1) / `REVIEWHISTORY` 잔존 0건 / 헤더 닉네임(3-55).
+
+### product 전달 목록(3-47) 검수 — 7건 중 6건 완료, **1건 누락분 보완**
+
+병합에 product 담당자 수정분이 함께 들어왔다. `LIKE_COUNT` 제거, `updateLikeCount`/`updateLikeDiscount` 삭제, 좋아요 수를 `REVIEWLIKE` 서브쿼리로 계산, `getReviewList`·`product.xml`·`wish.xml`에 `REVIEW_STATUS = 1` 적용까지 정상.
+
+**빠진 것**: `product/detailPage.xml`의 `productDetail` — **평균 별점·리뷰 수 서브쿼리 2곳에 `REVIEW_STATUS = 1`이 없었다.** 같은 작성자가 다른 집계엔 전부 넣은 걸 보면 단순 누락. 이 세션에서 추가했다.
+
+**검증에 쓴 데이터가 마침 완벽했다** — `PRODUCT 11`번은 리뷰가 딱 1건인데 그게 소프트 삭제된 것(`REVIEW_ID=94`, `OD_ID=91`, 작성자 `dummy_buyer`)이라, 필터가 없으면 `평균 5.0 / 리뷰 1개`, 있으면 `0 / 0`으로 갈린다. 화면이 **"리뷰 0개 / 리뷰가 없습니다"** 로 나오는 것 확인.
+
+### 3-53 검증 체크리스트 A~D
+
+| | 결과 |
+|---|---|
+| **A** 재작성 차단 | ✅ `odId=91`로 작성화면 **302**, 화면 우회 POST도 **302**, `REVIEW` 행 1건 그대로(새로 안 생김) |
+| **B** 표시·집계 제외 | ✅ 위 상품 11번 |
+| **C** 좋아요 `REVIEWLIKE` 일원화 | ✅ (아래 AUDIT 버그 1번 조치 후) 토글 200 / `on`·`off` 응답, 비로그인 `login-required`. 검증 후 `REVIEWLIKE` 0행 |
+| **D** USER 화면 회귀 | ✅ `myPage`·`orderDelivery`·`myReviews`·`couponView`·**`wish/my-wish`·`cart/my-cart` 전부 200** |
+
+> **AUDIT 버그 16번(cart/wish 4경로 404) 해소** — JWC 병합으로 컨트롤러 진입점이 붙어 이제 로그인 상태에서 200이다.
+
+### AUDIT 버그 1번 조치 완료 — `ProductController`가 세션을 잘못된 키로 읽던 것
+
+체크리스트 C가 **500**으로 막혀서 추적한 결과, `NullPointerException: MemberDTO.getMemberId() because "user" is null`. 원인은 **AUDIT 버그 1번이 그대로 살아있던 것**이다.
+
+- `ProductController` 3곳(59·79·109행)이 `SessionConst.LOGIN_MEMBER`(`"loginMember"`)로 세션을 읽는데, **그 키를 세션에 넣는 코드가 프로젝트 전체에 0건**이다(실제 키는 `LOGIN_SESSION`, `LOGIN_MEMBER`는 Model attribute 이름 — 부록 A에 적혀 있던 바로 그 함정).
+- 59행(`addReviewPage`)은 null 가드가 있어 조용히 실패(내가 누른 좋아요 표시가 항상 꺼짐), **79행(쿠폰 발급)·109행(좋아요)은 바로 역참조해 NPE 500.**
+
+**조치**: 3곳 모두 `LOGIN_SESSION`으로 교체 + `user == null` 가드로 정정(기존 `user.getMemberId() == null`은 비로그인을 잡으려던 의도였으나 그 전에 이미 터진다).
+
+**함께 고친 것**: `reviewLike`가 `@Controller`인데 `@ResponseBody`가 없어 반환값 `"on"`/`"off"`가 **뷰 이름으로 취급**되던 문제 — 세션 키만 고쳤으면 500 대신 뷰 없음 오류가 났을 것이다. `@ResponseBody`를 붙여 응답 본문으로 돌려주게 했다.
+
+> **남은 것**: 이 두 엔드포인트(`/mds/coupon/{id}`, `/mds/review/like/{id}`)는 **아직 화면에서 호출하는 코드가 0건**이다. 서버는 정상화됐으니 좋아요 버튼을 붙일 때 `fetch`로 연결만 하면 된다.
+
+### 그 밖에
+
+- **관리 문서 4종이 다시 git 추적 중**(`2b843ee`에서 재유입). 3-43/3-44 방침과는 다르지만, **사용자가 이동 중 백업 목적으로 의도해서 넣은 것** — 집이 아닌 곳에서 작업 후 커밋할 때 제거하고 재커밋할 예정이므로 **지금은 그대로 둔다.**
+- 레포 루트 사본이 바탕화면 사본보다 최신이다(09-02 23:30 vs 09-01 23:10). 이 세션의 갱신은 레포 루트 쪽에 했다.
+- **검증 방법 주의**: `./mvnw -q compile | tail; echo $?` 는 `tail`의 종료코드를 읽어 **항상 0**이다. 이번에 이 때문에 여분 `}` 하나를 못 잡을 뻔했다. 파일로 리다이렉트한 뒤 `$?`를 보거나 `BUILD SUCCESS`를 직접 grep할 것.
+
+### 검증
+
+`clean compile` → **BUILD SUCCESS**(출력 직접 확인), 매퍼 XML 11개 파싱 정상, 충돌 마커 0건, `productdetail.js` 괄호 균형. 8798 별도 포트로 공개 화면·상세·검색·USER 6개 화면 전부 200. **테스트로 만든 `REVIEWLIKE` 행 0건 확인**(토글이 짝수 번 돌아 상쇄).
+
+### 신규/수정 파일
+
+```
+충돌 해결:
+  order/controller/OrderController.java        js/views/productdetail.js
+수정:
+  product/controller/ProductController.java    (세션 키 3곳 + null 가드 + @ResponseBody)
+  mappers/product/detailPage.xml               (평균별점·리뷰수 서브쿼리에 REVIEW_STATUS = 1)
+병합으로 함께 들어온 것: 21개 파일 + docs/ADMIN_BINDING_HANDOVER.md (JWC1226 작성)
 ```
 
 ---
