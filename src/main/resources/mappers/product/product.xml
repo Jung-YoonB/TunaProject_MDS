@@ -5,7 +5,7 @@
   
 <mapper namespace="com.kh.sajotuna.mds.product.model.mapper.ProductMapper">
 
-        <select id="getList" resultType="ProductListDTO" parameterType="SearchDTO">
+        <select id="getList" resultType="ProductListDTO">
                 SELECT
                 P.PRODUCT_ID,
                 P.PRODUCT_TITLE,
@@ -46,24 +46,38 @@
                 LEFT JOIN WISH W ON P.PRODUCT_ID = W.PRODUCT_ID
 
                 <where>
-                        <!-- 1. 검색창 검색 -->
-                        <if test="keyword != null and keyword != ''">
+                        <!-- 검색 (상품명, 카테고리, 태그 모두 검색어를 기반으로 가져옴) -->
+                        <if test="search.keyword != null and search.keyword != ''">
                                 AND (
-                                P.PRODUCT_TITLE LIKE '%' || #{keyword} || '%'
-                                OR P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
-                                OR CAT_AGG.CATEGORY_NAMES LIKE '%' || #{keyword} || '%'
-                                OR TAG_AGG.TAG_DATA LIKE '%' || #{keyword} || '%'
+                                P.PRODUCT_TITLE LIKE '%' || #{search.keyword} || '%'
+                                OR P.PRODUCT_NAME LIKE '%' || #{search.keyword} || '%'
+                                OR CAT_AGG.CATEGORY_NAMES LIKE '%' || #{search.keyword} || '%'
+                                OR TAG_AGG.TAG_DATA LIKE '%' || #{search.keyword} || '%'
                                 )
                         </if>
 
-                        <!-- 2. 카테고리 메뉴 클릭-->
-                        <if test="category != null">
-                                AND CAT_AGG.PRODUCT_ID IN (SELECT PRODUCT_ID FROM CATEGORYDETAIL WHERE CATEGORY_ID = #{category})
+                        <!-- 카테고리 다중 선택 -->
+                        <if test="search.category != null and search.category.size() > 0">
+                                AND CAT_AGG.PRODUCT_ID IN (
+                                SELECT PRODUCT_ID
+                                FROM CATEGORYDETAIL
+                                WHERE CATEGORY_ID IN
+                                <foreach collection="search.category" item="catId" open="(" separator="," close=")">
+                                        #{catId}
+                                </foreach>
+                                )
                         </if>
 
-                        <!-- 3. 태그 버튼 클릭 -->
-                        <if test="tag != null">
-                                AND TAG_AGG.PRODUCT_ID IN (SELECT PRODUCT_ID FROM TAGDETAIL WHERE TAG_ID = #{tag})
+                        <!-- 태그 다중 선택-->
+                        <if test="search.tag != null and search.tag.size() > 0">
+                                AND TAG_AGG.PRODUCT_ID IN (
+                                SELECT PRODUCT_ID
+                                FROM TAGDETAIL
+                                WHERE TAG_ID IN
+                                <foreach collection="search.tag" item="tagId" open="(" separator="," close=")">
+                                        #{tagId}
+                                </foreach>
+                                )
                         </if>
                 </where>
                 GROUP BY
@@ -74,7 +88,8 @@
                 TAG_AGG.TAG_DATA
                 ORDER BY COUNT(DISTINCT W.WISH_ID) DESC
 
-                <if test="(keyword != null and keyword != '') or category != null or tag != null">
+                <!-- 페이징 조건: 검색어 혹은 카테고리/태그 리스트 중 하나라도 존재할 때만 페이징 적용 -->
+                <if test="(search.keyword != null and search.keyword != '') or (search.category != null and search.category.size() > 0) or (search.tag != null and search.tag.size() > 0)">
                         OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
                 </if>
         </select>
@@ -91,4 +106,62 @@
         ORDER BY COUNT(DISTINCT W.WISH_ID) DESC
         FETCH FIRST 5 ROWS ONLY
 	</select>
+
+        <select id="countSearchProducts" resultType="int" parameterType="searchDto">
+                SELECT COUNT(DISTINCT P.PRODUCT_ID)
+                FROM PRODUCT P
+
+                <!-- 검색어 조건에 카테고리/태그명이 포함되므로 이 두 조인은 유지해야 합니다 -->
+                JOIN (
+                SELECT CD.PRODUCT_ID,
+                LISTAGG(C.CATEGORY_NAME, ',') WITHIN GROUP (ORDER BY C.CATEGORY_ID) AS CATEGORY_NAMES
+                FROM CATEGORYDETAIL CD
+                JOIN CATEGORY C ON CD.CATEGORY_ID = C.CATEGORY_ID
+                GROUP BY CD.PRODUCT_ID
+                ) CAT_AGG ON P.PRODUCT_ID = CAT_AGG.PRODUCT_ID
+
+                LEFT JOIN (
+                SELECT TD.PRODUCT_ID,
+                LISTAGG(T.TAG_NAME || '|' || T.TAG_COLOR, ',') WITHIN GROUP (ORDER BY T.TAG_ID) AS TAG_DATA
+                FROM TAGDETAIL TD
+                JOIN TAG T ON TD.TAG_ID = T.TAG_ID
+                GROUP BY TD.PRODUCT_ID
+                ) TAG_AGG ON P.PRODUCT_ID = TAG_AGG.PRODUCT_ID
+
+                <where>
+                        <!-- 검색창 검색 -->
+                        <if test="keyword != null and keyword != ''">
+                                AND (
+                                P.PRODUCT_TITLE LIKE '%' || #{keyword} || '%'
+                                OR P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
+                                OR CAT_AGG.CATEGORY_NAMES LIKE '%' || #{keyword} || '%'
+                                OR TAG_AGG.TAG_DATA LIKE '%' || #{keyword} || '%'
+                                )
+                        </if>
+
+                        <!-- 카테고리 다중 선택 (List) -->
+                        <if test="category != null and category.size() > 0">
+                                AND P.PRODUCT_ID IN (
+                                SELECT PRODUCT_ID
+                                FROM CATEGORYDETAIL
+                                WHERE CATEGORY_ID IN
+                                <foreach collection="category" item="catId" open="(" separator="," close=")">
+                                        #{catId}
+                                </foreach>
+                                )
+                        </if>
+
+                        <!-- 태그 다중 선택 (List) -->
+                        <if test="tag != null and tag.size() > 0">
+                                AND P.PRODUCT_ID IN (
+                                SELECT PRODUCT_ID
+                                FROM TAGDETAIL
+                                WHERE TAG_ID IN
+                                <foreach collection="tag" item="tagId" open="(" separator="," close=")">
+                                        #{tagId}
+                                </foreach>
+                                )
+                        </if>
+                </where>
+        </select>
 </mapper>

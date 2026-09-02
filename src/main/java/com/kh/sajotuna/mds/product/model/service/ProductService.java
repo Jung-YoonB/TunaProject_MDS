@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.product.model.service;
 
+import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
@@ -9,7 +10,7 @@ import java.util.List;
 
 public interface ProductService {
 	
-	MainPageDTO getList(SearchDTO search);
+	MainPageDTO getList();
 	
 	DetailPageDTO detailPage(Long productId);
 
@@ -19,4 +20,8 @@ public interface ProductService {
 
 	String getCoupons(Long memberId, Long couponId);
 	int totalReviewPages(Long memberId);
+
+	int totalPages(SearchDTO searchDTO);
+
+	List<ProductListDTO> getSearchList(SearchDTO search, int page);
 }
