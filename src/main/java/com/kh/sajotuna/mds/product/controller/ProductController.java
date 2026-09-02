@@ -14,6 +14,8 @@ import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
 import com.kh.sajotuna.mds.product.model.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.util.List;
 
 
@@ -23,6 +25,7 @@ import java.util.List;
 public class ProductController {
 
 	private final ProductService service;
+	private final int MY_REVIEWS_PAGE_SIZE = 5;
 	
 	@GetMapping("/list")
 	public String getList(Model model, SearchDTO searchDTO) {
@@ -58,17 +61,32 @@ public class ProductController {
 	}
 
 	@GetMapping("/review/{productId}")
-	public String reviewPage(@PathVariable Long productId, Model model, HttpSession session) {
+	public String reviewPage(@PathVariable Long productId, Model model, HttpSession session,
+							@RequestParam(defaultValue = "1") int page) {
+		System.out.println("page Number :: " + page);
 		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
 		Long memberId  = null;
 		if(user != null) {
 			memberId = user.getMemberId();
 		}
-		List<ReviewDTO> reviewList = service.getReviewList(productId, memberId);
+		int totalPages = service.totalReviewPages(productId);
+		int currentPage = Math.min(Math.max(page, 1), totalPages);
+		int windowSize = 5;
+		int windowStart = Math.max(1, currentPage - windowSize / 2);
+		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
+		windowStart = Math.max(1, windowEnd - windowSize + 1);
+
+		List<ReviewDTO> reviewList = service.getReviewList(productId, memberId, currentPage);
+
 		model.addAttribute("reviewList", reviewList);
 		System.out.println("reviewList :: " + reviewList);
-		return"home/home";
+		model.addAttribute("currentPage", currentPage);
+		model.addAttribute("totalPages", totalPages);
+		model.addAttribute("pageWindowStart", windowStart);
+		model.addAttribute("pageWindowEnd", windowEnd);
+		return"product/productDetail";
 	}
+
 
 	@GetMapping("/review/like/{reviewId}")
 	public String reviewLike(@PathVariable Long reviewId, HttpSession session) {
