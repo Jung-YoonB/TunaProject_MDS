@@ -77,10 +77,24 @@
                             <c:out value="${item.productName}"/>
                             <c:if test="${item.productCount > 1}"> 외 ${item.productCount - 1}건</c:if>
                         </h3>
+                        <%-- 수량은 대표 상품 1건이 아니라 주문 전체 합계(totalQty). 예전엔 대표 상품의
+                             수량만 보여줘서 여러 상품을 산 주문이 "수량: 2개"로 나왔다 --%>
                         <p class="product-detail">
-                            <c:if test="${item.qty != null}">수량: ${item.qty}개 | </c:if>금액:
+                            <c:if test="${item.totalQty != null}">총 수량: ${item.totalQty}개 | </c:if>금액:
                             <fmt:formatNumber value="${item.totalPrice}" pattern="#,##0"/>원
                         </p>
+
+                        <%-- 상품이 2건 이상인 주문만 펼치기 버튼을 단다. 1건짜리는 위 대표 상품이
+                             곧 전체라 펼칠 게 없다. 품목은 서버가 이미 내려줬으므로 표시만 토글한다 --%>
+                        <c:if test="${item.productCount > 1}">
+                        <button type="button" class="btn-order-items"
+                                aria-expanded="false" aria-controls="order-items-${item.orderId}">
+                            <span class="btn-order-items-text"
+                                  data-closed="주문 상품 ${item.productCount}건 모두 보기"
+                                  data-opened="주문 상품 접기">주문 상품 ${item.productCount}건 모두 보기</span>
+                            <svg class="icon-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        </c:if>
                     </div>
                     <span class="status-badge status-${filterStatus}">
                         <c:choose>
@@ -95,6 +109,41 @@
                         </c:choose>
                     </span>
                 </div>
+
+                <%-- 펼침 영역. 기본은 hidden이고 views/orderDelivery.js가 버튼 클릭으로 토글한다.
+                     JS가 막히면 그냥 접힌 상태로 남을 뿐 다른 정보는 그대로 보인다 --%>
+                <c:if test="${item.productCount > 1}">
+                <div class="order-items" id="order-items-${item.orderId}" hidden>
+                    <ul class="order-item-list">
+                        <c:forEach items="${item.items}" var="orderItem">
+                        <li class="order-item">
+                            <div class="order-item-thumb">
+                                <c:choose>
+                                    <c:when test="${not empty orderItem.productImageSaveName}">
+                                        <img src="<c:out value='${orderItem.productImagePath}'/><c:out value='${orderItem.productImageSaveName}'/>"
+                                             alt="" loading="lazy">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="no-image-text">이미지<br>없음</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div class="order-item-info">
+                                <span class="order-item-name"><c:out value="${orderItem.productName}"/></span>
+                                <c:if test="${not empty orderItem.optionName}">
+                                <span class="order-item-option"><c:out value="${orderItem.optionName}"/></span>
+                                </c:if>
+                            </div>
+                            <span class="order-item-qty">${orderItem.qty}개</span>
+                            <%-- 주문 시점 단가(priceFix) x 수량. 현재 상품 가격이 아니라 이 값이어야 주문서와 맞는다 --%>
+                            <span class="order-item-price">
+                                <fmt:formatNumber value="${orderItem.priceFix * orderItem.qty}" pattern="#,##0"/>원
+                            </span>
+                        </li>
+                        </c:forEach>
+                    </ul>
+                </div>
+                </c:if>
 
                 <c:if test="${item.deliveryStatus != 'CANCELED'}">
                 <div class="order-progress">
@@ -201,5 +250,7 @@
 
 </div>
 </div>
+
+<script src="<c:url value='/js/views/orderDelivery.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

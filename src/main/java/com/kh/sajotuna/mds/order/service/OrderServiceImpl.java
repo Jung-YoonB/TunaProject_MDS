@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
 	    }
 
 	    // 배송비
-	    long deliveryFee = totalPrice > 0 ? 3000L : 0L;
+	    long deliveryFee = totalPrice >= 50000L ? 0L : 3000L;
 
 	    // 보유 쿠폰 조회
 	    List<CouponDTO> couponList =
@@ -78,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
 		}
 
 		// 배송비
-		long deliveryFee = totalPrice > 0 ? 3000L : 0L;
+		long deliveryFee = totalPrice >= 50000L ? 0L : 3000L;
 
 		// 보유 쿠폰 조회
 		List<CouponDTO> couponList =
@@ -191,7 +191,8 @@ public class OrderServiceImpl implements OrderService {
 	// 상품이 있으면 3,000원
 	// =====================================================
 
-	long deliveryFee = productTotalPrice > 0 ? 3000L : 0L;
+	long deliveryFee = productTotalPrice >= 50000L ? 0L : 3000L;
+
 
 	verifiedData.setDeliveryFee(deliveryFee);
 

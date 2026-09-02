@@ -3,6 +3,8 @@ package com.kh.sajotuna.mds.member.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageOrderItemDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -28,43 +31,79 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	@Transactional
 	public void signUp(MemberDTO member) {
-		// 아이디 중복검사
-		if(isLoginIdCheck(member.getLoginId())) {
-			throw new IllegalStateException("이미 사용중인 아이디입니다.");
-		}
-		
-		// 닉네임 중복검사
-		if(isNicknameCheck(member.getNickname())) {
-			throw new IllegalStateException("이미 사용중인 닉네임입니다.");
-		}
-		
-		// 이메일 중복검사
-		if(isEmailCheck(member.getEmail())) {
-			throw new IllegalStateException("이미 사용중인 이메일입니다.");
-		}
-		
-		// 연락처 중복검사
-		if(isPhoneCheck(member.getPhone())) {
-			throw new IllegalStateException("이미 사용중인 연락처입니다.");
-		}
-				
-		// 비밀번호 암호화 처리
-		String encodePw = passwordEncoder.encode(member.getLoginPw());
-		member.setLoginPw(encodePw);
-		
-		// role에 user 부여
-		member.setRole("USER");
-				
-		// 체크 된 데이터를 저장
-		try {
-			mapper.insertMember(member);
-			mapper.insertPoint(member.getMemberId()); // 회원의 포인트도 초기화
-		} catch (DuplicateKeyException e) {
-	        // 동시에 가입하여 UNIQUE 제약조건에 걸린 경우
-	        throw new IllegalStateException("동시 가입으로 인해 이미 등록된 정보가 존재합니다. 다시 확인해주세요.");
+
+	    // 전화번호 형식 변환
+	    String phone = member.getPhone();
+
+	    if (phone == null || phone.isBlank()) {
+	        throw new IllegalArgumentException("전화번호를 입력해주세요.");
 	    }
-		
+
+	    phone = phone.replaceAll("[^0-9]", "");
+
+	    if (!phone.matches("^01[0-9]{8,9}$")) {
+	        throw new IllegalArgumentException("올바른 전화번호 형식이 아닙니다.");
+	    }
+
+	    if (phone.length() == 11) {
+	        phone = phone.replaceFirst(
+	            "(\\d{3})(\\d{4})(\\d{4})",
+	            "$1-$2-$3"
+	        );
+	    } else if (phone.length() == 10) {
+	        phone = phone.replaceFirst(
+	            "(\\d{3})(\\d{3})(\\d{4})",
+	            "$1-$2-$3"
+	        );
+	    }
+
+	    // 변환된 전화번호를 MemberDTO에 다시 저장
+	    member.setPhone(phone);
+
+
+	    // 아이디 중복검사
+	    if (isLoginIdCheck(member.getLoginId())) {
+	        throw new IllegalStateException("이미 사용중인 아이디입니다.");
+	    }
+
+	    // 닉네임 중복검사
+	    if (isNicknameCheck(member.getNickname())) {
+	        throw new IllegalStateException("이미 사용중인 닉네임입니다.");
+	    }
+
+	    // 이메일 중복검사
+	    if (isEmailCheck(member.getEmail())) {
+	        throw new IllegalStateException("이미 사용중인 이메일입니다.");
+	    }
+
+	    // 연락처 중복검사
+	    if (isPhoneCheck(member.getPhone())) {
+	        throw new IllegalStateException("이미 사용중인 연락처입니다.");
+	    }
+
+
+	    // 비밀번호 암호화 처리
+	    String encodePw = passwordEncoder.encode(member.getLoginPw());
+	    member.setLoginPw(encodePw);
+
+	    // role에 user 부여
+	    member.setRole("USER");
+
+
+	    // 체크된 데이터를 저장
+	    try {
+	        mapper.insertMember(member);
+	        mapper.insertPoint(member.getMemberId());
+
+	    } catch (DuplicateKeyException e) {
+
+	        // 동시에 가입하여 UNIQUE 제약조건에 걸린 경우
+	        throw new IllegalStateException(
+	            "동시 가입으로 인해 이미 등록된 정보가 존재합니다. 다시 확인해주세요."
+	        );
+	    }
 	}
+
 
 	@Override
 	public boolean isLoginIdCheck(String loginId) {
@@ -142,7 +181,26 @@ public class MemberServiceImpl implements MemberService{
 		// 상태 필터 + 페이징은 서버(SQL의 WHERE/OFFSET-FETCH)에서 처리한다
 		int safePage = Math.max(page, 1);
 		int offset = (safePage - 1) * DELIVERY_PAGE_SIZE;
-		return mapper.selectDeliveriesByMemberId(memberId, status, offset, DELIVERY_PAGE_SIZE);
+		List<MyPageDeliveryDTO> deliveries = mapper.selectDeliveriesByMemberId(memberId, status, offset, DELIVERY_PAGE_SIZE);
+
+		if (deliveries.isEmpty()) {
+			return deliveries;
+		}
+
+		// 카드를 펼쳤을 때 보여줄 품목 목록을 붙인다. 주문마다 조회하면 N+1이 되므로
+		// 이 페이지에 보이는 주문 ID를 한 번에 넘겨 1회 조회하고 주문별로 나눠 담는다
+		List<Long> orderIds = deliveries.stream()
+				.map(MyPageDeliveryDTO::getOrderId)
+				.toList();
+
+		Map<Long, List<MyPageOrderItemDTO>> itemsByOrder = mapper.selectOrderItemsByOrderIds(orderIds).stream()
+				.collect(Collectors.groupingBy(MyPageOrderItemDTO::getOrderId));
+
+		for (MyPageDeliveryDTO delivery : deliveries) {
+			delivery.setItems(itemsByOrder.getOrDefault(delivery.getOrderId(), List.of()));
+		}
+
+		return deliveries;
 	}
 
 	@Override
@@ -174,25 +232,51 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	@Transactional
 	public boolean phoneUpdate(Long memberId, String phone) {
-		if (phone == null || phone.isBlank() || !phone.matches("^01[0-9]{8,9}$")) {
-			throw new IllegalArgumentException("올바른 전화번호 형식이 아닙니다.");
-		}
-		
-		MemberDTO currentMember = mapper.selectByMemberId(memberId);
-		if (currentMember == null) {
-			throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
-		}
-		
-		if (phone.equals(currentMember.getPhone())) {
-			return true; // 기존 값과 동일하면 그대로 성공 처리
-		}
-		
-		if (isPhoneCheck(phone)) {
-			throw new IllegalStateException("이미 사용 중인 연락처입니다.");
-		}
-		
-		return mapper.updatePhone(memberId, phone) > 0;
+
+	    if (phone == null || phone.isBlank()) {
+	        throw new IllegalArgumentException("전화번호를 입력해주세요.");
+	    }
+
+	    // 숫자만 남김
+	    phone = phone.replaceAll("[^0-9]", "");
+
+	    // 전화번호 형식 검사
+	    if (!phone.matches("^01[0-9]{8,9}$")) {
+	        throw new IllegalArgumentException("올바른 전화번호 형식이 아닙니다.");
+	    }
+
+	    // DB 저장용 형식으로 변환
+	    if (phone.length() == 11) {
+	        phone = phone.replaceFirst(
+	            "(\\d{3})(\\d{4})(\\d{4})",
+	            "$1-$2-$3"
+	        );
+	    } else if (phone.length() == 10) {
+	        phone = phone.replaceFirst(
+	            "(\\d{3})(\\d{3})(\\d{4})",
+	            "$1-$2-$3"
+	        );
+	    }
+
+	    MemberDTO currentMember = mapper.selectByMemberId(memberId);
+
+	    if (currentMember == null) {
+	        throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+	    }
+
+	    // 기존 전화번호와 동일하면 성공 처리
+	    if (phone.equals(currentMember.getPhone())) {
+	        return true;
+	    }
+
+	    // 중복 검사
+	    if (isPhoneCheck(phone)) {
+	        throw new IllegalStateException("이미 사용 중인 연락처입니다.");
+	    }
+
+	    return mapper.updatePhone(memberId, phone) > 0;
 	}
+
 
 	@Override
 	@Transactional
@@ -345,6 +429,11 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	public int countReviewableOrderDetails(Long memberId) {
 		return mapper.countReviewableOrderDetails(memberId);
+	}
+
+	@Override
+	public Long nextReviewableOdId(Long memberId) {
+		return mapper.selectNextReviewableOdId(memberId);
 	}
 }
 
