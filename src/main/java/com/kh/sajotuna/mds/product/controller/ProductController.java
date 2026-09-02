@@ -1,6 +1,7 @@
 package com.kh.sajotuna.mds.product.controller;
 
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.SearchDTO;
 import com.kh.sajotuna.mds.review.model.dto.ReviewDTO;
 import com.kh.sajotuna.mds.util.SessionConst;
@@ -28,12 +29,12 @@ public class ProductController {
 	private final int MY_REVIEWS_PAGE_SIZE = 5;
 	
 	@GetMapping("/list")
-	public String getList(Model model, SearchDTO searchDTO) {
+	public String getList(Model model) {
 		
-		MainPageDTO list = service.getList(searchDTO);
-		System.out.println("searchDTO = " + searchDTO);
+		MainPageDTO list = service.getList();
 		model.addAttribute("productList", list);
 		System.out.println("컨트롤러 :: " + list);
+
 		return"home/home";
 	}
 	
@@ -43,7 +44,7 @@ public class ProductController {
 
 		DetailPageDTO detail = service.detailPage(productId);
 		System.out.println("컨트롤러 detail :: " + detail);
-		return"home/home";
+		return"product/productDetail";
 	}
 
 	@GetMapping("/coupon/{couponId}")
@@ -99,5 +100,26 @@ public class ProductController {
 
 		System.out.println("result :: " + result);
 		return result;
+	}
+
+
+	@GetMapping("/searchList")
+	public String getSearchList(Model model, SearchDTO searchDTO, @RequestParam(defaultValue = "1") int page) {
+		int totalPages = service.totalPages(searchDTO);
+		int currentPage = Math.min(Math.max(page, 1), totalPages);
+		int windowSize = 5;
+		int windowStart = Math.max(1, currentPage - windowSize / 2);
+		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
+		windowStart = Math.max(1, windowEnd - windowSize + 1);
+
+		List<ProductListDTO> searchList = service.getSearchList(searchDTO, page);
+
+		model.addAttribute("searchList", searchList);
+		System.out.println("reviewList :: " + searchList);
+		model.addAttribute("currentPage", currentPage);
+		model.addAttribute("totalPages", totalPages);
+		model.addAttribute("pageWindowStart", windowStart);
+		model.addAttribute("pageWindowEnd", windowEnd);
+		return "product/searchProduct";
 	}
 }

@@ -16,7 +16,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ProductMapper {
 	//상품 리스트
-	List<ProductListDTO> getList(SearchDTO search);
+	List<ProductListDTO> getList(@Param("search")SearchDTO search,  @Param("offset")int offset, @Param("pageSize") int pageSize);
 	
 	List<BannerDTO> bannerList();
 
@@ -41,4 +41,6 @@ public interface ProductMapper {
 	void deleteReviewLike(@Param("reviewId") Long reviewId, @Param("memberId") Long memberId);
 	Long checkLike(@Param("reviewId") Long reviewId,  @Param("memberId") Long memberId);
 	int countReviews(@Param("productId") Long productId);
+
+	int countSearchProducts(SearchDTO searchDto);
 }
