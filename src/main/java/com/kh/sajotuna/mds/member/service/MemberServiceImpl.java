@@ -272,7 +272,13 @@ public class MemberServiceImpl implements MemberService{
 	if (gender == null || gender.isBlank() || (!gender.equals("M") && !gender.equals("F"))) {
 	throw new IllegalArgumentException("유효하지 않은 성별 형식입니다.");
 	}
+	
 	MemberDTO currentMember = mapper.selectByMemberId(memberId);
+	
+	if (currentMember == null) {
+		throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+	}
+	
 	if (currentMember != null && gender.equals(currentMember.getGender())) {
 	return true; // 이미 동일한 값인 경우 불필요한 업데이트 생략
 	}
