@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.admin.model.service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +31,19 @@ public class AdminProductServiceImpl implements AdminProductService {
 	private static final int TITLE_IMAGE_MAIN = 0;
 	private static final int TITLE_IMAGE_SUB = 1;
 	private static final int TITLE_IMAGE_DESCRIPTION = 2;
+
+	// 입력 길이 제한. 화면(addProduct.jsp의 data-maxchars)과 반드시 같은 값이어야 한다.
+	//
+	// DB 컬럼은 BYTE 단위라 한글 1자가 3바이트를 먹는다. 아래 글자 수는 전부 한글로만 채워도
+	// 컬럼 안에 들어가도록 잡은 값이다(예: 상품명 50자 x 3 = 150byte = VARCHAR2(150)).
+	//   PRODUCT_NAME    VARCHAR2(150)  ← 50자
+	//   PRODUCT_TITLE   VARCHAR2(200)  ← 60자
+	//   PRODUCT_CONTENT VARCHAR2(4000) ← 1300자
+	//   OPTION_NAME     VARCHAR2(100)  ← 30자
+	private static final int MAX_PRODUCT_NAME_LENGTH = 50;
+	private static final int MAX_PRODUCT_TITLE_LENGTH = 60;
+	private static final int MAX_PRODUCT_CONTENT_LENGTH = 1300;
+	private static final int MAX_OPTION_NAME_LENGTH = 30;
 
 	private final AdminProductMapper mapper;
 	private final ObjectMapper objectMapper;
@@ -64,6 +78,12 @@ public class AdminProductServiceImpl implements AdminProductService {
 		requireNonBlank(productTitle, "상품 게시글 제목은 필수입니다.");
 		requireNonBlank(productName, "상품명은 필수입니다.");
 		requireNonBlank(productContent, "상품 설명은 필수입니다.");
+
+		// 길이 제한은 화면에서도 막지만(addProduct.jsp), JS를 우회하거나 API를 직접 호출하면
+		// DB가 뱉는 ORA-12899가 그대로 노출되므로 서버에서도 확인한다
+		requireMaxLength(productTitle, MAX_PRODUCT_TITLE_LENGTH, "상품 게시글 제목");
+		requireMaxLength(productName, MAX_PRODUCT_NAME_LENGTH, "상품명");
+		requireMaxLength(productContent, MAX_PRODUCT_CONTENT_LENGTH, "상품 설명");
 		if (categoryId == null) {
 			throw new IllegalStateException("카테고리를 선택해 주세요.");
 		}
@@ -102,6 +122,23 @@ public class AdminProductServiceImpl implements AdminProductService {
 		}
 	}
 
+	// 글자 수(코드 포인트) 기준 제한. 이모지처럼 서로게이트 쌍으로 이뤄진 문자도 1자로 센다
+	// (String.length()는 2로 세서 화면 카운터와 어긋난다).
+	private void requireMaxLength(String value, int maxLength, String fieldName) {
+		if (value == null) {
+			return;
+		}
+		if (value.codePointCount(0, value.length()) > maxLength) {
+			throw new IllegalStateException(fieldName + "은(는) " + maxLength + "자 이내로 입력해 주세요.");
+		}
+		// 글자 수 제한만으로는 이모지(UTF-8 4바이트)를 가득 넣었을 때 컬럼을 넘길 수 있어
+		// 바이트로도 한 번 더 확인한다. 한글(3바이트)까지는 위 제한만으로 항상 안전하다.
+		int maxBytes = maxLength * 3;
+		if (value.getBytes(StandardCharsets.UTF_8).length > maxBytes) {
+			throw new IllegalStateException(fieldName + "에 저장할 수 없는 문자가 너무 많습니다. 길이를 줄여 주세요.");
+		}
+	}
+
 	// 화면에서 보낸 옵션 JSON을 검증하면서 DTO 목록으로 바꾼다.
 	// 옵션이 없으면 상품이 성립하지 않으므로(가격/재고가 옵션에만 있음) 최소 1개를 강제한다.
 	private List<OptionDTO> parseOptions(String optionsJson) {
@@ -124,6 +161,7 @@ public class AdminProductServiceImpl implements AdminProductService {
 		for (OptionDTO option : options) {
 			// OPTION_NAME도 NOT NULL 컬럼이라 빈 값이면 ORA-01400이 그대로 노출된다
 			requireNonBlank(option.getOptionName(), "옵션명은 필수입니다.");
+			requireMaxLength(option.getOptionName(), MAX_OPTION_NAME_LENGTH, "옵션명");
 			if (option.getPrice() < 0) {
 				throw new IllegalStateException("판매가격은 0 이상이어야 합니다.");
 			}

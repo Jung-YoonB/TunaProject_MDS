@@ -4548,6 +4548,146 @@ main:has(.search-result-page) {
     color: #888;
 }
 
+/* ---- 주문 품목 펼치기 (views/orderDelivery.js) ----
+   header.jsp가 CSS를 전 페이지에 로드하므로 반드시 .order-delivery-page로 스코프할 것 */
+.order-delivery-page .btn-order-items {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #8a7a5f;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.order-delivery-page .btn-order-items:hover {
+    color: #5c4a2f;
+}
+
+.order-delivery-page .btn-order-items .icon-chevron {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform .15s;
+}
+
+/* 펼친 상태에서는 화살표를 위로 뒤집는다 */
+.order-delivery-page .btn-order-items[aria-expanded="true"] .icon-chevron {
+    transform: rotate(180deg);
+}
+
+.order-delivery-page .order-items {
+    margin-bottom: 20px;
+    padding: 4px 14px;
+    background-color: #fbf8f4;
+    border: 1px solid #f0ece3;
+    border-radius: 8px;
+}
+
+.order-delivery-page .order-item-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.order-delivery-page .order-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0ece3;
+}
+
+.order-delivery-page .order-item:last-child {
+    border-bottom: none;
+}
+
+.order-delivery-page .order-item-thumb {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background-color: #f0ece3;
+    border-radius: 4px;
+}
+
+.order-delivery-page .order-item-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-delivery-page .order-item-thumb .no-image-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 9px;
+    line-height: 1.3;
+    color: #aaa;
+    text-align: center;
+}
+
+/* min-width:0 이 있어야 긴 상품명이 줄어들면서 옆 칸(수량/금액)을 밀어내지 않는다 */
+.order-delivery-page .order-item-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.order-delivery-page .order-item-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+}
+
+.order-delivery-page .order-item-option {
+    font-size: 12px;
+    color: #999;
+}
+
+.order-delivery-page .order-item-qty {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #888;
+}
+
+.order-delivery-page .order-item-price {
+    flex-shrink: 0;
+    min-width: 92px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    text-align: right;
+}
+
+@media (max-width: 700px) {
+    /* 좁은 화면에서는 수량/금액이 상품명을 짓눌러서, 정보를 아래로 흘려보낸다 */
+    .order-delivery-page .order-item {
+        flex-wrap: wrap;
+    }
+
+    .order-delivery-page .order-item-info {
+        flex-basis: calc(100% - 56px);
+    }
+
+    .order-delivery-page .order-item-qty,
+    .order-delivery-page .order-item-price {
+        margin-left: auto;
+    }
+}
+
 /* 배송 상태 배지 */
 .order-delivery-page .status-badge {
     flex-shrink: 0;
