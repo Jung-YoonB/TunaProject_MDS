@@ -39,7 +39,7 @@ public interface MemberService {
 	boolean nameUpdate(Long memberId, String memberName);
 	boolean birthUpdate(Long memberId, String birth);
 	boolean genderUpdate(Long memberId, String gender);
-	boolean passwordUpdate(Long memberId, String newPassword);
+	boolean passwordUpdate(Long memberId, String currentPassword, String newPassword);
 	
 	//회원 탈퇴
 	boolean withdrawMember(Long memberId);

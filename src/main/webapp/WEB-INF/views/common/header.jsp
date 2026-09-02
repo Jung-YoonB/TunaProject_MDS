@@ -88,7 +88,7 @@
 				</a>
 
 				<%-- TODO(placeholder route): 장바구니 컨트롤러 미구현, 담당 브랜치 확정 시 경로 조정 --%>
-				<a class="icon-item" href="<c:url value='/cart'/>">
+				<a class="icon-item" href="<c:url value='/cart/my-cart'/>">
 					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 						<circle cx="9" cy="21" r="1"/>
 						<circle cx="20" cy="21" r="1"/>
@@ -108,9 +108,29 @@
 			</div>
 
 			<div class="sign">
-				<a href="<c:url value='/member/login'/>">로그인</a>
-				<span class="sign-divider" aria-hidden="true">|</span>
-				<a href="<c:url value='/member/signUp'/>">회원가입</a>
+
+			    <c:choose>
+
+			        <%-- 로그인 상태 --%>
+			        <c:when test="${not empty sessionScope.loginSession}">
+			            <span class="welcome">
+			                ${sessionScope.loginSession.memberName}님
+			            </span>
+
+			            <span class="sign-divider" aria-hidden="true">|</span>
+
+			            <a href="<c:url value='/member/logout'/>">로그아웃</a>
+			        </c:when>
+
+			        <%-- 로그아웃 상태 --%>
+			        <c:otherwise>
+			            <a href="<c:url value='/member/login'/>">로그인</a>
+			            <span class="sign-divider" aria-hidden="true">|</span>
+			            <a href="<c:url value='/member/signUp'/>">회원가입</a>
+			        </c:otherwise>
+
+			    </c:choose>
+
 			</div>
 		</div>
 

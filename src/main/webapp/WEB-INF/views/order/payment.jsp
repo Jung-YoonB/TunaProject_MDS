@@ -1,48 +1,91 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
 <div class="order-page">
 <div class="order-card">
-        <!-- 결제하기 제목 -->
-        <div id="title">
-            결제하기
-        </div>
+
+    <!-- 결제하기 제목 -->
+    <div id="title">
+        결제하기
+    </div>
 
 
-        <!-- 주문 상품 정보 -->
+    <!-- 결제 처리 -->
+    <form id="checkoutForm"
+          action="${pageContext.request.contextPath}/order/checkout"
+          method="post">
+
+
+        <!-- =====================================================
+             주문 상품 정보
+        ====================================================== -->
+
         <div id="ProductInfo">
 
             <h2>주문 상품정보</h2>
 
-            <div class="product-item">
+            <c:forEach var="item" items="${pvData.itemList}" varStatus="status">
 
-                <div class="product-name">
+                <div class="product-item">
 
-                    <span>상품명</span>
+                    <div class="product-name">
 
-                    <span id="product_name">
-                        상품 이름
-                    </span>
+                        <span>상품명</span>
+
+                        <span>
+                            ${item.productName}
+                            <c:if test="${not empty item.optionName}">
+                                (${item.optionName})
+                            </c:if>
+                        </span>
+
+                    </div>
+
+                    <div class="product-quantity">
+
+                        <span>상품 수량</span>
+
+                        <span>
+                            ${item.qty}
+                        </span>
+
+                    </div>
 
                 </div>
 
-                <div class="product-quantity">
 
-                    <span>상품 수량</span>
+                <!-- 주문할 상품 정보 -->
+                <input type="hidden"
+                       name="itemList[${status.index}].popId"
+                       value="${item.popId}">
 
-                    <span id="qty">
-                        1
-                    </span>
+                <input type="hidden"
+                       name="itemList[${status.index}].qty"
+                       value="${item.qty}">
 
-                </div>
-
-            </div>
+            </c:forEach>
 
         </div>
 
 
-        <!-- 상품 금액 -->
+        <!-- =====================================================
+             장바구니 ID
+             장바구니 결제일 때만 전달
+        ====================================================== -->
+
+        <c:forEach var="cartId" items="${pvData.cartIds}">
+            <input type="hidden"
+                   name="cartIds"
+                   value="${cartId}">
+        </c:forEach>
+
+
+        <!-- =====================================================
+             상품 금액
+        ====================================================== -->
+
         <div id="Price">
 
             <div class="price-item">
@@ -50,7 +93,7 @@
                 <span>상품 금액</span>
 
                 <span id="total_price">
-                    상품 금액값
+                    ${pvData.totalPrice}원
                 </span>
 
             </div>
@@ -59,16 +102,24 @@
 
                 <span>배송비</span>
 
-                <span id="delivery_price">
-                    배송 금액값
-                </span>
+				<span id="delivery_price">
+				       ${pvData.deliveryFee}원
+				</span>
 
             </div>
+			
+			<input type="hidden"
+			       id="deliveryFee"
+			       name="deliveryFee"
+			       value="0">
 
         </div>
 
 
-        <!-- 포인트 사용 -->
+        <!-- =====================================================
+             포인트 사용
+        ====================================================== -->
+
         <div id="point">
 
             <label for="used_point">
@@ -78,48 +129,59 @@
             <input
                 type="number"
                 id="used_point"
-                name="used_point"
+                name="usedPoint"
                 value="0"
-                min="0">
+                min="0"
+                max="${pvData.point}">
 
             <span>
                 포인트
             </span>
 
+            <p>
+                보유 포인트 : ${pvData.point}P
+            </p>
+
         </div>
 
 
-        <!-- 쿠폰 사용 -->
+        <!-- =====================================================
+             쿠폰 사용
+        ====================================================== -->
+
         <div id="Coupon">
 
             <label for="coupon_id">
                 쿠폰 사용
             </label>
 
-            <select id="coupon_id" name="coupon_id">
+            <select id="coupon_id"
+                    name="chistId">
 
                 <option value="">
                     쿠폰을 선택해주세요
                 </option>
 
-                <option value="1">
-                    여름 특별쿠폰 - 10%
-                </option>
+                <c:forEach var="coupon" items="${pvData.couponList}">
 
-                <option value="2">
-                    신규회원 환영 쿠폰 - 15%
-                </option>
+				<option value="${coupon.chistId}"
+				        data-discount="${coupon.couponValue}">
+				    ${coupon.couponName}
+				    -
+				    ${(coupon.couponValue * 100).intValue()}%
+				</option>
 
-                <option value="3">
-                    주말할인쿠폰 - 20%
-                </option>
+                </c:forEach>
 
             </select>
 
         </div>
 
 
-        <!-- 회원 등급 할인 -->
+        <!-- =====================================================
+             회원 등급 할인
+        ====================================================== -->
+
         <div id="MembershipTier">
 
             <span>
@@ -127,13 +189,21 @@
             </span>
 
             <span id="grade_discount">
-                등급별 할인율
+
+                ${pvData.gradeName}
+
+                -
+                ${(pvData.discountRate * 100).intValue()}%
+
             </span>
 
         </div>
 
 
-        <!-- 최종 결제 금액 -->
+        <!-- =====================================================
+             최종 결제 금액
+        ====================================================== -->
+
         <div id="TotalPayment">
 
             <span>
@@ -141,13 +211,22 @@
             </span>
 
             <strong id="final_price">
-                총 결제금액값
+                ${pvData.totalPrice}원
             </strong>
 
         </div>
 
+        <!-- JS에서 계산한 최종 결제 금액 -->
+        <input type="hidden"
+               id="clientPaidAmount"
+               name="clientPaidAmount"
+               value="${pvData.totalPrice}">
 
-        <!-- 배송지 정보 -->
+
+        <!-- =====================================================
+             배송지 정보
+        ====================================================== -->
+
         <div id="DeliveryAddress">
 
             <h2>
@@ -157,6 +236,7 @@
             <div class="address-item">
 
                 <!-- 배송지 이름 -->
+
                 <div class="address-name">
 
                     <span>
@@ -164,13 +244,14 @@
                     </span>
 
                     <span id="address_name">
-                        집
+                        ${pvData.addressName}
                     </span>
 
                 </div>
 
 
                 <!-- 배송지 주소 -->
+
                 <div class="address-detail">
 
                     <span>
@@ -178,13 +259,14 @@
                     </span>
 
                     <span id="detail_address">
-                        서울특별시 강남구 테헤란로 14길
+                        ${pvData.detailAddress}
                     </span>
 
                 </div>
 
 
                 <!-- 기본 배송지 -->
+
                 <span id="is_default">
                     기본 배송지
                 </span>
@@ -192,7 +274,19 @@
             </div>
 
 
+            <!-- checkout으로 실제 배송지 전달 -->
+
+            <input type="hidden"
+                   name="addressNameFix"
+                   value="${pvData.addressName}">
+
+            <input type="hidden"
+                   name="detailAddressFix"
+                   value="${pvData.detailAddress}">
+
+
             <!-- 배송지 추가 -->
+
             <button
                 type="button"
                 id="add-address">
@@ -204,7 +298,10 @@
         </div>
 
 
-        <!-- 결제 수단 -->
+        <!-- =====================================================
+             결제 수단
+        ====================================================== -->
+
         <div id="PaymentMethod">
 
             <h2>
@@ -213,88 +310,40 @@
 
             <div class="payment-method">
 
-                <input
-                    type="radio"
-                    id="apple_pay"
-                    name="payment_id"
-                    value="applePay">
 
-                <label for="apple_pay">
-                    애플페이
-                </label>
-
+                <!-- KAKAOPAY = 1 -->
 
                 <input
                     type="radio"
                     id="kakao_pay"
-                    name="payment_id"
-                    value="kakaoPay">
+                    name="paymentId"
+                    value="1">
 
                 <label for="kakao_pay">
                     카카오페이
                 </label>
 
 
+                <!-- NAVERPAY = 2 -->
+
                 <input
                     type="radio"
                     id="naver_pay"
-                    name="payment_id"
-                    value="naverPay">
+                    name="paymentId"
+                    value="2">
 
                 <label for="naver_pay">
                     네이버페이
                 </label>
 
 
-                <input
-                    type="radio"
-                    id="hana_pay"
-                    name="payment_id"
-                    value="hanaPay">
-
-                <label for="hana_pay">
-                    하나페이
-                </label>
-
-
-                <input
-                    type="radio"
-                    id="payco"
-                    name="payment_id"
-                    value="payco">
-
-                <label for="payco">
-                    페이코
-                </label>
-
-
-                <input
-                    type="radio"
-                    id="toss_pay"
-                    name="payment_id"
-                    value="tossPay">
-
-                <label for="toss_pay">
-                    토스페이
-                </label>
-
-
-                <input
-                    type="radio"
-                    id="visa"
-                    name="payment_id"
-                    value="visa">
-
-                <label for="visa">
-                    비자
-                </label>
-
+                <!-- MASTERCARD = 3 -->
 
                 <input
                     type="radio"
                     id="mastercard"
-                    name="payment_id"
-                    value="mastercard">
+                    name="paymentId"
+                    value="3">
 
                 <label for="mastercard">
                     마스터카드
@@ -305,7 +354,10 @@
         </div>
 
 
-        <!-- 결제 동의 -->
+        <!-- =====================================================
+             결제 동의
+        ====================================================== -->
+
         <div id="Checkbox">
 
             <div>
@@ -335,6 +387,7 @@
 
 
             <!-- 이용약관 -->
+
             <div id="Terms">
 
                 <a href="#">
@@ -345,6 +398,7 @@
 
 
             <!-- 개인정보처리방침 -->
+
             <div id="PrivacyPolicy">
 
                 <a href="#">
@@ -356,19 +410,49 @@
         </div>
 
 
-        <!-- 결제 버튼 -->
+        <!-- =====================================================
+             결제 버튼
+        ====================================================== -->
+
         <div id="Confirm">
 
-            <button type="submit">
+            <button
+                type="submit"
+                id="payment-submit">
+
                 최종 결제
+
             </button>
 
-            <button type="button">
+            <button
+                type="button"
+                onclick="history.back()">
+
                 결제 취소
+
             </button>
 
         </div>
+
+    </form>
+
 </div>
 </div>
+
+<script>
+const productTotalPrice =
+    Number("${pvData.totalPrice}") || 0;
+
+const memberPoint =
+    Number("${pvData.point}") || 0;
+
+const gradeDiscountRate =
+    Number("${pvData.discountRate}") || 0;
+
+const deliveryFee =
+    Number("${pvData.deliveryFee}") || 0;
+</script>
+
+<script src="<c:url value='/js/views/payment.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

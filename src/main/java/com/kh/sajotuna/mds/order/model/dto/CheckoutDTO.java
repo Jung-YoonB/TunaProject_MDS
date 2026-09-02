@@ -29,6 +29,7 @@ public class CheckoutDTO {
 	private long earnPoint;
 	private Long paymentId;
 	private Long clientPaidAmount;
+	private Long deliveryFee;
 	private BigDecimal couponValue;
 	private String addressNameFix;
 	private String detailAddressFix;
