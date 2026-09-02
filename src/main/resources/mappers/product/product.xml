@@ -20,6 +20,7 @@
                 JOIN ORDERDETAIL OD_SUB ON R.OD_ID = OD_SUB.OD_ID
                 JOIN OPTIONDETAIL SUB_OD ON OD_SUB.POP_ID = SUB_OD.POP_ID
                 WHERE SUB_OD.PRODUCT_ID = P.PRODUCT_ID
+                AND R.REVIEW_STATUS = 1
                 ), 0.0) AS SCORE
 
                 FROM PRODUCT P
@@ -27,7 +28,6 @@
                 SELECT CD.PRODUCT_ID,
                 LISTAGG(C.CATEGORY_NAME, ',') WITHIN GROUP (ORDER BY C.CATEGORY_ID) AS CATEGORY_NAMES
                 FROM CATEGORYDETAIL CD
-
                 JOIN CATEGORY C ON CD.CATEGORY_ID = C.CATEGORY_ID
                 GROUP BY CD.PRODUCT_ID
                 ) CAT_AGG ON P.PRODUCT_ID = CAT_AGG.PRODUCT_ID
@@ -44,6 +44,7 @@
                 JOIN PRODUCTOPTION PO ON OD.OPTION_ID = PO.OPTION_ID
                 LEFT JOIN PRODUCTIMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID AND PI.PRODUCT_TITLE_IMAGE = 0
                 LEFT JOIN WISH W ON P.PRODUCT_ID = W.PRODUCT_ID
+
                 <where>
                         <!-- 1. 검색창 검색 -->
                         <if test="keyword != null and keyword != ''">
@@ -72,6 +73,10 @@
                 CAT_AGG.CATEGORY_NAMES,
                 TAG_AGG.TAG_DATA
                 ORDER BY COUNT(DISTINCT W.WISH_ID) DESC
+
+                <if test="(keyword != null and keyword != '') or category != null or tag != null">
+                        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+                </if>
         </select>
 	
 	<select id="bannerList" resultType="BannerDTO">

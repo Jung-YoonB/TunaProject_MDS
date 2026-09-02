@@ -33,16 +33,26 @@
             <!-- 상품명 -->
 
             <div class="form-row">
+                <%-- 글자 수 표시는 라벨 아래에 둔다. 입력칸이 있는 .input-area 안에 두면
+                     그만큼 세로로 공간을 차지해서 입력칸이 위로 밀려 보인다.
+                     aria-hidden: 라벨 안에 있으므로 그냥 두면 한 글자 칠 때마다 필드 이름이
+                     다시 읽힌다. 시각 표시 용도라 보조기기에서는 감춘다. --%>
                 <label>
                     상품명
                     <span class="required">*</span>
+                    <span class="char-counter" data-for="productNameInput" aria-hidden="true"></span>
                 </label>
 
+                <%-- data-maxchars: 입력 가능한 글자 수. views/addProduct.js 가 남은 수를 표시하고
+                     초과 입력을 잘라내며, AdminProductServiceImpl 이 서버에서도 같은 값으로 검증한다.
+                     제한 값은 DB 컬럼이 BYTE 단위인 걸 감안해 잡았다 - 전부 한글이어도(1자=3byte)
+                     컬럼 안에 들어간다. (PRODUCT_NAME VARCHAR2(150) ← 50자 x 3 = 150byte) --%>
                 <div class="input-area">
                     <input
                         type="text"
                         name="productName"
                         id="productNameInput"
+                        data-maxchars="50"
                         placeholder="상품명을 입력해 주세요"
                     >
                 </div>
@@ -55,6 +65,7 @@
                 <label>
                     상품 게시글 제목
                     <span class="required">*</span>
+                    <span class="char-counter" data-for="productTitleInput" aria-hidden="true"></span>
                 </label>
 
                 <div class="input-area">
@@ -62,6 +73,7 @@
                         type="text"
                         name="productTitle"
                         id="productTitleInput"
+                        data-maxchars="60"
                         placeholder="상품 목록/검색에 노출될 제목을 입력해 주세요"
                     >
                 </div>
@@ -206,7 +218,7 @@
 
                     <div class="upload-icon">＋</div>
 
-                    <strong>대표 이미지</strong>
+                    <strong>대표 이미지 <span class="required">*</span></strong>
 
                     <p>
                         상품 목록에 표시되는<br>
@@ -235,7 +247,7 @@
             <div class="sub-image-area">
 
                 <div class="sub-image-title">
-                    <strong>추가 이미지</strong>
+                    <strong>추가 이미지 <span class="required">*</span></strong>
                     <span id="subImageCount">0장</span>
                 </div>
 
@@ -285,22 +297,26 @@
     <section class="register-section">
 
         <div class="section-title">
-            <h2>상품 설명</h2>
+            <h2>상품 설명 <span class="required">*</span></h2>
             <p>상품에 대한 상세한 설명을 입력해 주세요.</p>
         </div>
 
         <div class="description-box">
 
+            <%-- 기존 maxlength="2000"은 PRODUCT_CONTENT(VARCHAR2(4000 BYTE))의 실제 한계를 넘는 값이었다.
+                 한글 2000자면 6000byte라 카운터가 여유 있다고 표시한 채로 등록이 터진다. → 1300자로 조정 --%>
             <textarea
                 id="productContent"
                 name="productContent"
-                maxlength="2000"
+                data-maxchars="1300"
                 placeholder="상품의 특징, 구성, 배송 및 보관 방법 등을 입력해 주세요."
             ></textarea>
 
             <div class="textarea-bottom">
                 <span>상품 설명을 작성해 주세요.</span>
-                <span id="counter">0 / 2000</span>
+                <%-- 기존 "0 / 2000"은 글자 수 기준이라 실제 한계(한글 1333자)와 어긋났다.
+                     바이트 기준 카운터로 교체 --%>
+                <span class="char-counter" data-for="productContent"></span>
             </div>
 
         </div>
