@@ -22,6 +22,9 @@ public class CartServiceImpl implements CartService{
         System.out.println(cart);
 
         findInfoDTO findInfo = new  findInfoDTO(cart.getMemberId(), cart.getPopId());
+        if(cart.getQty() == 0 ) {
+            return "상품의 수량을 입력해주세요";
+        }
         int checkCart = mapper.findCartById(findInfo);
         if(checkCart == 1) {
             return "이미 장바구니에 있는 상품입니다.";
