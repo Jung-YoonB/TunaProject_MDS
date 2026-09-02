@@ -26,25 +26,39 @@ public class OrderServiceImpl implements OrderService {
 	
 	@Override
 	public PaymentViewDTO cartPrepare(Long memberId, List<Long> cartIds) {
-		// 멤버 정보 조회
-		PaymentViewDTO pvData = mapper.selectByMemberIdForPay(memberId);
-		// 장바구니 조회
-		List<OrderItemDTO> itemList = mapper.selectCartIds(memberId, cartIds);
-		// 총 가격 계산
-		long totalPrice = 0L;
-		for(OrderItemDTO i : itemList) {
-			totalPrice += i.getOptionPrice() * i.getQty();
-		}
-		// 보유 쿠폰 조회
-		List<CouponDTO> couponList = memberMapper.selectAllCouponsByMemberId(memberId);
-		
-		// 데이터 통합
-		pvData.setItemList(itemList);
-		pvData.setTotalPrice(totalPrice);
-		pvData.setCouponList(couponList);
-		
-		return pvData;
+
+	    // 멤버 정보 조회
+	    PaymentViewDTO pvData = mapper.selectByMemberIdForPay(memberId);
+
+	    // 장바구니 조회
+	    List<OrderItemDTO> itemList = mapper.selectCartIds(memberId, cartIds);
+
+	    // 상품 금액 계산
+	    long totalPrice = 0L;
+
+	    for (OrderItemDTO i : itemList) {
+	        totalPrice += i.getOptionPrice() * i.getQty();
+	    }
+
+	    // 배송비
+	    long deliveryFee = totalPrice > 0 ? 3000L : 0L;
+
+	    // 보유 쿠폰 조회
+	    List<CouponDTO> couponList =
+	            memberMapper.selectAllCouponsByMemberId(memberId);
+
+	    // 데이터 통합
+	    pvData.setItemList(itemList);
+	    pvData.setTotalPrice(totalPrice);
+	    pvData.setDeliveryFee(deliveryFee);
+	    pvData.setCouponList(couponList);
+
+	    // 장바구니 ID
+	    pvData.setCartIds(cartIds);
+
+	    return pvData;
 	}
+
 
 	@Override
 	public PaymentViewDTO directPrepare(Long memberId, OrderItemDTO orderItem) {
@@ -58,17 +72,24 @@ public class OrderServiceImpl implements OrderService {
 				
 		// 총 가격 계산
 		long totalPrice = 0L;
-		for(OrderItemDTO i : itemList) {
-			totalPrice += i.getOptionPrice() * i.getQty();
+
+		for (OrderItemDTO i : itemList) {
+		    totalPrice += i.getOptionPrice() * i.getQty();
 		}
+
+		// 배송비
+		long deliveryFee = totalPrice > 0 ? 3000L : 0L;
+
 		// 보유 쿠폰 조회
-		List<CouponDTO> couponList = memberMapper.selectAllCouponsByMemberId(memberId);
-				
+		List<CouponDTO> couponList =
+		        memberMapper.selectAllCouponsByMemberId(memberId);
+
 		// 데이터 통합
 		pvData.setItemList(itemList);
 		pvData.setTotalPrice(totalPrice);
+		pvData.setDeliveryFee(deliveryFee);
 		pvData.setCouponList(couponList);
-				
+
 		return pvData;
 	}
 
@@ -154,43 +175,107 @@ public class OrderServiceImpl implements OrderService {
 	verifiedData.setDetailAddressFix(checkoutInputData.getDetailAddressFix());
 	verifiedData.setClientPaidAmount(checkoutInputData.getClientPaidAmount());
 
-	// 총 가격 계산
-	long totalPrice = 0L;
+	// =====================================================
+	// 상품 금액 계산
+	// =====================================================
+
+	long productTotalPrice = 0L;
+
 	for (OrderItemDTO item : itemList) {
-		totalPrice += item.getOptionPrice() * item.getQty();
+	    productTotalPrice += item.getOptionPrice() * item.getQty();
 	}
-		
-	// 계산을 정확하게 하기 위해 BigDecimal로 변환
-	BigDecimal calcPrice = BigDecimal.valueOf(totalPrice);
 
-	// 쿠폰 할인 적용 (가격 * (1 - 쿠폰할인율))
-	// verifiedData.getCouponValue()가 null일 수 있으니 방어 코드 추가
-	BigDecimal couponVal = verifiedData.getCouponValue() != null ? verifiedData.getCouponValue() : BigDecimal.ZERO;
-	calcPrice = calcPrice.multiply(BigDecimal.ONE.subtract(couponVal));
-		
-	// 회원 등급 할인 적용 (가격 * (1 - 등급할인율))
-	// 만약 discountRate가 double이라면 BigDecimal.valueOf(verifiedData.getDiscountRate())로 감싸줍니다.
-	BigDecimal discountRate = verifiedData.getDiscountRate() != null ? verifiedData.getDiscountRate() : BigDecimal.ZERO;
-	calcPrice = calcPrice.multiply(BigDecimal.ONE.subtract(discountRate));
-		
-	// 소수점이 생길 수 있으므로 반올림 처리 후 long으로 변환 (.setScale(0, RoundingMode.HALF_UP))
-	totalPrice = calcPrice.setScale(0, java.math.RoundingMode.HALF_UP).longValue();
+
+	// =====================================================
+	// 배송비
+	// 상품이 있으면 3,000원
+	// =====================================================
+
+	long deliveryFee = productTotalPrice > 0 ? 3000L : 0L;
+
+	verifiedData.setDeliveryFee(deliveryFee);
+
+
+	// =====================================================
+	// 상품 금액에 쿠폰 할인 적용
+	// =====================================================
+
+	BigDecimal calcPrice =
+	        BigDecimal.valueOf(productTotalPrice);
+
+	BigDecimal couponVal =
+	        verifiedData.getCouponValue() != null
+	                ? verifiedData.getCouponValue()
+	                : BigDecimal.ZERO;
+
+	calcPrice =
+	        calcPrice.multiply(
+	                BigDecimal.ONE.subtract(couponVal)
+	        );
+
+
+	// =====================================================
+	// 회원 등급 할인 적용
+	// =====================================================
+
+	BigDecimal discountRate =
+	        verifiedData.getDiscountRate() != null
+	                ? verifiedData.getDiscountRate()
+	                : BigDecimal.ZERO;
+
+	calcPrice =
+	        calcPrice.multiply(
+	                BigDecimal.ONE.subtract(discountRate)
+	        );
+
+
+	// =====================================================
+	// 할인된 상품금액 원 단위 반올림
+	// =====================================================
+
+	long discountedProductPrice =
+	        calcPrice
+	                .setScale(
+	                        0,
+	                        java.math.RoundingMode.HALF_UP
+	                )
+	                .longValue();
+
+
+	// =====================================================
+	// 배송비 추가
+	// =====================================================
+
+	long totalPrice =
+	        discountedProductPrice + deliveryFee;
+
 	
+
+	// =====================================================
 	// 포인트 사용
+	// =====================================================
+
 	totalPrice -= usedPoint;
-	System.out.println("" + totalPrice + ", " + usedPoint);
 	
+	
+
+	System.out.println(
+	        "상품금액: " + productTotalPrice
+	        + ", 배송비: " + deliveryFee
+	        + ", 할인후 상품금액: " + discountedProductPrice
+	        + ", 사용포인트: " + usedPoint
+	        + ", 최종금액: " + totalPrice
+	);
+
+
 	if (totalPrice < 0) {
-		throw new IllegalArgumentException("사용 포인트가 결제 금액보다 많습니다.");
+	    throw new IllegalArgumentException(
+	            "사용 포인트가 결제 금액보다 많습니다."
+	    );
 	}
 	
-	// 클라이언트가 결제한 금액과 최종 계산된 비용 확인
-		if (totalPrice != verifiedData.getClientPaidAmount()) {
-		throw new IllegalArgumentException("결제한 금액과 지불할 금액이 같지 않습니다.");
-	}
-
 	verifiedData.setTotalPrice(totalPrice);
-
+	
 	// 주문 테이블 입력
 	int result = mapper.insertProductOrder(verifiedData);
 
@@ -285,9 +370,15 @@ public class OrderServiceImpl implements OrderService {
 	}
 	
 	@Override
-	public Long getOrderIdForMember(Long orderId, Long memberId) {
+	public Long getOrderIdForMember(Long memberId, Long orderId) {
 
-	    Long result = mapper.getOrderIdForMember(orderId, memberId);
+	    System.out.println("===== getOrderIdForMember =====");
+	    System.out.println("orderId = " + orderId);
+	    System.out.println("memberId = " + memberId);
+
+	    Long result = mapper.getOrderIdForMember(memberId, orderId);
+
+	    System.out.println("mapper result = " + result);
 
 	    if (result == null) {
 	        throw new IllegalArgumentException(

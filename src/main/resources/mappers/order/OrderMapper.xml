@@ -6,9 +6,10 @@
 <mapper namespace="com.kh.sajotuna.mds.order.model.mapper.OrderMapper">
 
 	<select id="selectByMemberIdForPay" parameterType="long" resultType="PaymentViewDTO">
-		SELECT M.MEMBER_NAME, M.POINT, G.GRADE_NAME, G.DISCOUNT_RATE, DA.ADDRESS_NAME, DA.DETAIL_ADDRESS
+		SELECT M.MEMBER_NAME, MP.POINT, G.GRADE_NAME, G.DISCOUNT_RATE, DA.ADDRESS_NAME, DA.DETAIL_ADDRESS
 		FROM MEMBER M JOIN GRADE G ON M.GRADE_ID = G.GRADE_ID
 			LEFT JOIN  DELIVERYADDRESS DA ON M.MEMBER_ID = DA.MEMBER_ID AND UPPER(DA.IS_DEFAULT) = 'Y'
+			JOIN MEMBERPOINT MP ON M.MEMBER_ID = MP.MEMBER_ID
 		WHERE M.MEMBER_ID = #{memberId}
   	</select>
 
@@ -116,9 +117,7 @@
 	</delete>
 	
 	<select id="getOrderIdForMember" resultType="long">
-    	SELECT ORDER_ID
-    	FROM PRODUCTORDER
-    	WHERE ORDER_ID = #{orderId} AND MEMBER_ID = #{memberId}
+    	SELECT ORDER_ID FROM PRODUCTORDER WHERE MEMBER_ID = #{memberId} AND ORDER_ID = #{orderId}
 	</select>
  
 </mapper>

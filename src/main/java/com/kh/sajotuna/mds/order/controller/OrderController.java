@@ -35,24 +35,40 @@ public class OrderController {
 	                        HttpSession session,
 	                        Model model,
 	                        RedirectAttributes redirectAttr) {
+		
+
+	    System.out.println("===== completed 진입 =====");  //추적용
+	    System.out.println("orderId = " + orderId);    //추적용
 
 	    MemberDTO member =
 	            (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	    
+	    System.out.println("memberId = " +
+	            (member != null ? member.getMemberId() : null));  // 추적용
 
 	    if (member == null) {
+	    	 System.out.println(">>> 로그인 세션 없음"); //추적
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
 	        return "redirect:/member/login";
 	    }
 
 	    try {
 	    	Long validOrderId =
-	    	        service.getOrderIdForMember(orderId, member.getMemberId());
+	    	        service.getOrderIdForMember(member.getMemberId(), orderId);
+
+	        System.out.println(">>> 조회된 validOrderId = " + validOrderId); //추적
 
 	    	model.addAttribute("orderId", validOrderId);
+	    	
+	        System.out.println(">>> orderComplete.jsp 이동");  //추적
+
 
 	        return "order/orderComplete";
 
 	    } catch (Exception e) {
+	        System.out.println("===== 주문 완료 페이지 진입 실패 ====="); //추적
+
+	    	e.printStackTrace(); //추적
 	        redirectAttr.addFlashAttribute("error", e.getMessage());
 	        return "redirect:/";
 	    }
