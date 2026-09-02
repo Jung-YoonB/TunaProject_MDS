@@ -18,7 +18,7 @@ public class CartServiceImpl implements CartService{
     private final CartMapper mapper;
     @Override
     public String insertCartInfo(CartDTO cart) {
-        int result = 0;
+        int result;
         System.out.println(cart);
 
         findInfoDTO findInfo = new  findInfoDTO(cart.getMemberId(), cart.getPopId());
