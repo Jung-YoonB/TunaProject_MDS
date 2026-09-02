@@ -32,7 +32,8 @@
 		WHERE od.OD_ID = #{odId} AND pord.MEMBER_ID = #{memberId}
 	</select>
 
-	<!-- 이미 해당 주문상세에 리뷰를 작성했는지 확인 (UK_REVIEW: MEMBER_ID + OD_ID) -->
+	<!-- 이 주문상세의 리뷰 작성 권한을 이미 썼는지 확인. REVIEW_STATUS는 일부러 보지 않는다 -
+	     삭제(REVIEW_STATUS=0)해도 행이 남아 재작성이 영구히 막히는 구조(AUDIT 정책 11번) -->
 	<select id="checkReviewExists" resultType="int">
 		SELECT COUNT(*)
 		FROM REVIEW
@@ -65,7 +66,9 @@
 			p.PRODUCT_NAME,
 			po.OPTION_PRICE,
 			orderd.QTY,
-			r.LIKE_COUNT,
+			<!-- 좋아요 수는 REVIEW.LIKE_COUNT 컬럼이 아니라 REVIEWLIKE 행 수로 계산한다
+			     (컬럼과 테이블이 중복이라 테이블로 일원화됨) -->
+			(SELECT COUNT(*) FROM REVIEWLIKE rl WHERE rl.REVIEW_ID = r.REVIEW_ID) AS LIKE_COUNT,
 			r.OD_ID,
 			r.MEMBER_ID,
 			pi.PRODUCT_IMAGE_PATH,
@@ -76,13 +79,13 @@
 		JOIN PRODUCTOPTION po ON po.OPTION_ID = od.OPTION_ID
 		JOIN PRODUCT p ON p.PRODUCT_ID = od.PRODUCT_ID
 		LEFT JOIN PRODUCTIMAGE pi ON pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0
-		WHERE r.MEMBER_ID = #{memberId}
+		WHERE r.MEMBER_ID = #{memberId} AND r.REVIEW_STATUS = 1
 		ORDER BY r.WRITE_DATE DESC
 		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
 	</select>
 
 	<select id="countMyReviews" resultType="int">
-		SELECT COUNT(*) FROM REVIEW WHERE MEMBER_ID = #{memberId}
+		SELECT COUNT(*) FROM REVIEW WHERE MEMBER_ID = #{memberId} AND REVIEW_STATUS = 1
 	</select>
 
 	<select id="selectReviewImagesByReviewIds" resultType="ReviewImagesDTO">
@@ -100,10 +103,22 @@
 		WHERE REVIEW_ID = #{reviewId}
 	</select>
 
-	<!-- REVIEWIMAGE는 FK_RIMAGE_REVIEW ON DELETE CASCADE라 REVIEW 삭제 시 자동으로 같이 삭제됨.
-	     MEMBER_ID 조건까지 같이 걸어서 본인 리뷰가 아니면 0건 삭제되게(소유권 검증을 WHERE로 처리) -->
-	<delete id="deleteReview">
-		DELETE FROM REVIEW WHERE REVIEW_ID = #{reviewId} AND MEMBER_ID = #{memberId}
+	<!-- 삭제는 하드 삭제가 아니라 REVIEW_STATUS=0(소프트 삭제)다. 행이 남아야 UK_REVIEW(MEMBER_ID, OD_ID)가
+	     재작성을 계속 막는다(AUDIT 정책 11번). MEMBER_ID 조건까지 같이 걸어서 본인 리뷰가 아니면 0건 갱신되게 함 -->
+	<update id="deleteReview">
+		UPDATE REVIEW
+		SET REVIEW_STATUS = 0
+		WHERE REVIEW_ID = #{reviewId} AND MEMBER_ID = #{memberId} AND REVIEW_STATUS = 1
+	</update>
+
+	<!-- 소프트 삭제로 바뀌면서 REVIEW 행이 남아 FK ON DELETE CASCADE가 더 이상 안 걸린다.
+	     하드 삭제 시절과 같은 결과가 되도록 딸린 행을 명시적으로 지운다 -->
+	<delete id="deleteReviewImagesByReviewId">
+		DELETE FROM REVIEWIMAGE WHERE REVIEW_ID = #{reviewId}
+	</delete>
+
+	<delete id="deleteReviewLikesByReviewId">
+		DELETE FROM REVIEWLIKE WHERE REVIEW_ID = #{reviewId}
 	</delete>
 
 </mapper>

@@ -1,6 +1,8 @@
 package com.kh.sajotuna.mds.admin.model.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -47,7 +49,7 @@ public class AdminProductServiceImpl implements AdminProductService {
 
 	@Override
 	@Transactional
-	public void registerProduct(String productTitle, String productName, String optionName, int price, int stock,
+	public void registerProduct(String productTitle, String productName, String optionsJson,
 			Long categoryId, String productContent, String tagsJson, MultipartFile mainImage,
 			List<MultipartFile> subImages, List<MultipartFile> descriptionImages) {
 
@@ -57,21 +59,17 @@ public class AdminProductServiceImpl implements AdminProductService {
 		if (descriptionImages == null || descriptionImages.stream().allMatch(MultipartFile::isEmpty)) {
 			throw new IllegalStateException("설명 이미지는 최소 1장 이상 등록해야 합니다.");
 		}
-		// PRODUCT_TITLE/PRODUCT_NAME/PRODUCT_CONTENT/OPTION_NAME은 NOT NULL 컬럼이고, Oracle은 빈 문자열을 NULL로
+		// PRODUCT_TITLE/PRODUCT_NAME/PRODUCT_CONTENT는 NOT NULL 컬럼이고, Oracle은 빈 문자열을 NULL로
 		// 취급하므로 여기서 막지 않으면 DB 제약조건 위반(ORA-01400)이 그대로 노출된다
 		requireNonBlank(productTitle, "상품 게시글 제목은 필수입니다.");
 		requireNonBlank(productName, "상품명은 필수입니다.");
-		requireNonBlank(optionName, "옵션명은 필수입니다.");
 		requireNonBlank(productContent, "상품 설명은 필수입니다.");
-		if (price < 0) {
-			throw new IllegalStateException("판매가격은 0 이상이어야 합니다.");
-		}
-		if (stock < 0) {
-			throw new IllegalStateException("재고는 0 이상이어야 합니다.");
-		}
 		if (categoryId == null) {
 			throw new IllegalStateException("카테고리를 선택해 주세요.");
 		}
+
+		// 옵션 검증은 파일을 쓰기 전에 끝내둔다(뒤에서 실패하면 롤백 대상이 늘어남)
+		List<OptionDTO> options = parseOptions(optionsJson);
 
 		checkImageType(mainImage);
 		checkImageTypes(subImages);
@@ -83,12 +81,11 @@ public class AdminProductServiceImpl implements AdminProductService {
 		product.setProductContent(productContent);
 		mapper.insertProduct(product);
 
-		OptionDTO option = new OptionDTO();
-		option.setOptionName(optionName);
-		option.setPrice(price);
-		option.setStock(stock);
-		mapper.insertProductOption(option);
-		mapper.insertOptionDetail(product.getProductId(), option.getOptionId());
+		// 옵션 1개당 PRODUCTOPTION 1건 + 상품-옵션 연결(OPTIONDETAIL) 1건
+		for (OptionDTO option : options) {
+			mapper.insertProductOption(option);
+			mapper.insertOptionDetail(product.getProductId(), option.getOptionId());
+		}
 
 		mapper.insertCategoryDetail(product.getProductId(), categoryId);
 
@@ -103,6 +100,43 @@ public class AdminProductServiceImpl implements AdminProductService {
 		if (value == null || value.isBlank()) {
 			throw new IllegalStateException(message);
 		}
+	}
+
+	// 화면에서 보낸 옵션 JSON을 검증하면서 DTO 목록으로 바꾼다.
+	// 옵션이 없으면 상품이 성립하지 않으므로(가격/재고가 옵션에만 있음) 최소 1개를 강제한다.
+	private List<OptionDTO> parseOptions(String optionsJson) {
+		if (optionsJson == null || optionsJson.isBlank()) {
+			throw new IllegalStateException("옵션을 최소 1개 이상 등록해 주세요.");
+		}
+
+		List<OptionDTO> options;
+		try {
+			options = List.of(objectMapper.readValue(optionsJson, OptionDTO[].class));
+		} catch (JacksonException e) {
+			throw new IllegalStateException("옵션 정보가 올바르지 않습니다.", e);
+		}
+
+		if (options.isEmpty()) {
+			throw new IllegalStateException("옵션을 최소 1개 이상 등록해 주세요.");
+		}
+
+		Set<String> names = new HashSet<>();
+		for (OptionDTO option : options) {
+			// OPTION_NAME도 NOT NULL 컬럼이라 빈 값이면 ORA-01400이 그대로 노출된다
+			requireNonBlank(option.getOptionName(), "옵션명은 필수입니다.");
+			if (option.getPrice() < 0) {
+				throw new IllegalStateException("판매가격은 0 이상이어야 합니다.");
+			}
+			if (option.getStock() < 0) {
+				throw new IllegalStateException("재고는 0 이상이어야 합니다.");
+			}
+			// 한 상품 안에서 옵션명이 겹치면 구매 화면에서 서로 구분할 수 없다
+			if (!names.add(option.getOptionName().trim())) {
+				throw new IllegalStateException("옵션명이 중복됩니다: " + option.getOptionName().trim());
+			}
+		}
+
+		return options;
 	}
 
 	private void checkImageTypes(List<MultipartFile> files) {

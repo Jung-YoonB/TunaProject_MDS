@@ -18,7 +18,7 @@ public interface ReviewMapper {
 	// 리뷰 작성 화면에 보여줄 상품/옵션/가격/썸네일 조회 (odId가 해당 memberId 소유일 때만 조회됨)
 	ReviewWriteInfoDTO getReviewWriteInfo(@Param("odId") Long odId, @Param("memberId") Long memberId);
 
-	// 해당 주문상세에 이미 리뷰가 작성됐는지 확인
+	// 해당 주문상세에 리뷰 작성 권한을 이미 썼는지 확인 (REVIEW_STATUS 무관 - 삭제해도 행이 남아 재작성 차단)
 	int checkReviewExists(@Param("memberId") Long memberId, @Param("odId") Long odId);
 
 	// 리뷰 본문 등록
@@ -39,6 +39,12 @@ public interface ReviewMapper {
 	// 삭제 전 디스크에서 같이 지울 이미지 파일명 조회
 	List<String> selectReviewImageSaveNamesByReviewId(@Param("reviewId") Long reviewId);
 
-	// 본인이 작성한 리뷰만 삭제되도록 WHERE에 memberId도 같이 검증 (영향받은 행이 0이면 소유자가 아니거나 없는 리뷰)
+	// 리뷰 소프트 삭제 (REVIEW_STATUS=0). 본인 리뷰만 갱신되도록 WHERE에 memberId도 같이 검증
+	// (영향받은 행이 0이면 소유자가 아니거나 이미 삭제된 리뷰)
 	int deleteReview(@Param("reviewId") Long reviewId, @Param("memberId") Long memberId);
+
+	// 소프트 삭제로 바뀌면서 FK CASCADE가 안 걸리므로, 딸린 행은 직접 지운다
+	int deleteReviewImagesByReviewId(@Param("reviewId") Long reviewId);
+
+	int deleteReviewLikesByReviewId(@Param("reviewId") Long reviewId);
 }
