@@ -117,7 +117,8 @@
                 <span id="pwRegCheckMsg"></span>
                 <input type="password" id="newPasswordConfirm" class="signup-input" placeholder="새 비밀번호 확인">
                 <span id="pwCheckMsg"></span>
-                <span class="password-hint">변경하지 않으려면 비워두고 저장을 눌러주세요.</span>
+                <span class="password-hint">비밀번호를 변경하시려면 현재 비밀번호와 새로운 비밀번호를 입력해주세요.</span>
+				<span class="password-hint">비밀번호를 유지하시려면 모두 공란으로 저장해주세요.</span>
                 <div class="edit-actions">
                     <button type="button" class="btn-cancel-edit">취소</button>
                     <button type="button" class="btn-save-field" data-field="password">저장</button>

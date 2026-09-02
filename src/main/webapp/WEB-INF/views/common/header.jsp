@@ -88,7 +88,7 @@
 				</a>
 
 				<%-- TODO(placeholder route): 장바구니 컨트롤러 미구현, 담당 브랜치 확정 시 경로 조정 --%>
-				<a class="icon-item" href="<c:url value='/cart'/>">
+				<a class="icon-item" href="<c:url value='/cart/my-cart'/>">
 					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 						<circle cx="9" cy="21" r="1"/>
 						<circle cx="20" cy="21" r="1"/>

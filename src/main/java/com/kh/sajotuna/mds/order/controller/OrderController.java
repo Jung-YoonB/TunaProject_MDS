@@ -75,7 +75,7 @@ public class OrderController {
 		
 		if (cartIds != null && !cartIds.isEmpty()) { // 장바구니로 넘어온 경우
 			pvData = service.cartPrepare(loginMember.getMemberId(), cartIds);
-			
+			pvData.setCartIds(cartIds);
 		} else if (orderItem.getPopId() != null) { // 바로구매로 넘어온 경우
 			pvData = service.directPrepare(loginMember.getMemberId(), orderItem);
 		} else { // 장바구니가 0 인채로 넘어왔거나 이상한 접근

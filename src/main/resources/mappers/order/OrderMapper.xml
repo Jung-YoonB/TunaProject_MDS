@@ -47,7 +47,7 @@
 		</foreach>
 	</select>
 	
-	<select id="selectByChistId" resultType="Double">
+	<select id="selectByChistId" resultType="java.math.BigDecimal">
 		SELECT COUPON_VALUE
 		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
 		WHERE CH.MEMBER_ID = #{memberId} AND CH.CHIST_ID = #{chistId} AND CH.TYPE='ISSUE'

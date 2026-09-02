@@ -39,4 +39,5 @@ public class PaymentViewDTO {
 	// 리스트
 	private List<OrderItemDTO> itemList;		// 구매할 것들 정보 (옵션id, 수량, 옵션 이름, 옵션가격, 상품 이름)
 	private List<CouponDTO> couponList;	// 사용자가 가지고 있는 쿠폰 목록
+	private List<Long> cartIds;
 }
