@@ -180,7 +180,7 @@ public class MemberController {
 			return "redirect:/member/signUp";
 		}
 				
-		redirectAttr.addFlashAttribute("signUpSuccess", true);
+		redirectAttr.addFlashAttribute("signUpSuccess", "회원가입에 성공하셨습니다. 로그인해주세요");
 		return "redirect:/member/login";
 	}
 	

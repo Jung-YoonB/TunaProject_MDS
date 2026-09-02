@@ -128,18 +128,24 @@
 					<p id="phone-message" class="check-message"></p>
 				</div>
 
-			    <!-- 이메일 -->
-			    <div id="Email">
-			        <label for="email">이메일</label>
-					<div class="id-input-box">
-			        <input type="email"
-			               id="email"
-			               name="email"
-			               class="signup-input"
-			               placeholder="이메일을 입력해주세요">
-					<button type="button" id="CheckEmail" class="dup-check-btn">중복확인</button>
-			    	</div>
-					<p id="email-message" class="check-message"></p>
+				<!-- 이메일 -->
+				<div id="Email">
+				    <label for="email">이메일 <span>(선택)</span></label>
+
+				    <div class="id-input-box">
+				        <input type="email"
+				               id="email"
+				               name="email"
+				               class="signup-input"
+				               placeholder="이메일을 입력해주세요">
+
+				        <button type="button"
+				                id="CheckEmail"
+				                class="dup-check-btn">
+				            중복확인
+				        </button>
+				    </div>
+				    <p id="email-message" class="check-message"></p>
 				</div>
 
 			    <!-- 개인정보 동의 -->

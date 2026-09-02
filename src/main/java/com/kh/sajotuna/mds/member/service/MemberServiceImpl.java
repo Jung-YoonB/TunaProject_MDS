@@ -197,25 +197,39 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	@Transactional
 	public boolean emailUpdate(Long memberId, String email) {
-		if (email == null || email.isBlank() || !email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
-			throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
-		}
-		
-		MemberDTO currentMember = mapper.selectByMemberId(memberId);
-		if (currentMember == null) {
-			throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
-		}
-		
-		if (email.equals(currentMember.getEmail())) {
-			return true; // 기존 값과 동일하면 그대로 성공 처리
-		}
-		
-		if (isEmailCheck(email)) {
-			throw new IllegalStateException("이미 사용 중인 이메일입니다.");
-		}
-		
-		return mapper.updateEmail(memberId, email) > 0;
+
+	    // 이메일은 선택사항이므로 빈 값이면 NULL로 저장
+	    if (email != null && email.isBlank()) {
+	        email = null;
+	    }
+
+	    // 값이 들어온 경우에만 이메일 형식 검사
+	    if (email != null &&
+	        !email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+	        throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
+	    }
+
+	    MemberDTO currentMember = mapper.selectByMemberId(memberId);
+
+	    if (currentMember == null) {
+	        throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+	    }
+
+	    // 기존 이메일과 동일한 경우
+	    if (email == null
+	            ? currentMember.getEmail() == null
+	            : email.equals(currentMember.getEmail())) {
+	        return true;
+	    }
+
+	    // 이메일을 새로 입력한 경우에만 중복 확인
+	    if (email != null && isEmailCheck(email)) {
+	        throw new IllegalStateException("이미 사용 중인 이메일입니다.");
+	    }
+
+	    return mapper.updateEmail(memberId, email) > 0;
 	}
+
 
 	@Override
 	@Transactional

@@ -11,7 +11,8 @@
 			SELECT SEQ_MEMBER_ID.NEXTVAL FROM DUAL
 		</selectKey>
   		INSERT INTO MEMBER (MEMBER_ID, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME, EMAIL, PHONE, ROLE)
-  		VALUES (#{memberId}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname}, #{email}, #{phone}, #{role})
+  		VALUES (#{memberId}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname},
+  				NULLIF(#{email}, ''), #{phone}, #{role})
  	</insert>
  	
  	<insert id="insertPoint" parameterType="long">
@@ -188,7 +189,7 @@
 	</update>
 
 	<update id="updateEmail">
-		UPDATE MEMBER SET EMAIL = #{email} WHERE MEMBER_ID = #{memberId}
+    	UPDATE MEMBER SET EMAIL = NULLIF(#{email}, '') WHERE MEMBER_ID = #{memberId}
 	</update>
 
 	<update id="updateName">

@@ -24,14 +24,10 @@ const currentValues = {
 // 중복확인을 통과한 값을 담아둔다. null이면 아직 확인 안 된 상태라 저장이 막힌다.
 const checked = { nickname: null, phone: null, email: null };
 
-/* ---- 중복확인 3종(닉네임/휴대폰/이메일) ----
-   셋의 흐름이 완전히 같아서(빈값 검사 -> 기존값과 동일한지 -> 형식 검사 -> 서버 조회)
-   설정만 바꿔 끼우는 하나의 헬퍼로 묶었다. */
 function setupDuplicateCheck(config) {
     const input = config.input;
     const msgEl = document.querySelector(config.msgSelector);
 
-    // 값을 다시 고치면 이전 확인 결과는 무효로 되돌린다.
     input.addEventListener("input", function () {
         msgEl.textContent = "";
         checked[config.field] = null;
@@ -40,11 +36,25 @@ function setupDuplicateCheck(config) {
     document.querySelector(config.buttonSelector).addEventListener("click", async function () {
         const value = input.value.trim();
 
-        if (value.length === 0) {
-            showMessage(msgEl, config.emptyMessage, false);
-            checked[config.field] = null;
+        // 이메일처럼 빈 값을 허용하는 항목
+        if (value.length === 0 && config.allowEmpty) {
+            showMessage(msgEl, "이메일을 입력하지 않고 비워둘 수 있습니다.", true);
+            checked[config.field] = "";
             return;
         }
+
+        // 일반적인 필수 항목
+		if (value.length === 0 && config.allowEmpty) {
+		    showMessage(msgEl, "이메일을 입력하지 않고 비워둘 수 있습니다.", true);
+		    checked[config.field] = "";
+		    return;
+		}
+
+		if (value.length === 0) {
+		    showMessage(msgEl, config.emptyMessage, false);
+		    checked[config.field] = null;
+		    return;
+		}
 
         if (value === currentValues[config.field]) {
             showMessage(msgEl, "기존 정보와 동일합니다.", true);
@@ -59,10 +69,11 @@ function setupDuplicateCheck(config) {
         }
 
         try {
-            // result.data === true 가 "이미 사용 중"(중복)을 뜻한다.
             const result = await config.check(value);
+
             showMessage(msgEl, result.message, !result.data);
             checked[config.field] = result.data ? null : value;
+
         } catch (error) {
             console.log(error);
             showMessage(msgEl, "중복 확인 중 오류가 발생했습니다.", false);
@@ -102,9 +113,12 @@ setupDuplicateCheck({
     buttonSelector: "#emailCheckBtn",
     msgSelector: "#emailCheckMsg",
     emptyMessage: "이메일을 입력해주세요.",
+    allowEmpty: true,
     regex: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
     formatMessage: "올바른 이메일 형식이 아닙니다.",
-    check: function (v) { return window.MemberService.checkEmail(v); }
+    check: function (v) {
+        return window.MemberService.checkEmail(v);
+    }
 });
 
 // 휴대폰 번호는 숫자만 남긴다.
@@ -231,14 +245,15 @@ const CHECKED_FIELDS = {
         }
     },
 
-    email: {
-        input: emailInput,
-        display: "#current-email",
-        alert: "이메일 중복확인을 진행해주세요.",
-        update: function (value) {
-            return window.MemberService.updateEmail(value);
-        }
-    }
+	email: {
+	        input: emailInput,
+	        display: "#current-email",
+	        alert: "이메일 중복확인을 진행해주세요.",
+	        allowEmpty: true,
+	        update: function (value) {
+	            return window.MemberService.updateEmail(value);
+	        }
+	    }
 };
 
 document.querySelectorAll(".btn-save-field").forEach(function (btn) {
@@ -254,12 +269,12 @@ document.querySelectorAll(".btn-save-field").forEach(function (btn) {
         if (CHECKED_FIELDS[field]) {
 
             const conf = CHECKED_FIELDS[field];
-            const value = checked[field];
+			const value = checked[field];
 
-            if (!value) {
-                alert(conf.alert);
-                return;
-            }
+			if (!value && !conf.allowEmpty) {
+			    alert(conf.alert);
+			    return;
+			}
 
             try {
 
@@ -274,7 +289,8 @@ document.querySelectorAll(".btn-save-field").forEach(function (btn) {
 
                 // 서버 저장 성공 후 화면 갱신
                 currentValues[field] = value;
-                document.querySelector(conf.display).textContent = value;
+				document.querySelector(conf.display).textContent =
+				    field === "email" && !value ? "등록된 이메일 없음" : value;
                 conf.input.dataset.currentValue = value;
 
                 collapsePanel(panel);
