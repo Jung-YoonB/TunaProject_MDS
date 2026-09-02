@@ -4672,6 +4672,24 @@ main:has(.search-result-page) {
     text-align: right;
 }
 
+/* 품목별 리뷰 작성 여부. 배송완료 주문에서만 렌더된다 */
+.order-delivery-page .order-item-review {
+    flex-shrink: 0;
+    min-width: 72px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.order-delivery-page .order-item-review.is-done {
+    color: #a99b86;
+}
+
+/* 아직 쓸 게 남았다는 뜻이라 완료보다 눈에 띄게 */
+.order-delivery-page .order-item-review.is-todo {
+    color: #c1592f;
+}
+
 @media (max-width: 700px) {
     /* 좁은 화면에서는 수량/금액이 상품명을 짓눌러서, 정보를 아래로 흘려보낸다 */
     .order-delivery-page .order-item {

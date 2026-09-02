@@ -113,8 +113,11 @@
 
 			        <%-- 로그인 상태 --%>
 			        <c:when test="${not empty sessionScope.loginSession}">
+			            <%-- 헤더에 노출하는 건 이름이 아니라 닉네임(#TB006_TC-12).
+			                 세션 DTO에 nickname이 담기고, 닉네임을 바꾸면 MemberController가
+			                 세션 값도 같이 갱신하므로 새로고침 없이 바로 반영된다. --%>
 			            <span class="welcome">
-			                ${sessionScope.loginSession.memberName}님
+			                <span class="welcome-nickname"><c:out value="${sessionScope.loginSession.nickname}"/></span> 님
 			            </span>
 
 			            <span class="sign-divider" aria-hidden="true">|</span>

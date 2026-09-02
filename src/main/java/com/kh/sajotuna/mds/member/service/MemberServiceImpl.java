@@ -103,7 +103,7 @@ public class MemberServiceImpl implements MemberService{
 		}
 		
 		MemberDTO sessionMember = new MemberDTO(member.getMemberId(),
-				member.getMemberName(), member.getRole());
+				member.getMemberName(), member.getNickname(), member.getRole());
 		return sessionMember;
 	}
 

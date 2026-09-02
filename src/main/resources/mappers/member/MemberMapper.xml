@@ -123,8 +123,9 @@
   			<!-- QTY는 대표 상품 1건의 수량이라, 여러 상품을 산 주문에서는 실제보다 적게 보인다.
   			     화면에는 주문 전체 수량 합계를 쓴다 -->
   			NVL(rep.TOTAL_QTY, 0) AS TOTAL_QTY,
-  			<!-- 이 주문의 모든 상품을 다 썼을 때만 "작성 완료"로 잠금 -->
-  			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS HAS_REVIEW
+  			<!-- 이 주문 전체를 다 썼을 때만 1. 품목 1건 단위는 selectOrderItemsByOrderIds 의
+  			     HAS_REVIEW 로 서로 다른 값이다 (이름을 구분해 둔 이유 - HANDOFF 3-55) -->
+  			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS ALL_REVIEWED
   		FROM PRODUCTORDER PO
   		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
   		<!-- 주문별 "아직 리뷰 안 쓴 주문상세 중 최소 OD_ID". REVIEW_STATUS는 안 본다 - 삭제한 것도 계속 제외 -->
@@ -162,7 +163,11 @@
   			(SELECT pi.PRODUCT_IMAGE_PATH FROM PRODUCTIMAGE pi
   				WHERE pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0 AND ROWNUM = 1) AS PRODUCT_IMAGE_PATH,
   			(SELECT pi.PRODUCT_IMAGE_SAVE_NAME FROM PRODUCTIMAGE pi
-  				WHERE pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0 AND ROWNUM = 1) AS PRODUCT_IMAGE_SAVE_NAME
+  				WHERE pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0 AND ROWNUM = 1) AS PRODUCT_IMAGE_SAVE_NAME,
+  			<!-- 품목별 리뷰 작성 여부. REVIEW_STATUS는 안 본다 - 넣으면 삭제한 품목이 "미작성"으로
+  			     보이는데 눌러도 막힌다(정책 11번). checkReviewExists 와 같은 기준을 쓸 것 -->
+  			CASE WHEN EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od.OD_ID)
+  			     THEN 1 ELSE 0 END AS HAS_REVIEW
   		FROM ORDERDETAIL od
   		JOIN OPTIONDETAIL opd ON opd.POP_ID = od.POP_ID
   		JOIN PRODUCT p ON p.PRODUCT_ID = opd.PRODUCT_ID

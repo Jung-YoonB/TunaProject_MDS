@@ -54,9 +54,13 @@ public class MemberDTO {
 	private String birthStr;
 	private String createdAtStr;
 	
-	public MemberDTO(Long memberId, String memberName, String role) {
+	// 세션에 담을 최소 정보만 가진 생성자.
+	// nickname은 헤더가 "OOO님"으로 노출하는 값이라 반드시 함께 담아야 한다
+	// (닉네임을 바꾸면 MemberController.updateNickname이 세션 값도 같이 갱신한다).
+	public MemberDTO(Long memberId, String memberName, String nickname, String role) {
 		this.memberId = memberId;
 		this.memberName = memberName;
+		this.nickname = nickname;
 		this.role = role;
 	}
 }

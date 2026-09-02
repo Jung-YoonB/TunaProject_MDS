@@ -305,6 +305,12 @@ public class MemberController {
 	}
 	boolean isUpdate = service.nicknameUpdate(member.getMemberId(), nickname);
 
+			// 헤더가 세션의 nickname을 "OOO님"으로 노출하므로(#TB006_TC-12),
+			// 세션 값을 같이 갱신하지 않으면 다시 로그인하기 전까지 옛 닉네임이 계속 보인다
+			if (isUpdate) {
+				member.setNickname(nickname);
+			}
+
 			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패하셨습니다.";
 			return ApiResponse.success(message, isUpdate);
 		} catch (IllegalArgumentException | IllegalStateException e) {
