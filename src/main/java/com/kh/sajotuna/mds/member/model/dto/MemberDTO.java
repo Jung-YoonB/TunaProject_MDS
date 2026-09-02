@@ -40,7 +40,7 @@ public class MemberDTO {
 	@NotBlank(message = "닉네임을 입력해주세요.")
 	@Pattern(regexp = "^[가-힣a-zA-Z0-9_]{2,8}$", message = "닉네임은 한글, 영문, 숫자, 언더바(_)를 사용하여 2~8자로 입력해주세요.")
 	private String nickname;
-	@Pattern(regexp="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message="올바른 이메일 형식이 아닙니다.")
+	@Pattern(regexp="^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message="올바른 이메일 형식이 아닙니다.")
 	private String email;
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate createdAt;

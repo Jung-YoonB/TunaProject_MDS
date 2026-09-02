@@ -304,6 +304,8 @@ const emailInput =
 
 emailInput.addEventListener("input", function() {
 
+	this.value = this.value.replace(/\s/g, "");
+	
     checkEmailResult.textContent = "";
     checkEmailResult.className = "";
     checkEmail = null;

@@ -43,13 +43,6 @@ function setupDuplicateCheck(config) {
             return;
         }
 
-        // 일반적인 필수 항목
-		if (value.length === 0 && config.allowEmpty) {
-		    showMessage(msgEl, "이메일을 입력하지 않고 비워둘 수 있습니다.", true);
-		    checked[config.field] = "";
-		    return;
-		}
-
 		if (value.length === 0) {
 		    showMessage(msgEl, config.emptyMessage, false);
 		    checked[config.field] = null;
@@ -263,43 +256,55 @@ document.querySelectorAll(".btn-save-field").forEach(function (btn) {
         const field = btn.dataset.field;
         const panel = btn.closest(".info-edit-panel");
 
-        /* --------------------------------
-           닉네임 / 휴대폰 / 이메일
-           -------------------------------- */
-        if (CHECKED_FIELDS[field]) {
+		/* --------------------------------
+		   닉네임 / 휴대폰 / 이메일
+		   -------------------------------- */
+		if (CHECKED_FIELDS[field]) {
 
-            const conf = CHECKED_FIELDS[field];
-			const value = checked[field];
+			const conf = CHECKED_FIELDS[field];
+			let value = checked[field];
+
+			if (field === "email") {
+			    value = emailInput.value.trim();
+
+			    if (value !== "" && checked.email !== value) {
+			        alert("이메일 중복확인을 진행해주세요.");
+			        return;
+			    }
+			}
 
 			if (!value && !conf.allowEmpty) {
 			    alert(conf.alert);
 			    return;
 			}
 
-            try {
+		    try {
 
-                const result = await conf.update(value);
+		        const result = await conf.update(value);
 
-                if (!result.data) {
-                    alert(result.message || "정보 변경에 실패했습니다.");
-                    return;
-                }
-				
-				alert(result.message || "정보가 변경되었습니다.");
+		        if (!result.data) {
+		            alert(result.message || "정보 변경에 실패했습니다.");
+		            return;
+		        }
 
-                // 서버 저장 성공 후 화면 갱신
-                currentValues[field] = value;
-				document.querySelector(conf.display).textContent =
-				    field === "email" && !value ? "등록된 이메일 없음" : value;
-                conf.input.dataset.currentValue = value;
+		        alert(result.message || "정보가 변경되었습니다.");
 
-                collapsePanel(panel);
+		        // 서버 저장 성공 후 화면 갱신
+		        currentValues[field] = value;
+		        document.querySelector(conf.display).textContent =
+		            field === "email" && !value
+		                ? "등록된 이메일이 없습니다"
+		                : value;
 
-            } catch (error) {
+		        conf.input.dataset.currentValue = value;
 
-                console.error(error);
-                alert("정보 변경 중 오류가 발생했습니다.");
-            }
+		        collapsePanel(panel);
+
+		    } catch (error) {
+
+		        console.error(error);
+		        alert("정보 변경 중 오류가 발생했습니다.");
+		    }
 
         /* --------------------------------
            이름
