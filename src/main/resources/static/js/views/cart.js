@@ -49,42 +49,44 @@
         return keys;
     }
 
-    function buildRow(item) {
-        var key = window.CartService.getKey(item);
-        var checked = checkedState[key] !== false;
+	function buildRow(item) {
+	    var key = window.CartService.getKey(item);
+	    var checked = checkedState[key] !== false;
 
-        var row = document.createElement('article');
-        row.className = 'cart-item';
-        row.dataset.productId = item.productId;
-        row.dataset.cartKey = key;
-        row.innerHTML =
-            '<input type="checkbox" class="item-checkbox"' + (checked ? ' checked' : '') + '>' +
-            '<div class="item-thumbnail"></div>' +
-            '<div class="item-info">' +
-                '<h3 class="item-title"></h3>' +
-                '<p class="item-option"></p>' +
-                '<div class="item-price-info"><span class="price-final"></span></div>' +
-            '</div>' +
-            '<div class="item-control">' +
-                '<div class="qty-control">' +
-                    '<button type="button" class="btn-qty-decrease" aria-label="수량 감소">-</button>' +
-                    '<input type="number" class="input-qty" min="1" readonly>' +
-                    '<button type="button" class="btn-qty-increase" aria-label="수량 증가">+</button>' +
-                '</div>' +
-                '<button type="button" class="delete-item-btn">삭제</button>' +
-            '</div>';
+	    var row = document.createElement('article');
+	    row.className = 'cart-item';
+	    row.dataset.cartId = item.cartId;
+	    row.dataset.cartKey = key;
 
-        // 사용자 입력에서 온 값이라 innerHTML이 아니라 textContent/value로 넣는다.
-        row.querySelector('.item-title').textContent = item.name;
-        row.querySelector('.item-option').textContent = item.optionName || '기본 옵션';
-        row.querySelector('.price-final').textContent = formatWon(item.price);
-        row.querySelector('.input-qty').value = item.qty;
-        return row;
-    }
+	    row.innerHTML =
+	        '<input type="checkbox" class="item-checkbox"' + (checked ? ' checked' : '') + '>' +
+	        '<div class="item-thumbnail"></div>' +
+	        '<div class="item-info">' +
+	            '<h3 class="item-title"></h3>' +
+	            '<p class="item-option"></p>' +
+	            '<div class="item-price-info"><span class="price-final"></span></div>' +
+	        '</div>' +
+	        '<div class="item-control">' +
+	            '<div class="qty-control">' +
+	                '<button type="button" class="btn-qty-decrease" aria-label="수량 감소">-</button>' +
+	                '<input type="number" class="input-qty" min="1" readonly>' +
+	                '<button type="button" class="btn-qty-increase" aria-label="수량 증가">+</button>' +
+	            '</div>' +
+	            '<button type="button" class="delete-item-btn">삭제</button>' +
+	        '</div>';
+
+			row.querySelector('.item-title').textContent = item.productTitle;
+			row.querySelector('.item-option').textContent = item.optionName || '기본 옵션';
+			row.querySelector('.price-final').textContent = formatWon(item.optionPrice);
+			row.querySelector('.input-qty').value = item.qty;
+
+	    return row;
+	}
+
 
     function render() {
         captureCheckedState();
-        items = window.CartWishService.getCartItems();
+        items = window.CartService.load();
 
         var isEmpty = items.length === 0;
         cartControls.hidden = isEmpty;
@@ -152,13 +154,38 @@
         render();
     });
 
-    document.getElementById('btn-checkout').addEventListener('click', function () {
-        var anyChecked = selectedKeys().length > 0;
-        cartWarning.hidden = anyChecked;
-        if (anyChecked) {
-            window.location.href = PAYMENT_URL;
-        }
-    });
+	document.getElementById('btn-checkout').addEventListener('click', function () {
+	    var keys = selectedKeys();
+
+	    if (keys.length === 0) {
+	        cartWarning.hidden = false;
+	        return;
+	    }
+
+	    cartWarning.hidden = true;
+
+	    var form = document.createElement('form');
+	    form.method = 'POST';
+	    form.action = PAYMENT_URL;
+
+	    items.forEach(function (item) {
+	        var key = window.CartService.getKey(item);
+
+	        if (keys.indexOf(key) !== -1) {
+	            var input = document.createElement('input');
+
+	            input.type = 'hidden';
+	            input.name = 'cartId';
+	            input.value = item.cartId;
+
+	            form.appendChild(input);
+	        }
+	    });
+
+	    document.body.appendChild(form);
+	    form.submit();
+	});
+
 
     render();
 

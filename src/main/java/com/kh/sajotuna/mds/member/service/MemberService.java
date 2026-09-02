@@ -39,7 +39,7 @@ public interface MemberService {
 	boolean nameUpdate(Long memberId, String memberName);
 	boolean birthUpdate(Long memberId, String birth);
 	boolean genderUpdate(Long memberId, String gender);
-	boolean passwordUpdate(Long memberId, String newPassword);
+	boolean passwordUpdate(Long memberId, String currentPassword, String newPassword);
 	
 	//회원 탈퇴
 	boolean withdrawMember(Long memberId);
@@ -55,4 +55,7 @@ public interface MemberService {
 
 	// 마이페이지 "리뷰 작성" 배지: 작성 가능한 리뷰 건수
 	int countReviewableOrderDetails(Long memberId);
+
+	// 빠른메뉴 "리뷰 작성" 타일이 바로 보낼 주문상세 1건 (없으면 null)
+	Long nextReviewableOdId(Long memberId);
 }

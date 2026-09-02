@@ -13,9 +13,10 @@ public interface ProductService {
 	
 	DetailPageDTO detailPage(Long productId);
 
-	List<ReviewDTO> getReviewList(Long productId, Long memberId);
+	List<ReviewDTO> getReviewList(Long productId, Long memberId, int page);
 
 	String increaseReviewLike(Long reviewId, Long memberId);
 
 	String getCoupons(Long memberId, Long couponId);
+	int totalReviewPages(Long memberId);
 }
