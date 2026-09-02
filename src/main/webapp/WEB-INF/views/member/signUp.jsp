@@ -33,6 +33,7 @@
 			               name="memberName"
 			               class="signup-input"
 			               placeholder="이름을 입력해주세요">
+					<p class="input-notice"> 한글 2~4자로 입력해주세요.</p>
 			    </div>
 
 			    <!-- 생년월일 -->
@@ -52,7 +53,7 @@
 			                   id="gender-male"
 			                   name="gender"
 			                   value="M"
-			                   class="gender-radio">
+			                   class="gender-radio" checked>
 			            <label for="gender-male" class="gender-pill">남성</label>
 
 			            <input type="radio"
@@ -67,12 +68,16 @@
 			    <!-- 닉네임 -->
 			    <div id="Nickname">
 			        <label for="nickname">닉네임</label>
-			        <input type="text"
-			               id="nickname"
-			               name="nickname"
-			               class="signup-input"
-			               placeholder="닉네임을 입력해주세요">
-			        <p id="nickname-message" class="check-message"></p>
+					<div class="id-input-box">
+			       		<input type="text"
+			            		id="nickname"
+			            	  	name="nickname"
+			              		class="signup-input"
+			              	 	placeholder="닉네임을 입력해주세요">
+						<button type="button" id="CheckNickname" class="dup-check-btn">중복확인</button>
+					</div>
+				<p class="input-notice"> 한글·영문·숫자·언더바(_)를 사용한 2~8자</p>
+			    <p id="nickname-message" class="check-message"></p>
 			    </div>
 
 			    <!-- 아이디 -->
@@ -86,6 +91,7 @@
 			                   placeholder="아이디를 입력해주세요">
 			            <button type="button" id="CheckId" class="dup-check-btn">중복확인</button>
 			        </div>
+					<p class="input-notice"> 영문 소문자로 시작하며, 영문 소문자·숫자·언더바(_)를 사용한 6~20자</p>
 			        <p id="id-message" class="check-message"></p>
 			    </div>
 
@@ -97,7 +103,7 @@
 			               name="loginPw"
 			               class="signup-input"
 			               placeholder="비밀번호를 입력해주세요">
-			        <p id="pw-reg-check-notice"></p>
+			        <p id="pw-reg-check-notice"> 영문, 숫자, 특수문자를 각각 1개 이상 포함한 8~16자</p>
 			    </div>
 
 			    <!-- 비밀번호 확인 -->
@@ -114,22 +120,38 @@
 			    <!-- 휴대폰 번호 -->
 			    <div id="PhoneNumber">
 			        <label for="phone">휴대폰 번호</label>
-			        <input type="tel"
-			               id="phone"
-			               name="phone"
-			               class="signup-input"
-			               placeholder="휴대폰 번호를 입력해주세요">
-			    </div>
+					<div class="id-input-box">
+			        	<input type="tel"
+			             	  id="phone"
+			              	 name="phone"
+			             	  class="signup-input"
+			            	   placeholder="휴대폰 번호를 입력해주세요">
+						<button type="button" id="CheckPhone" class="dup-check-btn">중복확인</button>
+			    	</div>
+					<p class="input-notice"> 숫자만 입력해주세요. 예) 01012345678</p>
+					<p id="phone-message" class="check-message"></p>
+				</div>
 
-			    <!-- 이메일 -->
-			    <div id="Email">
-			        <label for="email">이메일</label>
-			        <input type="email"
-			               id="email"
-			               name="email"
-			               class="signup-input"
-			               placeholder="이메일을 입력해주세요">
-			    </div>
+				<!-- 이메일 -->
+				<div id="Email">
+				    <label for="email">이메일</label>
+
+				    <div class="id-input-box">
+				        <input type="email"
+				               id="email"
+				               name="email"
+				               class="signup-input"
+				               placeholder="이메일을 입력해주세요">
+
+				        <button type="button"
+				                id="CheckEmail"
+				                class="dup-check-btn">
+				            중복확인
+				        </button>
+				    </div>
+					<p class="input-notice"> 선택사항 · 입력 시 올바른 이메일 형식으로 입력해주세요.</p>
+				    <p id="email-message" class="check-message"></p>
+				</div>
 
 			    <!-- 개인정보 동의 -->
 			    <div id="PrivacyBox">

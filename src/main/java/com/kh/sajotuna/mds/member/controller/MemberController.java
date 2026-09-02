@@ -51,6 +51,11 @@ public class MemberController {
 	public String myPageForm(HttpSession session, Model model, RedirectAttributes redirectAttr) {
 
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		
+		if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
 
 		MemberDTO loginMember = service.getMemberByMemberId(member.getMemberId());
 		if (loginMember == null) {
@@ -76,10 +81,15 @@ public class MemberController {
 
 	@GetMapping("/couponView")
 	public String userCouponViewForm(@RequestParam(defaultValue = "1") int page,
-			HttpSession session, Model model) {
+			HttpSession session, Model model, RedirectAttributes redirectAttr) {
 
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 
+		if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
+		
 		if(member.getRole().equals("USER")) {
 
 			int totalPages = service.totalCouponPages(member.getMemberId());
@@ -107,10 +117,15 @@ public class MemberController {
 	public String userOrderDeliveryForm(
 			@RequestParam(defaultValue = "all") String status,
 			@RequestParam(defaultValue = "1") int page,
-			HttpSession session, Model model) {
+			HttpSession session, Model model,
+			RedirectAttributes redirectAttr) {
 
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
 
+		if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
 
 
 		if(member.getRole().equals("USER")) {
@@ -137,6 +152,11 @@ public class MemberController {
 		// 유저는 deliveryList에 List<MyPageDeliveryDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
+	@GetMapping("/userWithdraw")
+	public String userWithdraw() {
+	    return "member/userWithdraw";
+	}
+	
 	
 	// POST: CUD 기능
 	
@@ -160,7 +180,7 @@ public class MemberController {
 			return "redirect:/member/signUp";
 		}
 				
-		redirectAttr.addFlashAttribute("signUpSuccess", true);
+		redirectAttr.addFlashAttribute("signUpSuccess", "회원가입에 성공하셨습니다. 로그인해주세요");
 		return "redirect:/member/login";
 	}
 	
@@ -252,9 +272,15 @@ public class MemberController {
 	}
 	
 	@GetMapping("/updateInfo")
-	public String updateInfoForm(HttpSession session, Model model) {
+	public String updateInfoForm(HttpSession session, Model model,
+					RedirectAttributes redirectAttr) {
 		
 		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		
+		if (member == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
 		
 		if("ADMIN".equals(member.getRole())) {
 			return "admin/adminPage";  // 관리자 데이터 수정은 미구현
@@ -270,85 +296,127 @@ public class MemberController {
 	@PostMapping("/updateNickname")
 	@ResponseBody
 	public ApiResponse<Boolean> updateNickname(HttpSession session, String nickname) {
-		
-		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-		boolean isUpdate = service.nicknameUpdate(member.getMemberId(), nickname);
-		
-		String message = isUpdate ? "정보 변경에 성공했습니다." : "정보 변경에 실패하셨습니다.";
-		
-		return ApiResponse.success(message, isUpdate);
+	try {
+	MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	if (member == null) {
+	return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 	}
-	
+	boolean isUpdate = service.nicknameUpdate(member.getMemberId(), nickname);
+
+			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패하셨습니다.";
+			return ApiResponse.success(message, isUpdate);
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
+	}
+
 	@PostMapping("/updatePhone")
 	@ResponseBody
 	public ApiResponse<Boolean> updatePhone(HttpSession session, String phone) {
-	    
-	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-	    boolean isUpdate = service.phoneUpdate(member.getMemberId(), phone);
-	    
-	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
-	    
-	    return ApiResponse.success(message, isUpdate);
+		try {
+			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			if (member == null) {
+				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
+			}
+			boolean isUpdate = service.phoneUpdate(member.getMemberId(), phone);
+
+			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+			return ApiResponse.success(message, isUpdate);
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
 	}
 
 	@PostMapping("/updateEmail")
 	@ResponseBody
 	public ApiResponse<Boolean> updateEmail(HttpSession session, String email) {
-	    
-	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-	    boolean isUpdate = service.emailUpdate(member.getMemberId(), email);
-	    
-	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
-	    
-	    return ApiResponse.success(message, isUpdate);
+		try {
+			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			if (member == null) {
+				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
+			}
+			boolean isUpdate = service.emailUpdate(member.getMemberId(), email);
+
+			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+			return ApiResponse.success(message, isUpdate);
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
 	}
 
 	@PostMapping("/updateName")
 	@ResponseBody
 	public ApiResponse<Boolean> updateName(HttpSession session, String memberName) {
-	    
-	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-	    boolean isUpdate = service.nameUpdate(member.getMemberId(), memberName);
-	    
-	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
-	    
-	    return ApiResponse.success(message, isUpdate);
+		try {
+			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			if (member == null) {
+				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
+			}
+			boolean isUpdate = service.nameUpdate(member.getMemberId(), memberName);
+
+			if (isUpdate) {
+				member.setMemberName(memberName); // 세션 동기화
+			}
+
+			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+			return ApiResponse.success(message, isUpdate);
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
 	}
 
 	@PostMapping("/updateBirth")
 	@ResponseBody
 	public ApiResponse<Boolean> updateBirth(HttpSession session, String birth) {
-	    
-	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-	    boolean isUpdate = service.birthUpdate(member.getMemberId(), birth);
-	    
-	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
-	    
-	    return ApiResponse.success(message, isUpdate);
+		try {
+			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			if (member == null) {
+				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
+			}
+			boolean isUpdate = service.birthUpdate(member.getMemberId(), birth);
+
+			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+			return ApiResponse.success(message, isUpdate);
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
 	}
 
 	@PostMapping("/updateGender")
 	@ResponseBody
 	public ApiResponse<Boolean> updateGender(HttpSession session, String gender) {
-	    
-	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-	    boolean isUpdate = service.genderUpdate(member.getMemberId(), gender);
-	    
-	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
-	    
-	    return ApiResponse.success(message, isUpdate);
+		try {
+			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			if (member == null) {
+				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
+			}
+			boolean isUpdate = service.genderUpdate(member.getMemberId(), gender);
+
+			String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
+			return ApiResponse.success(message, isUpdate);
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
 	}
 
 	@PostMapping("/updatePassword")
 	@ResponseBody
-	public ApiResponse<Boolean> updatePassword(HttpSession session, String newPassword) {
+	public ApiResponse<Boolean> updatePassword(
+	        HttpSession session,
+	        @RequestParam String currentPassword,
+	        @RequestParam String newPassword) {
 	    
-	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
-	    boolean isUpdate = service.passwordUpdate(member.getMemberId(), newPassword);
+	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	    if (member == null) {
+	        return ApiResponse.fail("로그인이 필요합니다.");
+	    }
 	    
-	    String message = isUpdate ? "정보 변경에 성공하셨습니다." : "정보 변경에 실패했습니다.";
-	    
-	    return ApiResponse.success(message, isUpdate);
+	    try {
+	        boolean result = service.passwordUpdate(member.getMemberId(), currentPassword, newPassword);
+	        return ApiResponse.success(result);
+	    } catch (IllegalArgumentException | IllegalStateException e) {
+	        return ApiResponse.fail(e.getMessage());
+	    }
 	}
 	
 	@PostMapping("/withdraw")

@@ -56,6 +56,23 @@
 	 (pop_id 기준 OptionDetail 참조) 및 회원 세션과 연동해야 함. 상세 내용과 연동 지점은
 	 js/product/cartService.js 상단 주석 참고.
 	 (localStorage 접근 자체는 js/common/cartWishService.js가 공용으로 담당) --%>
+
+	 <script>
+	     window.serverCartItems = [
+	         <c:forEach items="${cartList.cartList}" var="item" varStatus="status">
+	         {
+	             cartId: ${item.cartId},
+	             memberId: ${item.memberId},
+	             productTitle: "<c:out value='${item.productTitle}'/>",
+	             optionName: "<c:out value='${item.optionName}'/>",
+	             optionPrice: ${item.optionPrice},
+	             qty: ${item.qty},
+	             titleImage: "<c:out value='${item.titleImage}'/>"
+	         }<c:if test="${!status.last}">,</c:if>
+	         </c:forEach>
+	     ];
+	 </script>
+	 
 <script src="<c:url value='/js/product/cartService.js'/>"></script>
 <script src="<c:url value='/js/views/cart.js'/>"></script>
 

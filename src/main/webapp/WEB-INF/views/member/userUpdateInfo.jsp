@@ -3,15 +3,13 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-<%-- TODO(data binding): 로그인 세션이 없거나 값이 비어 있을 때 화면 확인용 예시값으로 대체.
-     실제 로그인 상태에서는 loginMember의 실제 값이 그대로 사용됨(아래 empty 조건에서 걸러짐). --%>
-<c:set var="displayName" value="${empty loginMember.memberName ? '홍길동' : loginMember.memberName}"/>
-<c:set var="displayBirth" value="${empty loginMember.birth ? '1998-05-14' : loginMember.birth}"/>
-<c:set var="displayGender" value="${empty loginMember.gender ? 'M' : loginMember.gender}"/>
-<c:set var="displayNickname" value="${empty loginMember.nickname ? 'gildong99' : loginMember.nickname}"/>
-<c:set var="displayLoginId" value="${empty loginMember.loginId ? 'hong123' : loginMember.loginId}"/>
-<c:set var="displayPhone" value="${empty loginMember.phone ? '01012345678' : loginMember.phone}"/>
-<c:set var="displayEmail" value="${empty loginMember.email ? 'hong123@example.com' : loginMember.email}"/>
+<c:set var="displayName" value="${loginMember.memberName}"/>
+<c:set var="displayBirth" value="${loginMember.birth}"/>
+<c:set var="displayGender" value="${loginMember.gender}"/>
+<c:set var="displayNickname" value="${loginMember.nickname}"/>
+<c:set var="displayLoginId" value="${loginMember.loginId}"/>
+<c:set var="displayPhone" value="${loginMember.phone}"/>
+<c:set var="displayEmail" value="${loginMember.email}"/>
 
 <div class="update-page">
 
@@ -114,11 +112,13 @@
                 <svg class="info-edit-chevron" viewBox="0 0 24 24" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="info-edit-panel" hidden>
+				<input type="password" id="currentPassword" class="signup-input" placeholder="현재 비밀번호">
                 <input type="password" id="newPassword" class="signup-input" placeholder="새 비밀번호">
                 <span id="pwRegCheckMsg"></span>
                 <input type="password" id="newPasswordConfirm" class="signup-input" placeholder="새 비밀번호 확인">
                 <span id="pwCheckMsg"></span>
-                <span class="password-hint">변경하지 않으려면 비워두고 저장을 눌러주세요.</span>
+                <span class="password-hint">비밀번호를 변경하시려면 현재 비밀번호와 새로운 비밀번호를 입력해주세요.</span>
+				<span class="password-hint">비밀번호를 유지하시려면 모두 공란으로 저장해주세요.</span>
                 <div class="edit-actions">
                     <button type="button" class="btn-cancel-edit">취소</button>
                     <button type="button" class="btn-save-field" data-field="password">저장</button>
@@ -151,7 +151,9 @@
         <li class="info-edit-item">
             <button type="button" class="info-edit-header" aria-expanded="false">
                 <span class="info-edit-label">이메일</span>
-                <span class="info-edit-current" id="current-email">${displayEmail}</span>
+				<span class="info-edit-current" id="current-email"> 
+					${empty displayEmail ? '등록된 이메일이 없습니다' : displayEmail}
+				</span>
                 <svg class="info-edit-chevron" viewBox="0 0 24 24" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="info-edit-panel" hidden>
@@ -193,7 +195,7 @@
 
     <!-- 취소 -->
     <div id="Cancel">
-        <a href="${pageContext.request.contextPath}/member/mypage">마이페이지로 돌아가기</a>
+        <a href="${pageContext.request.contextPath}/member/myPage">마이페이지로 돌아가기</a>
     </div>
 
     <!-- 회원 탈퇴 -->

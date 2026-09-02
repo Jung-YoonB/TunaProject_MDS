@@ -102,10 +102,8 @@ public class ProductServiceImpl implements ProductService{
 		}
 		int increase = 0;
 		if(mapper.checkLike(reviewId, memberId) == null) {
-			 increase += mapper.updateLikeCount(reviewId);
 			increase+= mapper.insertReviewLike(reviewId, memberId);
 		}else {
-			mapper.updateLikeDiscount(reviewId);
 			mapper.deleteReviewLike(reviewId, memberId);
 		}
 		if (increase > 0) {

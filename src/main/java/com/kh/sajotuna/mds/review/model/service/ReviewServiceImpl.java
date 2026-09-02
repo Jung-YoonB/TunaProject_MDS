@@ -155,13 +155,18 @@ public class ReviewServiceImpl implements ReviewService {
 	@Override
 	@Transactional
 	public void deleteReview(Long reviewId, Long memberId) {
-		// 물리 파일은 DB 삭제 전에 미리 알아둬야 함 - REVIEWIMAGE는 REVIEW 삭제 시 FK CASCADE로 같이 지워지므로
+		// 물리 파일은 DB에서 이미지 행을 지우기 전에 미리 알아둬야 함
 		List<String> imageSaveNames = mapper.selectReviewImageSaveNamesByReviewId(reviewId);
 
+		// 하드 삭제가 아니라 REVIEW_STATUS=0으로만 바꾼다 - 행이 남아야 재작성이 계속 막힌다
 		int deleted = mapper.deleteReview(reviewId, memberId);
 		if (deleted == 0) {
 			throw new IllegalStateException("본인이 작성한 리뷰만 삭제할 수 있습니다.");
 		}
+
+		// 소프트 삭제라 FK CASCADE가 안 걸린다 - 딸린 행은 직접 지운다(하드 삭제 시절과 같은 결과)
+		mapper.deleteReviewImagesByReviewId(reviewId);
+		mapper.deleteReviewLikesByReviewId(reviewId);
 
 		for (String saveName : imageSaveNames) {
 			File target = new File(new File(uploadDir).getAbsoluteFile(), saveName);

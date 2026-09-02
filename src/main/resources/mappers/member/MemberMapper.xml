@@ -11,7 +11,8 @@
 			SELECT SEQ_MEMBER_ID.NEXTVAL FROM DUAL
 		</selectKey>
   		INSERT INTO MEMBER (MEMBER_ID, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME, EMAIL, PHONE, ROLE)
-  		VALUES (#{memberId}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname}, #{email}, #{phone}, #{role})
+  		VALUES (#{memberId}, #{memberName}, #{birth}, #{gender}, #{loginId}, #{loginPw}, #{nickname},
+  				NULLIF(#{email}, ''), #{phone}, #{role})
  	</insert>
  	
  	<insert id="insertPoint" parameterType="long">
@@ -45,23 +46,20 @@
   	</select>
   	
   	<select id="selectByMemberId" parameterType="long" resultType="MemberDTO">
-		SELECT M.MEMBER_ID, M.GRADE_ID, G.GRADE_NAME, TOTAL_AMOUNT, MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
-			EMAIL, M.CREATED_AT, PHONE, ROLE, MEMBER_STATUS, P.POINT,
-			TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
-			TO_CHAR(M.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR,
-			(SELECT COUNT(*)
-				FROM COUPONHISTORY H
-				WHERE M.MEMBER_ID = H.MEMBER_ID AND H.TYPE='ISSUE') AS ISSUE
-		FROM MEMBER M LEFT JOIN MEMBERPOINT P ON M.MEMBER_ID = P.MEMBER_ID
-			LEFT JOIN GRADE G ON M.GRADE_ID = G.GRADE_ID
-		WHERE M.MEMBER_ID = #{memberId}
-  	</select>
-  	
+    	SELECT M.MEMBER_ID, M.GRADE_ID, G.GRADE_NAME, TOTAL_AMOUNT,
+        	MEMBER_NAME, BIRTH, GENDER, LOGIN_ID, LOGIN_PW, NICKNAME,
+        	EMAIL, M.CREATED_AT, PHONE, ROLE, MEMBER_STATUS, P.POINT,
+        	TO_CHAR(BIRTH, 'YYYY-MM-DD') AS BIRTH_STR,
+        	TO_CHAR(M.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR
+    	FROM MEMBER M LEFT JOIN MEMBERPOINT P ON M.MEMBER_ID = P.MEMBER_ID
+    		LEFT JOIN GRADE G ON M.GRADE_ID = G.GRADE_ID
+    	WHERE M.MEMBER_ID = #{memberId}
+	</select>
 
   	<!-- 보유 쿠폰 중 사용 가능한(만료 안 된) 것만 조회. 만료 쿠폰은 유저 화면에 아예 노출하지 않기로 함.
   	     비페이징 버전 - 결제 화면(order)의 쿠폰 선택 드롭다운이 전체 목록을 써야 해서 필요하다
   	     (OrderServiceImpl 2곳에서 호출). 삭제하지 말 것. -->
-  	<select id="selectAllCouponsByMemberId" resultType="CouponDTO">
+  	<select id="selectAllCouponsByMemberId" parameterType="long" resultType="CouponDTO">
 		SELECT C.COUPON_ID, C.COUPON_NAME, C.COUPON_VALUE, C.COUPON_TEXT, C.CREATED_AT, C.DEADLINE,
 			CH.CHIST_ID,
 			TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR,
@@ -118,11 +116,21 @@
   			NVL(rep.PRODUCT_IMAGE_PATH, '/uploads/product/') AS PRODUCT_IMAGE_PATH,
   			NVL(rep.PRODUCT_IMAGE_SAVE_NAME, '') AS PRODUCT_IMAGE_SAVE_NAME,
   			rep.QTY AS QTY,
-  			rep.OD_ID AS OD_ID,
+  			<!-- 리뷰 링크는 대표가 아니라 "아직 안 쓴 것 중 첫 번째"로 건다. 대표 기준이면 상품이
+  			     2건 이상인 주문에서 나머지가 작성 경로를 잃는다(AUDIT 버그 17번). 다 썼으면 NULL이라 대표로 대체 -->
+  			NVL(nr.NEXT_OD_ID, rep.OD_ID) AS OD_ID,
   			NVL(rep.PRODUCT_COUNT, 0) AS PRODUCT_COUNT,
-  			CASE WHEN EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = rep.OD_ID) THEN 1 ELSE 0 END AS HAS_REVIEW
+  			<!-- 이 주문의 모든 상품을 다 썼을 때만 "작성 완료"로 잠금 -->
+  			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS HAS_REVIEW
   		FROM PRODUCTORDER PO
   		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
+  		<!-- 주문별 "아직 리뷰 안 쓴 주문상세 중 최소 OD_ID". REVIEW_STATUS는 안 본다 - 삭제한 것도 계속 제외 -->
+  		LEFT JOIN (
+  			SELECT od2.ORDER_ID, MIN(od2.OD_ID) AS NEXT_OD_ID
+  			FROM ORDERDETAIL od2
+  			WHERE NOT EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od2.OD_ID)
+  			GROUP BY od2.ORDER_ID
+  		) nr ON nr.ORDER_ID = PO.ORDER_ID
   		LEFT JOIN (
   			SELECT od.ORDER_ID, od.OD_ID, p.PRODUCT_NAME, od.QTY,
   				(SELECT pi.PRODUCT_IMAGE_PATH FROM PRODUCTIMAGE pi
@@ -168,38 +176,49 @@
   		JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
   		WHERE po.MEMBER_ID = #{memberId}
   		  AND d.DELIVERY_STATUS = 'DELIVERED'
-  		  AND NOT EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = od.OD_ID)
+  		  <!-- REVIEW_STATUS는 안 본다 - 삭제한 주문상세도 계속 제외(재작성 차단과 같은 기준) -->
+  		  AND NOT EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od.OD_ID)
   	</select>
   	
-  	<update id="updateNickname" parameterType="String">
-  		UPDATE MEMBER SET NICKNAME = #{nickname} WHERE MEMBER_ID = #{memberId}
-  	</update>
-  	
-  	<update id="updatePhone" parameterType="map">
-  	  UPDATE MEMBER SET PHONE = #{phone} WHERE MEMBER_ID = #{memberId}
+  	<update id="updateNickname">
+		UPDATE MEMBER SET NICKNAME = #{nickname} WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updateEmail" parameterType="map">
-    	UPDATE MEMBER SET EMAIL = #{email} WHERE MEMBER_ID = #{memberId}
+	<update id="updatePhone">
+		UPDATE MEMBER SET PHONE = #{phone} WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updateName" parameterType="map">
-    	UPDATE MEMBER SET MEMBER_NAME = #{memberName} WHERE MEMBER_ID = #{memberId}
+	<update id="updateEmail">
+    	UPDATE MEMBER SET EMAIL = NULLIF(#{email}, '') WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updateBirth" parameterType="map">
+	<update id="updateName">
+		UPDATE MEMBER SET MEMBER_NAME = #{memberName} WHERE MEMBER_ID = #{memberId}
+	</update>
+
+	<update id="updateBirth">
     	UPDATE MEMBER SET BIRTH = #{birth} WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updateGender" parameterType="map">
-    	UPDATE MEMBER SET GENDER = #{gender} WHERE MEMBER_ID = #{memberId}
+	<update id="updateGender">
+		UPDATE MEMBER SET GENDER = #{gender} WHERE MEMBER_ID = #{memberId}
 	</update>
 
-	<update id="updatePassword" parameterType="map">
-    	UPDATE MEMBER SET LOGIN_PW = #{newPassword} WHERE MEMBER_ID = #{memberId}
+	<update id="updatePassword">
+		UPDATE MEMBER SET LOGIN_PW = #{newPassword} WHERE MEMBER_ID = #{memberId}
 	</update>
 	
 	<update id="withdrawMember" parameterType="long">
-    	UPDATE MEMBER SET MEMBER_STATUS = 0 WHERE MEMBER_ID = #{memberId}
+	    UPDATE MEMBER SET
+        	MEMBER_STATUS = 0,
+        	MEMBER_NAME = '탈퇴회원',
+        	BIRTH = NULL,
+        	GENDER = NULL,
+        	LOGIN_ID = 'withdraw_' || MEMBER_ID,
+        	NICKNAME = '탈퇴회원_' || MEMBER_ID,
+        	EMAIL = 'withdraw_' || MEMBER_ID || '@withdraw.com',
+        	PHONE = '9' || MEMBER_ID
+    	WHERE MEMBER_ID = #{memberId}
 	</update>
+	
 </mapper>

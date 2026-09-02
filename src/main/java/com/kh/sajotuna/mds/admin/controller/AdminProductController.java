@@ -43,9 +43,7 @@ public class AdminProductController {
 	public ApiResponse<Void> add(HttpSession session,
 			@RequestParam String productTitle,
 			@RequestParam String productName,
-			@RequestParam String optionName,
-			@RequestParam int price,
-			@RequestParam int stock,
+			@RequestParam(required = false) String optionsJson,
 			@RequestParam(required = false) Long categoryId,
 			@RequestParam(required = false) String productContent,
 			@RequestParam(required = false) String tagsJson,
@@ -59,7 +57,7 @@ public class AdminProductController {
 		}
 
 		try {
-			service.registerProduct(productTitle, productName, optionName, price, stock, categoryId, productContent,
+			service.registerProduct(productTitle, productName, optionsJson, categoryId, productContent,
 					tagsJson, mainImage, subImages, descriptionImages);
 		} catch (IllegalStateException e) {
 			return ApiResponse.fail(e.getMessage());
