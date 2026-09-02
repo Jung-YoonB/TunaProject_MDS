@@ -16,23 +16,18 @@
 
     var SHIPPING_FEE = 3000;
 
-    function getKey(item) {
-        return window.CartWishService.getCartKey(item);
-    }
+	function getKey(item) {
+	    return String(item.cartId);
+	}
 
     function save(items) {
-        window.CartWishService.saveCartItems(items);
+//        window.CartWishService.saveCartItems(items);
     }
 
     // 저장된 목록을 돌려주되, 비어 있으면 예시 상품으로 채운 뒤 저장한다.
-    function load() {
-        var items = window.CartWishService.getCartItems();
-        if (items.length === 0) {
-            items = DEFAULT_ITEMS.slice();
-            save(items);
-        }
-        return items;
-    }
+	function load() {
+	    return window.serverCartItems || [];
+	}
 
     // 수량은 1 미만으로 내려가지 않는다.
     function changeQty(items, key, delta) {
@@ -50,14 +45,24 @@
     }
 
     // 선택된 항목만 합산한다. 상품 금액이 0이면 배송비도 0.
-    function calcTotals(items, selectedKeys) {
-        var itemsTotal = 0;
-        items.forEach(function (i) {
-            if (selectedKeys.indexOf(getKey(i)) !== -1) itemsTotal += i.price * i.qty;
-        });
-        var fee = itemsTotal > 0 ? SHIPPING_FEE : 0;
-        return { itemsTotal: itemsTotal, fee: fee, finalTotal: itemsTotal + fee };
-    }
+	function calcTotals(items, selectedKeys) {
+	    var itemsTotal = 0;
+
+	    items.forEach(function (i) {
+	        if (selectedKeys.indexOf(getKey(i)) !== -1) {
+	            itemsTotal += i.optionPrice * i.qty;
+	        }
+	    });
+
+	    var fee = itemsTotal > 0 ? SHIPPING_FEE : 0;
+
+	    return {
+	        itemsTotal: itemsTotal,
+	        fee: fee,
+	        finalTotal: itemsTotal + fee
+	    };
+	}
+
 
     window.CartService = {
         getKey: getKey,

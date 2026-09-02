@@ -11,14 +11,13 @@
     var page = document.querySelector('.search-result-page');
     if (!page) return;
 
-    // 카드 DOM에서 찜/장바구니에 넘길 상품 정보를 읽어낸다. 가격은 "12,000원" 같은
-    // 표시용 문자열이라 숫자만 남겨서 정수로 바꾼다.
+    // 카드 DOM에서 찜/장바구니에 넘길 상품 정보를 읽어낸다. 가격은 홈 카드와 통일하며 화면에서
+    // 안 보이게 됐고(2026-09-02), card의 data-price 속성으로만 갖고 있는다.
     function readProduct(card) {
-        var priceText = card.querySelector('.sp-product-price').textContent;
         return {
             productId: card.dataset.productId,
             name: card.querySelector('.sp-product-name').textContent.trim(),
-            price: parseInt(priceText.replace(/[^0-9]/g, ''), 10) || 0
+            price: parseInt(card.dataset.price, 10) || 0
         };
     }
 

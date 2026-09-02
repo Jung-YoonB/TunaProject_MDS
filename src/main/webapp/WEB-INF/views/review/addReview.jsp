@@ -3,7 +3,10 @@
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
-	<form id="review-form" action="${pageContext.request.contextPath}/review/write" method="post" enctype="multipart/form-data">
+<!-- 페이지 wrapper - 다른 페이지(.my-reviews-page 등)와 같은 2단 구조.
+     wrapper = 배경/최소높이, .page-content = 폭·여백·카드 테두리 -->
+<div class="review-write-page">
+	<form id="review-form" class="page-content" action="${pageContext.request.contextPath}/review/write" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="odId" value="${writeInfo.odId}">
 		<c:if test="${not empty returnUrl}">
 		<input type="hidden" name="returnUrl" value="<c:out value='${returnUrl}'/>">
@@ -82,6 +85,7 @@
 			<button type="submit" class="solid-large-btn" id="review-submit-btn">리뷰 등록</button>
 		</div>
 	</form>
+</div>
 
 <script src="<c:url value='/js/views/addreview.js'/>"></script>
 

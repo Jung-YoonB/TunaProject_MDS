@@ -139,3 +139,45 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+buyButton.addEventListener('click', function () {
+    const selected = getSelectedOption();
+
+    if (!selected || selected.stock <= 0) {
+        alert('품절된 상품입니다.');
+        return;
+    }
+
+    let qty = parseInt(quantityInput.value, 10);
+
+    if (isNaN(qty) || qty < 1) {
+        qty = 1;
+    }
+
+    if (qty > selected.stock) {
+        alert('재고 수량을 초과했습니다.');
+        quantityInput.value = selected.stock;
+        update(true);
+        return;
+    }
+
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = '/order/payment';
+
+    const popIdInput = document.createElement('input');
+    popIdInput.type = 'hidden';
+    popIdInput.name = 'popId';
+    popIdInput.value = selected.popId;
+
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'hidden';
+    qtyInput.name = 'qty';
+    qtyInput.value = qty;
+
+    form.appendChild(popIdInput);
+    form.appendChild(qtyInput);
+
+    document.body.appendChild(form);
+    form.submit();
+});
