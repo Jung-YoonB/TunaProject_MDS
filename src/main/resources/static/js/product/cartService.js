@@ -54,7 +54,7 @@
 	        }
 	    });
 
-	    var fee = itemsTotal > 0 ? SHIPPING_FEE : 0;
+		var fee = itemsTotal >= 50000 ? 0 : (itemsTotal > 0 ? SHIPPING_FEE : 0);
 
 	    return {
 	        itemsTotal: itemsTotal,

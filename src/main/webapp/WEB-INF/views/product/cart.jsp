@@ -5,8 +5,10 @@
 
 <%-- data-payment-url: views/cart.js가 "주문하기"에서 이동할 곳. JS를 외부 파일로 분리하면서
 	 <c:url>을 스크립트 안에 쓸 수 없게 되어 data 속성으로 넘긴다. --%>
-<div class="cart-container" id="cart-container"
-	 data-payment-url="<c:url value='/order/payment'/>">
+		<div class="cart-container"
+		     id="cart-container"
+		     data-payment-url="<c:url value='/order/payment'/>"
+		     data-image-path="<c:url value='/uploads/product/'/>">
 	<h2 class="page-title">장바구니</h2>
 
 	<div class="cart-controls" id="cart-controls">

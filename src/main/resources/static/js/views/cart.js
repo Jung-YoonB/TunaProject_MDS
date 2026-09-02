@@ -8,6 +8,7 @@
     // 원래 인라인 스크립트였을 땐 <c:url>을 JS 안에 직접 썼는데, 외부 파일로 분리하면서
     // JSP가 data 속성으로 넘겨주는 방식으로 바꿨다(header.jsp의 data-home-url과 같은 방식).
     var PAYMENT_URL = page.dataset.paymentUrl;
+	var IMAGE_PATH = page.dataset.imagePath;
 
     var cartControls = document.getElementById('cart-controls');
     var cartItemList = document.getElementById('cart-itemlist');
@@ -59,13 +60,24 @@
 	    row.dataset.cartKey = key;
 
 	    row.innerHTML =
-	        '<input type="checkbox" class="item-checkbox"' + (checked ? ' checked' : '') + '>' +
-	        '<div class="item-thumbnail"></div>' +
+	        '<input type="checkbox" class="item-checkbox"' +
+	            (checked ? ' checked' : '') + '>' +
+
+	        '<div class="item-thumbnail">' +
+	            (item.titleImage
+	                ? '<img src="' + IMAGE_PATH + item.titleImage +
+	                  '" alt="' + item.productTitle + '">'
+	                : '<span>이미지 없음</span>') +
+	        '</div>' +
+
 	        '<div class="item-info">' +
 	            '<h3 class="item-title"></h3>' +
 	            '<p class="item-option"></p>' +
-	            '<div class="item-price-info"><span class="price-final"></span></div>' +
+	            '<div class="item-price-info">' +
+	                '<span class="price-final"></span>' +
+	            '</div>' +
 	        '</div>' +
+
 	        '<div class="item-control">' +
 	            '<div class="qty-control">' +
 	                '<button type="button" class="btn-qty-decrease" aria-label="수량 감소">-</button>' +
@@ -75,10 +87,17 @@
 	            '<button type="button" class="delete-item-btn">삭제</button>' +
 	        '</div>';
 
-			row.querySelector('.item-title').textContent = item.productTitle;
-			row.querySelector('.item-option').textContent = item.optionName || '기본 옵션';
-			row.querySelector('.price-final').textContent = formatWon(item.optionPrice);
-			row.querySelector('.input-qty').value = item.qty;
+	    row.querySelector('.item-title').textContent =
+	        item.productTitle;
+
+	    row.querySelector('.item-option').textContent =
+	        item.optionName || '기본 옵션';
+
+	    row.querySelector('.price-final').textContent =
+	        formatWon(item.optionPrice);
+
+	    row.querySelector('.input-qty').value =
+	        item.qty;
 
 	    return row;
 	}
