@@ -5,7 +5,7 @@
 		<div class="footer-top">
 			<!-- 좌측: 회사 정보 -->
 			<div class="company-info">
-				<h2 class="footer-brand">Maison de sajo</h2>
+				<h2 class="footer-brand">Maison De SAJO</h2>
 				<address>
 					<p>마음을 전하는 가장 특별한 선물</p>
 				</address>
@@ -49,7 +49,7 @@
 		<hr class="footer-divider">
 		<!-- 하단: 저작권 정보 -->
 		<div class="footer-bottom">
-			<p class="copyright">&copy; 2026 Maison de sajo. All rights reserved.</p>
+			<p class="copyright">&copy; 2026 Maison De SAJO. All rights reserved.</p>
 		</div>
 	</footer>
 </body>

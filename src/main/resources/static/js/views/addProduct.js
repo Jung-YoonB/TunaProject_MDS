@@ -637,6 +637,148 @@ function clearMainImage(){
 
 
 /* ==================================================
+   옵션 (개수 제한 없는 동적 행 - 최소 1개)
+   행 하나 = 옵션 하나 = PRODUCTOPTION 1건 + OPTIONDETAIL 1건 (HANDOFF 3-48)
+   ================================================== */
+
+const optionList = document.getElementById("optionList");
+
+
+function createOptionRow(){
+
+    const row = document.createElement("div");
+    row.className = "option-row";
+
+    const indexBadge = document.createElement("span");
+    indexBadge.className = "option-row-index";
+
+    const nameField = document.createElement("div");
+    nameField.className = "option-field option-field-name";
+    nameField.innerHTML =
+        '<span class="option-field-label">옵션명</span>' +
+        '<input type="text" class="option-name" placeholder="예: 기본, 단품">';
+
+    const priceField = document.createElement("div");
+    priceField.className = "option-field";
+    priceField.innerHTML =
+        '<span class="option-field-label">판매가격</span>' +
+        '<input type="number" class="option-price" placeholder="0" min="0">';
+
+    const stockField = document.createElement("div");
+    stockField.className = "option-field";
+    stockField.innerHTML =
+        '<span class="option-field-label">재고</span>' +
+        '<input type="number" class="option-stock" placeholder="0" min="0">';
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "tag-remove option-remove";
+    removeButton.setAttribute("aria-label", "옵션 삭제");
+    removeButton.innerHTML = CLOSE_ICON_SVG;
+    removeButton.addEventListener("click", function(){
+
+        // 옵션이 1개뿐이면 버튼을 감춰두지만, 스타일이 밀려 보이는 경우가 있어 동작으로도 막는다
+        if(optionList.querySelectorAll(".option-row").length <= 1) return;
+
+        row.remove();
+        updateOptionRows();
+    });
+
+    row.appendChild(indexBadge);
+    row.appendChild(nameField);
+    row.appendChild(priceField);
+    row.appendChild(stockField);
+    row.appendChild(removeButton);
+
+    return row;
+}
+
+
+function addOptionRow(){
+
+    optionList.appendChild(createOptionRow());
+    updateOptionRows();
+}
+
+
+// 옵션은 최소 1개가 있어야 상품이 성립하므로, 하나만 남으면 삭제 버튼을 감춘다.
+// 번호는 화면에만 쓰는 값이라 매번 다시 매긴다(중간 행을 지워도 1,2,3...이 유지됨).
+function updateOptionRows(){
+
+    const rows = optionList.querySelectorAll(".option-row");
+
+    rows.forEach(function(row, index){
+
+        const removeButton = row.querySelector(".option-remove");
+        removeButton.hidden = (rows.length === 1);
+
+        // 검증 실패 메시지가 "옵션 2의 ..." 형태라 화면에도 같은 번호가 보여야 찾아갈 수 있다
+        row.querySelector(".option-row-index").textContent = index + 1;
+    });
+}
+
+
+document
+    .getElementById("addOptionButton")
+    .addEventListener("click", addOptionRow);
+
+
+// 화면에서 입력한 옵션들을 서버로 보낼 형태로 모은다.
+// 유효하지 않으면 alert 문구를 반환하고, 정상이면 null을 반환한다(호출부에서 판정).
+function collectOptions(){
+
+    const options = [];
+    const rows = optionList.querySelectorAll(".option-row");
+
+    for(let i = 0; i < rows.length; i++){
+
+        const row = rows[i];
+        const label = "옵션 " + (i + 1) + "의 ";
+
+        const optionName = row.querySelector(".option-name").value.trim();
+        const price = row.querySelector(".option-price").value;
+        const stock = row.querySelector(".option-stock").value;
+
+        if(!optionName){
+            return { error: label + "옵션명을 입력해 주세요." };
+        }
+        if(price === ""){
+            return { error: label + "판매가격을 입력해 주세요." };
+        }
+        if(stock === ""){
+            return { error: label + "재고를 입력해 주세요." };
+        }
+        if(Number(price) < 0){
+            return { error: label + "판매가격은 0 이상이어야 합니다." };
+        }
+        if(Number(stock) < 0){
+            return { error: label + "재고는 0 이상이어야 합니다." };
+        }
+
+        // 같은 상품 안에서 옵션명이 겹치면 구매 화면에서 구분이 안 되므로 미리 막는다
+        const duplicated = options.some(function(option){
+            return option.optionName === optionName;
+        });
+
+        if(duplicated){
+            return { error: "옵션명 \"" + optionName + "\"이(가) 중복됩니다." };
+        }
+
+        options.push({
+            optionName: optionName,
+            price: Number(price),
+            stock: Number(stock)
+        });
+    }
+
+    if(options.length === 0){
+        return { error: "옵션을 최소 1개 이상 등록해 주세요." };
+    }
+
+    return { options: options };
+}
+
+/* ==================================================
    취소
    ================================================== */
 
@@ -662,9 +804,6 @@ function registerProduct(){
 
     const productName = document.getElementById("productNameInput").value.trim();
     const productTitle = document.getElementById("productTitleInput").value.trim();
-    const optionName = document.getElementById("optionNameInput").value.trim();
-    const price = document.getElementById("priceInput").value;
-    const stock = document.getElementById("stockInput").value;
     const categoryId = document.getElementById("categorySelect").value;
     const productContent = document.getElementById("productContent").value;
 
@@ -676,18 +815,13 @@ function registerProduct(){
         alert("상품 게시글 제목을 입력해 주세요.");
         return;
     }
-    if(!optionName){
-        alert("옵션명을 입력해 주세요.");
+
+    const optionResult = collectOptions();
+    if(optionResult.error){
+        alert(optionResult.error);
         return;
     }
-    if(!price){
-        alert("판매가격을 입력해 주세요.");
-        return;
-    }
-    if(!stock){
-        alert("재고를 입력해 주세요.");
-        return;
-    }
+
     if(!categoryId){
         alert("카테고리를 선택해 주세요.");
         return;
@@ -731,9 +865,7 @@ function registerProduct(){
     const formData = new FormData();
     formData.append("productName", productName);
     formData.append("productTitle", productTitle);
-    formData.append("optionName", optionName);
-    formData.append("price", price);
-    formData.append("stock", stock);
+    formData.append("optionsJson", JSON.stringify(optionResult.options));
     formData.append("categoryId", categoryId);
     formData.append("productContent", productContent);
     formData.append("tagsJson", JSON.stringify(tagData));
@@ -769,5 +901,6 @@ function registerProduct(){
    ================================================== */
 
 updateColorPreview();
+addOptionRow();
 
 })();

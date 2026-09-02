@@ -31,14 +31,17 @@
 ================================ */
 
 .admin-mypage-page {
-    background-color: #f6efe4;
-    min-height: 100vh;
+    background-color: #FDFBF9;
 }
 
 .admin-mypage-page .page-content {
-    width: 720px;
+    width: min(800px, 100% - 80px);
     margin: 0 auto;
-    padding: 40px 0 80px;
+    padding: 40px 40px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
 }
 
 .admin-mypage-page .page-title {
@@ -80,26 +83,6 @@
     gap: 16px;
 }
 
-.admin-mypage-page .avatar-circle {
-    flex-shrink: 0;
-    width: 64px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #ececec;
-    border-radius: 50%;
-}
-
-.admin-mypage-page .avatar-icon-svg {
-    width: 32px;
-    height: 32px;
-    fill: none;
-    stroke: #999;
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
 
 .admin-mypage-page .profile-name-wrap {
     display: flex;
@@ -193,8 +176,10 @@
     transition: background-color .15s, border-color .15s;
 }
 
+/* :focus가 아니라 :focus-visible - 클릭 후 뒤로가기로 돌아오면 브라우저가 직전 포커스를
+   복원해서 :focus가 계속 맞고 눌린 잔상이 남는다. 키보드 이동은 그대로 표시됨(HANDOFF 3-51) */
 .admin-mypage-page .quick-menu-tile:hover,
-.admin-mypage-page .quick-menu-tile:focus {
+.admin-mypage-page .quick-menu-tile:focus-visible {
     background-color: #fbf8f2;
     border-color: #e2d9c8;
     text-decoration: none;
@@ -253,7 +238,7 @@
 }
 
 .admin-mypage-page .list-row:hover,
-.admin-mypage-page .list-row:focus {
+.admin-mypage-page .list-row:focus-visible {
     background-color: #fbf8f2;
     text-decoration: none;
 }
@@ -299,14 +284,17 @@
 ================================ */
 
 .admin-order-delivery-page {
-    background-color: #f6efe4;
-    min-height: 100vh;
+    background-color: #FDFBF9;
 }
 
 .admin-order-delivery-page .page-content {
-    width: 1100px;
+    width: min(1350px, 100% - 80px);
     margin: 0 auto;
-    padding: 40px 0 80px;
+    padding: 40px 40px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
 }
 
 .admin-order-delivery-page .page-title {
@@ -792,8 +780,7 @@
    원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, 바깥 배경은 .admin-coupon-view-page에,
    흰 카드는 그 안의 .admin-coupon-view-page-card에 나눠 담는다 */
         .admin-coupon-view-page {
-            background-color: #f8f6f2;
-            min-height: 100vh;
+            background-color: #FDFBF9;
             padding: 50px 0;
             box-sizing: border-box;
         }
@@ -804,11 +791,11 @@
         ================================= */
 
         .admin-coupon-view-page-card {
-            width: 800px;
+            width: min(800px, 100% - 80px);
             margin: 0 auto;
             padding: 40px;
 
-            background-color: white;
+            background-color: #fbf8f4;
             border: 1px solid #e5e0d8;
             border-radius: 12px;
 
@@ -1391,7 +1378,6 @@
 
 .admin-maintenance-page {
     background-color: #f6efe4;
-    min-height: 100vh;
 }
 
 .admin-maintenance-page .page-content {
@@ -1520,14 +1506,25 @@ button,input,textarea,select{font-family:inherit}
    다른 페이지의 공용 <body>까지 덮어써버린다 — 반드시 .product-register로 스코프할 것.
    (min-height:100vh는 넣지 않음 - style.css가 이미 body를 flex column + main{flex:1 0 auto}로
    sticky-footer 레이아웃을 잡아주고 있어서, 여기서 또 100vh를 강제하면 그 위에 겹쳐져 페이지가
-   불필요하게 길어지고 잘려 보이는 원인이 됨) */
+   불필요하게 길어지고 잘려 보이는 원인이 됨)
+
+   다만 .product-register는 폭이 제한적이라 좌우로 <body>가 드러나는데, addProduct.jsp는
+   hero 배경 대상이 아니라 <body>에 배경색이 없어 다크모드 브라우저에서 그 틈이 검게 보인다.
+   userUpdateInfo.jsp와 같은 body:has() 스코프로 <body> 배경을 명시해 해결 */
+body:has(.product-register) {
+    background-color: #FDFBF9;
+}
+
 .product-register{
-    width:1000px;
+    width:min(1000px, 100% - 80px);
     margin:0 auto;
     /* 좌우 패딩이 0이라 내부 콘텐츠가 바깥 배경 박스 가장자리에 딱 붙어 보이던 것을,
        addCoupon.jsp의 카드(.add-coupon-page-card{padding:40px})와 같은 여유값으로 맞춤 */
     padding:70px 40px 100px;
-    background:#f8f6f2;
+    background:#fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
     color:#333;
     font-family:Arial,"Noto Sans KR",sans-serif
 }
@@ -1610,6 +1607,82 @@ button,input,textarea,select{font-family:inherit}
 }
 .input-area input:focus,
 .input-area select:focus{border-color:#b59b7e}
+
+/* ================= OPTION (개수 제한 없는 동적 행) =================
+   가격/재고가 PRODUCTOPTION에 달려 있어 옵션 단위로 입력받는다(HANDOFF 3-48).
+   주변 규칙(.form-row 등)은 스코프가 없지만, 신규분만이라도 .product-register로 스코프해
+   다른 페이지로 새지 않게 한다(3-5/3-6 재발 방지). */
+.product-register .option-area{
+    flex:1;
+    padding:22px 30px 22px 0
+}
+.product-register .option-description{
+    margin:0 0 18px;
+    color:#aaa19a;
+    font-size:11px
+}
+.product-register .option-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:14px
+}
+.product-register .option-row{
+    display:flex;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:12px;
+    padding:14px 16px;
+    background:#fdfbf8;
+    border:1px solid #e7e0d8
+}
+/* 행 번호 배지 - 검증 실패 메시지("옵션 2의 판매가격을...")와 화면을 맞추기 위한 표시.
+   입력칸(38px) 높이 가운데에 맞추는 margin 보정. ⚠️ 근사치라 화면 확인 필요 */
+.product-register .option-row-index{
+    width:22px;
+    height:22px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:9px;
+    background:#ece3d8;
+    border-radius:50%;
+    color:#7d6b5b;
+    font-size:11px;
+    font-weight:700
+}
+.product-register .option-field{
+    flex:1;
+    min-width:120px;
+    display:flex;
+    flex-direction:column;
+    gap:6px
+}
+/* 옵션명은 가격/재고보다 긴 값이 들어가므로 두 배 폭 */
+.product-register .option-field-name{flex:2}
+.product-register .option-field-label{
+    color:#918981;
+    font-size:11px
+}
+.product-register .option-field input{
+    width:100%;
+    height:38px;
+    padding:0 12px;
+    box-sizing:border-box;
+    background:#fff;
+    border:1px solid #ddd5cc;
+    outline:0;
+    color:#444;
+    font-size:13px
+}
+.product-register .option-field input:focus{border-color:#b59b7e}
+/* 25px 원형 버튼(.tag-remove)을 38px 입력칸 높이의 가운데에 맞추는 보정값.
+   ⚠️ 근사치라 화면 확인 필요 */
+.product-register .option-remove{margin-bottom:7px}
+/* 옵션이 1개뿐일 때 JS가 hidden으로 감추는데, 재사용한 .tag-remove의 display:flex가
+   브라우저 기본 [hidden]{display:none}(우선순위가 더 낮음)을 밀어내서 명시적으로 덮어쓴다 */
+.product-register .option-remove[hidden]{display:none}
 
 /* ================= TAG ================= */
 
@@ -1999,7 +2072,7 @@ button,input,textarea,select{font-family:inherit}
 /* ================= RESPONSIVE ================= */
 
 @media(max-width:1050px){
-    .product-register{width:calc(100% - 40px)}
+    .product-register{width:calc(100% - 80px)}
 }
 @media(max-width:700px){
     .product-register{padding-top:40px}
@@ -2033,18 +2106,17 @@ button,input,textarea,select{font-family:inherit}
    원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, JSP 쪽엔 wrapper가 하나뿐이라
    바깥 배경은 .add-coupon-page에, 흰 카드는 그 안의 .add-coupon-page-card에 나눠 담는다 */
 .add-coupon-page {
-           background-color: #f8f6f2;
-           min-height: 100vh;
+           background-color: #FDFBF9;
            padding: 70px 0;
            box-sizing: border-box;
        }
 
        /* 전체 영역 (흰 카드) */
        .add-coupon-page-card {
-           width: 600px;
+           width: min(600px, 100% - 80px);
            margin: 0 auto;
            padding: 40px;
-           background-color: white;
+           background-color: #fbf8f4;
            border: 1px solid #e5e0d8;
            border-radius: 12px;
            box-sizing: border-box;

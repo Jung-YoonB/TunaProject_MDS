@@ -37,11 +37,11 @@ public class MyPageDeliveryDTO {
 	private String orderDateStr;
 
 	// 대표 상품 정보 (ORDERDETAIL 중 OD_ID가 가장 작은 1건)
-	private Long odId; // 리뷰 작성(/review/write?odId=) 연결용
+	private Long odId; // 리뷰 작성 연결용 - 아직 리뷰를 안 쓴 첫 주문상세(다 썼으면 대표)
 	private String productName;
 	private String productImagePath;
 	private String productImageSaveName;
 	private Integer qty;
 	private Integer productCount; // 주문에 포함된 상품 건수 (2건 이상이면 "외 N건" 표시용)
-	private boolean hasReview; // 대표 상품(odId)에 대한 리뷰를 이미 작성했는지 여부
+	private boolean hasReview; // 이 주문의 모든 상품을 다 썼는지 (하나라도 남으면 false)
 }
