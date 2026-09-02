@@ -1,6 +1,7 @@
 package com.kh.sajotuna.mds.member.model.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.apache.ibatis.type.Alias;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -44,4 +45,11 @@ public class MyPageDeliveryDTO {
 	private Integer qty;
 	private Integer productCount; // 주문에 포함된 상품 건수 (2건 이상이면 "외 N건" 표시용)
 	private boolean hasReview; // 이 주문의 모든 상품을 다 썼는지 (하나라도 남으면 false)
+
+	// 주문 전체 수량 합계. qty는 대표 상품 1건의 수량이라 여러 상품을 산 주문에서는
+	// 화면에 "수량: 2개"처럼 실제보다 적게 보인다
+	private Integer totalQty;
+
+	// 카드를 펼쳤을 때 보여줄 이 주문의 전체 품목. MemberServiceImpl.listDelivery가 채운다
+	private List<MyPageOrderItemDTO> items;
 }
