@@ -89,21 +89,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const tabButtons = document.querySelectorAll('.tab-menu-item');
     const tabPanels  = document.querySelectorAll('.tab-panel');
 
+    function activateTab(target) {
+        tabButtons.forEach(function (btn) {
+            const isActive = btn.dataset.tabTarget === target;
+            btn.classList.toggle('is-active', isActive);
+            btn.setAttribute('aria-selected', isActive);
+        });
+
+        tabPanels.forEach(function (panel) {
+            panel.classList.toggle('is-active', panel.dataset.tabPanel === target);
+        });
+    }
+
     tabButtons.forEach(function (button) {
         button.addEventListener('click', function () {
-            const target = button.dataset.tabTarget;
-
-            tabButtons.forEach(function (btn) {
-                const isActive = btn === button;
-                btn.classList.toggle('is-active', isActive);
-                btn.setAttribute('aria-selected', isActive);
-            });
-
-            tabPanels.forEach(function (panel) {
-                panel.classList.toggle('is-active', panel.dataset.tabPanel === target);
-            });
+            activateTab(button.dataset.tabTarget);
         });
     });
+
+    // 리뷰 페이지 번호를 누르면 /mds/review/{id}?page=N#review 로 다시 들어온다.
+    // 기본은 "상품 상세" 탭이 열려 있어서, 해시가 있으면 그 탭을 열어준 채로 시작한다.
+    if (window.location.hash === '#review') {
+        activateTab('review');
+    }
 
     // 찜 버튼
     // TODO: 백엔드 연동 후 서버 응답(찜 여부)에 따라 초기 is-active 상태 반영 + 클릭 시 찜 등록/삭제 API 연동

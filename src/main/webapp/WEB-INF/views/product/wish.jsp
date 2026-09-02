@@ -4,9 +4,11 @@
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
 <%-- data-detail-base-url: views/wish.js가 상품 상세 링크를 만들 때 쓴다. JS를 외부 파일로
-	 분리하면서 <c:url>을 스크립트 안에 쓸 수 없게 되어 data 속성으로 넘긴다. --%>
+	 분리하면서 <c:url>을 스크립트 안에 쓸 수 없게 되어 data 속성으로 넘긴다.
+	 data-remove-url: 찜 해제를 서버(WishController.removeWish)에 반영할 때 쓴다. --%>
 <section class="wishlist-container" id="wishlist-container"
-		 data-detail-base-url="<c:url value='/mds/detail'/>">
+		 data-detail-base-url="<c:url value='/mds/detail'/>"
+		 data-remove-url="<c:url value='/wish/remove-wish'/>">
 	<div class="wishlist-header">
 		<h1>찜</h1>
 		<p>마음에 드는 상품을 모아두었어요</p>
@@ -39,9 +41,23 @@
 	</div>
 </section>
 
-<%-- TODO(data binding): 찜 목록은 localStorage(wishItems) 임시 구현임. 실제로는 Wish 테이블 및
-	 회원 세션과 연동해야 함. 상세 내용과 연동 지점은 js/product/wishService.js 상단 주석 참고.
-	 (localStorage 접근 자체는 js/common/cartWishService.js가 공용으로 담당) --%>
+<%-- 서버(WishController.myWish)가 넘겨준 실제 찜 목록. cart.jsp의 serverCartItems와 같은 방식으로
+	 넘기고, 화면 렌더링은 wishService.js가 이걸 읽어서 처리한다. --%>
+<script>
+	window.serverWishItems = [
+		<c:forEach items="${list}" var="item" varStatus="status">
+		{
+			productId: "${item.productId}",
+			name: "<c:out value='${item.productName}'/>",
+			imageUrl: "<c:out value='${item.imagePath}'/><c:out value='${item.titleImage}'/>",
+			price: ${item.price},
+			rating: ${item.score},
+			reviewCount: ${item.reviewCount}
+		}<c:if test="${!status.last}">,</c:if>
+		</c:forEach>
+	];
+</script>
+
 <script src="<c:url value='/js/product/wishService.js'/>"></script>
 <script src="<c:url value='/js/views/wish.js'/>"></script>
 

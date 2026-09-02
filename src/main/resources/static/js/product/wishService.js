@@ -1,44 +1,50 @@
-// 찜 화면 데이터 계층 - 목록 로드/시딩, 삭제, 정렬.
+// 찜 화면 데이터 계층 - 목록 로드, 서버 반영, 정렬.
 // localStorage 접근과 헤더 배지 갱신은 공용 common/cartWishService.js가 담당하고,
-// 이 파일은 "찜 화면에만 필요한" 규칙(예시 데이터, 정렬 기준)만 갖는다.
+// 이 파일은 "찜 화면에만 필요한" 규칙(서버 목록 변환, 정렬 기준)만 갖는다.
 //
-// TODO(server binding): 실제로는 Wish 테이블 및 회원 세션과 연동해야 한다. 별점(rating)/
-// 리뷰수(reviewCount) 집계 자체는 상품 상세·목록(detailPage.xml, product.xml)에 이미 구현돼
-// 있고 이 화면에만 연동이 안 된 상태라 테스트용 임의값을 쓰는 중이다. 연동 시 load()/save()
-// 내부만 실제 호출로 바꾸면 되고, 호출부(views/wish.js)는 안 건드려도 된다.
+// 서버 연동 완료(2026-09-02): wish.jsp가 WishController.myWish의 결과를 window.serverWishItems로
+// 내려주고 load()가 그걸 화면용 모양으로 바꾼다. 예전 localStorage 예시 상품 8건은 제거했다 -
+// 실데이터가 안 내려오는데도 가짜 상품이 보이면 장애를 알아챌 수 없기 때문.
 (function () {
-
-    // 새로고침해도 화면이 비어 보이지 않도록, 저장된 찜 목록이 없을 때만 채워넣는 예시 상품.
-    var DEFAULT_ITEMS = [
-        { productId: '1', name: '프리미엄 한우 선물세트', optionName: '1++ 등급 / 1kg', price: 129000, rating: 4.8, reviewCount: 245 },
-        { productId: '2', name: '전통 과일 선물세트', optionName: '중과 5호 / 3kg', price: 59000, rating: 4.3, reviewCount: 89 },
-        { productId: '3', name: '프리미엄 견과 선물세트', optionName: '혼합 견과 / 1kg', price: 75000, rating: 4.6, reviewCount: 156 },
-        { productId: '4', name: '고급 한과 선물세트', optionName: '모듬 한과 / 1호', price: 45000, rating: 4.1, reviewCount: 67 },
-        { productId: '5', name: '홍삼 건강 선물세트', optionName: '6년근 / 300g', price: 89000, rating: 4.9, reviewCount: 312 },
-        { productId: '6', name: '프리미엄 차 선물세트', optionName: '녹차·홍차 세트 / 100g', price: 52000, rating: 4.4, reviewCount: 98 },
-        { productId: '7', name: '수제 디저트 선물세트', optionName: '쿠키·마카롱 세트', price: 39000, rating: 4.2, reviewCount: 54 },
-        { productId: '8', name: '명품 생활용품 선물세트', optionName: '타월 세트 / 4p', price: 68000, rating: 4.7, reviewCount: 203 }
-    ];
 
     function save(items) {
         window.CartWishService.saveWishList(items);
     }
 
-    // 저장된 목록을 돌려주되, 비어 있으면 예시 상품으로 채운 뒤 저장한다.
-    // addedAt은 "최신순" 정렬이 의미를 갖도록 순서대로 1초씩 벌려 넣는다.
+    // 서버 목록을 화면(views/wish.js의 buildCard)이 쓰는 모양으로 바꾼다.
+    // addedAt은 "최신순" 정렬이 의미를 갖도록 순서대로 1초씩 벌려 넣는다(쿼리가 이미 최신순).
+    function fromServer(rows) {
+        return rows.map(function (row, idx) {
+            return {
+                productId: String(row.productId),
+                name: row.name,
+                imageUrl: row.imageUrl,
+                price: row.price,
+                rating: row.rating,
+                reviewCount: row.reviewCount,
+                addedAt: Date.now() - idx * 1000
+            };
+        });
+    }
+
+    // 서버 목록이 있으면 그게 곧 진실이다(빈 배열이면 빈 화면이 맞다).
+    // localStorage는 헤더 배지가 같은 값을 보도록 서버 목록으로 덮어써 둔다.
     function load() {
-        var items = window.CartWishService.getWishList();
-        if (items.length === 0) {
-            items = DEFAULT_ITEMS.map(function (item, idx) {
-                return {
-                    productId: item.productId, name: item.name, optionName: item.optionName, price: item.price,
-                    rating: item.rating, reviewCount: item.reviewCount,
-                    addedAt: Date.now() - (DEFAULT_ITEMS.length - idx) * 1000
-                };
-            });
+        if (Array.isArray(window.serverWishItems)) {
+            var items = fromServer(window.serverWishItems);
             save(items);
+            return items;
         }
-        return items;
+        return window.CartWishService.getWishList();
+    }
+
+    // 찜 해제를 서버(WishController.removeWish)에 반영한다. 서버가 productId를 하나씩 받으므로
+    // 선택 삭제는 여러 번 호출한 뒤 한꺼번에 기다린다. 끝나면 호출부가 화면을 새로고침해서
+    // 서버 상태를 다시 읽는다 - 로컬만 지워지고 서버엔 남는 상태를 만들지 않기 위함.
+    function removeOnServer(productIds, removeUrl) {
+        return Promise.all(productIds.map(function (id) {
+            return fetch(removeUrl + '?productId=' + encodeURIComponent(id), { credentials: 'same-origin' });
+        }));
     }
 
     // TODO(data binding): "인기순"은 실제 인기 지표가 없어 담긴 순서를 그대로 쓴다.
@@ -64,6 +70,7 @@
 
     window.WishService = {
         load: load,
+        removeOnServer: removeOnServer,
         save: save,
         sortItems: sortItems,
         removeById: removeById,

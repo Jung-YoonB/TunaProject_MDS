@@ -39,12 +39,39 @@ public class ProductController {
 	}
 	
 	@GetMapping("/detail/{productId}")
-	public String detailPage(@PathVariable Long productId) {
-		System.out.println("컨트롤러 productId :: " + productId);
-
+	public String detailPage(@PathVariable Long productId, Model model, HttpSession session,
+							@RequestParam(defaultValue = "1") int page) {
+		// 상품 정보(이미지/옵션/쿠폰)와 리뷰를 한 번에 담는다. 예전에는 조회만 하고 model에 안 실어서
+		// JSP의 ${detail...}이 전부 빈 값으로 나왔고, 리뷰는 /mds/review/{id}로 따로 들어가야만 보였다.
 		DetailPageDTO detail = service.detailPage(productId);
-		System.out.println("컨트롤러 detail :: " + detail);
+		if (detail == null) { // 없는 상품 번호 - 500 대신 목록으로 돌려보낸다
+			return "redirect:/mds/searchList";
+		}
+		model.addAttribute("detail", detail);
+
+		addReviewPage(model, session, productId, page);
 		return"product/productDetail";
+	}
+
+	// 상세 페이지와 /mds/review/{productId}가 같은 JSP를 쓰므로 리뷰 목록 + 페이지 정보를
+	// 담는 부분을 공유한다(한쪽만 고쳐서 어긋나는 걸 막는다).
+	private void addReviewPage(Model model, HttpSession session, Long productId, int page) {
+		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
+		Long memberId = (user != null) ? user.getMemberId() : null;
+
+		int totalPages = service.totalReviewPages(productId);
+		int currentPage = Math.min(Math.max(page, 1), totalPages);
+		int windowSize = 5;
+		int windowStart = Math.max(1, currentPage - windowSize / 2);
+		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
+		windowStart = Math.max(1, windowEnd - windowSize + 1);
+
+		model.addAttribute("reviewList", service.getReviewList(productId, memberId, currentPage));
+		model.addAttribute("productId", productId);
+		model.addAttribute("currentPage", currentPage);
+		model.addAttribute("totalPages", totalPages);
+		model.addAttribute("pageWindowStart", windowStart);
+		model.addAttribute("pageWindowEnd", windowEnd);
 	}
 
 	@GetMapping("/coupon/{couponId}")
@@ -61,30 +88,17 @@ public class ProductController {
 		return"home/home";
 	}
 
+	// 리뷰 페이지 번호를 눌렀을 때 들어오는 경로. 같은 JSP를 쓰므로 상품 정보도 함께 담아야
+	// 상단(이미지/옵션/가격)이 빈 화면이 되지 않는다.
 	@GetMapping("/review/{productId}")
 	public String reviewPage(@PathVariable Long productId, Model model, HttpSession session,
 							@RequestParam(defaultValue = "1") int page) {
-		System.out.println("page Number :: " + page);
-		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_MEMBER);
-		Long memberId  = null;
-		if(user != null) {
-			memberId = user.getMemberId();
+		DetailPageDTO detail = service.detailPage(productId);
+		if (detail == null) {
+			return "redirect:/mds/searchList";
 		}
-		int totalPages = service.totalReviewPages(productId);
-		int currentPage = Math.min(Math.max(page, 1), totalPages);
-		int windowSize = 5;
-		int windowStart = Math.max(1, currentPage - windowSize / 2);
-		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
-		windowStart = Math.max(1, windowEnd - windowSize + 1);
-
-		List<ReviewDTO> reviewList = service.getReviewList(productId, memberId, currentPage);
-
-		model.addAttribute("reviewList", reviewList);
-		System.out.println("reviewList :: " + reviewList);
-		model.addAttribute("currentPage", currentPage);
-		model.addAttribute("totalPages", totalPages);
-		model.addAttribute("pageWindowStart", windowStart);
-		model.addAttribute("pageWindowEnd", windowEnd);
+		model.addAttribute("detail", detail);
+		addReviewPage(model, session, productId, page);
 		return"product/productDetail";
 	}
 
@@ -112,10 +126,13 @@ public class ProductController {
 		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
 		windowStart = Math.max(1, windowEnd - windowSize + 1);
 
-		List<ProductListDTO> searchList = service.getSearchList(searchDTO, page);
+		List<ProductListDTO> searchList = service.getSearchList(searchDTO, currentPage);
 
 		model.addAttribute("searchList", searchList);
-		System.out.println("reviewList :: " + searchList);
+		model.addAttribute("categoryList", service.getCategories());
+		model.addAttribute("tagList", service.getTags());
+		model.addAttribute("bannerList", service.getBanners());
+		System.out.println("searchList :: " + searchList);
 		model.addAttribute("currentPage", currentPage);
 		model.addAttribute("totalPages", totalPages);
 		model.addAttribute("pageWindowStart", windowStart);

@@ -96,7 +96,7 @@ public class OrderController {
 			pvData = service.directPrepare(loginMember.getMemberId(), orderItem);
 		} else { // 장바구니가 0 인채로 넘어왔거나 이상한 접근
 			redirectAttr.addFlashAttribute("error", "장바구니에 담은게 없거나 잘못된 접근입니다.");
-			return "redirect:/product/cart"; // 카트 주소 생기면 수정
+			return "redirect:/cart/my-cart";
 		}
 		model.addAttribute("pvData", pvData);
 		return "order/payment";

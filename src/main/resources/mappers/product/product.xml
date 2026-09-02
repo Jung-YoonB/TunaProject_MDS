@@ -10,6 +10,7 @@
                 P.PRODUCT_ID,
                 P.PRODUCT_TITLE,
                 COUNT(DISTINCT W.WISH_ID) AS WISH_COUNT,
+                PI.PRODUCT_IMAGE_PATH AS IMAGE_PATH,
                 PI.PRODUCT_IMAGE_SAVE_NAME AS TITLE_IMAGE,
                 MIN(PO.OPTION_PRICE) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS PRICE,
                 CAT_AGG.CATEGORY_NAMES AS CATEGORY_NAMES,
@@ -83,27 +84,37 @@
                 GROUP BY
                 P.PRODUCT_ID,
                 P.PRODUCT_TITLE,
+                PI.PRODUCT_IMAGE_PATH,
                 PI.PRODUCT_IMAGE_SAVE_NAME,
                 CAT_AGG.CATEGORY_NAMES,
                 TAG_AGG.TAG_DATA
                 ORDER BY COUNT(DISTINCT W.WISH_ID) DESC
 
-                <!-- 페이징 조건: 검색어 혹은 카테고리/태그 리스트 중 하나라도 존재할 때만 페이징 적용 -->
-                <if test="(search.keyword != null and search.keyword != '') or (search.category != null and search.category.size() > 0) or (search.tag != null and search.tag.size() > 0)">
+                <!-- 페이징은 호출부가 pageSize로 결정한다(0이면 전체 조회).
+                     원래는 "검색 조건이 하나라도 있을 때만" 페이징했는데, 그러면 조건 없이 들어온
+                     검색 결과 화면에서 목록은 전체가 한 번에 나오는데 페이지 번호만 여러 개 찍히는
+                     불일치가 생긴다. 회원 배송목록/내 리뷰 페이징(MemberMapper, ReviewMapper)처럼
+                     쿼리는 항상 offset/pageSize를 그대로 따르고, 페이지 크기 결정은 서비스가 한다. -->
+                <if test="pageSize > 0">
                         OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
                 </if>
         </select>
 	
+	<!-- 배너에 쓸 상품 대표 이미지 최대 5장. 최근 등록된 상품 순서(PRODUCT_ID는 시퀀스라 내림차순 = 최신).
+	     한 상품에 대표 이미지가 여러 장 들어가 있는 경우가 있어 ROW_NUMBER로 상품당 1장만 남긴 뒤 자른다
+	     (예전에는 WISH 조인 + GROUP BY로 찜 많은 순이었는데, 배너는 신상품 노출이 목적이라 기준을 바꿈). -->
 	<select id="bannerList" resultType="BannerDTO">
-        SELECT
-        PI.PRODUCT_IMAGE_SAVE_NAME as banner
-        FROM PRODUCTIMAGE PI
-        LEFT JOIN WISH W ON PI.PRODUCT_ID = W.PRODUCT_ID
-        WHERE PI.PRODUCT_TITLE_IMAGE = 0
-        GROUP BY
-        PI.PRODUCT_ID,
-        PI.PRODUCT_IMAGE_SAVE_NAME
-        ORDER BY COUNT(DISTINCT W.WISH_ID) DESC
+        SELECT IMAGE_PATH, BANNER
+        FROM (
+            SELECT PI.PRODUCT_ID,
+                   PI.PRODUCT_IMAGE_PATH AS IMAGE_PATH,
+                   PI.PRODUCT_IMAGE_SAVE_NAME AS BANNER,
+                   ROW_NUMBER() OVER (PARTITION BY PI.PRODUCT_ID ORDER BY PI.PRODUCT_IMAGE_ID) AS RN
+            FROM PRODUCTIMAGE PI
+            WHERE PI.PRODUCT_TITLE_IMAGE = 0
+        )
+        WHERE RN = 1
+        ORDER BY PRODUCT_ID DESC
         FETCH FIRST 5 ROWS ONLY
 	</select>
 
@@ -163,5 +174,19 @@
                                 )
                         </if>
                 </where>
+        </select>
+
+        <!-- 검색 화면 카테고리 칩 목록 -->
+        <select id="selectAllCategories" resultType="CategoryDTO">
+                SELECT CATEGORY_ID, CATEGORY_NAME
+                FROM CATEGORY
+                ORDER BY CATEGORY_ID
+        </select>
+
+        <!-- 검색 화면 태그 칩 목록. TAG_COLOR까지 내려서 칩 색을 상품 등록 화면과 맞춘다 -->
+        <select id="selectAllTags" resultType="TagOptionDTO">
+                SELECT TAG_ID, TAG_NAME, TAG_COLOR
+                FROM TAG
+                ORDER BY TAG_ID
         </select>
 </mapper>

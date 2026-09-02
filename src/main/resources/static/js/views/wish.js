@@ -8,6 +8,7 @@
     // 원래 인라인 스크립트였을 땐 <c:url>을 JS 안에 직접 썼는데, 외부 파일로 분리하면서
     // JSP가 data 속성으로 넘겨주는 방식으로 바꿨다(header.jsp의 data-home-url과 같은 방식).
     var DETAIL_BASE_URL = page.dataset.detailBaseUrl;
+    var REMOVE_URL = page.dataset.removeUrl;
 
     var controls = document.getElementById('wishlist-controls');
     var checkAll = document.getElementById('wish-check-all');
@@ -80,6 +81,14 @@
 
         // 상품명은 사용자 데이터라 textContent로 넣는다.
         card.querySelector('.product-name').textContent = item.name;
+        // 대표 이미지도 서버에서 온 값이라 innerHTML 대신 DOM으로 붙인다.
+        // 등록된 대표 이미지가 없는 상품이면 CSS 기본 배경이 그대로 보인다.
+        if (item.imageUrl) {
+            var img = document.createElement('img');
+            img.src = item.imageUrl;
+            img.alt = item.name;
+            card.querySelector('.product-img .product-link').appendChild(img);
+        }
         // optionName은 cartService.js와 동일하게 실제 연동 전까지 기본값으로 대체(cart.js의 item-option과 같은 패턴).
         card.querySelector('.product-option').textContent = item.optionName || '기본 옵션';
         // item.rating/reviewCount는 WishService의 예시 데이터에만 있고, 실제 toggleWish()로
@@ -117,13 +126,13 @@
         var item = items.filter(function (i) { return i.productId === productId; })[0];
         if (!item) return;
 
-        // 찜 해제 - 카드가 사라지는 애니메이션(.is-removing)이 끝난 뒤 실제로 지운다.
+        // 찜 해제 - 카드가 사라지는 애니메이션(.is-removing)이 끝난 뒤 서버에 반영한다.
+        // 로컬만 지우면 새로고침했을 때 되살아나므로, 서버 반영 후 다시 읽어온다.
         if (e.target.closest('.btn-wish-toggle')) {
             card.classList.add('is-removing');
             window.setTimeout(function () {
-                items = window.WishService.removeById(items, productId);
-                window.WishService.save(items);
-                render();
+                window.WishService.removeOnServer([productId], REMOVE_URL)
+                    .then(function () { window.location.reload(); });
             }, 300);
         }
 
@@ -144,15 +153,15 @@
         grid.querySelectorAll('.item-checkbox').forEach(function (b) { b.checked = checkAll.checked; });
     });
 
-    // "선택 상품 삭제" - 체크 안 된 것만 남긴다.
+    // "선택 상품 삭제" - 체크된 것을 서버에서 지운 뒤 목록을 다시 읽어온다.
     document.getElementById('wish-delete-btn').addEventListener('click', function () {
-        var keepIds = [];
+        var removeIds = [];
         grid.querySelectorAll('.product-card').forEach(function (card) {
-            if (!card.querySelector('.item-checkbox').checked) keepIds.push(card.dataset.productId);
+            if (card.querySelector('.item-checkbox').checked) removeIds.push(card.dataset.productId);
         });
-        items = window.WishService.keepByIds(items, keepIds);
-        window.WishService.save(items);
-        render();
+        if (removeIds.length === 0) return;
+        window.WishService.removeOnServer(removeIds, REMOVE_URL)
+            .then(function () { window.location.reload(); });
     });
 
     sortOptions.addEventListener('click', function (e) {
