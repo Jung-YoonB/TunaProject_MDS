@@ -10,14 +10,14 @@
 
     // 새로고침해도 화면이 비어 보이지 않도록, 저장된 찜 목록이 없을 때만 채워넣는 예시 상품.
     var DEFAULT_ITEMS = [
-        { productId: '1', name: '프리미엄 한우 선물세트', price: 129000, rating: 4.8, reviewCount: 245 },
-        { productId: '2', name: '전통 과일 선물세트', price: 59000, rating: 4.3, reviewCount: 89 },
-        { productId: '3', name: '프리미엄 견과 선물세트', price: 75000, rating: 4.6, reviewCount: 156 },
-        { productId: '4', name: '고급 한과 선물세트', price: 45000, rating: 4.1, reviewCount: 67 },
-        { productId: '5', name: '홍삼 건강 선물세트', price: 89000, rating: 4.9, reviewCount: 312 },
-        { productId: '6', name: '프리미엄 차 선물세트', price: 52000, rating: 4.4, reviewCount: 98 },
-        { productId: '7', name: '수제 디저트 선물세트', price: 39000, rating: 4.2, reviewCount: 54 },
-        { productId: '8', name: '명품 생활용품 선물세트', price: 68000, rating: 4.7, reviewCount: 203 }
+        { productId: '1', name: '프리미엄 한우 선물세트', optionName: '1++ 등급 / 1kg', price: 129000, rating: 4.8, reviewCount: 245 },
+        { productId: '2', name: '전통 과일 선물세트', optionName: '중과 5호 / 3kg', price: 59000, rating: 4.3, reviewCount: 89 },
+        { productId: '3', name: '프리미엄 견과 선물세트', optionName: '혼합 견과 / 1kg', price: 75000, rating: 4.6, reviewCount: 156 },
+        { productId: '4', name: '고급 한과 선물세트', optionName: '모듬 한과 / 1호', price: 45000, rating: 4.1, reviewCount: 67 },
+        { productId: '5', name: '홍삼 건강 선물세트', optionName: '6년근 / 300g', price: 89000, rating: 4.9, reviewCount: 312 },
+        { productId: '6', name: '프리미엄 차 선물세트', optionName: '녹차·홍차 세트 / 100g', price: 52000, rating: 4.4, reviewCount: 98 },
+        { productId: '7', name: '수제 디저트 선물세트', optionName: '쿠키·마카롱 세트', price: 39000, rating: 4.2, reviewCount: 54 },
+        { productId: '8', name: '명품 생활용품 선물세트', optionName: '타월 세트 / 4p', price: 68000, rating: 4.7, reviewCount: 203 }
     ];
 
     function save(items) {
@@ -31,7 +31,7 @@
         if (items.length === 0) {
             items = DEFAULT_ITEMS.map(function (item, idx) {
                 return {
-                    productId: item.productId, name: item.name, price: item.price,
+                    productId: item.productId, name: item.name, optionName: item.optionName, price: item.price,
                     rating: item.rating, reviewCount: item.reviewCount,
                     addedAt: Date.now() - (DEFAULT_ITEMS.length - idx) * 1000
                 };

@@ -43,12 +43,12 @@
                 <%-- 별/하트는 원래 유니코드 글리프(★/♡)였으나 환경에 따라 컬러 이모지로
                      렌더링돼 CSS color를 무시하는 문제가 있어 SVG로 통일함(2026-09-01). --%>
                 <div class="product-stat">
-                    <svg class="icon-star icon-inline" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
+                    <svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
                     ${detail.product.avgScore}
                 </div>
                 <div class="product-stat">리뷰 ${detail.product.reviewCount}개</div>
                 <div class="product-stat">
-                    <svg class="icon-heart icon-inline" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+                    <svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
                     찜 <span id="wish-count">${detail.product.wishCount}</span>
                 </div>
             </div>

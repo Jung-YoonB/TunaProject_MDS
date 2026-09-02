@@ -1,6 +1,8 @@
 package com.kh.sajotuna.mds.member.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.MyPageOrderItemDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -137,7 +140,26 @@ public class MemberServiceImpl implements MemberService{
 		// 상태 필터 + 페이징은 서버(SQL의 WHERE/OFFSET-FETCH)에서 처리한다
 		int safePage = Math.max(page, 1);
 		int offset = (safePage - 1) * DELIVERY_PAGE_SIZE;
-		return mapper.selectDeliveriesByMemberId(memberId, status, offset, DELIVERY_PAGE_SIZE);
+		List<MyPageDeliveryDTO> deliveries = mapper.selectDeliveriesByMemberId(memberId, status, offset, DELIVERY_PAGE_SIZE);
+
+		if (deliveries.isEmpty()) {
+			return deliveries;
+		}
+
+		// 카드를 펼쳤을 때 보여줄 품목 목록을 붙인다. 주문마다 조회하면 N+1이 되므로
+		// 이 페이지에 보이는 주문 ID를 한 번에 넘겨 1회 조회하고 주문별로 나눠 담는다
+		List<Long> orderIds = deliveries.stream()
+				.map(MyPageDeliveryDTO::getOrderId)
+				.toList();
+
+		Map<Long, List<MyPageOrderItemDTO>> itemsByOrder = mapper.selectOrderItemsByOrderIds(orderIds).stream()
+				.collect(Collectors.groupingBy(MyPageOrderItemDTO::getOrderId));
+
+		for (MyPageDeliveryDTO delivery : deliveries) {
+			delivery.setItems(itemsByOrder.getOrDefault(delivery.getOrderId(), List.of()));
+		}
+
+		return deliveries;
 	}
 
 	@Override
@@ -194,6 +216,11 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	public int countReviewableOrderDetails(Long memberId) {
 		return mapper.countReviewableOrderDetails(memberId);
+	}
+
+	@Override
+	public Long nextReviewableOdId(Long memberId) {
+		return mapper.selectNextReviewableOdId(memberId);
 	}
 }
 

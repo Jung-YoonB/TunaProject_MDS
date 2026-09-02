@@ -66,6 +66,8 @@ public class MemberController {
 			model.addAttribute("couponCount", service.countCoupons(member.getMemberId()));
 			model.addAttribute("activeOrderCount", service.countActiveDeliveries(member.getMemberId()));
 			model.addAttribute("reviewableCount", service.countReviewableOrderDetails(member.getMemberId()));
+			// 빠른메뉴 "리뷰 작성" 타일이 작성 화면으로 바로 보낼 대상. 없으면 null이라 JSP가 주문·배송으로 분기한다
+			model.addAttribute("nextReviewableOdId", service.nextReviewableOdId(member.getMemberId()));
 			return "member/myPage";
 		} else {
 			return "admin/adminPage";

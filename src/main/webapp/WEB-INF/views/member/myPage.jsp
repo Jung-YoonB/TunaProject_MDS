@@ -17,12 +17,6 @@
     <section class="card profile-card" aria-label="회원 정보">
         <div class="profile-card-top">
             <div class="profile-identity">
-                <div class="avatar-circle" aria-hidden="true">
-                    <svg class="avatar-icon-svg" viewBox="0 0 24 24" focusable="false">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                </div>
                 <div class="profile-name-wrap">
                     <div class="profile-name-line">
                         <span class="profile-name"><c:out value="${loginMember.memberName}"/></span>
@@ -84,8 +78,23 @@
                 </a>
             </li>
             <li>
-                <!-- 리뷰 작성: 특정 주문(odId) 기준으로 들어가는 화면이라 목록 진입점이 없음 - 주문·배송 조회에서 개별 진입 -->
-                <a class="quick-menu-tile" href="#">
+                <%-- 리뷰 작성은 특정 주문(odId) 단위로 들어가는 화면이라 목록 진입점이 없다.
+                     작성할 게 있으면 가장 먼저 쓸 주문상세로 바로 보내고, 없으면 배송완료 목록으로 보낸다.
+                     (예전엔 href="#"라 클릭해도 아무 반응이 없었음 - AUDIT 버그 18번) --%>
+                <c:choose>
+                    <c:when test="${not empty nextReviewableOdId}">
+                        <c:url value="/review/write" var="reviewTileUrl">
+                            <c:param name="odId" value="${nextReviewableOdId}"/>
+                            <c:param name="returnUrl" value="/member/myPage"/>
+                        </c:url>
+                    </c:when>
+                    <c:otherwise>
+                        <c:url value="/member/orderDelivery" var="reviewTileUrl">
+                            <c:param name="status" value="delivered"/>
+                        </c:url>
+                    </c:otherwise>
+                </c:choose>
+                <a class="quick-menu-tile" href="${reviewTileUrl}">
                     <c:if test="${reviewableCount > 0}">
                     <span class="quick-menu-badge">${reviewableCount}</span>
                     </c:if>
@@ -157,8 +166,8 @@
         <h2 class="section-title">리뷰 작성</h2>
         <div class="card review-cta-card">
             <p class="review-cta-desc">구매한 상품의 리뷰를 작성해 주세요.</p>
-            <%-- 리뷰 작성은 특정 주문(odId) 단위로 들어가야 해서, 배송완료 목록에서 개별 항목별로 진입한다 --%>
-            <a class="review-cta-badge" href="<c:url value='/member/orderDelivery'><c:param name='status' value='delivered'/></c:url>">작성 가능한 리뷰 ${reviewableCount}개</a>
+            <%-- 위 빠른메뉴 타일과 같은 기준으로 이동한다(reviewTileUrl 재사용) --%>
+            <a class="review-cta-badge" href="${reviewTileUrl}">작성 가능한 리뷰 ${reviewableCount}개</a>
             <a class="review-cta-link" href="<c:url value='/review/myReviews'/>">내가 쓴 리뷰 조회·삭제 &rsaquo;</a>
         </div>
     </section>

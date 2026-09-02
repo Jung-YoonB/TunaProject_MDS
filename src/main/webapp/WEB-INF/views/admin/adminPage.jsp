@@ -17,12 +17,6 @@
         <section class="card profile-card" aria-label="관리자 프로필">
             <div class="profile-card-top">
                 <div class="profile-identity">
-                    <div class="avatar-circle" aria-hidden="true">
-                        <svg class="avatar-icon-svg" viewBox="0 0 24 24" focusable="false">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                    </div>
                     <div class="profile-name-wrap">
                         <div class="profile-name-line">
                             <span class="profile-name" id="profile-name">관리자</span>
