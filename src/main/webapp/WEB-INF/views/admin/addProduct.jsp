@@ -68,61 +68,32 @@
             </div>
 
 
-            <!-- 옵션명 (PRODUCTOPTION.OPTION_NAME - 이 화면은 옵션 1개만 생성하므로 그 옵션의 이름) -->
+            <!-- 옵션 - PRODUCT엔 가격/재고 컬럼이 없고 PRODUCTOPTION에 있어서 옵션 단위로 등록한다.
+                 개수 제한 없이 추가 가능하고 최소 1개는 필수. 실제 행은 views/addProduct.js가 그린다 -->
 
             <div class="form-row">
                 <label>
-                    옵션명
+                    옵션
                     <span class="required">*</span>
                 </label>
 
-                <div class="input-area">
-                    <input
-                        type="text"
-                        name="optionName"
-                        id="optionNameInput"
-                        placeholder="예: 기본, 단품"
+                <div class="option-area">
+
+                    <p class="option-description">
+                        옵션마다 판매가격과 재고를 따로 등록합니다. 옵션이 하나뿐이면 "기본"처럼 입력해 주세요.
+                    </p>
+
+                    <div class="option-list" id="optionList"></div>
+
+                    <button
+                        type="button"
+                        class="add-tag-button add-option-button"
+                        id="addOptionButton"
                     >
-                </div>
-            </div>
+                        <span class="add-icon">＋</span>
+                        옵션 추가
+                    </button>
 
-
-            <!-- 가격 -->
-
-            <div class="form-row">
-                <label>
-                    판매가격
-                    <span class="required">*</span>
-                </label>
-
-                <div class="input-area">
-                    <input
-                        type="number"
-                        name="price"
-                        id="priceInput"
-                        placeholder="판매가격을 입력해 주세요"
-                        min="0"
-                    >
-                </div>
-            </div>
-
-
-            <!-- 재고 (PRODUCT 테이블엔 가격/재고 컬럼이 없고 PRODUCTOPTION(옵션)에 있어서,
-                 상품 등록 시 이 값으로 "기본 옵션" 1개를 자동 생성해 가격/재고를 담는다) -->
-            <div class="form-row">
-                <label>
-                    재고
-                    <span class="required">*</span>
-                </label>
-
-                <div class="input-area">
-                    <input
-                        type="number"
-                        name="stock"
-                        id="stockInput"
-                        placeholder="재고 수량을 입력해 주세요"
-                        min="0"
-                    >
                 </div>
             </div>
 
@@ -372,12 +343,15 @@
 
             <h3>태그 추가</h3>
 
+            <%-- 원래 "×" 글리프였으나 사이트 전체 아이콘 SVG 통일에 맞춤(2026-09-01).
+                 텍스트가 없어져서 스크린리더용 이름은 aria-label로 준다. --%>
             <button
                 type="button"
                 class="modal-close"
                 id="modalCloseButton"
+                aria-label="닫기"
             >
-                ×
+                <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
 
         </div>

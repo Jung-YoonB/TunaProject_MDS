@@ -1,0 +1,2226 @@
+/* ================================================================
+   style_admin.css - 관리자 페이지 CSS 통합본. 공통 팔레트/헤더·푸터는 style.css 참고.
+   각 구간은 원래 파일명을 구분선 주석으로 표시했다.
+   ================================================================ */
+
+/* ===== Admin sub-palette: 반복되던 톤을 변수로 정리(값은 기존 그대로, 임의 변경 없음) ===== */
+:root {
+	/* 강조(accent) - 버튼 보더/포커스/활성 상태에 반복 사용 */
+	--admin-accent: #b59b7b;
+	--admin-accent-text: #5c4a2f;
+	/* 알림/이력 배지 톤 */
+	--admin-notice: #c1592f;
+	/* surface / border */
+	--admin-surface: #fff;
+	--admin-border: #d8d3cc;
+	--admin-border-light: #eee;
+	/* text (중립 톤) */
+	--admin-text: #333;
+	--admin-text-muted: #777;
+	--admin-text-faint: #999;
+}
+
+
+/* ================================================================
+   ↓↓↓ style_admin_mypage.css 원본 내용
+   ================================================================ */
+@charset "utf-8";
+
+/* ================================
+   관리자 - 마이페이지
+================================ */
+
+.admin-mypage-page {
+    background-color: #FDFBF9;
+}
+
+.admin-mypage-page .page-content {
+    width: min(800px, 100% - 80px);
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
+}
+
+.admin-mypage-page .page-title {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+}
+
+.admin-mypage-page .page-subtitle {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: #888;
+}
+
+/* ---- 공통 카드 ---- */
+.admin-mypage-page .card {
+    padding: 24px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+/* ---- 프로필 카드 ---- */
+.admin-mypage-page .profile-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #f2ede4;
+}
+
+.admin-mypage-page .profile-identity {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+
+.admin-mypage-page .profile-name-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-mypage-page .profile-name-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-mypage-page .profile-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+}
+
+.admin-mypage-page .profile-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #888;
+}
+
+/* ---- 라벨/값 행 ---- */
+.admin-mypage-page .info-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-mypage-page .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f2ede4;
+}
+
+.admin-mypage-page .info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.admin-mypage-page .info-label {
+    font-size: 13px;
+    color: #888;
+}
+
+.admin-mypage-page .info-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* ---- 빠른 메뉴 ---- */
+.admin-mypage-page .quick-menu-section {
+    margin-top: 8px;
+}
+
+.admin-mypage-page .section-title {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.admin-mypage-page .quick-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-mypage-page .quick-menu-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px 12px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color .15s, border-color .15s;
+}
+
+/* :focus가 아니라 :focus-visible - 클릭 후 뒤로가기로 돌아오면 브라우저가 직전 포커스를
+   복원해서 :focus가 계속 맞고 눌린 잔상이 남는다. 키보드 이동은 그대로 표시됨(HANDOFF 3-51) */
+.admin-mypage-page .quick-menu-tile:hover,
+.admin-mypage-page .quick-menu-tile:focus-visible {
+    background-color: #fbf8f2;
+    border-color: #e2d9c8;
+    text-decoration: none;
+}
+
+.admin-mypage-page .quick-menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #f6efe4;
+    border-radius: 8px;
+}
+
+.admin-mypage-page .quick-menu-icon svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: #a8834f;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.admin-mypage-page .quick-menu-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+}
+
+/* ---- 일반 메뉴 (member/style_myPage.css의 .list-card/.list-row와 동일한 형식으로 통일) ---- */
+.admin-mypage-page .general-menu-section {
+    margin-top: 24px;
+}
+
+.admin-mypage-page .list-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.admin-mypage-page .list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f2ede4;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color .15s;
+}
+
+.admin-mypage-page .list-row:last-child {
+    border-bottom: none;
+}
+
+.admin-mypage-page .list-row:hover,
+.admin-mypage-page .list-row:focus-visible {
+    background-color: #fbf8f2;
+    text-decoration: none;
+}
+
+.admin-mypage-page .list-row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.admin-mypage-page .list-row-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+}
+
+.admin-mypage-page .list-row-desc {
+    font-size: 13px;
+    color: #999;
+}
+
+.admin-mypage-page .list-row-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-mypage-page .list-row-chevron {
+    color: #ccc;
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* ================================================================
+   ↓↓↓ style_admin_order.css 원본 내용
+   ================================================================ */
+@charset "utf-8";
+
+/* ================================
+   관리자 - 주문/배송 관리 페이지
+================================ */
+
+.admin-order-delivery-page {
+    background-color: #FDFBF9;
+}
+
+.admin-order-delivery-page .page-content {
+    width: min(1350px, 100% - 80px);
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+    background-color: #fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
+}
+
+.admin-order-delivery-page .page-title {
+    margin: 0 0 24px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* ---- 대시보드 요약 카드 ---- */
+.admin-order-delivery-page .summary-card-list {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.admin-order-delivery-page .summary-card {
+    flex: 1;
+    padding: 20px 24px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.admin-order-delivery-page .summary-card .label {
+    display: block;
+    font-size: 13px;
+    color: #888;
+}
+
+.admin-order-delivery-page .summary-card .count {
+    display: block;
+    margin-top: 8px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* ---- 검색/필터 영역 ---- */
+.admin-order-delivery-page .filter-section {
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.admin-order-delivery-page .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.admin-order-delivery-page .filter-row:last-child {
+    margin-bottom: 0;
+}
+
+.admin-order-delivery-page .filter-row-primary {
+    justify-content: space-between;
+}
+
+.admin-order-delivery-page .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-order-delivery-page .filter-row label {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+}
+
+.admin-order-delivery-page .filter-row input[type="date"],
+.admin-order-delivery-page .filter-row input[type="text"],
+.admin-order-delivery-page .filter-row select {
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    background-color: #fff;
+    font-size: 13px;
+    outline: none;
+}
+
+.admin-order-delivery-page .filter-row input[type="text"] {
+    width: 300px;
+}
+
+.admin-order-delivery-page .filter-row input:focus,
+.admin-order-delivery-page .filter-row select:focus {
+    border-color: #b59b7b;
+}
+
+.admin-order-delivery-page .range-sep {
+    color: #999;
+}
+
+.admin-order-delivery-page .search-btn {
+    height: 38px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--gsf-caramel);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-order-delivery-page .search-btn:hover {
+    background-color: var(--gsf-ink);
+}
+
+/* ---- 데이터 테이블 ---- */
+.admin-order-delivery-page .data-table {
+    margin-bottom: 24px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.admin-order-delivery-page .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-order-delivery-page .admin-table th,
+.admin-order-delivery-page .admin-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+    text-align: center;
+    color: #333;
+}
+
+.admin-order-delivery-page .admin-table thead th {
+    background-color: #faf9f7;
+    color: #555;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* 주문번호 헤더의 정렬 토글 버튼 - 일반 텍스트 헤더처럼 보이되 클릭 가능함을 살짝 드러냄 */
+.admin-order-delivery-page .th-sort-btn {
+    border: none;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-order-delivery-page .th-sort-btn:hover {
+    color: #c1592f;
+}
+
+.admin-order-delivery-page .sort-arrow {
+    font-size: 10px;
+}
+
+.admin-order-delivery-page .admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-order-delivery-page .admin-table tbody tr:hover {
+    background-color: #fbf8f2;
+}
+
+.admin-order-delivery-page .product-info-cell {
+    text-align: left;
+}
+
+.admin-order-delivery-page .no-result td {
+    padding: 60px 0;
+    color: #999;
+    text-align: center;
+}
+
+/* 결제 상태 배지 */
+.admin-order-delivery-page .payment-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.admin-order-delivery-page .payment-badge.payment-waiting {
+    background-color: #fbe3d3;
+    color: #c1592f;
+}
+
+.admin-order-delivery-page .payment-badge.payment-completed {
+    background-color: #dcf1e2;
+    color: #2f9d5c;
+}
+
+/* 진행 현황 배지 (상태별 색상) - 드롭다운 없이 읽기 전용으로만 표시, 상태 변경은 "관리" 칸 버튼으로 함 */
+.admin-order-delivery-page .delivery-status-badge {
+    display: inline-block;
+    height: 32px;
+    line-height: 32px;
+    padding: 0 10px;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.admin-order-delivery-page .delivery-status-badge.status-preparing {
+    background-color: #fbe3d3;
+    color: #c1592f;
+    border-color: #f3c7a8;
+}
+
+.admin-order-delivery-page .delivery-status-badge.status-shipped {
+    background-color: #dce8fb;
+    color: #2f6fd9;
+    border-color: #b9d0f5;
+}
+
+.admin-order-delivery-page .delivery-status-badge.status-out_for_delivery {
+    background-color: #e4ecfb;
+    color: #3d5fc2;
+    border-color: #c6d6f5;
+}
+
+.admin-order-delivery-page .delivery-status-badge.status-delivered {
+    background-color: #dcf1e2;
+    color: #2f9d5c;
+    border-color: #b9e4c6;
+}
+
+/* 취소/환불 대기중 - 아직 처리 안 끝났으니 눈에 띄는 색으로 */
+.admin-order-delivery-page .delivery-status-badge.status-cancel_pending {
+    background-color: #fbe3d3;
+    color: #c1592f;
+    border-color: #f3c7a8;
+}
+
+.admin-order-delivery-page .payment-badge.cancel-pending {
+    background-color: #fbe3d3;
+    color: #c1592f;
+}
+
+/* 취소/환불 처리 완료 - 진짜 끝난 상태라 회색으로 차분하게 */
+.admin-order-delivery-page .delivery-status-badge.status-cancel_complete {
+    background-color: #eee;
+    color: #888;
+    border-color: #ddd;
+}
+
+.admin-order-delivery-page .payment-badge.cancel-complete {
+    background-color: #eee;
+    color: #888;
+}
+
+/* "관리" 칸: 다음 단계로/결제완료 같은 주 액션 버튼 + 취소 버튼을 나란히 배치 */
+.admin-order-delivery-page .action-cell {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.admin-order-delivery-page .btn-next-status,
+.admin-order-delivery-page .btn-confirm-payment,
+.admin-order-delivery-page .btn-complete-cancel {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    background-color: #e9dcc6;
+    color: #5c4a2f;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.admin-order-delivery-page .btn-next-status:hover,
+.admin-order-delivery-page .btn-confirm-payment:hover,
+.admin-order-delivery-page .btn-complete-cancel:hover {
+    background-color: #ddc9a3;
+}
+
+/* 취소는 앞의 주 액션보다 눈에 덜 띄게 - 실수로 먼저 누르지 않도록 */
+.admin-order-delivery-page .btn-cancel-order {
+    padding: 6px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #888;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.admin-order-delivery-page .btn-cancel-order:hover {
+    background-color: #f5f5f5;
+    color: #c1592f;
+    border-color: #f3c7a8;
+}
+
+.admin-order-delivery-page .btn-next-status:disabled,
+.admin-order-delivery-page .btn-confirm-payment:disabled,
+.admin-order-delivery-page .btn-cancel-order:disabled,
+.admin-order-delivery-page .btn-complete-cancel:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* ---- 페이지네이션 ---- */
+.admin-order-delivery-page .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-order-delivery-page .pagination ol {
+    display: flex;
+    gap: 6px;
+}
+
+.admin-order-delivery-page .pagination button {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #555;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.admin-order-delivery-page .pagination button:hover {
+    border-color: #bbb;
+}
+
+.admin-order-delivery-page .pagination button.is-active {
+    background-color: #e9dcc6;
+    border-color: #e9dcc6;
+    color: #5c4a2f;
+    font-weight: 700;
+}
+
+.admin-order-delivery-page .pagination button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.admin-order-delivery-page .pagination button:disabled:hover {
+    border-color: #ddd;
+}
+
+/* ---- 배송 정보 컬럼 (택배사/송장번호, 읽기 전용 텍스트) ---- */
+.admin-order-delivery-page .delivery-info-cell {
+    font-size: 12px;
+    color: #555;
+    white-space: nowrap;
+}
+
+/* ---- 배송 정보 입력 모달 (배송중 계열 상태로 변경 시) ----
+   주의: header.jsp가 모든 CSS 파일을 전 페이지에 로드하므로, 여기 선택자는 전부
+   .admin-order-delivery-page로 스코프해야 함. 스코프 없이 .modal-overlay 등 범용 클래스명을
+   그대로 쓰면 같은 클래스명을 쓰는 다른 admin 페이지(addProduct.jsp의 태그 모달 등)의
+   스타일을 덮어써버림 — 실제로 이 버그 때문에 addProduct.jsp 모달이 항상 열린 채로 보이는
+   문제가 있었음 (2026-08-28 밤 발견/수정) */
+.admin-order-delivery-page .modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(34, 30, 24, 0.45);
+    z-index: 100;
+}
+
+.admin-order-delivery-page .modal-overlay[hidden] {
+    display: none;
+}
+
+.admin-order-delivery-page .modal-box {
+    width: 360px;
+    padding: 28px 24px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.admin-order-delivery-page .modal-box h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.admin-order-delivery-page .modal-box .modal-desc {
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: #777;
+}
+
+.admin-order-delivery-page .modal-field {
+    margin-bottom: 14px;
+}
+
+.admin-order-delivery-page .modal-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+}
+
+.admin-order-delivery-page .modal-field input[type="text"],
+.admin-order-delivery-page .modal-field select {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid #d8d3cc;
+    border-radius: 6px;
+    background-color: #fff;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.admin-order-delivery-page .modal-field input[type="text"]:focus,
+.admin-order-delivery-page .modal-field select:focus {
+    border-color: #b59b7b;
+}
+
+.admin-order-delivery-page .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.admin-order-delivery-page .modal-actions button {
+    height: 38px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-order-delivery-page .modal-actions #modal-cancel-btn {
+    background-color: #f1efe9;
+    color: #555;
+}
+
+.admin-order-delivery-page .modal-actions #modal-cancel-btn:hover {
+    background-color: #e6e2d9;
+}
+
+.admin-order-delivery-page .modal-actions #modal-confirm-btn {
+    background-color: #e9dcc6;
+    color: #5c4a2f;
+}
+
+.admin-order-delivery-page .modal-actions #modal-confirm-btn:hover {
+    background-color: #ddc9a3;
+}
+
+/* ================================================================
+   ↓↓↓ style_admincouponView.css 원본 내용
+   ================================================================ */
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .admin-coupon-view-page로 스코프할 것.
+   원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, 바깥 배경은 .admin-coupon-view-page에,
+   흰 카드는 그 안의 .admin-coupon-view-page-card에 나눠 담는다 */
+        .admin-coupon-view-page {
+            background-color: #FDFBF9;
+            padding: 50px 0;
+            box-sizing: border-box;
+        }
+
+
+        /* ================================
+           전체 영역
+        ================================= */
+
+        .admin-coupon-view-page-card {
+            width: min(800px, 100% - 80px);
+            margin: 0 auto;
+            padding: 40px;
+
+            background-color: #fbf8f4;
+            border: 1px solid #e5e0d8;
+            border-radius: 12px;
+
+            box-sizing: border-box;
+        }
+
+
+        /* ================================
+           제목
+        ================================= */
+
+        .admin-coupon-view-page #title {
+            margin-bottom: 30px;
+
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+
+        /* ================================
+           쿠폰 등록
+        ================================= */
+
+        .admin-coupon-view-page #CouponRegister {
+            margin-bottom: 30px;
+        }
+
+        /* addCoupon.jsp도 같은 .register-button 클래스를 쓰므로 스코프 필수 (실제로 덮어쓰던 버그). */
+        .admin-coupon-view-page .register-button {
+            width: 100%;
+            height: 60px;
+
+            border: 1px solid #b59b7b;
+            border-radius: 8px;
+
+            background-color: white;
+            color: #806746;
+
+            font-size: 16px;
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .admin-coupon-view-page .register-button:hover {
+            background-color: #f8f6f2;
+        }
+
+        .admin-coupon-view-page .register-icon {
+            margin-right: 8px;
+            font-size: 22px;
+            vertical-align: middle;
+        }
+
+
+        /* ================================
+           쿠폰 검색
+        ================================= */
+
+        .admin-coupon-view-page #SearchCoupons {
+            display: flex;
+            gap: 8px;
+
+            margin-bottom: 30px;
+        }
+
+        .admin-coupon-view-page #coupon-state-filter {
+            flex: 0 0 150px;
+
+            height: 42px;
+            padding: 0 10px;
+
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+
+            background-color: white;
+            color: #444;
+
+            font-size: 13px;
+
+            cursor: pointer;
+        }
+
+        .admin-coupon-view-page #coupon-state-filter:focus {
+            border-color: #b59b7b;
+            outline: none;
+        }
+
+        .admin-coupon-view-page #coupon-search {
+            flex: 1;
+
+            height: 42px;
+            padding: 0 12px;
+
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+
+            outline: none;
+
+            font-size: 14px;
+        }
+
+        .admin-coupon-view-page #coupon-search:focus {
+            border-color: #b59b7b;
+        }
+
+        .admin-coupon-view-page #search-button {
+            width: 80px;
+            height: 42px;
+
+            border: 1px solid #d8d3cc;
+            border-radius: 6px;
+
+            background-color: white;
+
+            cursor: pointer;
+        }
+
+        .admin-coupon-view-page #search-button:hover {
+            background-color: #faf9f7;
+        }
+
+
+        /* ================================
+           등록된 쿠폰 제목
+        ================================= */
+
+        .admin-coupon-view-page .coupon-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 8px;
+        }
+
+        .admin-coupon-view-page #CouponList h2 {
+            margin: 0;
+
+            font-size: 18px;
+        }
+
+        .admin-coupon-view-page .coupon-count {
+            color: #888;
+
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        .admin-coupon-view-page .coupon-notice {
+            margin: 0 0 15px;
+
+            color: #c1592f;
+
+            font-size: 12px;
+        }
+
+
+        /* ================================
+           목록 관리
+        ================================= */
+
+        .admin-coupon-view-page .list-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 15px;
+        }
+
+        .admin-coupon-view-page .select-menu {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* .select-menu가 display:flex를 지정하고 있어서, 브라우저 기본 hidden 속성 규칙
+           ([hidden]{display:none})보다 이 author 규칙이 항상 우선함 - 그래서 hidden을 줘도
+           안 숨겨지는 문제가 있었음. 이 규칙으로 명시적으로 다시 숨김 처리 */
+        .admin-coupon-view-page #selectionControls[hidden] {
+            display: none;
+        }
+
+        .admin-coupon-view-page .select-menu button {
+            padding: 0;
+
+            border: none;
+            background: none;
+
+            color: #777;
+
+            font-size: 12px;
+
+            cursor: pointer;
+        }
+
+        .admin-coupon-view-page .select-menu button:hover {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        .admin-coupon-view-page .list-control-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-coupon-view-page #toggleSelectModeButton {
+            height: 32px;
+            padding: 0 12px;
+
+            border: 1px solid #ddd;
+            border-radius: 6px;
+
+            background-color: white;
+            color: #666;
+
+            font-size: 12px;
+
+            cursor: pointer;
+        }
+
+        .admin-coupon-view-page #toggleSelectModeButton:hover {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* 선택 모드일 땐 같은 버튼이 "취소" 역할을 함 - 살짝 눌린 듯한 톤으로 구분.
+           .active처럼 흔한 이름 대신 .is-selecting을 써서 .coupon-status.active(진행중 배지)와
+           이름 자체가 겹치지 않게 함 - 지금은 ID 선택자라 우연히 안 부딪히지만 이름부터 다르게 두는 게 안전함 */
+        .admin-coupon-view-page #toggleSelectModeButton.is-selecting {
+            background-color: #f0dfc0;
+            border-color: #b59b7b;
+            color: #5c4a2f;
+        }
+
+
+        /* ================================
+           선택 삭제
+        ================================= */
+
+        .admin-coupon-view-page .delete-button {
+            height: 32px;
+            padding: 0 12px;
+
+            border: 1px solid #ddd;
+            border-radius: 6px;
+
+            background-color: white;
+            color: #666;
+
+            font-size: 12px;
+
+            cursor: pointer;
+        }
+
+        .admin-coupon-view-page .delete-button:hover {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .admin-coupon-view-page .delete-icon {
+            margin-right: 4px;
+            font-size: 14px;
+        }
+
+
+        /* ================================
+           쿠폰 카드
+        ================================= */
+
+        .admin-coupon-view-page .coupon-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+
+            margin-bottom: 12px;
+            padding: 18px 20px;
+
+            border: 1px solid #e3ded7;
+            border-radius: 10px;
+
+            background-color: white;
+
+            box-sizing: border-box;
+        }
+
+
+        /* ================================
+           체크박스
+        ================================= */
+
+        .admin-coupon-view-page .coupon-check {
+            display: none;
+
+            width: 18px;
+            height: 18px;
+
+            margin: 0;
+
+            cursor: pointer;
+
+            accent-color: #806746;
+
+            flex-shrink: 0;
+        }
+
+        /* "삭제할 쿠폰 선택"으로 선택 모드에 들어갔을 때만 체크박스 노출 */
+        .admin-coupon-view-page #couponCardList.selecting .coupon-check {
+            display: inline-block;
+        }
+
+
+        /* ================================
+           쿠폰 정보
+        ================================= */
+
+        .admin-coupon-view-page .coupon-info {
+            flex: 1;
+        }
+
+        /* 만료 여부 x 발급 이력 여부, 2x2 네 가지 조합을 카드 왼쪽 색 띠로 구분
+           (회색=만료·이력없음/안전하게 삭제 가능, 빨강=만료·이력있음/할인 이력 기록 보존 목적으로 의도적으로 안 지움,
+            초록=진행중·이력있음/정상 사용 중, 파랑=진행중·이력없음/아직 안 쓰인 신규) */
+        .admin-coupon-view-page .coupon-card.state-expired-no-history {
+            border-left: 4px solid #9e9e9e;
+            background-color: #f7f7f7;
+        }
+
+        .admin-coupon-view-page .coupon-card.state-expired-history {
+            border-left: 4px solid #c1592f;
+            background-color: #fdf8f4;
+        }
+
+        .admin-coupon-view-page .coupon-card.state-active-history {
+            border-left: 4px solid #5b8c5a;
+            background-color: #f3f8f1;
+        }
+
+        .admin-coupon-view-page .coupon-card.state-active-no-history {
+            border-left: 4px solid #5b7c99;
+            background-color: #f1f5f8;
+        }
+
+        .admin-coupon-view-page .coupon-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 7px;
+        }
+
+        .admin-coupon-view-page .coupon-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .admin-coupon-view-page .history-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background-color: #fbe3d3;
+            color: #c1592f;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .admin-coupon-view-page .coupon-description {
+            margin-bottom: 8px;
+
+            color: #777;
+
+            font-size: 13px;
+        }
+
+        .admin-coupon-view-page .coupon-deadline {
+            color: #999;
+
+            font-size: 12px;
+        }
+
+
+        /* ================================
+           할인율
+        ================================= */
+
+        .admin-coupon-view-page .coupon-discount {
+            min-width: 60px;
+
+            font-size: 20px;
+            font-weight: bold;
+
+            text-align: center;
+        }
+
+
+        /* ================================
+           쿠폰 상태
+        ================================= */
+
+        .admin-coupon-view-page .coupon-status {
+            min-width: 55px;
+            padding: 6px 8px;
+
+            border-radius: 4px;
+
+            font-size: 11px;
+            font-weight: bold;
+
+            text-align: center;
+        }
+
+        /* .active/.expired는 이름이 흔해서 다른 페이지 CSS와 부딪힐 수 있어 페이지 클래스로 스코프함
+           (header.jsp가 모든 CSS를 전 페이지에 로드하는 구조라 스코프 없는 범용 클래스명은 위험) */
+        .admin-coupon-view-page .active {
+            background-color: #eee7dd;
+            color: #806746;
+        }
+
+        .admin-coupon-view-page .expired {
+            background-color: #eee;
+            color: #999;
+        }
+
+
+        /* ================================
+           쿠폰 수정 아이콘
+        ================================= */
+
+        .admin-coupon-view-page .edit-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 36px;
+            height: 36px;
+
+            border: 1px solid #d8d3cc;
+            border-radius: 50%;
+
+            background-color: white;
+            color: #806746;
+
+            font-size: 17px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .admin-coupon-view-page .edit-button:hover {
+            background-color: #f8f6f2;
+            border-color: #b59b7b;
+
+            transform: scale(1.05);
+        }
+
+
+        /* ================================
+           쿠폰 개별 삭제 아이콘
+        ================================= */
+
+        .admin-coupon-view-page .delete-icon-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 36px;
+            height: 36px;
+
+            border: 1px solid #e3c9c9;
+            border-radius: 50%;
+
+            background-color: white;
+            color: #b3453f;
+
+            font-size: 15px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .admin-coupon-view-page .delete-icon-button:hover {
+            background-color: #fbecea;
+            border-color: #d99a95;
+
+            transform: scale(1.05);
+        }
+
+        .admin-coupon-view-page .delete-icon-button:disabled {
+            border-color: #e0e0e0;
+            background-color: #f5f5f5;
+            color: #bbb;
+
+            cursor: not-allowed;
+        }
+
+        .admin-coupon-view-page .delete-icon-button:disabled:hover {
+            background-color: #f5f5f5;
+            transform: none;
+        }
+
+
+        /* ================================
+           페이지네이션
+        ================================= */
+
+        .admin-coupon-view-page .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+
+            margin-top: 20px;
+        }
+
+        .admin-coupon-view-page .pagination ol {
+            display: flex;
+            gap: 6px;
+        }
+
+        .admin-coupon-view-page .pagination button {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 8px;
+
+            border: 1px solid #ddd;
+            border-radius: 6px;
+
+            background-color: #fff;
+            color: #555;
+
+            font-size: 13px;
+
+            cursor: pointer;
+        }
+
+        .admin-coupon-view-page .pagination button:hover {
+            border-color: #b59b7b;
+        }
+
+        .admin-coupon-view-page .pagination button.is-active {
+            background-color: #f0dfc0;
+            border-color: #f0dfc0;
+            color: #5c4a2f;
+            font-weight: 700;
+        }
+
+        .admin-coupon-view-page .pagination button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .admin-coupon-view-page .pagination button:disabled:hover {
+            border-color: #ddd;
+        }
+
+
+        /* ================================
+           반응형
+        ================================= */
+
+        @media (max-width: 850px) {
+
+            .admin-coupon-view-page-card {
+                width: calc(100% - 30px);
+
+                margin: 30px auto;
+                padding: 25px;
+            }
+
+        }
+/* ================================================================
+   ↓↓↓ style_adminMaintenance.css 원본 내용
+   ================================================================ */
+@charset "utf-8";
+
+/* ================================
+   관리자 - 파일 정합성 검사
+================================ */
+
+.admin-maintenance-page {
+    background-color: #f6efe4;
+}
+
+.admin-maintenance-page .page-content {
+    width: 900px;
+    margin: 0 auto;
+    padding: 40px 0 80px;
+}
+
+.admin-maintenance-page .page-title {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+}
+
+.admin-maintenance-page .page-subtitle {
+    margin: 0 0 24px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #888;
+}
+
+.admin-maintenance-page .check-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background-color: #4b433d;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.admin-maintenance-page .check-button:hover {
+    background-color: #332d29;
+}
+
+.admin-maintenance-page .result-section {
+    margin-top: 24px;
+    padding: 24px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+}
+
+.admin-maintenance-page .result-idle,
+.admin-maintenance-page .result-empty {
+    margin: 0;
+    font-size: 14px;
+    color: #888;
+}
+
+.admin-maintenance-page .issue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.admin-maintenance-page .issue-table th,
+.admin-maintenance-page .issue-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #f2ede4;
+}
+
+.admin-maintenance-page .issue-table th {
+    color: #888;
+    font-weight: 600;
+}
+
+.admin-maintenance-page .issue-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-maintenance-page .issue-badge.orphan {
+    background-color: #fdecea;
+    color: #b3261e;
+}
+
+.admin-maintenance-page .issue-badge.missing {
+    background-color: #fff4e0;
+    color: #a15c00;
+}
+
+.admin-maintenance-page .delete-orphan-button {
+    padding: 4px 10px;
+    font-size: 13px;
+    color: #b3261e;
+    background-color: #fff;
+    border: 1px solid #b3261e;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.admin-maintenance-page .delete-orphan-button:hover {
+    background-color: #fdecea;
+}
+
+.admin-maintenance-page .delete-orphan-button:disabled {
+    color: #bbb;
+    border-color: #ddd;
+    cursor: default;
+}
+
+/* ================================================================
+   ↓↓↓ style_addProduct.css 원본 내용
+   ================================================================ */
+
+*{box-sizing:border-box}
+a{color:inherit;text-decoration:none}
+button,input,textarea,select{font-family:inherit}
+
+/* HEADER/CATEGORY/FOOTER 섹션은 addProduct.jsp가 독립 페이지였을 때 쓰던 구버전 커스텀
+   헤더/푸터용 CSS였음 - header.jsp/footer.jsp include로 전환된 뒤에도 지워지지 않고 남아있었고,
+   #site-header/#search_input/.icon/.sign/.site-footer/.footer-top 등은 공용 header.jsp/footer.jsp가
+   실제로 쓰는 것과 같은 id/class라서, header.jsp가 모든 CSS를 전 페이지에 로드하는 구조상 이 죽은
+   규칙들이 사이트 전체의 진짜 헤더/푸터 스타일(style.css)을 덮어쓰고 있었다 - 통째로 삭제 */
+
+/* ================= MAIN ================= */
+
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>까지 덮어써버린다 — 반드시 .product-register로 스코프할 것.
+   (min-height:100vh는 넣지 않음 - style.css가 이미 body를 flex column + main{flex:1 0 auto}로
+   sticky-footer 레이아웃을 잡아주고 있어서, 여기서 또 100vh를 강제하면 그 위에 겹쳐져 페이지가
+   불필요하게 길어지고 잘려 보이는 원인이 됨)
+
+   다만 .product-register는 폭이 제한적이라 좌우로 <body>가 드러나는데, addProduct.jsp는
+   hero 배경 대상이 아니라 <body>에 배경색이 없어 다크모드 브라우저에서 그 틈이 검게 보인다.
+   userUpdateInfo.jsp와 같은 body:has() 스코프로 <body> 배경을 명시해 해결 */
+body:has(.product-register) {
+    background-color: #FDFBF9;
+}
+
+.product-register{
+    width:min(1000px, 100% - 80px);
+    margin:0 auto;
+    /* 좌우 패딩이 0이라 내부 콘텐츠가 바깥 배경 박스 가장자리에 딱 붙어 보이던 것을,
+       addCoupon.jsp의 카드(.add-coupon-page-card{padding:40px})와 같은 여유값으로 맞춤 */
+    padding:70px 40px 100px;
+    background:#fbf8f4;
+    border-left: 1px solid var(--gsf-border);
+    border-right: 1px solid var(--gsf-border);
+    box-sizing: border-box;
+    color:#333;
+    font-family:Arial,"Noto Sans KR",sans-serif
+}
+.page-title{
+    margin-bottom:55px;
+    text-align:center
+}
+.eyebrow{
+    display:block;
+    margin-bottom:13px;
+    color:#9a8067;
+    font-size:11px;
+    letter-spacing:4px
+}
+.page-title h1{
+    margin:0;
+    color:#302923;
+    font-size:32px;
+    font-weight:500
+}
+.page-title p{
+    margin:13px 0 0;
+    color:#918981;
+    font-size:13px
+}
+
+/* ================= SECTION ================= */
+
+.register-section{margin-bottom:55px}
+.section-title{margin-bottom:22px}
+.section-title h2{
+    margin:0;
+    color:#302923;
+    font-size:18px;
+    font-weight:500
+}
+.section-title p{
+    margin:7px 0 0;
+    color:#9b938c;
+    font-size:12px
+}
+
+/* ================= BASIC INFO ================= */
+
+.info-box{
+    overflow:hidden;
+    background:#fff;
+    border:1px solid #e7e0d8
+}
+.form-row{
+    min-height:78px;
+    display:flex;
+    align-items:center;
+    border-bottom:1px solid #eee9e4
+}
+.form-row:last-child{border-bottom:0}
+.form-row>label{
+    width:180px;
+    flex-shrink:0;
+    padding-left:30px;
+    color:#514943;
+    font-size:13px;
+    font-weight:500
+}
+.required{color:#a78b6d}
+.input-area{
+    flex:1;
+    padding-right:30px
+}
+.input-area input,
+.input-area select{
+    width:100%;
+    height:42px;
+    padding:0 14px;
+    border:1px solid #ddd5cc;
+    outline:0;
+    background:#fff;
+    color:#444;
+    font-size:13px
+}
+.input-area input:focus,
+.input-area select:focus{border-color:#b59b7e}
+
+/* ================= OPTION (개수 제한 없는 동적 행) =================
+   가격/재고가 PRODUCTOPTION에 달려 있어 옵션 단위로 입력받는다(HANDOFF 3-48).
+   주변 규칙(.form-row 등)은 스코프가 없지만, 신규분만이라도 .product-register로 스코프해
+   다른 페이지로 새지 않게 한다(3-5/3-6 재발 방지). */
+.product-register .option-area{
+    flex:1;
+    padding:22px 30px 22px 0
+}
+.product-register .option-description{
+    margin:0 0 18px;
+    color:#aaa19a;
+    font-size:11px
+}
+.product-register .option-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:14px
+}
+.product-register .option-row{
+    display:flex;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:12px;
+    padding:14px 16px;
+    background:#fdfbf8;
+    border:1px solid #e7e0d8
+}
+/* 행 번호 배지 - 검증 실패 메시지("옵션 2의 판매가격을...")와 화면을 맞추기 위한 표시.
+   입력칸(38px) 높이 가운데에 맞추는 margin 보정. ⚠️ 근사치라 화면 확인 필요 */
+.product-register .option-row-index{
+    width:22px;
+    height:22px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:9px;
+    background:#ece3d8;
+    border-radius:50%;
+    color:#7d6b5b;
+    font-size:11px;
+    font-weight:700
+}
+.product-register .option-field{
+    flex:1;
+    min-width:120px;
+    display:flex;
+    flex-direction:column;
+    gap:6px
+}
+/* 옵션명은 가격/재고보다 긴 값이 들어가므로 두 배 폭 */
+.product-register .option-field-name{flex:2}
+.product-register .option-field-label{
+    color:#918981;
+    font-size:11px
+}
+.product-register .option-field input{
+    width:100%;
+    height:38px;
+    padding:0 12px;
+    box-sizing:border-box;
+    background:#fff;
+    border:1px solid #ddd5cc;
+    outline:0;
+    color:#444;
+    font-size:13px
+}
+.product-register .option-field input:focus{border-color:#b59b7e}
+/* 25px 원형 버튼(.tag-remove)을 38px 입력칸 높이의 가운데에 맞추는 보정값.
+   ⚠️ 근사치라 화면 확인 필요 */
+.product-register .option-remove{margin-bottom:7px}
+/* 옵션이 1개뿐일 때 JS가 hidden으로 감추는데, 재사용한 .tag-remove의 display:flex가
+   브라우저 기본 [hidden]{display:none}(우선순위가 더 낮음)을 밀어내서 명시적으로 덮어쓴다 */
+.product-register .option-remove[hidden]{display:none}
+
+/* ================= TAG ================= */
+
+.tag-area{
+    flex:1;
+    padding:22px 30px 22px 0
+}
+.tag-description{
+    margin:0 0 18px;
+    color:#aaa19a;
+    font-size:11px
+}
+.tag-group{margin-bottom:20px}
+.tag-group:last-child{margin-bottom:0}
+.tag-group-added{
+    padding-top:22px;
+    border-top:1px solid #e0d8d0
+}
+.tag-group-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:13px
+}
+.tag-group-title strong{
+    color:#514943;
+    font-size:14px
+}
+.tag-group-title span{
+    color:#aaa19a;
+    font-size:11px
+}
+.tag-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px
+}
+.product-tag{
+    min-height:40px;
+    /* 오른쪽에 X 버튼이 붙는 "현재 상품 태그" 칩은 아래 #addedTagList 규칙이 패딩을 덮어씀 */
+    padding:7px 15px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:22px;
+    color:#4b433d;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    transition:.2s
+}
+#addedTagList .product-tag{padding:7px 10px 7px 15px}
+.product-tag:hover{
+    transform:translateY(-1px);
+    box-shadow:0 3px 8px rgba(0,0,0,.08)
+}
+.product-tag.selected{
+    border-color:#5b4c40;
+    box-shadow:0 0 0 2px rgba(91,76,64,.15);
+    font-weight:700
+}
+.tag-remove{
+    width:25px;
+    height:25px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    padding:0;
+    border:0;
+    border-radius:50%;
+    background:rgba(0,0,0,.12);
+    color:#4b433d;
+    font-size:18px;
+    font-weight:bold;
+    line-height:1;
+    cursor:pointer;
+    transition:.2s
+}
+.tag-remove:hover{background:rgba(0,0,0,.25)}
+/* 삭제 아이콘을 "×" 글리프에서 SVG로 바꾸면서(2026-09-01) 크기만 보정.
+   글리프는 em 박스 안에 여백이 있어 font-size(18px)보다 작게 보이는데 SVG는 박스를
+   꽉 채우므로, 0.7em으로 줄여 예전 덩치에 맞춘다. ⚠️ 근사치라 화면 확인 필요. */
+.tag-remove .icon-close{width:.7em;height:.7em}
+.add-tag-button{
+    min-height:40px;
+    padding:7px 16px;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    border:1px dashed #c8b9aa;
+    border-radius:22px;
+    background:#faf8f5;
+    color:#7d6b5b;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer
+}
+.add-tag-button:hover{
+    background:#f3eee8;
+    border-color:#a58b70
+}
+.add-icon{
+    font-size:20px;
+    line-height:1
+}
+
+/* ================= IMAGE ================= */
+
+.image-upload-wrap{
+    display:flex;
+    gap:25px
+}
+.main-image-upload{
+    position:relative;
+    width:430px;
+    height:310px;
+    overflow:hidden;
+    background:#fff;
+    border:1px solid #e3dbd2
+}
+.main-image-remove{
+    position:absolute;
+    top:8px;
+    right:8px;
+    z-index:1
+}
+.image-label{
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer
+}
+.image-label:hover{background:#fcfaf7}
+.upload-icon{
+    width:52px;
+    height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:17px;
+    border:1px solid #d8cbbb;
+    border-radius:50%;
+    color:#9b8063;
+    font-size:24px
+}
+.image-label strong{
+    color:#4b433d;
+    font-size:14px;
+    font-weight:500
+}
+.image-label p{
+    margin:10px 0;
+    color:#99918a;
+    font-size:12px;
+    line-height:1.6;
+    text-align:center
+}
+.image-label small{
+    color:#b2aaa3;
+    font-size:10px
+}
+.sub-image-area{
+    flex:1;
+    padding:5px 0
+}
+.sub-image-title{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:15px
+}
+.sub-image-title strong{
+    color:#4b433d;
+    font-size:13px;
+    font-weight:500
+}
+.sub-image-title span{
+    color:#aaa19a;
+    font-size:11px
+}
+.sub-image-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px
+}
+.sub-image-box{
+    height:92px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+    border:1px solid #e3dbd2;
+    cursor:pointer
+}
+.sub-image-box:hover{background:#fcfaf7}
+.sub-image-preview{cursor:grab}
+.sub-image-preview:active{cursor:grabbing}
+.sub-image-preview.dragging{opacity:.4}
+.sub-image-preview.drag-over{box-shadow:inset 0 0 0 2px #9a8067}
+.sub-image-box span{
+    color:#a48a6e;
+    font-size:20px
+}
+.sub-image-box small{
+    margin-top:5px;
+    color:#aaa19a;
+    font-size:10px
+}
+
+/* ================= DESCRIPTION ================= */
+
+.description-box{
+    background:#fff;
+    border:1px solid #e3dbd2
+}
+.description-box textarea{
+    width:100%;
+    height:240px;
+    display:block;
+    padding:22px;
+    border:0;
+    outline:0;
+    resize:none;
+    color:#444;
+    font-family:inherit;
+    font-size:13px;
+    line-height:1.7
+}
+.description-box textarea::placeholder{color:#b3aca6}
+.textarea-bottom{
+    height:40px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    border-top:1px solid #eee9e4;
+    color:#aaa19a;
+    font-size:10px
+}
+
+/* ================= BUTTON ================= */
+
+.register-actions{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-top:70px
+}
+.register-actions button{
+    width:170px;
+    height:50px;
+    font-size:13px;
+    cursor:pointer
+}
+.cancel-btn{
+    background:#fff;
+    border:1px solid #d8d0c8;
+    color:#6f6760
+}
+.register-btn{
+    background:var(--gsf-caramel);
+    border:1px solid var(--gsf-caramel);
+    color:#fff
+}
+.register-btn:hover{background:var(--gsf-ink);border-color:var(--gsf-ink)}
+
+/* ================= MODAL ================= */
+
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(40,34,30,.35)
+}
+.modal-overlay.show{display:flex}
+.tag-modal{
+    width:400px;
+    padding:32px;
+    background:#fff;
+    border:1px solid #e3dbd2;
+    box-shadow:0 15px 40px rgba(0,0,0,.15)
+}
+.modal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:25px
+}
+.modal-header h3{
+    margin:0;
+    color:#302923;
+    font-size:18px;
+    font-weight:500
+}
+.modal-close{
+    width:30px;
+    height:30px;
+    border:0;
+    background:transparent;
+    color:#777;
+    font-size:22px;
+    cursor:pointer;
+    /* "×" 글리프였을 땐 버튼 기본 텍스트 정렬로 가운데 왔는데, SVG로 바꾸면서(2026-09-01)
+       세로 가운데가 baseline에 걸리므로 flex로 직접 가운데 정렬한다. */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0
+}
+/* .tag-remove와 같은 이유의 크기 보정. ⚠️ 근사치라 화면 확인 필요. */
+.modal-close .icon-close{width:.7em;height:.7em}
+.modal-form-group{margin-bottom:20px}
+.modal-form-group label{
+    display:block;
+    margin-bottom:8px;
+    color:#514943;
+    font-size:12px;
+    font-weight:500
+}
+.modal-form-group input[type="text"]{
+    width:100%;
+    height:42px;
+    padding:0 12px;
+    border:1px solid #ddd5cc;
+    outline:0;
+    font-size:13px
+}
+.modal-form-group input[type="text"]:focus{
+    border-color:#b59b7e
+}
+.color-select-area{
+    display:flex;
+    align-items:center;
+    gap:12px
+}
+.modal-color-picker{
+    width:55px;
+    height:42px;
+    padding:2px;
+    border:1px solid #ddd5cc;
+    background:#fff;
+    cursor:pointer
+}
+.color-preview{
+    flex:1;
+    height:42px;
+    display:flex;
+    align-items:center;
+    padding:0 13px;
+    border:1px solid #ddd5cc;
+    color:#777;
+    font-size:12px
+}
+.modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:28px
+}
+.modal-actions button{
+    width:100px;
+    height:42px;
+    cursor:pointer;
+    font-size:12px
+}
+.modal-cancel{
+    background:#fff;
+    border:1px solid #d8d0c8;
+    color:#777
+}
+.modal-add{
+    background:#5b4c40;
+    border:1px solid #5b4c40;
+    color:#fff
+}
+.modal-add:hover{background:#463a31}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1050px){
+    .product-register{width:calc(100% - 80px)}
+}
+@media(max-width:700px){
+    .product-register{padding-top:40px}
+
+    .image-upload-wrap{flex-direction:column}
+
+    .main-image-upload{width:100%}
+
+    .form-row{
+        flex-direction:column;
+        align-items:stretch;
+        padding:20px
+    }
+
+    .form-row>label{
+        width:100%;
+        padding:0 0 10px
+    }
+
+    .input-area,
+    .tag-area{padding:0}
+
+    .tag-modal{width:calc(100% - 40px)}
+}
+
+/* ================================================================
+   ↓↓↓ style_addCoupon.css 원본 내용
+   ================================================================ */
+/* header.jsp가 CSS를 전 페이지에 로드하므로 body/main 같은 범용 태그 선택자를 그대로 쓰면
+   다른 페이지의 공용 <body>/<main>까지 덮어써버린다 — 반드시 .add-coupon-page로 스코프할 것.
+   원래 body(페이지 배경)/main(흰 카드) 2단 구조였던 것을, JSP 쪽엔 wrapper가 하나뿐이라
+   바깥 배경은 .add-coupon-page에, 흰 카드는 그 안의 .add-coupon-page-card에 나눠 담는다 */
+.add-coupon-page {
+           background-color: #FDFBF9;
+           padding: 70px 0;
+           box-sizing: border-box;
+       }
+
+       /* 전체 영역 (흰 카드) */
+       .add-coupon-page-card {
+           width: min(600px, 100% - 80px);
+           margin: 0 auto;
+           padding: 40px;
+           background-color: #fbf8f4;
+           border: 1px solid #e5e0d8;
+           border-radius: 12px;
+           box-sizing: border-box;
+       }
+
+       /* 제목 */
+       .add-coupon-page #title {
+           margin-bottom: 35px;
+           font-size: 28px;
+           font-weight: bold;
+       }
+
+       /* 입력 영역 */
+       .form-group {
+           margin-bottom: 25px;
+       }
+
+       .form-group label {
+           display: block;
+           margin-bottom: 8px;
+           font-size: 14px;
+           font-weight: bold;
+       }
+
+       .form-input {
+           width: 100%;
+           height: 45px;
+           padding: 0 15px;
+           border: 1px solid #d8d3cc;
+           border-radius: 6px;
+           box-sizing: border-box;
+           font-size: 14px;
+           outline: none;
+       }
+
+       .form-input:focus {
+           border-color: #b59b7b;
+       }
+
+       /* 쿠폰 설명 */
+       .form-textarea {
+           width: 100%;
+           height: 100px;
+           padding: 12px 15px;
+           border: 1px solid #d8d3cc;
+           border-radius: 6px;
+           box-sizing: border-box;
+           font-size: 14px;
+           resize: none;
+           outline: none;
+       }
+
+       .form-textarea:focus {
+           border-color: #b59b7b;
+       }
+
+       /* 발급일 / 종료일 */
+       .date-group {
+           display: flex;
+           gap: 15px;
+           margin-bottom: 35px;
+       }
+
+       .date-box {
+           flex: 1;
+       }
+
+       .date-box label {
+           display: block;
+           margin-bottom: 8px;
+           font-size: 14px;
+           font-weight: bold;
+       }
+
+       .date-input {
+           width: 100%;
+           height: 45px;
+           padding: 0 12px;
+           border: 1px solid #d8d3cc;
+           border-radius: 6px;
+           box-sizing: border-box;
+           font-size: 14px;
+           outline: none;
+       }
+
+       .date-input:focus {
+           border-color: #b59b7b;
+       }
+
+       /* 쿠폰 발급 버튼 */
+       .register-button {
+           width: 100%;
+           height: 52px;
+           border: none;
+           border-radius: 6px;
+           background-color: var(--gsf-caramel);
+           color: white;
+           font-size: 16px;
+           font-weight: bold;
+           cursor: pointer;
+           transition: background-color .15s ease;
+       }
+
+       .register-button:hover {
+           background-color: var(--gsf-ink);
+       }
+	   

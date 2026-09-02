@@ -2,11 +2,9 @@ package com.kh.sajotuna.mds.member.service;
 
 import java.util.List;
 
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
-import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 
 public interface MemberService {
 
@@ -33,12 +31,6 @@ public interface MemberService {
 
 	// 마이페이지 배지용 - 사용 가능한 보유 쿠폰 건수
 	int countCoupons(Long memberId);
-	
-	// 멤버id로 찜하기 검색
-	List<MyPageWishDTO> listWish(Long memberId);
-	
-	// 멤버id로 장바구니 검색
-	List<MyPageCartDTO> listCart(Long memberId);
 	
 	// 회원 정보 수정용
 	boolean nicknameUpdate(Long memberId, String nickname);

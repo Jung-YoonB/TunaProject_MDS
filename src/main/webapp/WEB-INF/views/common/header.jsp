@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 
 <!DOCTYPE html>
@@ -15,31 +16,50 @@
 
 	<link rel="stylesheet" href="/css/default.css">
 	<link rel="stylesheet" href="/css/style.css">
-	<link rel="stylesheet" href="/css/style_member.css">
-	<link rel="stylesheet" href="/css/style_order.css">
-	<link rel="stylesheet" href="/css/style_myReviews.css">
-	<link rel="stylesheet" href="/css/style_coupon.css">
-	<link rel="stylesheet" href="/css/style_home.css">
-	<link rel="stylesheet" href="/css/style_myPage.css">
-	<link rel="stylesheet" href="/css/style_search.css">
-	<link rel="stylesheet" href="/css/style_cart.css">
-	<link rel="stylesheet" href="/css/style_wish.css">
-	<link rel="stylesheet" href="/css/style_addreview.css">
-	<link rel="stylesheet" href="/css/style_productdetail.css">
-	<link rel="stylesheet" href="/css/style_addCoupon.css">
-	<link rel="stylesheet" href="/css/style_addProduct.css">
-	<link rel="stylesheet" href="/css/style_admin_mypage.css">
-	<link rel="stylesheet" href="/css/style_admin_order.css">
-	<link rel="stylesheet" href="/css/style_admincouponView.css">
-	<link rel="stylesheet" href="/css/style_adminMaintenance.css">
+	<link rel="stylesheet" href="/css/style_user.css">
+	<link rel="stylesheet" href="/css/style_admin.css">
 </head>
-<%-- 컨트롤러(.java) 수정 없이, 홈페이지 배경(산수화 이미지)을 홈 화면에서만 적용하기 위해
-     현재 요청 경로를 JSP EL에서 직접 확인해 body 클래스를 결정한다 --%>
-<body class="${pageContext.request.getAttribute('jakarta.servlet.forward.servlet_path') == '/' ? 'home-hero' : ''}" data-logged-in="${not empty sessionScope.loginMemberId}" data-home-url="<c:url value='/'/>">
+<%-- 요청 경로별로 body에 hero 클래스를 붙인다. getServletPath()는 forward 후라 JSP
+     경로가 나오므로 jakarta.servlet.forward.servlet_path를 대신 쓴다. --%>
+<c:set var="__path" value="${pageContext.request.getAttribute('jakarta.servlet.forward.servlet_path')}"/>
+<c:choose>
+	<c:when test="${__path == '/'}">
+		<c:set var="bodyClass" value="home-hero"/>
+	</c:when>
+	<c:when test="${__path == '/member/login'}">
+		<c:set var="bodyClass" value="login-hero"/>
+	</c:when>
+	<c:when test="${__path == '/member/signUp'}">
+		<c:set var="bodyClass" value="signup-hero"/>
+	</c:when>
+	<c:when test="${__path == '/order/payment'}">
+		<c:set var="bodyClass" value="order-hero"/>
+	</c:when>
+	<c:when test="${__path == '/order/completed'}">
+		<c:set var="bodyClass" value="order-complete-hero"/>
+	</c:when>
+	<c:when test="${fn:startsWith(__path, '/mds/detail/')}">
+		<c:set var="bodyClass" value="product-detail-hero"/>
+	</c:when>
+	<c:when test="${__path == '/review/write'}">
+		<c:set var="bodyClass" value="review-write-hero"/>
+	</c:when>
+	<c:when test="${__path == '/member/couponView'}">
+		<c:set var="bodyClass" value="coupon-hero"/>
+	</c:when>
+	<c:when test="${__path == '/member/deliveryAddress'}">
+		<%-- TODO: 배송지 추가 페이지는 아직 컨트롤러가 연결되어 있지 않아 실제 경로 미확정 --%>
+		<c:set var="bodyClass" value="delivery-hero"/>
+	</c:when>
+	<c:otherwise>
+		<c:set var="bodyClass" value=""/>
+	</c:otherwise>
+</c:choose>
+<body class="${bodyClass}" data-logged-in="${not empty sessionScope.loginSession}" data-home-url="<c:url value='/'/>">
 	<header id="site-header">
 
 		<div id="logo_img">
-			<a href="<c:url value='/'/>">Masion De SAJO</a>
+			<a href="<c:url value='/'/>">Maison De SAJO</a>
 		</div>
 
 		<div id="search_box">
@@ -70,9 +90,9 @@
 				<%-- TODO(placeholder route): 장바구니 컨트롤러 미구현, 담당 브랜치 확정 시 경로 조정 --%>
 				<a class="icon-item" href="<c:url value='/cart'/>">
 					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-						<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-						<path d="M3 6h18"/>
-						<path d="M16 10a4 4 0 0 1-8 0"/>
+						<circle cx="9" cy="21" r="1"/>
+						<circle cx="20" cy="21" r="1"/>
+						<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
 					</svg>
 					<span class="icon-badge" id="cartBadge" hidden>0</span>
 					<span class="icon-label">장바구니</span>

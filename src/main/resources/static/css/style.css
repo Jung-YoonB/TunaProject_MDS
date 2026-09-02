@@ -1,41 +1,223 @@
 @charset "utf-8";
 
-/* ===== Golden Summer Fields palette ===== */
+/* ===== Golden Summer Fields palette =====
+   브랜드/텍스트·보더/상태/반경 4개 카테고리로 나눈 공용 색상 변수. 정말 한 번만 쓰는
+   강조색(배지 등)만 리터럴 hex 예외로 허용한다. */
 :root {
+	/* 브랜드 */
 	--gsf-sage: #ccd5ae;
 	--gsf-sage-dark: #adb594;
 	--gsf-sage-light: #dce3c4;
+	--gsf-sage-pale: #e6e4d1;
 	--gsf-tan: #f0dfc0;
 	--gsf-caramel: #d4a373;
+	--gsf-ivory: #fefae0;
+	--gsf-peach: #faedcd;
+	--gsf-peach-pale: #f4eada;
+	--gsf-peach-dark: #e9d4b1;
+	--gsf-beige: #e9edc9;
+	--gsf-cream: #fffcf4;
 	--gsf-ink: #3f4a33;
+	/* 텍스트 / 보더 (중립 톤) */
+	--gsf-text: #51483b;
+	--gsf-subtext: #8d8475;
 	--gsf-border: #e6dfcf;
+	/* 상태 */
+	--gsf-success: #6b8f5c;
+	--gsf-danger: #b5533f;
+	/* 반경 */
+	--radius-sm: 8px;
+	--radius-md: 14px;
+	--radius-lg: 20px;
+	--radius-pill: 999px;
 }
 
-/* ===== Page scaffold (footer pinned to bottom on short pages) ===== */
-html, body {
-	height: 100%;
-}
+/* ===== Page scaffold =====
+   헤더는 position:fixed로 뷰포트 상단에 고정 - 본문에 헤더 실측 높이만큼 padding-top을 줘서
+   콘텐츠가 가리지 않게 한다. 푸터는 일반 흐름 그대로 둬서 스크롤해야(또는 콘텐츠가 짧으면
+   화면 바로 아래에) 나타나게 하고, flex + min-height로 짧은 페이지에서도 화면 하단에 붙게 한다. */
 body {
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
+	padding-top: 69px;
 }
+
+/* 클릭 후 뒤로가기로 돌아오면 브라우저가 직전 포커스를 복원해서 a:focus가 계속 맞고,
+   default.css의 전역 a:focus{text-decoration:underline} 때문에 밑줄이 남는다.
+   default.css는 다른 팀과 공유하는 공통 규약이라 손대지 않고 여기서 명시도로 이긴다
+   ((0,2,1) > (0,1,1)). :focus:not(:focus-visible) = 마우스 클릭으로 생긴 포커스만 해당하므로
+   키보드 Tab(:focus-visible)과 hover의 밑줄은 그대로다. HANDOFF 3-51 참고. */
+a:focus:not(:focus-visible) {
+	text-decoration: none;
+}
+
 main {
+	flex: 1 0 auto;
+	/* 아래 "빈 띠" 규칙이 높이를 wrapper→카드로 흘려보낼 수 있도록 세로 flex 컨테이너로 (배치 결과는 기존과 동일) */
+	display: flex;
+	flex-direction: column;
+}
+
+/* ===== 콘텐츠가 짧을 때 카드 아래 생기던 빈 띠 제거 (HANDOFF 3-50) =====
+   main{flex:1 0 auto}가 이미 남는 높이를 갖고 있으므로, 그 높이를 wrapper → 카드까지
+   이어받게 한다(예전엔 wrapper마다 min-height:100vh를 걸어 페이지만 길어지고 카드는 안 늘어났다).
+   ※ 목록을 명시한 이유: JSP들이 </main> 직전에 <script>를 둬서 :last-child 류가 안 맞는다.
+   ※ main:has(.update-page) 처럼 main 자체가 카드인 페이지, 가운데 뜬 카드인 .auth-shell은 제외. */
+main > .member-mypage-page,
+main > .coupon-view-page,
+main > .review-write-page,
+main > .my-reviews-page,
+main > .order-delivery-page,
+main > .admin-mypage-page,
+main > .admin-order-delivery-page,
+main > .admin-maintenance-page,
+main > .admin-coupon-view-page,
+main > .add-coupon-page,
+main > .product-register,
+main > .update-page,
+main > .withdraw-page,
+main > .product-detail-page,
+main > .order-page,
+main > .order-complete-page,
+main > .cart-container,
+main > .search-result-page,
+main > .wishlist-container,
+main > .delivery-page,
+main > #product {
 	flex: 1 0 auto;
 }
 
+/* wrapper 안에 카드가 따로 있는 페이지 - 카드까지 높이를 넘긴다.
+   카드는 전부 width + margin:0 auto라 flex로 바꿔도 가로 위치는 그대로다. */
+main > .member-mypage-page,
+main > .coupon-view-page,
+main > .review-write-page,
+main > .my-reviews-page,
+main > .order-delivery-page,
+main > .admin-mypage-page,
+main > .admin-order-delivery-page,
+main > .admin-maintenance-page,
+main > .admin-coupon-view-page,
+main > .add-coupon-page,
+main > #product {
+	display: flex;
+	flex-direction: column;
+}
+
+.member-mypage-page > .page-content,
+.review-write-page > .page-content,
+.my-reviews-page > .page-content,
+.order-delivery-page > .page-content,
+.admin-mypage-page > .page-content,
+.admin-order-delivery-page > .page-content,
+.admin-maintenance-page > .page-content,
+.coupon-view-page > .coupon-view-page-card,
+.admin-coupon-view-page > .admin-coupon-view-page-card,
+.add-coupon-page > .add-coupon-page-card,
+#product > .home-container {
+	flex: 1 0 auto;
+}
+
+/* ===== 배경(hero) - 9개 페이지 공유 규칙 =====
+   header.jsp가 요청 경로를 보고 body에 클래스를 붙여준다. 산수화 이미지 대신 단색
+   배경(--gsf-cream)을 쓴다. */
+body.home-hero,
+body.order-hero,
+body.order-complete-hero,
+body.review-write-hero,
+body.coupon-hero,
+body.delivery-hero {
+	background-color: var(--gsf-cream);
+}
+
+/* 홈페이지만 배경을 별도 톤으로 지정(다른 5개 hero 페이지는 공용 --gsf-cream 그대로 유지) */
+body.home-hero {
+	background-color: #FDFBF9;
+}
+
+/* 로그인/회원가입/상품상세만 세부 페이지 배경 기준(#FDFBF9, 홈페이지 body와 동일)으로 별도 지정 */
+body.login-hero,
+body.signup-hero,
+body.product-detail-hero {
+	background-color: #FDFBF9;
+}
+
+
+/* ===== 공용 SVG 아이콘 (2026-09-01 규격화) =====
+   원래 사이트 곳곳에서 ★ / ♡ / ♥ / ✓ / × 같은 유니코드 글리프를 아이콘으로 쓰고 있었는데,
+   환경(폰트)에 따라 컬러 이모지로 렌더링되면 CSS color가 무시되고 세로 정렬도 어긋난다.
+   헤더(#site-header .icon-svg)와 홈 카드에서 먼저 SVG로 바꿨던 것(HANDOFF 3-39-1/3-39-2)을
+   나머지 화면 전체에 적용하면서, 반복되는 아이콘을 여기 공용 클래스로 모았다.
+
+   크기는 전부 1em이라 각 자리의 기존 font-size를 그대로 따라간다 - 즉 글리프였을 때의
+   크기 규칙(font-size)을 안 건드리고 모양만 SVG로 바꾼 것. 색도 currentColor라
+   기존 color 규칙이 그대로 먹는다.
+
+   선(stroke) 계열은 헤더와 같은 규격(fill:none; stroke:currentColor; stroke-width:1.8,
+   단 체크/닫기는 작은 크기에서도 보이도록 2.5), 채움 계열(별)은 fill:currentColor. */
+.icon-check,
+.icon-close {
+	width: 1em;
+	height: 1em;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.icon-star {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.icon-heart {
+	width: 1em;
+	height: 1em;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* 찜이 켜진 상태 - 헤더/홈과 동일하게 같은 path를 채워서 표현한다. */
+.icon-heart.is-filled {
+	fill: currentColor;
+}
+
+/* 텍스트와 나란히 놓이는 아이콘용.
+   (1) SVG의 기본 baseline은 아이콘 박스의 맨 아래라 그대로 두면 글자 기준선보다 위로 떠
+       보인다(홈 카드에서 겪은 것과 같은 문제 - .product-rating-star 주석 참고).
+   (2) 같은 font-size라도 SVG가 글리프보다 커 보인다 - 글리프는 em 박스 안에 자체 여백을
+       갖고 있어서 실제 잉크가 박스보다 작기 때문. 그래서 0.9em으로 줄여서 원래 ★/♡
+       글자와 비슷한 덩치가 되게 맞춘다.
+   ⚠️ (1)(2) 둘 다 코드로 계산한 근사치라 화면에서 미세 조정이 필요할 수 있다. */
+.icon-inline {
+	width: 0.9em;
+	height: 0.9em;
+	vertical-align: -0.15em;
+}
 /* ===== Header container =====
    다른 페이지 전용 CSS(style_addProduct.css 등)가 #site-header/.icon-item/#search_box 같은
    전역 선택자를 스코프 없이 재정의하고 있어, 이 파일이 먼저 로드돼도 나중에 로드되는 파일에
    덮어써질 수 있다. 그래서 헤더 내부 요소는 항상 "#site-header " 접두사를 붙여 우선순위를
    높여둔다 (다른 팀원 파일을 건드리지 않고 이 파일만으로 방어). */
 header#site-header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 500;
 	display: flex;
 	align-items: center;
 	gap: 32px;
-	padding: 18px 40px;
-	background-color: #ffffff;
+	padding: 12px 40px;
+	background-color: #faf8f4;
 	border-bottom: 1px solid var(--gsf-border);
+	box-sizing: border-box;
 }
 
 /* ===== Logo ===== */
@@ -80,7 +262,7 @@ header#site-header {
 	font-size: 14px;
 	color: #333;
 	outline: none;
-	background-color: #faf9f6;
+	background-color: #FDFBF9;
 	transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
 }
 #site-header .search-input::placeholder {
@@ -204,10 +386,11 @@ header#site-header {
    우선순위를 방어해둔다 (같은 로드 순서에서도 specificity로 항상 이기도록). */
 footer.site-footer {
 	width: 100%;
-	padding: 40px 40px 32px;
-	background-color: #ffffff;
+	padding: 18px 40px 12px;
+	background-color: #f7f3ec;
 	color: var(--gsf-ink);
 	border-top: 1px solid var(--gsf-border);
+	box-sizing: border-box;
 }
 .site-footer .footer-top {
 	width: 100%;
@@ -230,7 +413,7 @@ footer.site-footer {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	margin-bottom: 16px;
+	margin-bottom: 0;
 }
 .site-footer .company-info address p {
 	margin: 0;
@@ -268,7 +451,7 @@ footer.site-footer {
 	color: #222;
 }
 .site-footer .footer-contact .cs-hours {
-	margin: 0 0 14px;
+	margin: 0 0 8px;
 	font-size: 12px;
 	color: var(--gsf-ink);
 }
@@ -284,12 +467,12 @@ footer.site-footer {
 	width: 30px;
 	height: 30px;
 	border-radius: 50%;
-	background-color: var(--gsf-sage-light);
+	background-color: var(--gsf-sage-pale);
 	color: var(--gsf-ink);
 	transition: background-color .2s ease, color .2s ease;
 }
 .site-footer .footer-social a:hover {
-	background-color: var(--gsf-sage);
+	background-color: var(--gsf-sage-light);
 	color: #222;
 }
 .site-footer .footer-social svg {
@@ -305,7 +488,7 @@ footer.site-footer {
 	width: 100%;
 	border: none;
 	border-top: 1px solid var(--gsf-border);
-	margin: 24px 0 16px;
+	margin: 10px 0 8px;
 }
 .site-footer .footer-bottom {
 	padding: 0;

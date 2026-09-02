@@ -40,9 +40,17 @@
 
             <!-- 리뷰 / 찜 -->
             <div id="product-stats">
-                <div class="product-stat">★ ${detail.product.avgScore}</div>
+                <%-- 별/하트는 원래 유니코드 글리프(★/♡)였으나 환경에 따라 컬러 이모지로
+                     렌더링돼 CSS color를 무시하는 문제가 있어 SVG로 통일함(2026-09-01). --%>
+                <div class="product-stat">
+                    <svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
+                    ${detail.product.avgScore}
+                </div>
                 <div class="product-stat">리뷰 ${detail.product.reviewCount}개</div>
-                <div class="product-stat">♡ 찜 <span id="wish-count">${detail.product.wishCount}</span></div>
+                <div class="product-stat">
+                    <svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+                    찜 <span id="wish-count">${detail.product.wishCount}</span>
+                </div>
             </div>
 
             <!-- 가격 -->
@@ -122,7 +130,11 @@
                    - 클릭 시 찜 등록/삭제 API 호출 후 서버 응답으로 #wish-count 값 갱신
             --%>
             <div id="product-buttons">
-                <button type="button" class="product-btn" id="wish-button" aria-label="찜하기">♡</button>
+                <%-- 하트는 SVG 한 개만 두고, 찜 on/off는 views/productdetail.js가
+                     .is-filled 클래스로 채움 여부만 바꾼다(글리프 교체 방식에서 변경). --%>
+                <button type="button" class="product-btn" id="wish-button" aria-label="찜하기">
+                    <svg class="icon-heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+                </button>
                 <button type="button" class="product-btn" id="cart-button">장바구니</button>
                 <button type="button" class="product-btn" id="buy-button">바로 구매</button>
             </div>
@@ -172,7 +184,10 @@
                 <div class="review-item">
                     <div class="review-item-header">
                         <span class="review-writer">${review.nickname}</span>
-                        <span class="review-score">★ ${review.score}</span>
+                        <span class="review-score">
+                            <svg class="icon-star icon-inline" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
+                            ${review.score}
+                        </span>
                         <span class="review-date">${review.writeDate}</span>
                     </div>
                     <div class="review-images">

@@ -58,7 +58,9 @@
   	</select>
   	
 
-  	<!-- 보유 쿠폰 중 사용 가능한(만료 안 된) 것만 조회. 만료 쿠폰은 유저 화면에 아예 노출하지 않기로 함 -->
+  	<!-- 보유 쿠폰 중 사용 가능한(만료 안 된) 것만 조회. 만료 쿠폰은 유저 화면에 아예 노출하지 않기로 함.
+  	     비페이징 버전 - 결제 화면(order)의 쿠폰 선택 드롭다운이 전체 목록을 써야 해서 필요하다
+  	     (OrderServiceImpl 2곳에서 호출). 삭제하지 말 것. -->
   	<select id="selectAllCouponsByMemberId" resultType="CouponDTO">
 		SELECT C.COUPON_ID, C.COUPON_NAME, C.COUPON_VALUE, C.COUPON_TEXT, C.CREATED_AT, C.DEADLINE,
 			CH.CHIST_ID,
@@ -69,36 +71,29 @@
 		ORDER BY C.DEADLINE ASC
   	</select>
 
+  	<!-- 위와 동일한 조건 + 페이지 단위로 잘라서 조회. 마이페이지 쿠폰함(/member/couponView)이 쓴다.
+  	     OFFSET/FETCH 패턴은 이 파일의 selectDeliveriesByMemberId와 동일하게 맞췄다.
+  	     주의: 이 문과 위 비페이징 문은 용도가 달라 둘 다 필요하다. 과거에 위 문의 id를 이쪽 이름으로
+  	     바꾸고 OFFSET 줄을 지우는 식으로 하나를 없앤 적이 있는데(0d46824), 그러면 컴파일은 통과하지만
+  	     MemberServiceImpl.listCoupon() 호출 시점에 BindingException으로 500이 난다. -->
+  	<select id="selectCouponsByMemberId" resultType="CouponDTO">
+		SELECT C.COUPON_ID, C.COUPON_NAME, C.COUPON_VALUE, C.COUPON_TEXT, C.CREATED_AT, C.DEADLINE,
+			CH.CHIST_ID,
+			TO_CHAR(C.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT_STR,
+			TO_CHAR(C.DEADLINE, 'YYYY-MM-DD') AS DEAD_LINE_STR
+		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
+		WHERE CH.MEMBER_ID = #{memberId} AND CH.TYPE='ISSUE' AND C.DEADLINE >= TRUNC(SYSDATE)
+		ORDER BY C.DEADLINE ASC
+		OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+  	</select>
+
   	<!-- 위 조회와 동일한 조건(사용 가능한 쿠폰만)의 전체 건수 (페이지네이션 계산용) -->
   	<select id="countCouponsByMemberId" resultType="int">
 		SELECT COUNT(*)
 		FROM COUPONHISTORY CH JOIN COUPON C ON CH.COUPON_ID = C.COUPON_ID
 		WHERE CH.MEMBER_ID = #{memberId} AND CH.TYPE='ISSUE' AND C.DEADLINE >= TRUNC(SYSDATE)
   	</select>
-  	
-  	<select id="selectWishesByMemberId" parameterType="long" resultType="MyPageWishDTO">
-    	SELECT 
-        	(SELECT COUNT(*) FROM WISH WHERE PRODUCT_ID = P.PRODUCT_ID) AS COUNT_WISH,
-        	P.PRODUCT_NAME, PI.PRODUCT_IMAGE_PATH, PI.PRODUCT_IMAGE_SAVE_NAME,
-        	(SELECT NVL(ROUND(AVG(R.SCORE), 1), 0) 
-        		FROM OPTIONDETAIL POP JOIN ORDERDETAIL OD ON POP.POP_ID = OD.POP_ID
-           		JOIN REVIEW R ON OD.OD_ID = R.OD_ID
-        		WHERE POP.PRODUCT_ID = P.PRODUCT_ID) AS REVIEW_AVG
-    	FROM WISH W	JOIN PRODUCT P ON W.PRODUCT_ID = P.PRODUCT_ID
-    		JOIN PRODUCTIMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID
-  		WHERE W.MEMBER_ID = #{memberId} AND PI.PRODUCT_TITLE_IMAGE = 0
-	</select>
-  	
-  	<select id="selectCartsByMemberId" parameterType="long" resultType="MyPageCartDTO">
-  		SELECT C.CART_ID, C.QTY, PO.OPTION_ID, PO.OPTION_NAME, PO.OPTION_PRICE, PO.OPTION_STOCK, P.PRODUCT_ID, P.PRODUCT_NAME,
-  				PI.PRODUCT_IMAGE_PATH, PI.PRODUCT_IMAGE_SAVE_NAME
-  		FROM CART C JOIN OPTIONDETAIL POP ON C.POP_ID = POP.POP_ID
-  			JOIN PRODUCTOPTION PO ON POP.OPTION_ID = PO.OPTION_ID
-  			JOIN PRODUCT P ON POP.PRODUCT_ID = P.PRODUCT_ID
-  			JOIN PRODUCTIMAGE PI ON P.PRODUCT_ID = PI.PRODUCT_ID  
-  		WHERE C.MEMBER_ID = #{memberId} AND PI.PRODUCT_TITLE_IMAGE = 0
-  	</select>
-  	
+
   	<!-- 상태 필터 탭 <-> DELIVERY_STATUS 매핑. status가 'all'이거나 인식 못하는 값이면 필터 없이 전체 조회 -->
   	<sql id="deliveryStatusFilter">
   		<choose>
@@ -123,11 +118,21 @@
   			NVL(rep.PRODUCT_IMAGE_PATH, '/uploads/product/') AS PRODUCT_IMAGE_PATH,
   			NVL(rep.PRODUCT_IMAGE_SAVE_NAME, '') AS PRODUCT_IMAGE_SAVE_NAME,
   			rep.QTY AS QTY,
-  			rep.OD_ID AS OD_ID,
+  			<!-- 리뷰 링크는 대표가 아니라 "아직 안 쓴 것 중 첫 번째"로 건다. 대표 기준이면 상품이
+  			     2건 이상인 주문에서 나머지가 작성 경로를 잃는다(AUDIT 버그 17번). 다 썼으면 NULL이라 대표로 대체 -->
+  			NVL(nr.NEXT_OD_ID, rep.OD_ID) AS OD_ID,
   			NVL(rep.PRODUCT_COUNT, 0) AS PRODUCT_COUNT,
-  			CASE WHEN EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = rep.OD_ID) THEN 1 ELSE 0 END AS HAS_REVIEW
+  			<!-- 이 주문의 모든 상품을 다 썼을 때만 "작성 완료"로 잠금 -->
+  			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS HAS_REVIEW
   		FROM PRODUCTORDER PO
   		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
+  		<!-- 주문별 "아직 리뷰 안 쓴 주문상세 중 최소 OD_ID". REVIEW_STATUS는 안 본다 - 삭제한 것도 계속 제외 -->
+  		LEFT JOIN (
+  			SELECT od2.ORDER_ID, MIN(od2.OD_ID) AS NEXT_OD_ID
+  			FROM ORDERDETAIL od2
+  			WHERE NOT EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od2.OD_ID)
+  			GROUP BY od2.ORDER_ID
+  		) nr ON nr.ORDER_ID = PO.ORDER_ID
   		LEFT JOIN (
   			SELECT od.ORDER_ID, od.OD_ID, p.PRODUCT_NAME, od.QTY,
   				(SELECT pi.PRODUCT_IMAGE_PATH FROM PRODUCTIMAGE pi
@@ -173,7 +178,8 @@
   		JOIN DELIVERY d ON d.ORDER_ID = po.ORDER_ID
   		WHERE po.MEMBER_ID = #{memberId}
   		  AND d.DELIVERY_STATUS = 'DELIVERED'
-  		  AND NOT EXISTS (SELECT 1 FROM REVIEW r WHERE r.OD_ID = od.OD_ID)
+  		  <!-- REVIEW_STATUS는 안 본다 - 삭제한 주문상세도 계속 제외(재작성 차단과 같은 기준) -->
+  		  AND NOT EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od.OD_ID)
   	</select>
   	
   	<update id="updateNickname" parameterType="String">

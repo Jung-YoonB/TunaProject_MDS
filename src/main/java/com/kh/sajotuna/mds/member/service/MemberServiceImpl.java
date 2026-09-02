@@ -7,12 +7,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageCartDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageWishDTO;
 import com.kh.sajotuna.mds.member.model.mapper.MemberMapper;
-import com.kh.sajotuna.mds.product.model.dto.coupon.CouponDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -128,20 +126,6 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	public int countCoupons(Long memberId) {
 		return mapper.countCouponsByMemberId(memberId);
-	}
-
-	@Override
-	public List<MyPageWishDTO> listWish(Long memberId) {
-		List<MyPageWishDTO> wishList = mapper.selectWishesByMemberId(memberId);
-		
-		return wishList;
-	}
-	
-	@Override
-	public List<MyPageCartDTO> listCart(Long memberId) {
-		List<MyPageCartDTO> cartList = mapper.selectCartsByMemberId(memberId);
-		
-		return cartList;
 	}
 
 	private static final int DELIVERY_PAGE_SIZE = 10;

@@ -6,6 +6,39 @@
 
 <div class="search-result-page">
 
+	<!-- 사이드바 배너: 콘텐츠(1200px) 오른쪽 여백에 홈 배너와 같은 슬라이드를 축소해서 노출.
+	     넓은 화면에서만 보임(좁은 화면은 여백 자체가 없음) -->
+	<aside class="sp-sidebar-banner" aria-label="홈 배너">
+		<div class="banner-slider" id="sidebarBannerSlider">
+			<div class="banner-slide is-active">
+				<div class="banner-image"></div>
+				<div class="banner-content">
+					<p class="banner-subtitle">Maison de sajo</p>
+					<h2>마음을 고르는<br>가장 다정한 방법</h2>
+				</div>
+			</div>
+			<div class="banner-slide">
+				<div class="banner-image banner-image-alt"></div>
+				<div class="banner-content">
+					<p class="banner-subtitle">Best Seller</p>
+					<h2>지금 가장 사랑받는<br>선물 이야기</h2>
+				</div>
+			</div>
+			<div class="banner-slide">
+				<div class="banner-image banner-image-warm"></div>
+				<div class="banner-content">
+					<p class="banner-subtitle">Special Offer</p>
+					<h2>명절 맞이<br>특별한 할인 혜택</h2>
+				</div>
+			</div>
+			<div class="banner-dots">
+				<button type="button" class="banner-dot is-active" aria-label="1번째 배너로 이동"></button>
+				<button type="button" class="banner-dot" aria-label="2번째 배너로 이동"></button>
+				<button type="button" class="banner-dot" aria-label="3번째 배너로 이동"></button>
+			</div>
+		</div>
+	</aside>
+
 	<!-- 메인 카테고리: 헤더 바로 밑에 고정 -->
 	<%-- TODO(data binding): ProductController.getList()가 model에 담은 데이터를 리다이렉트(return "redirect:home/home")로
 	     날려버려서 productList.category가 아직 렌더링되지 않음 --%>
@@ -57,107 +90,129 @@
 
 			<!-- 테스트/예시용 카드 3개: 실제 DB 상품이 아니므로 /mds/detail/1~3은 임시 테스트용 id (경로 연결 확인용) -->
 			<%-- TODO(placeholder id): 실제 상품이 아닌 예시 카드라 productId 1~3을 고정 사용. 실제 데이터로 교체 시 제거 필요 --%>
-			<article class="sp-product-card" data-product-id="example-1">
-				<a class="sp-product-link" href="<c:url value='/mds/detail/1'/>">
-					<figure class="sp-product-thumb">
-						<div class="sp-product-img">상품 이미지</div>
-						<div class="sp-tag-popup">
-							<span class="sp-product-tag">10만원대</span>
-							<span class="sp-product-tag">남성 선호</span>
-						</div>
-					</figure>
-					<div class="sp-product-info">
-						<h3 class="sp-product-name">(예시) 프리미엄 선물세트</h3>
-						<p class="sp-product-price">₩189,000</p>
-						<p class="sp-product-category">명품 선물</p>
+			<%-- 카드 구조/아이콘을 홈페이지 상품 카드(static/js/views/home.js의 buildCard)와 통일함(2026-09-02):
+			     .product-img+.product-cart-quick, .product-meta(.product-rating+.product-wish-toggle).
+			     가격은 홈과 마찬가지로 화면에 안 보이고, 장바구니 담기에 필요해 data-price로만 들고 있음.
+			     sp-* 클래스는 views/searchProduct.js의 기존 셀렉터 호환을 위해 그대로 같이 붙여둠. --%>
+			<article class="product-card sp-product-card" data-product-id="example-1" data-price="189000">
+				<div class="product-img">
+					<a class="sp-product-link" href="<c:url value='/mds/detail/1'/>" aria-label="(예시) 프리미엄 선물세트 상세 보기"></a>
+					<button type="button" class="product-cart-quick sp-btn-cart" aria-label="장바구니 담기">
+						<svg class="product-cart-quick-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+							<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+							<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+						</svg>
+					</button>
+					<div class="sp-tag-popup">
+						<span class="sp-product-tag">10만원대</span>
+						<span class="sp-product-tag">남성 선호</span>
 					</div>
-				</a>
-				<button type="button" class="sp-btn-wishlist" aria-label="찜하기">
-					<svg class="wish-heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-						<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-					</svg>
-				</button>
-				<div class="sp-product-actions">
-					<button type="button" class="sp-btn-cart">장바구니 담기</button>
+				</div>
+				<div class="product-info">
+					<a class="sp-product-link" href="<c:url value='/mds/detail/1'/>"><h3 class="product-name sp-product-name">(예시) 프리미엄 선물세트</h3></a>
+					<p class="product-description">명품 선물</p>
+					<div class="product-meta">
+						<a href="#" class="product-rating" aria-label="리뷰 보기">
+							<svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
+							<span class="product-rating-score">4.8 (245)</span>
+						</a>
+						<button type="button" class="product-wish-toggle sp-btn-wishlist" aria-label="찜하기">
+							<svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+							<span class="product-wish-count-num">342</span>
+						</button>
+					</div>
 				</div>
 			</article>
 
-			<article class="sp-product-card" data-product-id="example-2">
-				<a class="sp-product-link" href="<c:url value='/mds/detail/2'/>">
-					<figure class="sp-product-thumb">
-						<div class="sp-product-img">상품 이미지</div>
-						<div class="sp-tag-popup">
-							<span class="sp-product-tag">10만원대</span>
-						</div>
-					</figure>
-					<div class="sp-product-info">
-						<h3 class="sp-product-name">(예시) 한우 선물세트</h3>
-						<p class="sp-product-price">₩259,000</p>
-						<p class="sp-product-category">맛있는 선물</p>
+			<article class="product-card sp-product-card" data-product-id="example-2" data-price="259000">
+				<div class="product-img">
+					<a class="sp-product-link" href="<c:url value='/mds/detail/2'/>" aria-label="(예시) 한우 선물세트 상세 보기"></a>
+					<button type="button" class="product-cart-quick sp-btn-cart" aria-label="장바구니 담기">
+						<svg class="product-cart-quick-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+							<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+							<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+						</svg>
+					</button>
+					<div class="sp-tag-popup">
+						<span class="sp-product-tag">10만원대</span>
 					</div>
-				</a>
-				<button type="button" class="sp-btn-wishlist" aria-label="찜하기">
-					<svg class="wish-heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-						<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-					</svg>
-				</button>
-				<div class="sp-product-actions">
-					<button type="button" class="sp-btn-cart">장바구니 담기</button>
+				</div>
+				<div class="product-info">
+					<a class="sp-product-link" href="<c:url value='/mds/detail/2'/>"><h3 class="product-name sp-product-name">(예시) 한우 선물세트</h3></a>
+					<p class="product-description">맛있는 선물</p>
+					<div class="product-meta">
+						<a href="#" class="product-rating" aria-label="리뷰 보기">
+							<svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
+							<span class="product-rating-score">4.9 (892)</span>
+						</a>
+						<button type="button" class="product-wish-toggle sp-btn-wishlist" aria-label="찜하기">
+							<svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+							<span class="product-wish-count-num">567</span>
+						</button>
+					</div>
 				</div>
 			</article>
 
-			<article class="sp-product-card" data-product-id="example-3">
-				<a class="sp-product-link" href="<c:url value='/mds/detail/3'/>">
-					<figure class="sp-product-thumb">
-						<div class="sp-product-img">상품 이미지</div>
-						<div class="sp-tag-popup">
-							<span class="sp-product-tag">1만원대</span>
-							<span class="sp-product-tag">여성 선호</span>
-						</div>
-					</figure>
-					<div class="sp-product-info">
-						<h3 class="sp-product-name">(예시) 건강 선물세트</h3>
-						<p class="sp-product-price">₩99,000</p>
-						<p class="sp-product-category">건강</p>
+			<article class="product-card sp-product-card" data-product-id="example-3" data-price="99000">
+				<div class="product-img">
+					<a class="sp-product-link" href="<c:url value='/mds/detail/3'/>" aria-label="(예시) 건강 선물세트 상세 보기"></a>
+					<button type="button" class="product-cart-quick sp-btn-cart" aria-label="장바구니 담기">
+						<svg class="product-cart-quick-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+							<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+							<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+						</svg>
+					</button>
+					<div class="sp-tag-popup">
+						<span class="sp-product-tag">1만원대</span>
+						<span class="sp-product-tag">여성 선호</span>
 					</div>
-				</a>
-				<button type="button" class="sp-btn-wishlist" aria-label="찜하기">
-					<svg class="wish-heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-						<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-					</svg>
-				</button>
-				<div class="sp-product-actions">
-					<button type="button" class="sp-btn-cart">장바구니 담기</button>
+				</div>
+				<div class="product-info">
+					<a class="sp-product-link" href="<c:url value='/mds/detail/3'/>"><h3 class="product-name sp-product-name">(예시) 건강 선물세트</h3></a>
+					<p class="product-description">건강</p>
+					<div class="product-meta">
+						<a href="#" class="product-rating" aria-label="리뷰 보기">
+							<svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
+							<span class="product-rating-score">4.8 (652)</span>
+						</a>
+						<button type="button" class="product-wish-toggle sp-btn-wishlist" aria-label="찜하기">
+							<svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+							<span class="product-wish-count-num">218</span>
+						</button>
+					</div>
 				</div>
 			</article>
 
 			<%-- TODO(placeholder route): /mds/detail/{productId}는 ProductController가 결과를 무조건
 			     redirect:home/home으로 던져서 아직 미동작 --%>
 			<c:forEach items="${productList.product}" var="product">
-				<article class="sp-product-card" data-product-id="${product.productId}">
-					<a class="sp-product-link" href="<c:url value='/mds/detail/${product.productId}'/>">
-						<figure class="sp-product-thumb">
-							<div class="sp-product-img">
-								<c:choose>
-									<c:when test="${not empty product.thumbnail}">
-										<img src="${product.thumbnail}" alt="${product.productTitle}">
-									</c:when>
-									<c:otherwise>상품 이미지</c:otherwise>
-								</c:choose>
-							</div>
-						</figure>
-						<div class="sp-product-info">
-							<h3 class="sp-product-name">${product.productTitle}</h3>
-							<p class="sp-product-price">₩<fmt:formatNumber value="${product.price}" pattern="#,##0"/></p>
+				<article class="product-card sp-product-card" data-product-id="${product.productId}" data-price="${product.price}">
+					<div class="product-img">
+						<a class="sp-product-link" href="<c:url value='/mds/detail/${product.productId}'/>" aria-label="${product.productTitle} 상세 보기">
+							<c:if test="${not empty product.thumbnail}">
+								<img src="${product.thumbnail}" alt="${product.productTitle}">
+							</c:if>
+						</a>
+						<button type="button" class="product-cart-quick sp-btn-cart" aria-label="장바구니 담기">
+							<svg class="product-cart-quick-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+								<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+								<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+							</svg>
+						</button>
+					</div>
+					<div class="product-info">
+						<a class="sp-product-link" href="<c:url value='/mds/detail/${product.productId}'/>"><h3 class="product-name sp-product-name">${product.productTitle}</h3></a>
+						<p class="product-description">${product.categoryNames}</p>
+						<div class="product-meta">
+							<a href="#" class="product-rating" aria-label="리뷰 보기">
+								<svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
+								<span class="product-rating-score">${product.score}</span>
+							</a>
+							<button type="button" class="product-wish-toggle sp-btn-wishlist" aria-label="찜하기">
+								<svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
+								<span class="product-wish-count-num">${product.wishCount}</span>
+							</button>
 						</div>
-					</a>
-					<button type="button" class="sp-btn-wishlist" aria-label="찜하기">
-						<svg class="wish-heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-							<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-						</svg>
-					</button>
-					<div class="sp-product-actions">
-						<button type="button" class="sp-btn-cart">장바구니 담기</button>
 					</div>
 				</article>
 			</c:forEach>
@@ -180,43 +235,8 @@
 
 </div>
 
-<%-- TODO(data binding): 찜 상태는 header.jsp의 localStorage(wishItems) 임시 구현, 실제로는 /wish API 필요 --%>
-<script>
-	document.querySelectorAll('.sp-btn-wishlist').forEach(function (btn) {
-		var card = btn.closest('.sp-product-card');
-		var productId = card.dataset.productId;
+<script src="<c:url value='/js/common/bannerSlider.js'/>"></script>
 
-		if (typeof window.isWished === 'function' && window.isWished(productId)) {
-			btn.classList.add('is-active');
-		}
-
-		btn.addEventListener('click', function () {
-			if (typeof window.toggleWish !== 'function') return;
-			var name = card.querySelector('.sp-product-name').textContent.trim();
-			var priceText = card.querySelector('.sp-product-price').textContent;
-			var price = parseInt(priceText.replace(/[^0-9]/g, ''), 10) || 0;
-			var active = window.toggleWish({ productId: productId, name: name, price: price });
-			btn.classList.toggle('is-active', active);
-		});
-	});
-
-	document.querySelectorAll('.sp-btn-cart').forEach(function (btn) {
-		btn.addEventListener('click', function () {
-			if (typeof window.addToCart !== 'function') return;
-			var card = btn.closest('.sp-product-card');
-			var name = card.querySelector('.sp-product-name').textContent.trim();
-			var priceText = card.querySelector('.sp-product-price').textContent;
-			var price = parseInt(priceText.replace(/[^0-9]/g, ''), 10) || 0;
-			window.addToCart({ productId: card.dataset.productId, name: name, price: price, qty: 1 });
-		});
-	});
-
-	// TODO(data binding): 태그 선택은 아직 실제 검색/필터 요청과 연결되어 있지 않음, UI 토글만 동작
-	document.querySelectorAll('.sp-tag-btn').forEach(function (btn) {
-		btn.addEventListener('click', function () {
-			btn.classList.toggle('is-active');
-		});
-	});
-</script>
+<script src="<c:url value='/js/views/searchProduct.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>
