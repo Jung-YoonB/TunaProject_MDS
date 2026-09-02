@@ -132,6 +132,7 @@ public class ProductServiceImpl implements ProductService{
 		return Math.max(1, (int) Math.ceil((double) totalCount / REVIEWS_PAGE_SIZE));
 	}
 
+
 	@Override
 	public List<ProductListDTO> getSearchList(SearchDTO search, int page) {
 		int safePage = Math.max(page, 1);
