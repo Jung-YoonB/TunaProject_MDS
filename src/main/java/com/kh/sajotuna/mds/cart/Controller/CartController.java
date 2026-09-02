@@ -37,7 +37,7 @@ public class CartController {
         String message = service.insertCartInfo(cart);
         System.out.println("message :: " + message);
         model.addAttribute("message", message);
-        return "home/home";
+        return "product/cart";
     }
 
     @GetMapping("/my-cart")
@@ -60,6 +60,6 @@ public class CartController {
         String message = service.removeCart(member.getMemberId(), popId);
         System.out.println("message :: " + message);
         model.addAttribute("message", message);
-        return "home/home";
+        return "product/cart";
     }
 }

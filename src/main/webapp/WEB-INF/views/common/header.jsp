@@ -64,7 +64,7 @@
 
 		<div id="search_box">
 			<%-- TODO(placeholder route): "/search" 컨트롤러 미구현 --%>
-			<form id="headerSearchForm" action="<c:url value='/search'/>" method="get">
+			<form id="headerSearchForm" action="<c:url value='/mds/searchList'/>" method="get">
 				<input type="search" id="headerSearchInput" name="keyword" class="search-input"
 					   placeholder="상품을 검색해보세요." aria-label="상품 검색" autocomplete="off">
 				<button type="submit" class="search-submit" aria-label="검색">
@@ -79,7 +79,7 @@
 		<div class="header-actions">
 			<div class="icon">
 				<%-- TODO(placeholder route): 찜 컨트롤러 미구현, 담당 브랜치 확정 시 경로 조정 --%>
-				<a class="icon-item" href="<c:url value='/wish'/>">
+				<a class="icon-item" href="<c:url value='/wish/my-wish'/>">
 					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 						<path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
 					</svg>
