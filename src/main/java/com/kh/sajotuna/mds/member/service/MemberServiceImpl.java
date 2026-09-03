@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.member.service;
 
+import com.kh.sajotuna.mds.util.PageWindow;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryAddressDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageOrderItemDTO;
@@ -23,51 +25,107 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService{
 
-	// MemberMapper DI
 	private final MemberMapper mapper;
-	// PasswordEncoder DI
 	private final PasswordEncoder passwordEncoder;
-	
+
+	/**
+	 * 입력된 연락처를 검증하고 DB 저장 형식으로 맞춘다. 형식이 아니면 예외.
+	 *
+	 * 가입(signUp)과 연락처 변경(phoneUpdate)이 이 규칙을 똑같이 써야 한다. 예전엔 같은 20줄이
+	 * 양쪽에 복붙돼 있어서, 한쪽만 고치면 저장 형식이 갈리고 중복검사(isPhoneCheck)가 못 잡는다.
+	 */
+	private String normalizePhone(String phone) {
+
+	    if (phone == null || phone.isBlank()) {
+	        throw new IllegalArgumentException("전화번호를 입력해주세요.");
+	    }
+
+	    String formatted = formatPhone(phone);
+
+	    if (formatted == null) {
+	        throw new IllegalArgumentException("올바른 전화번호 형식이 아닙니다.");
+	    }
+	    return formatted;
+	}
+
+	/**
+	 * 연락처를 DB 저장 형식(010-1234-5678)으로 맞춘다. 형식이 아니면 null.
+	 *
+	 * PHONE 컬럼엔 하이픈이 들어간 형태로만 저장되므로, 조회할 때도 반드시 이 형식으로 바꿔서
+	 * 비교해야 한다. 가입 폼은 숫자만 받는데(MemberDTO의 {@code ^01[0-9]{8,9}$}) 중복확인이
+	 * 그 값을 그대로 넘기는 바람에, 이미 쓰는 번호인데도 늘 "사용 가능"으로 나오고 있었다.
+	 *
+	 * 숫자만 먼저 걸러내므로 이미 하이픈이 붙은 값을 다시 넣어도 결과가 같다(멱등).
+	 */
+	private static String formatPhone(String phone) {
+
+	    if (phone == null) {
+	        return null;
+	    }
+
+	    String digits = phone.replaceAll("[^0-9]", "");
+
+	    if (!digits.matches("^01[0-9]{8,9}$")) {
+	        return null;
+	    }
+
+	    if (digits.length() == 11) {
+	        return digits.replaceFirst("(\\d{3})(\\d{4})(\\d{4})", "$1-$2-$3");
+	    }
+	    return digits.replaceFirst("(\\d{3})(\\d{3})(\\d{4})", "$1-$2-$3");
+	}
+
 	@Override
 	@Transactional
 	public void signUp(MemberDTO member) {
-		// 아이디 중복검사
-		if(isLoginIdCheck(member.getLoginId())) {
-			throw new IllegalStateException("이미 사용중인 아이디입니다.");
-		}
-		
-		// 닉네임 중복검사
-		if(isNicknameCheck(member.getNickname())) {
-			throw new IllegalStateException("이미 사용중인 닉네임입니다.");
-		}
-		
-		// 이메일 중복검사
-		if(isEmailCheck(member.getEmail())) {
-			throw new IllegalStateException("이미 사용중인 이메일입니다.");
-		}
-		
-		// 연락처 중복검사
-		if(isPhoneCheck(member.getPhone())) {
-			throw new IllegalStateException("이미 사용중인 연락처입니다.");
-		}
-				
-		// 비밀번호 암호화 처리
-		String encodePw = passwordEncoder.encode(member.getLoginPw());
-		member.setLoginPw(encodePw);
-		
-		// role에 user 부여
-		member.setRole("USER");
-				
-		// 체크 된 데이터를 저장
-		try {
-			mapper.insertMember(member);
-			mapper.insertPoint(member.getMemberId()); // 회원의 포인트도 초기화
-		} catch (DuplicateKeyException e) {
-	        // 동시에 가입하여 UNIQUE 제약조건에 걸린 경우
-	        throw new IllegalStateException("동시 가입으로 인해 이미 등록된 정보가 존재합니다. 다시 확인해주세요.");
+
+	    // 가입과 연락처 변경이 같은 규칙을 써야 중복검사(isPhoneCheck)가 맞아떨어진다
+	    member.setPhone(normalizePhone(member.getPhone()));
+
+
+	    // 아이디 중복검사
+	    if (isLoginIdCheck(member.getLoginId())) {
+	        throw new IllegalStateException("이미 사용중인 아이디입니다.");
 	    }
-		
+
+	    // 닉네임 중복검사
+	    if (isNicknameCheck(member.getNickname(), null)) {
+	        throw new IllegalStateException("이미 사용중인 닉네임입니다.");
+	    }
+
+	    // 이메일 중복검사
+	    if (isEmailCheck(member.getEmail(), null)) {
+	        throw new IllegalStateException("이미 사용중인 이메일입니다.");
+	    }
+
+	    // 연락처 중복검사
+	    if (isPhoneCheck(member.getPhone(), null)) {
+	        throw new IllegalStateException("이미 사용중인 연락처입니다.");
+	    }
+
+
+	    // 비밀번호 암호화 처리
+	    String encodePw = passwordEncoder.encode(member.getLoginPw());
+	    member.setLoginPw(encodePw);
+
+	    // role에 user 부여
+	    member.setRole("USER");
+
+
+	    // 체크된 데이터를 저장
+	    try {
+	        mapper.insertMember(member);
+	        mapper.insertPoint(member.getMemberId());
+
+	    } catch (DuplicateKeyException e) {
+
+	        // 동시에 가입하여 UNIQUE 제약조건에 걸린 경우
+	        throw new IllegalStateException(
+	            "동시 가입으로 인해 이미 등록된 정보가 존재합니다. 다시 확인해주세요."
+	        );
+	    }
 	}
+
 
 	@Override
 	public boolean isLoginIdCheck(String loginId) {
@@ -76,18 +134,21 @@ public class MemberServiceImpl implements MemberService{
 	}
 
 	@Override
-	public boolean isNicknameCheck(String nickname) {
-		return mapper.countByNickname(nickname) > 0;
+	public boolean isNicknameCheck(String nickname, Long excludeMemberId) {
+		return mapper.countByNickname(nickname, excludeMemberId) > 0;
 	}
 
 	@Override
-	public boolean isEmailCheck(String email) {
-		return mapper.countByEmail(email) > 0;
+	public boolean isEmailCheck(String email, Long excludeMemberId) {
+		return mapper.countByEmail(email, excludeMemberId) > 0;
 	}
 
 	@Override
-	public boolean isPhoneCheck(String phone) {
-		return mapper.countByPhone(phone) > 0;
+	public boolean isPhoneCheck(String phone, Long excludeMemberId) {
+		// PHONE은 하이픈 붙은 형태로만 저장되므로 조회값도 맞춰서 넘긴다. 형식이 아니면
+		// 들어온 값 그대로 조회(어차피 못 찾음) - 형식 안내는 폼 검증이 따로 한다.
+		String formatted = formatPhone(phone);
+		return mapper.countByPhone(formatted != null ? formatted : phone, excludeMemberId) > 0;
 	}
 
 	@Override
@@ -103,7 +164,7 @@ public class MemberServiceImpl implements MemberService{
 		}
 		
 		MemberDTO sessionMember = new MemberDTO(member.getMemberId(),
-				member.getMemberName(), member.getRole());
+				member.getMemberName(), member.getNickname(), member.getRole());
 		return sessionMember;
 	}
 
@@ -120,15 +181,14 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 
 	public List<CouponDTO> listCoupon(Long memberId, int page) {
-		int safePage = Math.max(page, 1);
-		int offset = (safePage - 1) * COUPON_PAGE_SIZE;
+		int offset = PageWindow.offset(page, COUPON_PAGE_SIZE);
 		return mapper.selectCouponsByMemberId(memberId, offset, COUPON_PAGE_SIZE);
 	}
 
 	@Override
 	public int totalCouponPages(Long memberId) {
 		int totalCount = mapper.countCouponsByMemberId(memberId);
-		return Math.max(1, (int) Math.ceil((double) totalCount / COUPON_PAGE_SIZE));
+		return PageWindow.totalPages(totalCount, COUPON_PAGE_SIZE);
 	}
 
 	@Override
@@ -140,11 +200,8 @@ public class MemberServiceImpl implements MemberService{
 
 	@Override
 	public List<MyPageDeliveryDTO> listDelivery(Long memberId, String status, int page) {
-		// 대표 상품 정보(이름/이미지/수량/건수)는 selectDeliveriesByMemberId 쿼리에 이미 조인되어 있음
-		// (주문 건수만큼 반복 조회하던 N+1 쿼리를 단일 쿼리로 정리). 주문이 쌓여도 느려지지 않도록
-		// 상태 필터 + 페이징은 서버(SQL의 WHERE/OFFSET-FETCH)에서 처리한다
-		int safePage = Math.max(page, 1);
-		int offset = (safePage - 1) * DELIVERY_PAGE_SIZE;
+		// 대표 상품 정보는 selectDeliveriesByMemberId 쿼리에 이미 조인돼 있다(N+1 쿼리 정리)
+		int offset = PageWindow.offset(page, DELIVERY_PAGE_SIZE);
 		List<MyPageDeliveryDTO> deliveries = mapper.selectDeliveriesByMemberId(memberId, status, offset, DELIVERY_PAGE_SIZE);
 
 		if (deliveries.isEmpty()) {
@@ -186,7 +243,7 @@ public class MemberServiceImpl implements MemberService{
 			return true;
 		}
 		
-		if (isNicknameCheck(nickname)) {
+		if (isNicknameCheck(nickname, memberId)) {
 			throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
 		}
 		
@@ -196,25 +253,28 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	@Transactional
 	public boolean phoneUpdate(Long memberId, String phone) {
-		if (phone == null || phone.isBlank() || !phone.matches("^01[0-9]{8,9}$")) {
-			throw new IllegalArgumentException("올바른 전화번호 형식이 아닙니다.");
-		}
-		
-		MemberDTO currentMember = mapper.selectByMemberId(memberId);
-		if (currentMember == null) {
-			throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
-		}
-		
-		if (phone.equals(currentMember.getPhone())) {
-			return true; // 기존 값과 동일하면 그대로 성공 처리
-		}
-		
-		if (isPhoneCheck(phone)) {
-			throw new IllegalStateException("이미 사용 중인 연락처입니다.");
-		}
-		
-		return mapper.updatePhone(memberId, phone) > 0;
+
+	    phone = normalizePhone(phone);
+
+	    MemberDTO currentMember = mapper.selectByMemberId(memberId);
+
+	    if (currentMember == null) {
+	        throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
+	    }
+
+	    // 기존 전화번호와 동일하면 성공 처리
+	    if (phone.equals(currentMember.getPhone())) {
+	        return true;
+	    }
+
+	    // 중복 검사
+	    if (isPhoneCheck(phone, memberId)) {
+	        throw new IllegalStateException("이미 사용 중인 연락처입니다.");
+	    }
+
+	    return mapper.updatePhone(memberId, phone) > 0;
 	}
+
 
 	@Override
 	@Transactional
@@ -226,8 +286,7 @@ public class MemberServiceImpl implements MemberService{
 	    }
 
 	    // 값이 들어온 경우에만 이메일 형식 검사
-	    if (email != null &&
-	        !email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+	    if (email != null && !email.matches(MemberDTO.EMAIL_REGEX)) {
 	        throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
 	    }
 
@@ -245,7 +304,7 @@ public class MemberServiceImpl implements MemberService{
 	    }
 
 	    // 이메일을 새로 입력한 경우에만 중복 확인
-	    if (email != null && isEmailCheck(email)) {
+	    if (email != null && isEmailCheck(email, memberId)) {
 	        throw new IllegalStateException("이미 사용 중인 이메일입니다.");
 	    }
 
@@ -293,8 +352,7 @@ public class MemberServiceImpl implements MemberService{
 	    if (currentMember == null) {
 	        throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
 	    }
-	    
-	    // LocalDate 타입끼리 직접 비교가 가능해집니다
+
 	    if (birthDate.equals(currentMember.getBirth())) {
 	        return true;
 	    }
@@ -356,7 +414,7 @@ public class MemberServiceImpl implements MemberService{
 	
 	public int totalDeliveryPages(Long memberId, String status) {
 		int totalCount = mapper.countDeliveriesByMemberId(memberId, status);
-		return Math.max(1, (int) Math.ceil((double) totalCount / DELIVERY_PAGE_SIZE));
+		return PageWindow.totalPages(totalCount, DELIVERY_PAGE_SIZE);
 	}
 
 	@Override
@@ -372,6 +430,38 @@ public class MemberServiceImpl implements MemberService{
 	@Override
 	public Long nextReviewableOdId(Long memberId) {
 		return mapper.selectNextReviewableOdId(memberId);
+	}
+
+	@Override
+	@Transactional
+	public void addDeliveryAddress(DeliveryAddressDTO address) {
+		if ("Y".equalsIgnoreCase(address.getIsDefault())) {
+			mapper.clearDefaultAddress(address.getMemberId());
+		}
+		mapper.insertDeliveryAddress(address);
+	}
+
+	@Override
+	public List<DeliveryAddressDTO> listDeliveryAddresses(Long memberId) {
+		return mapper.selectDeliveryAddresses(memberId);
+	}
+
+	@Override
+	@Transactional
+	public void setDefaultAddress(Long memberId, Long addId) {
+		// 기존 기본을 풀고 새로 세운다(Y는 회원당 1개만 허용). addId가 본인 소유가 아니면
+		// 아래 UPDATE가 0건 -> 예외 -> @Transactional이 clearDefaultAddress까지 롤백한다.
+		mapper.clearDefaultAddress(memberId);
+		if (mapper.setDefaultAddress(memberId, addId) == 0) {
+			throw new IllegalStateException("배송지를 찾을 수 없습니다.");
+		}
+	}
+
+	@Override
+	public void deleteDeliveryAddress(Long memberId, Long addId) {
+		if (mapper.deleteDeliveryAddress(memberId, addId) == 0) {
+			throw new IllegalStateException("배송지를 찾을 수 없습니다.");
+		}
 	}
 }
 

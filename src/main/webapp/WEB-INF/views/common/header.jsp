@@ -9,7 +9,9 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>메종 드 사조</title>
-
+	<!-- 파비콘 -->
+	<link rel="icon" type="image/png" href="${pageContext.request.contextPath}/resources/favicon.png">
+	
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@600;700&display=swap" rel="stylesheet">
@@ -48,7 +50,7 @@
 		<c:set var="bodyClass" value="coupon-hero"/>
 	</c:when>
 	<c:when test="${__path == '/member/deliveryAddress'}">
-		<%-- TODO: 배송지 추가 페이지는 아직 컨트롤러가 연결되어 있지 않아 실제 경로 미확정 --%>
+		<%-- 배송지 관리(MemberController.deliveryAddress) --%>
 		<c:set var="bodyClass" value="delivery-hero"/>
 	</c:when>
 	<c:otherwise>
@@ -63,9 +65,12 @@
 		</div>
 
 		<div id="search_box">
-			<%-- TODO(placeholder route): "/search" 컨트롤러 미구현 --%>
-			<form id="headerSearchForm" action="<c:url value='/search'/>" method="get">
+			<%-- 검색 결과 화면(ProductController.getSearchList) --%>
+			<form id="headerSearchForm" action="<c:url value='/mds/searchList'/>" method="get">
+				<%-- 검색 결과 화면에서 검색어가 사라지지 않도록 현재 keyword를 그대로 채워둔다
+					 (검색 화면 안쪽 검색창과 동일). 다른 화면에서는 keyword가 없어 빈 값이 된다. --%>
 				<input type="search" id="headerSearchInput" name="keyword" class="search-input"
+					   value="<c:out value='${param.keyword}'/>"
 					   placeholder="상품을 검색해보세요." aria-label="상품 검색" autocomplete="off">
 				<button type="submit" class="search-submit" aria-label="검색">
 					<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -78,8 +83,8 @@
 
 		<div class="header-actions">
 			<div class="icon">
-				<%-- TODO(placeholder route): 찜 컨트롤러 미구현, 담당 브랜치 확정 시 경로 조정 --%>
-				<a class="icon-item" href="<c:url value='/wish'/>">
+				<%-- 찜 목록(WishController.getWishList) --%>
+				<a class="icon-item" href="<c:url value='/wish/my-wish'/>">
 					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 						<path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
 					</svg>
@@ -87,7 +92,7 @@
 					<span class="icon-label">찜</span>
 				</a>
 
-				<%-- TODO(placeholder route): 장바구니 컨트롤러 미구현, 담당 브랜치 확정 시 경로 조정 --%>
+				<%-- 장바구니(CartController.getCartList) --%>
 				<a class="icon-item" href="<c:url value='/cart/my-cart'/>">
 					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 						<circle cx="9" cy="21" r="1"/>
@@ -96,6 +101,18 @@
 					</svg>
 					<span class="icon-badge" id="cartBadge" hidden>0</span>
 					<span class="icon-label">장바구니</span>
+				</a>
+
+				<%-- 진행 중인 결제로 돌아가기. 결제 화면은 "무엇을 사는지"가 있어야 열리므로
+				     GET /order/payment 가 세션(PENDING_CHECKOUT)에 남은 선택으로 다시 만들어 준다.
+				     담아둔 게 없거나 시간이 지났으면 장바구니로 안내한다. --%>
+				<a class="icon-item" href="<c:url value='/order/payment'/>">
+					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+						<path d="M7 3h10a1 1 0 0 1 1 1v17l-3-2-3 2-3-2-3 2V4a1 1 0 0 1 1-1z"/>
+						<path d="M9 8h6"/>
+						<path d="M9 12h6"/>
+					</svg>
+					<span class="icon-label">진행 중인 결제</span>
 				</a>
 
 				<a class="icon-item" href="<c:url value='/member/myPage'/>">
@@ -113,8 +130,11 @@
 
 			        <%-- 로그인 상태 --%>
 			        <c:when test="${not empty sessionScope.loginSession}">
+			            <%-- 헤더에 노출하는 건 이름이 아니라 닉네임(#TB006_TC-12).
+			                 세션 DTO에 nickname이 담기고, 닉네임을 바꾸면 MemberController가
+			                 세션 값도 같이 갱신하므로 새로고침 없이 바로 반영된다. --%>
 			            <span class="welcome">
-			                ${sessionScope.loginSession.memberName}님
+			                <span class="welcome-nickname"><c:out value="${sessionScope.loginSession.nickname}"/></span> 님
 			            </span>
 
 			            <span class="sign-divider" aria-hidden="true">|</span>

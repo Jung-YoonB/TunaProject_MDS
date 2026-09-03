@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.util.LoginUtil;
+import com.kh.sajotuna.mds.util.PageWindow;
 import com.kh.sajotuna.mds.review.model.dto.ReviewWriteInfoDTO;
 import com.kh.sajotuna.mds.review.model.service.ReviewService;
-import com.kh.sajotuna.mds.util.SessionConst;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +32,7 @@ public class ReviewController {
 	@GetMapping("/write")
 	public String writeForm(@RequestParam Long odId, @RequestParam(required = false) String returnUrl,
 			HttpSession session, Model model, RedirectAttributes redirectAttr) {
-		MemberDTO loginMember = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
-		Long memberId = (loginMember != null) ? loginMember.getMemberId() : null;
+		Long memberId = LoginUtil.memberId(session);
 		if (memberId == null) {
 			redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 			return "redirect:/member/login";
@@ -64,8 +63,7 @@ public class ReviewController {
 						@RequestParam(required = false) String returnUrl,
 						HttpSession session,
 						RedirectAttributes redirectAttr) {
-		MemberDTO loginMember = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
-		Long memberId = (loginMember != null) ? loginMember.getMemberId() : null;
+		Long memberId = LoginUtil.memberId(session);
 		if (memberId == null) {
 			redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 			return "redirect:/member/login";
@@ -91,32 +89,22 @@ public class ReviewController {
 	@GetMapping("/myReviews")
 	public String myReviewsForm(@RequestParam(defaultValue = "1") int page,
 			HttpSession session, Model model, RedirectAttributes redirectAttr) {
-		MemberDTO loginMember = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
-		Long memberId = (loginMember != null) ? loginMember.getMemberId() : null;
+		Long memberId = LoginUtil.memberId(session);
 		if (memberId == null) {
 			redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 			return "redirect:/member/login";
 		}
 
-		int totalPages = reviewService.totalMyReviewPages(memberId);
-		int currentPage = Math.min(Math.max(page, 1), totalPages);
-		int windowSize = 5;
-		int windowStart = Math.max(1, currentPage - windowSize / 2);
-		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
-		windowStart = Math.max(1, windowEnd - windowSize + 1);
+		PageWindow paging = PageWindow.of(page, reviewService.totalMyReviewPages(memberId));
 
-		model.addAttribute("myReviews", reviewService.listMyReviews(memberId, currentPage));
-		model.addAttribute("currentPage", currentPage);
-		model.addAttribute("totalPages", totalPages);
-		model.addAttribute("pageWindowStart", windowStart);
-		model.addAttribute("pageWindowEnd", windowEnd);
+		model.addAttribute("myReviews", reviewService.listMyReviews(memberId, paging.currentPage()));
+		paging.addTo(model);
 		return "review/myReviews";
 	}
 
 	@PostMapping("/delete/{reviewId}")
 	public String deleteReview(@PathVariable Long reviewId, HttpSession session, RedirectAttributes redirectAttr) {
-		MemberDTO loginMember = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
-		Long memberId = (loginMember != null) ? loginMember.getMemberId() : null;
+		Long memberId = LoginUtil.memberId(session);
 		if (memberId == null) {
 			redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 			return "redirect:/member/login";

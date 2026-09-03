@@ -18,13 +18,17 @@ public class CartServiceImpl implements CartService{
     private final CartMapper mapper;
     @Override
     public String insertCartInfo(CartDTO cart) {
-        int result = 0;
-        System.out.println(cart);
+        int result;
 
         findInfoDTO findInfo = new  findInfoDTO(cart.getMemberId(), cart.getPopId());
+        if(cart.getQty() == 0 ) {
+            return "상품의 수량을 입력해주세요";
+        }
         int checkCart = mapper.findCartById(findInfo);
         if(checkCart == 1) {
-            return "이미 장바구니에 있는 상품입니다.";
+            // 이미 담긴 옵션이면 기존 수량에 더한다. 퀵버튼과 상품 상세가 이 메서드를 공유한다.
+            result = mapper.incrementQty(cart.getMemberId(), cart.getPopId(), cart.getQty());
+            return result > 0 ? "이미 담긴 상품의 수량을 추가했습니다." : "수량 추가에 실패했습니다.";
         }else if(cart.getQty() <= 0){
              return "갯수를 지정해주세요";
         }else {
@@ -38,7 +42,6 @@ public class CartServiceImpl implements CartService{
         int cartListPrice = 0;
 
         List<CartListDTO> getCartList =  mapper.getCartList(memberId);
-        System.out.println("getCartList :: " + getCartList);
 
         for(CartListDTO list : getCartList) {
             cartListPrice+=list.getTotalPrice();
@@ -51,11 +54,19 @@ public class CartServiceImpl implements CartService{
     public String removeCart(Long memberId, Long popId) {
         int result = 0;
         result+= mapper.removeCart(memberId,popId);
-        System.out.println("result :: " + result);
         if(result>0) {
             return "장바구니 목록에서 제외되었습니다.";
         }else {
             return "장바구니 제외에 실패했습니다.";
         }
+    }
+
+    @Override
+    public String updateQty(Long memberId, Long popId, int qty) {
+        if (qty < 1) {
+            return "수량은 1개 이상이어야 합니다.";
+        }
+        int result = mapper.updateQty(memberId, popId, qty);
+        return result > 0 ? "수량이 변경되었습니다." : "수량 변경에 실패했습니다.";
     }
 }

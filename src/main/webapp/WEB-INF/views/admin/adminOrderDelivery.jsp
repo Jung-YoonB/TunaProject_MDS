@@ -78,7 +78,7 @@
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th><button type="button" id="sort-order-id" class="th-sort-btn">주문번호 <span class="sort-arrow">▲</span></button></th>
+                        <th><button type="button" id="sort-order-id" class="th-sort-btn">주문번호 <span class="sort-arrow">▼</span></button></th>
                         <th>주문일시</th>
                         <th>주문자</th>
                         <th>상품 정보</th>

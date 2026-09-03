@@ -24,16 +24,25 @@
 		SELECT COUNT(*) FROM MEMBER WHERE LOGIN_ID = #{loginId}  
   	</select>
   	
-  	<select id="countByNickname" parameterType="String" resultType="int">
-		SELECT COUNT(*) FROM MEMBER WHERE NICKNAME = #{nickname}  
+  	<!-- excludeMemberId가 있으면 그 회원(=본인)은 세지 않는다. 회원정보 수정 화면에서 자기 값을
+  	     그대로 다시 중복확인해도 "이미 사용중"이 뜨지 않게 하기 위한 것.
+  	     회원가입은 본인이 없으므로 null이 넘어오고, 조건 자체가 붙지 않는다. -->
+  	<sql id="excludeSelf">
+  		<if test="excludeMemberId != null">AND MEMBER_ID != #{excludeMemberId}</if>
+  	</sql>
+
+  	<select id="countByNickname" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE NICKNAME = #{nickname} <include refid="excludeSelf"/>
   	</select>
-  	
-  	<select id="countByEmail" parameterType="String" resultType="int">
-		SELECT COUNT(*) FROM MEMBER WHERE EMAIL = #{email}  
+
+  	<select id="countByEmail" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE EMAIL = #{email} <include refid="excludeSelf"/>
   	</select>
-  	
-  	<select id="countByPhone" parameterType="String" resultType="int">
-		SELECT COUNT(*) FROM MEMBER WHERE PHONE = #{phone}  
+
+  	<!-- PHONE은 '010-1234-5678' 형태로만 저장된다. 서비스(formatPhone)가 조회값도 같은 형태로
+  	     맞춰서 넘기므로 여기선 그대로 비교한다. -->
+  	<select id="countByPhone" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE PHONE = #{phone} <include refid="excludeSelf"/>
   	</select>
   	
   	<select id="selectByLoginId" parameterType="String" resultType="MemberDTO">
@@ -103,11 +112,8 @@
   		</choose>
   	</sql>
 
-  	<!-- 배송 목록: DELIVERY 행이 없는(체크아웃 미구현으로 관리자가 배송준비중으로 아직 안 바꾼) 결제완료
-  	     주문도 보여야 하므로 DELIVERY는 LEFT JOIN. 대표 상품(가장 먼저 담긴 ORDERDETAIL) 1건과 상품 건수를
-  	     서브쿼리 하나로 함께 조회(N+1 방지) - AdminOrderMapper.selectOrderList의 대표상품 패턴과 동일.
-  	     대표 상품/이미지가 없는 경우(주문 상세 데이터 누락, 대표이미지 미등록 등)를 대비해 NVL로 기본값 처리.
-  	     주문이 쌓여도 느려지지 않도록 상태 필터는 서버에서 WHERE로 처리하고, OFFSET/FETCH로 페이징한다 -->
+  	<!-- 배송 목록: 아직 배송준비중으로 안 바뀐 결제완료 주문은 DELIVERY 행이 없어 LEFT JOIN.
+  	     대표 상품 1건 + 상품 건수는 서브쿼리로 같이 조회(N+1 방지, AdminOrderMapper와 동일 패턴) -->
   	<select id="selectDeliveriesByMemberId" resultType="MyPageDeliveryDTO">
   		SELECT D.DELIVERY_ID, D.COMPANY, D.TRACKING_NO, D.DELIVERY_STATUS, PO.DETAIL_ADDRESS_FIX,
 	 		PO.ADDRESS_NAME_FIX, PO.ORDER_ID, PO.TOTAL_PRICE, PO.ORDER_STATUS, PO.ORDER_DATE,
@@ -117,14 +123,15 @@
   			NVL(rep.PRODUCT_IMAGE_SAVE_NAME, '') AS PRODUCT_IMAGE_SAVE_NAME,
   			rep.QTY AS QTY,
   			<!-- 리뷰 링크는 대표가 아니라 "아직 안 쓴 것 중 첫 번째"로 건다. 대표 기준이면 상품이
-  			     2건 이상인 주문에서 나머지가 작성 경로를 잃는다(AUDIT 버그 17번). 다 썼으면 NULL이라 대표로 대체 -->
+  			     2건 이상인 주문에서 나머지가 작성 경로를 잃는다. 다 썼으면 NULL이라 대표로 대체 -->
   			NVL(nr.NEXT_OD_ID, rep.OD_ID) AS OD_ID,
   			NVL(rep.PRODUCT_COUNT, 0) AS PRODUCT_COUNT,
   			<!-- QTY는 대표 상품 1건의 수량이라, 여러 상품을 산 주문에서는 실제보다 적게 보인다.
   			     화면에는 주문 전체 수량 합계를 쓴다 -->
   			NVL(rep.TOTAL_QTY, 0) AS TOTAL_QTY,
-  			<!-- 이 주문의 모든 상품을 다 썼을 때만 "작성 완료"로 잠금 -->
-  			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS HAS_REVIEW
+  			<!-- 이 주문 전체를 다 썼을 때만 1. 품목 1건 단위는 selectOrderItemsByOrderIds의
+  			     HAS_REVIEW로 이름을 구분해 뒀다(서로 다른 값이라 헷갈리면 안 됨) -->
+  			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS ALL_REVIEWED
   		FROM PRODUCTORDER PO
   		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
   		<!-- 주문별 "아직 리뷰 안 쓴 주문상세 중 최소 OD_ID". REVIEW_STATUS는 안 본다 - 삭제한 것도 계속 제외 -->
@@ -162,7 +169,11 @@
   			(SELECT pi.PRODUCT_IMAGE_PATH FROM PRODUCTIMAGE pi
   				WHERE pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0 AND ROWNUM = 1) AS PRODUCT_IMAGE_PATH,
   			(SELECT pi.PRODUCT_IMAGE_SAVE_NAME FROM PRODUCTIMAGE pi
-  				WHERE pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0 AND ROWNUM = 1) AS PRODUCT_IMAGE_SAVE_NAME
+  				WHERE pi.PRODUCT_ID = p.PRODUCT_ID AND pi.PRODUCT_TITLE_IMAGE = 0 AND ROWNUM = 1) AS PRODUCT_IMAGE_SAVE_NAME,
+  			<!-- 품목별 리뷰 작성 여부. REVIEW_STATUS는 안 본다 - 넣으면 삭제한 품목이 "미작성"으로
+  			     보이는데 눌러도 막힌다(정책 11번). checkReviewExists 와 같은 기준을 쓸 것 -->
+  			CASE WHEN EXISTS (SELECT 1 FROM REVIEW rv WHERE rv.OD_ID = od.OD_ID)
+  			     THEN 1 ELSE 0 END AS HAS_REVIEW
   		FROM ORDERDETAIL od
   		JOIN OPTIONDETAIL opd ON opd.POP_ID = od.POP_ID
   		JOIN PRODUCT p ON p.PRODUCT_ID = opd.PRODUCT_ID
@@ -261,5 +272,39 @@
         	PHONE = '9' || MEMBER_ID
     	WHERE MEMBER_ID = #{memberId}
 	</update>
-	
+
+	<!-- 기존 기본 배송지 해제 - 새 배송지를 기본으로 체크했을 때만 서비스가 호출한다 -->
+	<update id="clearDefaultAddress" parameterType="long">
+		UPDATE DELIVERYADDRESS SET IS_DEFAULT = 'N'
+		WHERE MEMBER_ID = #{memberId} AND UPPER(IS_DEFAULT) = 'Y'
+	</update>
+
+	<insert id="insertDeliveryAddress" parameterType="DeliveryAddressDTO">
+		<selectKey keyProperty="addId" resultType="long" order="BEFORE">
+			SELECT SEQ_ADD_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO DELIVERYADDRESS (ADD_ID, MEMBER_ID, ADDRESS_NAME, DETAIL_ADDRESS, IS_DEFAULT)
+		VALUES (#{addId}, #{memberId}, #{addressName}, #{detailAddress}, #{isDefault})
+	</insert>
+
+	<!-- 회원정보 수정 화면의 배송지 드롭다운 - 기본 배송지가 있으면 항상 맨 위. IS_DEFAULT는
+	     'Y'/'N'만 저장되지만 대문자 비교를 습관대로 UPPER()로 맞췄다(clearDefaultAddress와 동일 기준). -->
+	<select id="selectDeliveryAddresses" parameterType="long" resultType="DeliveryAddressDTO">
+		SELECT ADD_ID, MEMBER_ID, ADDRESS_NAME, DETAIL_ADDRESS, IS_DEFAULT
+		FROM DELIVERYADDRESS
+		WHERE MEMBER_ID = #{memberId}
+		ORDER BY CASE WHEN UPPER(IS_DEFAULT) = 'Y' THEN 0 ELSE 1 END, ADD_ID
+	</select>
+
+	<!-- addId가 이 회원 소유가 아니면 0건 갱신 - 서비스가 그걸 보고 "본인 배송지 아님"으로 막는다 -->
+	<update id="setDefaultAddress">
+		UPDATE DELIVERYADDRESS SET IS_DEFAULT = 'Y'
+		WHERE ADD_ID = #{addId} AND MEMBER_ID = #{memberId}
+	</update>
+
+	<delete id="deleteDeliveryAddress">
+		DELETE FROM DELIVERYADDRESS
+		WHERE ADD_ID = #{addId} AND MEMBER_ID = #{memberId}
+	</delete>
+
 </mapper>

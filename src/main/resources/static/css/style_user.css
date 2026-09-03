@@ -157,7 +157,7 @@
 /* #product 접두사로 명시도를 ID+클래스(1,1,0)까지 올림 - href="#"는 브라우저가 클릭 없이도
    바로 :visited로 취급해서, default.css:22의 a:visited{color:#333}(명시도 0,1,1)가 순수
    클래스 선택자(0,1,0)보다 이겨버리는 문제가 있음(.product-rating에서 실제로 겪은 버그와
-   동일한 원인 - 자세한 내용은 HANDOFF.md 참고). */
+   동일한 원인). */
 #product .section-more {
     font-size: 13px;
     color: var(--gsf-subtext);
@@ -320,6 +320,17 @@
     background-image: linear-gradient(135deg, var(--gsf-sage-light), var(--gsf-tan));
 }
 
+/* 카드에 실제 상품 이미지를 넣기 시작하면서(2026-09-02) 추가. <img>에 크기 규칙이 없으면
+   원본 크기 그대로 그려져서 4:3 박스를 넘어가고, 아래 .product-info(상품명/카테고리)를
+   덮어버린다. 박스를 꽉 채우되 비율은 유지하도록 잘라 넣는다.
+   검색 결과(searchProduct.jsp)와 찜 목록(views/wish.js) 카드가 함께 쓴다. */
+.product-img img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 /* 기본적으로 숨겨두고, 상품 이미지에 마우스를 올렸을 때만 보이게 함 */
 .product-badge {
     position: absolute;
@@ -387,6 +398,17 @@
     color: var(--gsf-text);
 }
 
+/* ===== 상품 게시글 제목 서체 (아리따부리) =====
+   상품 게시글의 "제목"에만 쓴다. 상품 상세는 .product-title 규칙에서 따로 지정.
+     .product-card .product-name  홈 카드 / 검색 결과 카드 / 찜 목록 카드(views/wish.js가 같은 클래스로 그린다)
+
+   .product-name만 쓰면 안 된다 - 결제(.product-item), 주문/배송(.order-delivery-page),
+   리뷰 작성(.review-product-card)도 같은 클래스를 쓰는 공용 이름이라, 조상 .product-card로
+   스코프하지 않으면 그 화면들의 상품명까지 서체가 바뀐다. */
+.product-card .product-name {
+    font-family: var(--gsf-font-title);
+}
+
 .product-description {
     margin: 0 0 5px;
     font-size: 16px;
@@ -416,25 +438,24 @@
     padding: 4px 2px;
 }
 
-/* .product-rating은 wish.jsp(.wishlist-container)도 같이 쓰는 공용 클래스라 여기서 구조를
-   바꾸면 그쪽까지 영향받는다 - 그래서 별/점수 분리 레이아웃은 #product-list 스코프에서만
-   켠다(다른 페이지의 .product-rating은 지금 그대로 단순 텍스트로 남아 영향 없음). */
+/* .product-rating은 wish.jsp(.wishlist-container)도 같이 쓰는 공용 클래스다.
+   별/점수 분리 레이아웃(pill 스타일)은 원래 #product-list(홈)에서만 켰었는데, 검색 결과
+   화면(.sp-product-grid)과 찜 목록 화면(#wish-product-grid)의 카드도 2026-09-02에 홈과
+   똑같은 마크업으로 통일된 뒤였다 - 그런데 이 스코프 목록이 안 따라가서 두 화면은 계속
+   "단순 텍스트 + a:visited 검정색"으로 보이고 있었다(2026-09-03 발견, 원인은 아래 명시도
+   설명과 동일). 세 화면 모두 같은 카드 구조를 쓰므로 스코프에 같이 추가. */
 .product-rating {
     color: var(--gsf-subtext);
 }
 
-/* 사용자님 요청으로 리뷰 보기 링크화 - .product-wish-toggle과 똑같은 pill 버튼 스타일을
-   써서 둘이 나란히 짝을 이루는 클릭 가능한 요소로 보이게 함(실제 href는 아직 상품 데이터가
-   없어 "#" - 상품 연동 시 리뷰 섹션으로 교체 필요, 위 home.jsp TODO 참고).
-   text-decoration:none은 명시적으로 다시 선언 - default.css의 전역 a:hover 규칙이
-   hover 시 밑줄을 강제로 붙여서(버튼인 .product-wish-toggle과 달리 <a> 태그라 영향받음),
-   아이콘 버튼처럼 보이려면 이걸 덮어써야 함.
-   color도 여기서 다시 선언 - href="#"는 현재 페이지 자신을 가리켜서 브라우저가 클릭 없이도
-   바로 :visited로 취급하는데, default.css:22의 a:visited{color:#333}가 타입+가상클래스라
-   명시도(0,1,1)가 .product-rating 단독(0,1,0)보다 높아 검게 이기고 있었음(실제 원인,
-   사용자님이 DevTools로 확인). #product-list .product-rating은 ID+클래스라 명시도(1,1,0)로
-   a:visited를 확실히 이김. */
-#product-list .product-rating {
+/* 리뷰 보기를 .product-wish-toggle과 같은 pill 버튼 모양으로 맞춰 나란히 보이게 한다.
+   (href는 /mds/detail/{id}#review 로 상품 상세의 리뷰 섹션을 가리킨다)
+   text-decoration/color를 다시 선언하는 이유: href="#"는 현재 페이지를 가리켜 클릭 없이도
+   :visited가 되는데, default.css의 a:visited{color:#333}가 명시도(0,1,1)로 .product-rating
+   단독(0,1,0)을 이겨 검게 나온다. ID+클래스(1,1,0)로 올려서 확실히 이긴다.
+   전역 a:hover의 밑줄도 같은 이유로 여기서 덮어쓴다. */
+.sp-product-grid .product-rating,
+#wish-product-grid .product-rating {
     display: inline-flex;
     align-items: baseline;
     gap: 4px;
@@ -452,7 +473,13 @@
 
 #product-list .product-rating:hover,
 #product-list .product-rating:focus-visible,
-#product-list .product-rating:active {
+#product-list .product-rating:active,
+.sp-product-grid .product-rating:hover,
+.sp-product-grid .product-rating:focus-visible,
+.sp-product-grid .product-rating:active,
+#wish-product-grid .product-rating:hover,
+#wish-product-grid .product-rating:focus-visible,
+#wish-product-grid .product-rating:active {
     background-color: var(--gsf-peach-pale);
     color: var(--gsf-caramel);
     text-decoration: none;
@@ -529,7 +556,7 @@
 
 /* 원본은 스코프 없는 body{} 였음(사이트 전역에 leak) - 로그인/회원가입은 이미 style.css의
    body.login-hero/signup-hero가 배경을 담당하고, margin:0은 default.css가 이미 전역 리셋
-   하고 있어 그 외엔 불필요한 규칙이라 삭제함. 자세한 내용은 HANDOFF.md 참고. */
+   하고 있어 그 외엔 불필요한 규칙이라 삭제함 */
 
 #title {
     text-align: center;
@@ -912,7 +939,7 @@ body:has(.update-page) {
 main:has(.update-page) {
     width: min(500px, 100% - 80px);
     margin: 0 auto;
-    padding: 40px 20px 80px;
+    padding: 0 20px;
     background-color: #fbf8f4;
     border-left: 1px solid var(--gsf-border);
     border-right: 1px solid var(--gsf-border);
@@ -1067,14 +1094,100 @@ main:has(.update-page) {
     margin-bottom: 0;
 }
 
-.address-default-check {
+/* ===== 배송지 목록(회원정보 수정) =====
+   실제 새 배송지 추가는 이 화면이 아니라 결제 화면과 같은 독립 화면에서 하므로, 여기는
+   조회/기본 설정/삭제만 담당한다. */
+.address-list {
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+}
+
+.address-list-divider {
+    height: 1px;
+    margin: 12px 0;
+    background-color: var(--gsf-border);
+}
+
+.address-list-item {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.address-list-item-info strong {
+    font-size: 14px;
+    color: #222;
+}
+
+.address-default-badge {
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background-color: var(--gsf-peach-pale);
+    color: var(--gsf-caramel);
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.address-list-item-info p {
+    margin: 4px 0 0;
     font-size: 13px;
-    color: #555;
-    font-weight: normal;
+    color: #777;
+}
+
+.address-list-item-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 10px;
+    padding-top: 2px;
+}
+
+.btn-set-default,
+.btn-delete-address {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.btn-set-default {
+    color: var(--gsf-caramel);
+}
+
+.btn-delete-address {
+    color: #999;
+}
+
+.address-list-empty {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: #888;
+}
+
+.address-list-empty[hidden] {
+    display: none;
+}
+
+.btn-address-add {
+    width: 100%;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--gsf-caramel);
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-address-add:hover,
+.btn-address-add:focus-visible {
+    background-color: var(--gsf-ink);
+    color: white;
 }
 
 .edit-actions {
@@ -1159,7 +1272,7 @@ main:has(.update-page) {
    구조를 직접 갖고 있어서 ".withdraw-page main"(main이 후손)이 성립했음. 2026-09-01
    규격화로 header/footer include + wrapper div 방식으로 바꾸면서 main이 이제 조상이 되어
    그 선택자가 더는 안 맞음 - 형제 페이지 .update-page와 같은 패턴으로 재구성함
-   (배경은 body:has(), 폭은 main:has(), 카드 스타일은 wrapper 자신). HANDOFF.md 3-5/3-6/3-42 참고. */
+   (배경은 body:has(), 폭은 main:has(), 카드 스타일은 wrapper 자신). */
 body:has(.withdraw-page) {
     background-color: #f8f6f2;
 }
@@ -1661,7 +1774,9 @@ main:has(.cart-container) {
 	text-align: center;
 }
 
-/* ===== 상단 컨트롤 (전체 선택 / 선택상품 삭제) ===== */
+/* ===== 상단 컨트롤 (전체 선택 / 선택상품 삭제) =====
+   admin/admincouponView.jsp의 선택 모드와 동일한 구조 - 평소엔 "상품 선택" 버튼만 보이고,
+   누르면 전체선택 체크박스 + 선택상품 삭제 버튼이 나타난다. */
 .cart-container .cart-controls {
 	display: flex;
 	align-items: center;
@@ -1669,6 +1784,15 @@ main:has(.cart-container) {
 	margin-bottom: 12px;
 	font-size: 14px;
 	color: #555;
+}
+.cart-container .select-menu {
+	display: flex;
+	gap: 12px;
+}
+/* .select-menu가 display:flex라 [hidden]의 UA 기본 규칙(display:none)보다 이 author 규칙이
+   우선해서 안 숨겨지는 문제가 있다(admincouponView.jsp에서 실제로 겪은 것과 동일) - 명시적으로 재정의 */
+.cart-container .select-menu[hidden] {
+	display: none;
 }
 .cart-container .checkbox-label {
 	display: flex;
@@ -1681,6 +1805,11 @@ main:has(.cart-container) {
 	height: 16px;
 	accent-color: var(--gsf-caramel);
 }
+.cart-container .list-control-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
 .cart-container #delete-btn {
 	border: none;
 	background: none;
@@ -1688,6 +1817,25 @@ main:has(.cart-container) {
 	font-size: 13px;
 	text-decoration: underline;
 	cursor: pointer;
+}
+.cart-container #toggleCartSelectButton {
+	height: 32px;
+	padding: 0 12px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	background-color: white;
+	color: #666;
+	font-size: 13px;
+	cursor: pointer;
+}
+.cart-container #toggleCartSelectButton:hover {
+	background-color: #f5f5f5;
+	color: #333;
+}
+.cart-container #toggleCartSelectButton.is-selecting {
+	background-color: var(--gsf-peach-pale);
+	border-color: var(--gsf-caramel);
+	color: #5c4a2f;
 }
 
 /* ===== 상품 목록 ===== */
@@ -1707,11 +1855,16 @@ main:has(.cart-container) {
 	border-radius: 10px;
 }
 .cart-container .item-checkbox {
+	display: none;
 	width: 18px;
 	height: 18px;
 	flex-shrink: 0;
 	accent-color: var(--gsf-caramel);
 	cursor: pointer;
+}
+/* "상품 선택" 모드일 때만 각 줄 체크박스 노출 */
+.cart-container .cart-itemlist.selecting .item-checkbox {
+	display: inline-block;
 }
 .cart-container .item-thumbnail {
 	width: 70px;
@@ -1719,6 +1872,27 @@ main:has(.cart-container) {
 	flex-shrink: 0;
 	background-color: #f0f0f0;
 	border-radius: 6px;
+	overflow: hidden;
+}
+
+/* 없으면 세로로 긴 상품 사진이 70px 틀을 뚫고 삐져나온다(.product-thumbnail/.item-thumb와 동일 처리) */
+.cart-container .item-thumbnail img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* 등록된 대표 이미지가 없을 때의 "이미지 없음" 문구도 70px 안에 들어가야 한다 */
+.cart-container .item-thumbnail span {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	font-size: 11px;
+	color: var(--gsf-subtext);
+	text-align: center;
 }
 .cart-container .item-info {
 	flex: 1;
@@ -1938,7 +2112,9 @@ main:has(.wishlist-container) {
 	color: #888;
 }
 
-/* ===== 전체 선택 / 선택 상품 삭제 ===== */
+/* ===== 전체 선택 / 선택 상품 삭제 =====
+   admin/admincouponView.jsp의 선택 모드와 동일한 구조 - 평소엔 "상품 선택" 버튼만 보이고,
+   누르면 전체선택 체크박스 + 선택 상품 삭제 버튼이 나타난다. */
 .wishlist-container .wishlist-controls[hidden] {
 	display: none;
 }
@@ -1950,13 +2126,45 @@ main:has(.wishlist-container) {
 	font-size: 14px;
 	color: #555;
 }
-.wishlist-container #wish-delete-btn {
+.wishlist-container .select-menu {
+	display: flex;
+	gap: 12px;
+}
+.wishlist-container .select-menu[hidden] {
+	display: none;
+}
+.wishlist-container .list-control-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.wishlist-container #wish-delete-btn,
+.wishlist-container #wish-cart-btn {
 	border: none;
 	background: none;
 	color: #888;
 	font-size: 13px;
 	text-decoration: underline;
 	cursor: pointer;
+}
+.wishlist-container #toggleWishSelectButton {
+	height: 32px;
+	padding: 0 12px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	background-color: white;
+	color: #666;
+	font-size: 13px;
+	cursor: pointer;
+}
+.wishlist-container #toggleWishSelectButton:hover {
+	background-color: #f5f5f5;
+	color: #333;
+}
+.wishlist-container #toggleWishSelectButton.is-selecting {
+	background-color: var(--gsf-peach-pale);
+	border-color: var(--gsf-caramel);
+	color: #5c4a2f;
 }
 
 /* ===== 개수 표시 + 정렬 필터 ===== */
@@ -2031,6 +2239,7 @@ main:has(.wishlist-container) {
 	z-index: 1;
 }
 .wishlist-container .item-checkbox {
+	display: none;
 	position: absolute;
 	top: 10px;
 	left: 10px;
@@ -2039,6 +2248,10 @@ main:has(.wishlist-container) {
 	height: 18px;
 	accent-color: var(--gsf-caramel);
 	cursor: pointer;
+}
+/* "상품 선택" 모드일 때만 각 카드 체크박스 노출 */
+.wishlist-container .product-grid.selecting .item-checkbox {
+	display: inline-block;
 }
 /* 찜 화면 카드는 전부 이미 찜한 상품이라 항상 채워진 하트로 보여준다(누르면 찜 해제) */
 .wishlist-container .product-wish-toggle.is-active .product-wish-icon {
@@ -2143,6 +2356,12 @@ main:has(.search-result-page) {
 .sp-sidebar-banner .banner-image {
 	aspect-ratio: 4 / 3;
 	border-radius: 0;
+	/* 배너 이미지를 실제 상품 대표 이미지로 바꾸면서(2026-09-02) JSP가 inline style로
+	   background-image를 넣는다. 원본 비율이 제각각이라 잘라서 꽉 채운다.
+	   이미지를 못 받아온 슬라이드는 위 .banner-image의 그라데이션이 그대로 보인다. */
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
 }
 .sp-sidebar-banner .banner-content {
 	padding: 18px 20px 34px;
@@ -2203,6 +2422,16 @@ main:has(.search-result-page) {
 .sp-category-item.is-active {
 	background-color: var(--gsf-caramel);
 	color: #222;
+}
+/* 카테고리 칩과 페이지 번호를 <button>에서 서버 링크(<a>)로 바꿨다(2026-09-02) - 클릭이 실제
+   검색 조건으로 넘어가야 해서. 위에 잡아둔 버튼 스타일이 앵커에도 그대로 먹도록
+   앵커 기본값(inline, 밑줄)만 덮어쓴다. */
+a.sp-category-item,
+a.sp-page-btn,
+a.sp-btn-prev,
+a.sp-btn-next {
+	display: inline-block;
+	text-decoration: none;
 }
 
 /* ===== Tag section (가격대·선호 등 상품 속성, 중복 선택 가능, 메인 카테고리 바로 아래) ===== */
@@ -2272,24 +2501,8 @@ main:has(.search-result-page) {
 .sp-search-btn:hover {
 	background-color: #b48b62;
 }
-.sp-quick-filter {
-	display: flex;
-	gap: 8px;
-	flex-wrap: wrap;
-}
-.sp-filter-btn {
-	border: none;
-	border-radius: 999px;
-	background-color: #eee;
-	color: #666;
-	font-size: 13px;
-	padding: 8px 16px;
-	cursor: pointer;
-}
-.sp-filter-btn:hover {
-	background-color: var(--gsf-caramel);
-	color: #222;
-}
+/* .sp-quick-filter / .sp-filter-btn(인기·신상품·할인) 규칙은 삭제함(2026-09-02).
+   버튼이 동작한 적이 없고 실제 필터 역할은 태그 칩이 하고 있어 JSP에서 함께 제거. */
 
 /* ===== Product grid ===== */
 .sp-product-section {
@@ -2639,10 +2852,8 @@ main:has(.search-result-page) {
 /* ================================================================
    ↓↓↓ style_payment.css 원본 내용
    ================================================================ */
-/* 원본은 스코프 없는 body{margin:0;font-family:Arial;color:#333} 였음 - 사이트 전역
-   글꼴/글자색을 Arial/#333로 덮어써서 default.css의 기본 글꼴을 leak시키고 있었음(주문/
-   결제 페이지는 이미 style.css의 body.order-hero가 배경을 담당). 필요 없는 규칙이라 삭제함.
-   자세한 내용은 HANDOFF.md 참고. */
+/* 스코프 없는 body{} 규칙이 있었으나 사이트 전역 글꼴·글자색을 덮어써서 삭제했다.
+   배경은 style.css의 body.order-hero가 담당한다. */
 
         /* outer wrapper는 투명하게, 폭/배경은 안쪽 카드(.order-card)에만 준다 -
            main 태그에 직접 폭을 주면 hero 배경이 스크롤 시 깨진다. */
@@ -2650,9 +2861,10 @@ main:has(.search-result-page) {
             padding: 50px 0;
         }
 
-        /* 결제 전체 영역 */
+        /* 600px는 실제 상품명(옵션명까지 붙으면 40자를 넘기기도 한다)엔 좁아서
+           "라벨 + 긴 값" 줄에서 라벨까지 같이 찌그러진다. 680px로 넉넉하게. */
         .order-card {
-            width: 600px;
+            width: 680px;
             margin: 0 auto;
             padding: 40px;
             background-color: white;
@@ -2669,9 +2881,9 @@ main:has(.search-result-page) {
             margin-bottom: 35px;
         }
 
-        /* 각 섹션 */
-        #ProductInfo, #Price, #point, #Coupon, #MembershipTier,
-		#DeliveryAddress, #PaymentMethod, #Checkbox {
+        /* 각 섹션. #DiscountInfo(쿠폰/등급/포인트 할인 금액 목록)가 이 목록에 안 들어있어서
+        /* 각 섹션 공통 여백·구분선. #DiscountInfo를 빠뜨리면 위 섹션 구분선에 바짝 붙어 보인다. */
+		#DeliveryAddress, #PaymentMethod, #Checkbox, #DiscountInfo {
             padding: 22px 0;
             border-bottom: 1px solid #eee;
         }
@@ -2690,12 +2902,25 @@ main:has(.search-result-page) {
             border-radius: 8px;
         }
 
+        /* 라벨과 값이 둘 다 기본 flex-shrink:1이라 값이 길면 라벨까지 찌그러진다.
+           라벨은 shrink 금지, 값 쪽만 줄바꿈되게 분리. */
         .order-card .product-name, .order-card .product-quantity, .order-card .price-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: baseline;
+            gap: 12px;
             margin-bottom: 12px;
             font-size: 14px;
+        }
+
+        .order-card .product-name > span:first-child,
+        .order-card .product-quantity > span:first-child,
+        .order-card .price-item > span:first-child {
+            flex-shrink: 0;
+        }
+
+        .order-card .product-name > span:last-child {
+            text-align: right;
         }
 
         .order-card .product-name:last-child, .order-card .product-quantity:last-child,
@@ -2722,8 +2947,15 @@ main:has(.search-result-page) {
             font-weight: bold;
         }
 
-        /* 포인트 */
+        /* 포인트 - 입력 행(.point-input-row)만 가로 정렬, 안내문들은 그 아래 세로로 쌓인다
+           (예전엔 #point 전체가 flex라 안내문까지 입력칸 옆 한 줄에 욱여넣어져 있었음). */
         #point {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .point-input-row {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -2749,11 +2981,24 @@ main:has(.search-result-page) {
             border-color: #b59b7b;
         }
 
-        /* 쿠폰 */
+        #point p {
+            margin: 0;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .point-warning {
+            color: #e64545;
+            font-weight: bold;
+        }
+
+        /* 쿠폰 - 포인트 영역(#point, 입력칸+안내문 여러 줄)과 바로 붙어 있으면 안내문과
+           "쿠폰 사용" 라벨이 시각적으로 뭉쳐 보인다. */
         #Coupon {
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-top: 28px;
         }
 
         #Coupon label {
@@ -2765,11 +3010,24 @@ main:has(.search-result-page) {
         #coupon_id {
             width: 280px;
             height: 40px;
-            padding: 0 10px;
+            /* #product-option과 동일 패턴: 네이티브 화살표가 오른쪽 끝에 딱 붙어
+               위치를 못 잡으므로 appearance:none + SVG 배경으로 대체 */
+            padding: 0 38px 0 10px;
             border: 1px solid #d8d3cc;
             border-radius: 6px;
             background-color: white;
             outline: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 10px 10px;
+        }
+
+        #coupon_id::-ms-expand {
+            display: none;
         }
 
         /* 회원 등급 할인 */
@@ -3178,7 +3436,7 @@ main:has(.search-result-page) {
    리뷰 작성 페이지 스타일
    방향: 자극적인 꾸밈 없이, 여백과 절제된 포인트로 정리
 
-   2026-09-01 규격 통일(HANDOFF 3-49): 이 페이지만 wrapper 없이 #review-form(ID)이 컨테이너라
+   2026-09-01 규격 통일: 이 페이지만 wrapper 없이 #review-form(ID)이 컨테이너라
    클래스 선택자로 뭘 덮어써도 밀렸고, body에 글꼴/색을 걸어 헤더·푸터까지 톤이 바뀌었으며,
    *{}/h2{}/.product-price{} 등이 스코프 없이 전역으로 샜다(3-5/3-6과 같은 계열).
    → .review-write-page(wrapper) + .page-content(카드) 2단 구조로 바꾸고 전 규칙을 스코프.
@@ -3923,6 +4181,129 @@ main:has(.search-result-page) {
     padding-bottom: 4px;
 }
 
+/* 쿠폰 받기 - 구매 버튼 줄과 분리한 독립 배너. 색상/테두리/호버는 찜·장바구니 담기 버튼
+   (.cart-container .btn-outline)과 규격을 맞춘다. */
+#coupon-issue-banner {
+    width: 100%;
+    height: 64px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #555;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#coupon-issue-banner:hover {
+    border-color: var(--gsf-caramel);
+    color: var(--gsf-caramel);
+}
+
+/* ===== 쿠폰 받기 모달 =====
+   .modal-overlay(style_admin.css)는 .show 클래스로 여는 전역 이름이라 재사용하면 부딪힌다
+   (이 모달은 [hidden] 속성으로 연다) - coupon-modal- 접두사로 새 이름을 쓴다.
+   .modal-close/.modal-actions는 상태 토글이 없는 레이아웃 규칙이라 재사용해도 안전하다. */
+.coupon-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(34, 30, 24, 0.45);
+}
+
+.coupon-modal-overlay[hidden] {
+    display: none;
+}
+
+.coupon-modal-box {
+    position: relative;
+    width: 380px;
+    max-height: 70vh;
+    padding: 28px 24px;
+    background-color: #fff;
+    border-radius: var(--radius-md);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+}
+
+.coupon-modal-box .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+#coupon-modal-title {
+    margin: 0 0 16px;
+    padding-right: 30px; /* 닫기 버튼과 안 겹치게 */
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.coupon-modal-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+}
+
+.coupon-modal-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gsf-border);
+}
+
+.coupon-modal-item:last-child {
+    border-bottom: none;
+}
+
+.coupon-modal-item-name {
+    font-size: 14px;
+    color: var(--gsf-text);
+}
+
+.coupon-modal-item-rate {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gsf-caramel);
+}
+
+.coupon-modal-empty {
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--gsf-subtext);
+    text-align: center;
+}
+
+.coupon-modal-box .modal-actions button {
+    width: auto;
+    flex: 1;
+}
+
+#coupon-modal-claim-all {
+    background-color: var(--gsf-caramel);
+    border: 1px solid var(--gsf-caramel);
+    color: #222;
+}
+
+#coupon-modal-claim-all:disabled {
+    background-color: #eee;
+    border-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
 .product-sub-image {
     display: block;
     flex: 0 0 80px;
@@ -3944,11 +4325,13 @@ main:has(.search-result-page) {
     flex: 1;
 }
 
-/* 상품 제목 */
+/* 상품 제목 - 이 클래스는 상품 상세(productDetail.jsp)에서만 쓴다.
+   서체는 카드 제목과 같은 아리따부리(위쪽 '상품 게시글 제목 서체' 블록 참고). */
 .product-title {
     margin: 0 0 15px;
     font-size: 25px;
     font-weight: bold;
+    font-family: var(--gsf-font-title);
 }
 
 /* 상품 설명 */
@@ -4022,6 +4405,10 @@ main:has(.search-result-page) {
 .original-price {
     font-size: 15px;
     color: #999;
+}
+/* 취소선은 "할인가" 줄이 실제로 있을 때만(로그인 + 등급 할인 > 0) 긋는다.
+   무조건 그으면 할인가 줄이 없는 비로그인 상태에서도 정상가에 줄이 그어져 오해를 준다. */
+#price-info:has(.sale-price) .original-price {
     text-decoration: line-through;
 }
 
@@ -4053,11 +4440,26 @@ main:has(.search-result-page) {
 #product-option {
     width: 100%;
     height: 45px;
-    padding: 0 10px;
+    /* 네이티브 화살표는 오른쪽 끝에 딱 붙어 그려져 위치를 잡을 수 없으므로
+       appearance:none으로 끄고 같은 모양의 SVG를 배경으로 깔아 안쪽으로 들여놓는다
+       (style_admin.css .input-area select와 동일 패턴). 오른쪽 패딩은
+       화살표(10px) + 좌우 여백만큼 확보해 글자가 화살표에 겹치지 않게 한다 */
+    padding: 0 38px 0 10px;
     border: 1px solid #ddd;
     border-radius: 6px;
     background-color: white;
     box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 10px 10px;
+}
+
+#product-option::-ms-expand {
+    display: none;
 }
 
 #product-option option:disabled {
@@ -4251,6 +4653,45 @@ main:has(.search-result-page) {
 
 .review-date {
     color: #999;
+}
+
+.review-like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    padding: 2px 8px;
+    border: 1px solid #eee;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: #999;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.review-like-btn:hover {
+    border-color: var(--gsf-caramel);
+    color: var(--gsf-caramel);
+}
+
+.review-like-btn.is-active {
+    border-color: var(--gsf-caramel);
+    background-color: var(--gsf-peach-pale);
+    color: var(--gsf-caramel);
+}
+
+.icon-heart-small {
+    width: 13px;
+    height: 13px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.review-like-btn.is-active .icon-heart-small {
+    fill: currentColor;
 }
 
 .review-images {
@@ -4670,6 +5111,24 @@ main:has(.search-result-page) {
     font-weight: 700;
     color: #333;
     text-align: right;
+}
+
+/* 품목별 리뷰 작성 여부. 배송완료 주문에서만 렌더된다 */
+.order-delivery-page .order-item-review {
+    flex-shrink: 0;
+    min-width: 72px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.order-delivery-page .order-item-review.is-done {
+    color: #a99b86;
+}
+
+/* 아직 쓸 게 남았다는 뜻이라 완료보다 눈에 띄게 */
+.order-delivery-page .order-item-review.is-todo {
+    color: #c1592f;
 }
 
 @media (max-width: 700px) {

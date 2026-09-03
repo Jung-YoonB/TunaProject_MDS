@@ -8,6 +8,15 @@ ul, ol, li, a, input, select, textarea { margin: 0; padding: 0; border: 0 none; 
 
 body { font-family: MalgunGothic, '맑은 고딕', '돋움', Dotum, AppleGothic, Sans-serif, Arial; font-size: 14px; line-height: 1.5; color: #333; }
 
+/* 상품 게시글 제목 전용 서체(아리따부리) - 등록만 하고 적용은 style_user.css에서.
+   CDN을 못 받아오면 --gsf-font-title의 뒤쪽 기본 서체로 떨어진다(font-display: swap). */
+@font-face {
+    font-family: 'Aritaburi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Arita-buri-SemiBold.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+}
+
 ul, ol, li { list-style: none; }
 em, address { font-style: normal; }
 img { border: 0 none; max-width: 100%; height: auto; }

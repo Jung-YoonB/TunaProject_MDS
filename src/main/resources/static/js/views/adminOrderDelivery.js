@@ -29,8 +29,9 @@
     var sortOrderIdBtn = document.getElementById('sort-order-id');
     var sortArrowEl = sortOrderIdBtn.querySelector('.sort-arrow');
 
-    // 주문번호 정렬 방향. 서버가 기본으로 오름차순(ASC)으로 내려주므로 초기값도 그에 맞춘다
-    var sortDirection = 'asc';
+    // 주문번호 정렬 방향. 최근 주문이 먼저 보이도록 기본값은 내림차순(DESC) - 서버 정렬과는
+    // 무관하게 여기서(프론트) 매번 다시 정렬한다. JSP의 초기 화살표(▼)와 짝을 맞출 것.
+    var sortDirection = 'desc';
 
     // 페이지네이션(공용 로직은 static/js/common/pagination.js) - onPageChange는 아래 render를
     // 참조하는데, 함수 선언은 호이스팅되므로 이 시점에 먼저 참조해도 문제없다

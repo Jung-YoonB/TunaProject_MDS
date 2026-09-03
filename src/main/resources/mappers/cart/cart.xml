@@ -14,16 +14,24 @@
     </select>
 
     <select id="getCartList" resultType="CartListDTO" parameterType="Long" >
-        select c.CART_ID, c.member_id, p.PRODUCT_TITLE, po.OPTION_NAME,
+        select c.CART_ID, c.member_id, c.POP_ID, p.PRODUCT_TITLE, po.OPTION_NAME,
         po.OPTION_PRICE, c.QTY,OPTION_PRICE * c.QTY as total_price, pi.PRODUCT_IMAGE_SAVE_NAME as title_image
         from cart c join OPTIONDETAIL od on od.POP_ID = c.POP_ID
         join PRODUCTOPTION po on po.OPTION_ID = od.OPTION_ID
         join product p on p.product_id = od.product_id
-        left join productimage pi on p.PRODUCT_ID = pi.PRODUCT_ID
-        where pi.PRODUCT_TITLE_IMAGE = 0 and c.MEMBER_ID = #{memberId}
+        left join productimage pi on p.PRODUCT_ID = pi.PRODUCT_ID and pi.PRODUCT_TITLE_IMAGE = 0
+        where c.MEMBER_ID = #{memberId}
     </select>
 
     <delete id="removeCart">
         delete from cart where member_id = #{memberId} and POP_ID = #{popId}
     </delete>
+
+    <update id="updateQty">
+        update cart set qty = #{qty} where member_id = #{memberId} and POP_ID = #{popId}
+    </update>
+
+    <update id="incrementQty">
+        update cart set qty = qty + #{deltaQty} where member_id = #{memberId} and POP_ID = #{popId}
+    </update>
 </mapper>

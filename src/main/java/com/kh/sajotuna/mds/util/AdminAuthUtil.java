@@ -11,7 +11,7 @@ public class AdminAuthUtil {
 	private AdminAuthUtil() {}
 
 	public static boolean isAdmin(HttpSession session) {
-		MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+		MemberDTO member = LoginUtil.member(session);
 		return member != null && "ADMIN".equals(member.getRole());
 	}
 

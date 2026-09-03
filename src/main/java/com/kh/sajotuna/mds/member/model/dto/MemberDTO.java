@@ -40,7 +40,11 @@ public class MemberDTO {
 	@NotBlank(message = "닉네임을 입력해주세요.")
 	@Pattern(regexp = "^[가-힣a-zA-Z0-9_]{2,8}$", message = "닉네임은 한글, 영문, 숫자, 언더바(_)를 사용하여 2~8자로 입력해주세요.")
 	private String nickname;
-	@Pattern(regexp="^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message="올바른 이메일 형식이 아닙니다.")
+	// 이메일 형식 규칙. MemberServiceImpl.emailUpdate도 이 상수를 쓴다(둘이 갈리면
+	// 가입은 통과하는데 변경은 막히는 식으로 어긋난다). 여기 빈 값은 "이메일 미입력" 허용.
+	public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+
+	@Pattern(regexp = "^$|" + EMAIL_REGEX, message = "올바른 이메일 형식이 아닙니다.")
 	private String email;
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate createdAt;
@@ -54,9 +58,13 @@ public class MemberDTO {
 	private String birthStr;
 	private String createdAtStr;
 	
-	public MemberDTO(Long memberId, String memberName, String role) {
+	// 세션에 담을 최소 정보만 가진 생성자.
+	// nickname은 헤더가 "OOO님"으로 노출하는 값이라 반드시 함께 담아야 한다
+	// (닉네임을 바꾸면 MemberController.updateNickname이 세션 값도 같이 갱신한다).
+	public MemberDTO(Long memberId, String memberName, String nickname, String role) {
 		this.memberId = memberId;
 		this.memberName = memberName;
+		this.nickname = nickname;
 		this.role = role;
 	}
 }

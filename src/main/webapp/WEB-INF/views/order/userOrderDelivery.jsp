@@ -9,7 +9,7 @@
 <div class="order-delivery-page">
 <div class="page-content">
 
-    <h1 class="page-title">주문/배송내역</h1>
+    <h1 class="page-title" id="pageTitle">주문/배송내역</h1>
 
     <%-- 주문이 쌓여도 느려지지 않도록 상태 필터/페이징을 서버에서 처리하므로, 탭은 쿼리 파라미터를 바꿔서
          페이지를 새로 요청하는 링크로 구성한다(필터 바꿀 땐 1페이지부터 다시 보여줌) --%>
@@ -84,14 +84,20 @@
                             <fmt:formatNumber value="${item.totalPrice}" pattern="#,##0"/>원
                         </p>
 
-                        <%-- 상품이 2건 이상인 주문만 펼치기 버튼을 단다. 1건짜리는 위 대표 상품이
-                             곧 전체라 펼칠 게 없다. 품목은 서버가 이미 내려줬으므로 표시만 토글한다 --%>
+                        <%-- 상품 2건 이상인 주문만 펼치기 버튼을 단다(1건짜리는 대표가 곧 전체).
+                             배송완료 주문은 품목별 리뷰 상태를 봐야 하므로 처음부터 펼쳐둔다 --%>
+                        <c:set var="itemsOpen" value="${item.deliveryStatus == 'DELIVERED'}"/>
+                        <c:set var="itemsClosedLabel" value="주문 상품 ${item.productCount}건 모두 보기"/>
+                        <c:set var="itemsOpenedLabel" value="주문 상품 접기"/>
+
                         <c:if test="${item.productCount > 1}">
                         <button type="button" class="btn-order-items"
-                                aria-expanded="false" aria-controls="order-items-${item.orderId}">
+                                aria-expanded="${itemsOpen}" aria-controls="order-items-${item.orderId}">
+                            <%-- data-closed/opened 는 views/orderDelivery.js가 토글할 때 쓴다.
+                                 처음 보이는 문구는 위 itemsOpen 상태와 반드시 일치해야 한다 --%>
                             <span class="btn-order-items-text"
-                                  data-closed="주문 상품 ${item.productCount}건 모두 보기"
-                                  data-opened="주문 상품 접기">주문 상품 ${item.productCount}건 모두 보기</span>
+                                  data-closed="${itemsClosedLabel}"
+                                  data-opened="${itemsOpenedLabel}">${itemsOpen ? itemsOpenedLabel : itemsClosedLabel}</span>
                             <svg class="icon-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
                         </button>
                         </c:if>
@@ -110,10 +116,9 @@
                     </span>
                 </div>
 
-                <%-- 펼침 영역. 기본은 hidden이고 views/orderDelivery.js가 버튼 클릭으로 토글한다.
-                     JS가 막히면 그냥 접힌 상태로 남을 뿐 다른 정보는 그대로 보인다 --%>
+                <%-- views/orderDelivery.js가 토글. JS가 막혀도 접힌 채로 남을 뿐이라 안전하다 --%>
                 <c:if test="${item.productCount > 1}">
-                <div class="order-items" id="order-items-${item.orderId}" hidden>
+                <div class="order-items" id="order-items-${item.orderId}" ${itemsOpen ? '' : 'hidden'}>
                     <ul class="order-item-list">
                         <c:forEach items="${item.items}" var="orderItem">
                         <li class="order-item">
@@ -139,6 +144,12 @@
                             <span class="order-item-price">
                                 <fmt:formatNumber value="${orderItem.priceFix * orderItem.qty}" pattern="#,##0"/>원
                             </span>
+                            <%-- 배송 전엔 리뷰를 쓸 수 없으므로(getWriteInfo) 배송완료에만 표시 --%>
+                            <c:if test="${item.deliveryStatus == 'DELIVERED'}">
+                            <span class="order-item-review ${orderItem.hasReview ? 'is-done' : 'is-todo'}">
+                                ${orderItem.hasReview ? '리뷰 작성 완료' : '리뷰 미작성'}
+                            </span>
+                            </c:if>
                         </li>
                         </c:forEach>
                     </ul>
@@ -214,8 +225,10 @@
                 <c:if test="${item.deliveryStatus == 'DELIVERED' && item.odId != null}">
                 <div class="order-actions">
                     <c:choose>
-                        <c:when test="${item.hasReview}">
-                            <span class="review-done-badge">리뷰 작성 완료</span>
+                        <%-- 품목별 상태(드롭다운 각 행의 "리뷰 작성 완료")와 층위가 다르므로 문구도 구분한다.
+                             여기는 "이 주문 전체"를 다 썼다는 뜻 --%>
+                        <c:when test="${item.allReviewed}">
+                            <span class="review-done-badge">이 주문 리뷰 모두 완료</span>
                         </c:when>
                         <c:otherwise>
                             <%-- 리뷰 작성 완료 후 지금 보고 있던 필터/페이지로 그대로 돌아올 수 있도록 returnUrl로 넘김 --%>
@@ -233,13 +246,13 @@
     <c:if test="${totalPages > 1}">
     <nav class="pagination" aria-label="페이지 이동">
         <c:if test="${currentPage > 1}">
-        <a class="page-link page-prev" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage - 1}'/></c:url>">이전</a>
+        <a class="page-link page-prev" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage - 1}'/></c:url>#pageTitle">이전</a>
         </c:if>
         <c:forEach begin="${pageWindowStart}" end="${pageWindowEnd}" var="p">
-        <a class="page-link ${p == currentPage ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${p}'/></c:url>">${p}</a>
+        <a class="page-link ${p == currentPage ? 'is-active' : ''}" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${p}'/></c:url>#pageTitle">${p}</a>
         </c:forEach>
         <c:if test="${currentPage < totalPages}">
-        <a class="page-link page-next" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage + 1}'/></c:url>">다음</a>
+        <a class="page-link page-next" href="<c:url value='/member/orderDelivery'><c:param name='status' value='${currentStatus}'/><c:param name='page' value='${currentPage + 1}'/></c:url>#pageTitle">다음</a>
         </c:if>
     </nav>
     </c:if>

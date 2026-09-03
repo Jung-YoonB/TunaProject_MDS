@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp"/>
 
@@ -14,6 +15,12 @@
         <form id="deliveryForm"
               action="${pageContext.request.contextPath}/member/addAddress"
               method="post">
+
+            <%-- 돌아갈 화면. 결제 화면에서 들어왔으면 저장 후 결제 화면으로 돌아간다.
+                 비어 있으면 컨트롤러가 회원정보 수정으로 보낸다. --%>
+            <c:if test="${not empty returnUrl}">
+                <input type="hidden" name="returnUrl" value="<c:out value='${returnUrl}'/>">
+            </c:if>
 
             <!-- 배송지 이름 -->
             <div class="form-item">
@@ -81,14 +88,14 @@
                         id="zipcode"
                         name="zipcode"
                         placeholder="우편번호"
-                        readonly>
+                        readonly
+                        required>
 
                     <button
                         type="button"
                         id="address-search-button">
 
                         주소 검색
-
                     </button>
 
                 </div>
@@ -99,7 +106,8 @@
                     id="address"
                     name="address"
                     placeholder="기본 주소"
-                    readonly>
+                    readonly
+                    required>
 
                 <!-- 상세 주소 -->
                 <input
@@ -152,5 +160,8 @@
         </form>
 </div>
 </div>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="<c:url value='/js/views/deliveryAddress.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>
