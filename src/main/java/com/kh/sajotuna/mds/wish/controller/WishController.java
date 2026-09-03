@@ -28,7 +28,6 @@ public class WishController {
         MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            System.out.println(model.getAttribute("message"));
             return "redirect:/member/login";
         }
 
@@ -36,7 +35,6 @@ public class WishController {
 
         String addWish = service.insertWish(findWishInfoDTO);
         model.addAttribute("message", addWish);
-        System.out.println("addWishMessage :: " + addWish);
         return "redirect:/mds/detail/" + productId;
 
     }
@@ -46,7 +44,6 @@ public class WishController {
         MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            System.out.println(model.getAttribute("message"));
             return "redirect:/member/login";
         }
 
@@ -54,13 +51,10 @@ public class WishController {
         String message = service.removeWish(findWishInfoDTO);
 
         model.addAttribute("message", message);
-        System.out.println("removeWishMessage :: " + message);
         return "redirect:/wish/my-wish";
     }
 
-    // 헤더 찜 뱃지용 - header.js가 페이지 로드마다 호출해서 실제 WISH 기준 개수를 보여준다
-    // (뱃지가 localStorage 목업이라 메인 페이지 등에서 실제 찜 개수와 안 맞던 것
-    // 조치). 비로그인이면 0.
+    // 헤더 찜 뱃지용 - 실제 WISH 개수. 비로그인이면 0
     @GetMapping("/count")
     @ResponseBody
     public int count(HttpSession session) {
@@ -76,11 +70,9 @@ public class WishController {
         MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            System.out.println(model.getAttribute("message"));
             return "redirect:/member/login";
         }
-            List<WishListDTO> list = service.getWishList(member.getMemberId());
-        System.out.println("list :: " + list);
+        List<WishListDTO> list = service.getWishList(member.getMemberId());
         model.addAttribute("list", list);
         return "product/wish";
     }

@@ -536,8 +536,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
-                    // "on"/"off"가 아니면(예: 500이 나서 에러 페이지 HTML이 온 경우) 아무것도 바꾸지
-                    // 않는다. 예전엔 그런 응답도 "off"로 쳐서 하트가 꺼지고 개수가 1 줄어 있었다.
+                    // "on"/"off"가 아니면(500 에러 페이지 등) 화면을 건드리지 않는다
                     if (result !== 'on' && result !== 'off') {
                         alert('좋아요 처리에 실패했습니다.');
                         return;

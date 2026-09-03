@@ -139,15 +139,9 @@
     }
 
     /**
-     * 찜 버튼의 화면 상태(하트 채움 + 옆의 찜 개수)를 한 번에 맞춘다.
-     * 홈 카드·검색결과 카드·상품 상세가 전부 이걸 쓴다 - 예전엔 각 화면이 is-active만 뒤집고
-     * 숫자는 아무도 안 건드려서, 하트는 채워지는데 개수는 그대로인 채로 남아 있었다.
-     *
-     * 숫자는 "상태가 실제로 바뀐 경우에만" 움직인다. toggleWish는 비로그인(로그인 화면으로 이동)이나
-     * 통신 실패일 때 원래 상태(wasWished)를 그대로 돌려주는데, 그때도 ±1 하면 서버 값과 어긋난다.
-     *
-     * @param countEl 개수를 표시하는 요소. 안 넘기면 버튼 안의 .product-wish-count-num을 쓴다
-     *                (상품 상세는 개수가 버튼 밖 #wish-count에 있어서 직접 넘긴다)
+     * 찜 버튼의 화면 상태(하트 채움 + 옆의 찜 개수)를 한 번에 맞춘다. 홈/검색/상세가 공유.
+     * 숫자는 상태가 실제로 바뀐 경우에만 움직인다 - 비로그인/통신 실패 시 원래 값(wasWished)
+     * 그대로면 ±1 하지 않는다. countEl은 개수 요소가 버튼 밖에 있을 때만(상품 상세) 넘긴다.
      */
     function applyWishState(button, wasWished, nowWished, countEl) {
         button.classList.toggle('is-active', nowWished);

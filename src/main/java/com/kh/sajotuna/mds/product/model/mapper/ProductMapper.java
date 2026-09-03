@@ -27,8 +27,7 @@ public interface ProductMapper {
 	// 사용자 화면에서 끌어다 쓰면 도메인이 얽혀서 여기에 따로 둔다.
 	List<CategoryDTO> selectAllCategories();
 
-	// TagOptionDTO는 admin 패키지에 있지만, CategoryDTO처럼 product 쪽으로 옮기지 않고 그대로 쓴다
-	// - admin 담당자가 지금 그 패키지에서 작업 중이라 이동시키면 충돌난다. 정리는 그 작업이 끝난 뒤에.
+	// TagOptionDTO는 admin 패키지 소속이지만 CategoryDTO처럼 옮기지 않고 그대로 쓴다
 	List<TagOptionDTO> selectAllTags();
 
 	//상품 상세 페이지

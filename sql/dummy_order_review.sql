@@ -656,3 +656,156 @@ SELECT p.PRODUCT_ID,
  GROUP BY p.PRODUCT_ID, p.PRODUCT_NAME
  ORDER BY COUNT(r.REVIEW_ID) DESC, p.PRODUCT_ID
  FETCH FIRST 10 ROWS ONLY;
+
+
+-- ======================================================================
+--  추가: 시연용 - 주문/배송 상태 8종 전량 커버 + 관리자 쿠폰 카드 4색 전량 커버
+--  작성: 2026-09-03
+--
+--  목적
+--    위 더미로도 채워지지 않는 상태들을 시연 직전에 보강한다.
+--    - 결제대기(PAYMENT_WAITING)는 실제 checkout()이 절대 만들지 않는 상태라
+--      (곧바로 PAYMENT_COMPLETED로 INSERT함) 이 스크립트로만 만들 수 있다.
+--    - 관리자 쿠폰 카드의 "만료" 2색도 등록 API가 과거 종료일을 막아서
+--      (AdminCouponServiceImpl.registerCoupon) 마찬가지로 직접 INSERT만 가능하다.
+--    - "진행중·미사용" 쿠폰은 아무 제약이 없는 정상 경로라(그냥 등록 후 아무도 안 받으면 됨)
+--      실제 관리자 화면(admin/coupon/add)에서 등록했다. 이 파일엔 재현용 INSERT를 안 뒀다 -
+--      /admin/coupon/add 에서 종료일만 미래로 아무 쿠폰이나 등록하면 이 상태가 나온다.
+--
+--  주의: 이 블록은 dummy_rv01~06/dummy_buyer/dummy_zero/dummy_many/dummy_nick8/
+--  dummy_admin2/dummy_phonefmt/dummy_dupphone/dummy_sgok 계정이 이미 있어야 한다
+--  (본 파일 위쪽 0~3번 블록, 그리고 이후 세션에서 추가된 계정들을 먼저 실행할 것).
+--  재고는 위 add_item()과 같은 이유로 건드리지 않는다.
+-- ======================================================================
+
+-- 시연용: 주문 상태 8종(결제대기/결제완료/배송준비중/배송중/배송출발/배송완료/취소환불대기중/취소환불완료)
+-- 각각 예시를 추가한다. 재고는 dummy_order_review.sql의 add_item()과 동일하게 손대지 않는다
+-- (더미 주문은 실제 재고를 갉아먹지 않는 게 이 프로젝트의 기존 관례).
+DECLARE
+    C_ADDR_NAME CONSTANT VARCHAR2(20) := '집';
+    C_ADDR      CONSTANT VARCHAR2(60) := '서울특별시 강남구 테스트로 100, 101동 202호';
+    v_order NUMBER; -- PL/SQL 규칙: 서브프로그램 선언 뒤에는 변수 선언을 둘 수 없어 맨 위로 옮김
+
+    FUNCTION mid(p_login VARCHAR2) RETURN NUMBER IS
+        v NUMBER;
+    BEGIN
+        SELECT MEMBER_ID INTO v FROM MEMBER WHERE LOGIN_ID = p_login;
+        RETURN v;
+    END;
+
+    -- PAYMENT_ID는 실제 checkout()처럼 1~3(카카오/네이버/마스터카드)을 돌아가며 씀
+    FUNCTION new_order(p_member NUMBER, p_status VARCHAR2, p_days_ago NUMBER) RETURN NUMBER IS
+        v_id NUMBER;
+    BEGIN
+        SELECT SEQ_ORDER_ID.NEXTVAL INTO v_id FROM DUAL;
+        INSERT INTO PRODUCTORDER (ORDER_ID, MEMBER_ID, TOTAL_PRICE, ORDER_STATUS, ORDER_DATE,
+                                  USED_POINT, PAYMENT_ID, ADDRESS_NAME_FIX, DETAIL_ADDRESS_FIX)
+        VALUES (v_id, p_member, 0, p_status, SYSDATE - p_days_ago,
+                0, 1 + MOD(v_id, 3), C_ADDR_NAME, C_ADDR);
+        RETURN v_id;
+    END;
+
+    -- 품목 추가. 재고는 안 건드림(dummy_order_review.sql과 동일 관례).
+    -- PROCEDURE인 이유: FUNCTION으로 두고 "add_item(v_order,...)"처럼 부르면
+    -- 반환값(OD_ID)이 v_order를 덮어써서 다음 add_item이 엉뚱한 ORDER_ID를 참조하게 된다
+    -- (실제로 한 번 이렇게 틀려서 ORA-02291 FK 위반이 났다) - 아예 반환값을 없애 원천 차단.
+    PROCEDURE add_item(p_order NUMBER, p_pop NUMBER, p_qty NUMBER) IS
+        v_id NUMBER; v_price NUMBER;
+    BEGIN
+        SELECT po.OPTION_PRICE INTO v_price
+          FROM OPTIONDETAIL od JOIN PRODUCTOPTION po ON po.OPTION_ID = od.OPTION_ID
+         WHERE od.POP_ID = p_pop;
+
+        SELECT SEQ_OD_ID.NEXTVAL INTO v_id FROM DUAL;
+        INSERT INTO ORDERDETAIL (OD_ID, ORDER_ID, POP_ID, QTY, PRICE_FIX, GRADE_DIS_AMOUNT)
+        VALUES (v_id, p_order, p_pop, p_qty, v_price, 0);
+
+        UPDATE PRODUCTORDER SET TOTAL_PRICE = TOTAL_PRICE + (v_price * p_qty) WHERE ORDER_ID = p_order;
+    END;
+
+    PROCEDURE set_delivery(p_order NUMBER, p_status VARCHAR2, p_company VARCHAR2, p_tracking VARCHAR2) IS
+    BEGIN
+        INSERT INTO DELIVERY (DELIVERY_ID, ORDER_ID, COMPANY, TRACKING_NO, DELIVERY_STATUS)
+        VALUES (SEQ_DELIVERY_ID.NEXTVAL, p_order, p_company, p_tracking, p_status);
+    END;
+
+BEGIN
+    -- ===== 결제대기 5건 (checkout()은 항상 PAYMENT_COMPLETED로 바로 넣어서 실제 앱으로는
+    -- 절대 못 만드는 상태 - 결제 PG 확인 대기를 흉내내는 순수 더미) =====
+    v_order := new_order(mid('dummy_rv01'), 'PAYMENT_WAITING', 0); add_item(v_order, 71, 1);
+    v_order := new_order(mid('dummy_rv02'), 'PAYMENT_WAITING', 0); add_item(v_order, 89, 2);
+    v_order := new_order(mid('dummy_rv03'), 'PAYMENT_WAITING', 0); add_item(v_order, 90, 1); add_item(v_order, 101, 1);
+    v_order := new_order(mid('dummy_rv04'), 'PAYMENT_WAITING', 0); add_item(v_order, 138, 1);
+    v_order := new_order(mid('dummy_rv05'), 'PAYMENT_WAITING', 0); add_item(v_order, 139, 1);
+
+    -- ===== 결제완료 2건 (배송 행 없음 - 관리자가 "결제 완료 처리" 누르기 전 상태) =====
+    v_order := new_order(mid('dummy_rv06'), 'PAYMENT_COMPLETED', 1); add_item(v_order, 154, 1);
+    v_order := new_order(mid('dummy_buyer'), 'PAYMENT_COMPLETED', 1); add_item(v_order, 49, 2); add_item(v_order, 50, 1);
+
+    -- ===== 배송준비중 2건 =====
+    v_order := new_order(mid('dummy_zero'), 'PREPARING', 2); add_item(v_order, 190, 1);
+    set_delivery(v_order, 'PREPARING', NULL, NULL);
+    v_order := new_order(mid('dummy_many'), 'PREPARING', 2); add_item(v_order, 71, 1); add_item(v_order, 86, 1);
+    set_delivery(v_order, 'PREPARING', NULL, NULL);
+
+    -- ===== 배송중 2건 =====
+    v_order := new_order(mid('dummy_nick8'), 'SHIPPED', 3); add_item(v_order, 125, 3);
+    set_delivery(v_order, 'SHIPPED', 'CJ대한통운', '111122223333');
+    v_order := new_order(mid('dummy_admin2'), 'SHIPPED', 3); add_item(v_order, 89, 1); add_item(v_order, 90, 2);
+    set_delivery(v_order, 'SHIPPED', '한진택배', '222233334444');
+
+    -- ===== 배송출발 2건 (ORDER_STATUS는 SHIPPED로 합쳐짐 - AdminOrderServiceImpl.DELIVERY_TO_ORDER_STATUS) =====
+    v_order := new_order(mid('dummy_phonefmt'), 'SHIPPED', 4); add_item(v_order, 101, 1);
+    set_delivery(v_order, 'OUT_FOR_DELIVERY', '롯데택배', '333344445555');
+    v_order := new_order(mid('dummy_dupphone'), 'SHIPPED', 4); add_item(v_order, 138, 1); add_item(v_order, 139, 1);
+    set_delivery(v_order, 'OUT_FOR_DELIVERY', '로젠택배', '444455556666');
+
+    -- ===== 배송완료 2건 =====
+    v_order := new_order(mid('dummy_sgok'), 'DELIVERED', 6); add_item(v_order, 154, 2);
+    set_delivery(v_order, 'DELIVERED', '우체국택배', '555566667777');
+    v_order := new_order(mid('dummy_rv01'), 'DELIVERED', 6); add_item(v_order, 49, 1); add_item(v_order, 190, 1);
+    set_delivery(v_order, 'DELIVERED', 'CJ대한통운', '666677778888');
+
+    -- ===== 취소/환불 대기중 2건 (DELIVERY_STATUS=CANCELED, ORDER_STATUS는 취소 직전 단계로 남음
+    -- - admin/order/{id}/complete-cancel을 눌러야 완료로 넘어감) =====
+    v_order := new_order(mid('dummy_rv02'), 'SHIPPED', 5); add_item(v_order, 86, 1);
+    set_delivery(v_order, 'CANCELED', 'CJ대한통운', '777788889999'); -- 배송 중에 취소 접수, 송장 남아있음
+    v_order := new_order(mid('dummy_rv03'), 'PREPARING', 5); add_item(v_order, 88, 1); add_item(v_order, 125, 1);
+    set_delivery(v_order, 'CANCELED', NULL, NULL); -- 준비중에 취소, 아직 택배사 배정 전
+
+    -- ===== 취소/환불 완료 2건 =====
+    v_order := new_order(mid('dummy_rv04'), 'CANCELED', 7); add_item(v_order, 90, 1);
+    set_delivery(v_order, 'CANCELED', NULL, NULL);
+    v_order := new_order(mid('dummy_rv05'), 'CANCELED', 7); add_item(v_order, 138, 1); add_item(v_order, 154, 1);
+    set_delivery(v_order, 'CANCELED', NULL, NULL);
+
+    COMMIT;
+END;
+/
+
+-- 시연용: 쿠폰 관리 카드 색상 4종 중 이미 없던 2종(만료-미사용/만료-이력있음)을 채운다.
+-- 관리자 등록 API(AdminCouponServiceImpl.registerCoupon)는 "종료일은 오늘 이후여야 한다"고
+-- 명시적으로 막고 있어(정상 검증) 만료 쿠폰은 API로는 절대 못 만든다 - 직접 INSERT로만 가능.
+DECLARE
+    v_coupon_expired_nohist NUMBER;
+    v_coupon_expired_hist   NUMBER;
+    v_member NUMBER;
+BEGIN
+    SELECT SEQ_COUPON_ID.NEXTVAL INTO v_coupon_expired_nohist FROM DUAL;
+    INSERT INTO COUPON (COUPON_ID, COUPON_NAME, COUPON_VALUE, COUPON_TEXT, CREATED_AT, DEADLINE)
+    VALUES (v_coupon_expired_nohist, '시연용 만료 쿠폰(미사용)', 0.1,
+            '시연 확인용 - 만료됐고 아무도 받지 않은 쿠폰', SYSDATE - 60, SYSDATE - 30);
+
+    SELECT SEQ_COUPON_ID.NEXTVAL INTO v_coupon_expired_hist FROM DUAL;
+    INSERT INTO COUPON (COUPON_ID, COUPON_NAME, COUPON_VALUE, COUPON_TEXT, CREATED_AT, DEADLINE)
+    VALUES (v_coupon_expired_hist, '시연용 만료 쿠폰(이력있음)', 0.2,
+            '시연 확인용 - 만료됐지만 발급 이력이 남아있는 쿠폰(할인 이력 보존 목적으로 안 지움)',
+            SYSDATE - 60, SYSDATE - 30);
+
+    SELECT MEMBER_ID INTO v_member FROM MEMBER WHERE LOGIN_ID = 'dummy_rv06';
+    INSERT INTO COUPONHISTORY (CHIST_ID, MEMBER_ID, COUPON_ID, TYPE, CREATED_AT)
+    VALUES (SEQ_CHIST_ID.NEXTVAL, v_member, v_coupon_expired_hist, 'ISSUE', SYSDATE - 45);
+
+    COMMIT;
+END;
+/

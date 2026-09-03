@@ -112,11 +112,8 @@
   		</choose>
   	</sql>
 
-  	<!-- 배송 목록: DELIVERY 행이 없는(체크아웃 미구현으로 관리자가 배송준비중으로 아직 안 바꾼) 결제완료
-  	     주문도 보여야 하므로 DELIVERY는 LEFT JOIN. 대표 상품(가장 먼저 담긴 ORDERDETAIL) 1건과 상품 건수를
-  	     서브쿼리 하나로 함께 조회(N+1 방지) - AdminOrderMapper.selectOrderList의 대표상품 패턴과 동일.
-  	     대표 상품/이미지가 없는 경우(주문 상세 데이터 누락, 대표이미지 미등록 등)를 대비해 NVL로 기본값 처리.
-  	     주문이 쌓여도 느려지지 않도록 상태 필터는 서버에서 WHERE로 처리하고, OFFSET/FETCH로 페이징한다 -->
+  	<!-- 배송 목록: 아직 배송준비중으로 안 바뀐 결제완료 주문은 DELIVERY 행이 없어 LEFT JOIN.
+  	     대표 상품 1건 + 상품 건수는 서브쿼리로 같이 조회(N+1 방지, AdminOrderMapper와 동일 패턴) -->
   	<select id="selectDeliveriesByMemberId" resultType="MyPageDeliveryDTO">
   		SELECT D.DELIVERY_ID, D.COMPANY, D.TRACKING_NO, D.DELIVERY_STATUS, PO.DETAIL_ADDRESS_FIX,
 	 		PO.ADDRESS_NAME_FIX, PO.ORDER_ID, PO.TOTAL_PRICE, PO.ORDER_STATUS, PO.ORDER_DATE,
@@ -132,8 +129,8 @@
   			<!-- QTY는 대표 상품 1건의 수량이라, 여러 상품을 산 주문에서는 실제보다 적게 보인다.
   			     화면에는 주문 전체 수량 합계를 쓴다 -->
   			NVL(rep.TOTAL_QTY, 0) AS TOTAL_QTY,
-  			<!-- 이 주문 전체를 다 썼을 때만 1. 품목 1건 단위는 selectOrderItemsByOrderIds 의
-  			     HAS_REVIEW 로 서로 다른 값이다 (이름을 구분해 둔 이유 -) -->
+  			<!-- 이 주문 전체를 다 썼을 때만 1. 품목 1건 단위는 selectOrderItemsByOrderIds의
+  			     HAS_REVIEW로 이름을 구분해 뒀다(서로 다른 값이라 헷갈리면 안 됨) -->
   			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS ALL_REVIEWED
   		FROM PRODUCTORDER PO
   		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID
@@ -289,5 +286,25 @@
 		INSERT INTO DELIVERYADDRESS (ADD_ID, MEMBER_ID, ADDRESS_NAME, DETAIL_ADDRESS, IS_DEFAULT)
 		VALUES (#{addId}, #{memberId}, #{addressName}, #{detailAddress}, #{isDefault})
 	</insert>
+
+	<!-- 회원정보 수정 화면의 배송지 드롭다운 - 기본 배송지가 있으면 항상 맨 위. IS_DEFAULT는
+	     'Y'/'N'만 저장되지만 대문자 비교를 습관대로 UPPER()로 맞췄다(clearDefaultAddress와 동일 기준). -->
+	<select id="selectDeliveryAddresses" parameterType="long" resultType="DeliveryAddressDTO">
+		SELECT ADD_ID, MEMBER_ID, ADDRESS_NAME, DETAIL_ADDRESS, IS_DEFAULT
+		FROM DELIVERYADDRESS
+		WHERE MEMBER_ID = #{memberId}
+		ORDER BY CASE WHEN UPPER(IS_DEFAULT) = 'Y' THEN 0 ELSE 1 END, ADD_ID
+	</select>
+
+	<!-- addId가 이 회원 소유가 아니면 0건 갱신 - 서비스가 그걸 보고 "본인 배송지 아님"으로 막는다 -->
+	<update id="setDefaultAddress">
+		UPDATE DELIVERYADDRESS SET IS_DEFAULT = 'Y'
+		WHERE ADD_ID = #{addId} AND MEMBER_ID = #{memberId}
+	</update>
+
+	<delete id="deleteDeliveryAddress">
+		DELETE FROM DELIVERYADDRESS
+		WHERE ADD_ID = #{addId} AND MEMBER_ID = #{memberId}
+	</delete>
 
 </mapper>

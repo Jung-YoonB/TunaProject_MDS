@@ -39,19 +39,11 @@ public class OrderController {
 	                        HttpSession session,
 	                        Model model,
 	                        RedirectAttributes redirectAttr) {
-		
-
-	    System.out.println("===== completed 진입 =====");  //추적용
-	    System.out.println("orderId = " + orderId);    //추적용
 
 	    MemberDTO member =
 	            LoginUtil.member(session);
-	    
-	    System.out.println("memberId = " +
-	            (member != null ? member.getMemberId() : null));  // 추적용
 
 	    if (member == null) {
-	    	 System.out.println(">>> 로그인 세션 없음"); //추적
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
 	        return "redirect:/member/login";
 	    }
@@ -60,19 +52,12 @@ public class OrderController {
 	    	Long validOrderId =
 	    	        service.getOrderIdForMember(member.getMemberId(), orderId);
 
-	        System.out.println(">>> 조회된 validOrderId = " + validOrderId); //추적
-
 	    	model.addAttribute("orderId", validOrderId);
-	    	
-	        System.out.println(">>> orderComplete.jsp 이동");  //추적
-
 
 	        return "order/orderComplete";
 
 	    } catch (Exception e) {
-	        System.out.println("===== 주문 완료 페이지 진입 실패 ====="); //추적
-
-	    	e.printStackTrace(); //추적
+	    	e.printStackTrace();
 	        redirectAttr.addFlashAttribute("error", e.getMessage());
 	        return "redirect:/";
 	    }
@@ -85,9 +70,8 @@ public class OrderController {
 	// 장바구니 화면 경로. 예전 "redirect:/product/cart"는 컨트롤러가 없어 404였다.
 	private static final String CART_URL = "redirect:/cart/my-cart";
 
-	// 뷰를 직접 그리지 않고 리다이렉트한다(Post-Redirect-Get). 이 POST가 히스토리에 남으면
-	// 뒤로가기·새로고침 때 브라우저가 "양식을 다시 제출하시겠습니까?"를 띄운다.
-	// 아래 GET(paymentResume)이 같은 세션 데이터로 같은 화면을 그리므로 로직 중복은 없다.
+	// 뷰를 직접 안 그리고 리다이렉트(Post-Redirect-Get) - 안 그러면 뒤로가기/새로고침 때
+	// "양식을 다시 제출하시겠습니까?"가 뜬다. 실제 화면은 아래 GET(paymentResume)이 그린다.
 	@PostMapping("/payment")
 	public String paymentForm(HttpSession session,
 			@RequestParam(value = "cartId", required = false) List<Long> cartIds,
@@ -239,9 +223,7 @@ public class OrderController {
 	    model.addAttribute("deliveryList", deliveryList);
 	    model.addAttribute("currentStatus", status);
 
-	    // MemberController.userOrderDeliveryForm 과 같은 화면(order/userOrderDelivery)을 그리므로
-	    // 페이지 번호 계산도 같아야 한다. 예전엔 여기만 블록 방식(1-5, 6-10)이라 어느 경로로
-	    // 들어왔는지에 따라 같은 화면의 페이지 번호가 다르게 보였다.
+	    // MemberController.userOrderDeliveryForm과 같은 화면을 그리므로 페이지 계산도 같아야 한다
 	    PageWindow.of(page, memberService.totalDeliveryPages(memberId, status)).addTo(model);
 
 	    return "order/userOrderDelivery";

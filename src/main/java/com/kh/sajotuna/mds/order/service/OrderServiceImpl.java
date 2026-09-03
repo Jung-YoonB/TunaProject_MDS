@@ -23,13 +23,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor	
 public class OrderServiceImpl implements OrderService {
 
-	// 배송비 정책 (담당자 확정, 2026-09-02)
-	//
-	// 무료배송 여부는 "할인 전" 상품금액(옵션가 x 수량의 합)으로 판정한다.
-	// 쿠폰/등급 할인을 뺀 금액으로 판정하면 같은 장바구니가 쿠폰 유무에 따라 배송비가 달라져,
-	// 결제 화면에 보이던 금액과 실제 저장 금액이 어긋난다(실제로 주문 47번과 49번이 3,000원 갈렸음).
-	//
-	// 값을 바꿀 땐 화면 계산도 같이 고칠 것 - static/js/product/cartService.js 가 같은 기준을 쓴다.
+	// 배송비 정책(담당자 확정) - 무료배송 여부는 "할인 전" 상품금액으로 판정한다(할인 후 기준이면
+	// 같은 장바구니가 쿠폰 유무에 따라 배송비가 달라진다). static/js/product/cartService.js도 같은 값.
 	private static final long FREE_SHIPPING_THRESHOLD = 50_000L;
 	private static final long SHIPPING_FEE = 3_000L;
 
@@ -347,13 +342,7 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public Long getOrderIdForMember(Long memberId, Long orderId) {
 
-	    System.out.println("===== getOrderIdForMember =====");
-	    System.out.println("orderId = " + orderId);
-	    System.out.println("memberId = " + memberId);
-
 	    Long result = mapper.getOrderIdForMember(memberId, orderId);
-
-	    System.out.println("mapper result = " + result);
 
 	    if (result == null) {
 	        throw new IllegalArgumentException(

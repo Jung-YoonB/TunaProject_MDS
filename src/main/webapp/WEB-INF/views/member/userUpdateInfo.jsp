@@ -170,24 +170,46 @@
             </div>
         </li>
 
-        <!-- 배송지 -->
+        <!-- 배송지 - 등록/기본 설정/삭제는 이 화면에서, 실제 새 배송지 추가는 결제 화면과 같은
+             독립 화면(utill/deliveryAddress.jsp)에서 한다(우편번호 검색 팝업이 필요해서). -->
         <li class="info-edit-item">
             <button type="button" class="info-edit-header" aria-expanded="false">
                 <span class="info-edit-label">배송지</span>
-                <span class="info-edit-current" id="current-address">등록된 배송지가 없습니다</span>
+                <span class="info-edit-current" id="current-address">
+                    <c:choose>
+                        <c:when test="${empty deliveryAddressList}">등록된 배송지가 없습니다</c:when>
+                        <c:otherwise><c:out value="${deliveryAddressList[0].addressName}"/></c:otherwise>
+                    </c:choose>
+                </span>
                 <svg class="info-edit-chevron" viewBox="0 0 24 24" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="info-edit-panel" hidden>
-                <input type="text" id="addressName" class="signup-input" placeholder="배송지 이름 (예: 우리집, 회사)">
-                <input type="text" id="detailAddress" class="signup-input" placeholder="상세 주소를 입력해주세요">
-                <label class="address-default-check">
-                    <input type="checkbox" id="isDefaultAddress">
-                    기본 배송지로 설정
-                </label>
-                <div class="edit-actions">
-                    <button type="button" class="btn-cancel-edit">취소</button>
-                    <button type="button" class="btn-save-field" data-field="address">저장</button>
-                </div>
+                <ul id="address-list" class="address-list">
+                    <c:forEach items="${deliveryAddressList}" var="addr" varStatus="status">
+                        <li class="address-list-item${addr.isDefault == 'Y' ? ' is-default' : ''}" data-add-id="${addr.addId}">
+                            <div class="address-list-item-info">
+                                <strong><c:out value="${addr.addressName}"/></strong>
+                                <c:if test="${addr.isDefault == 'Y'}"><span class="address-default-badge">기본 배송지</span></c:if>
+                                <p><c:out value="${addr.detailAddress}"/></p>
+                            </div>
+                            <div class="address-list-item-actions">
+                                <c:if test="${addr.isDefault != 'Y'}">
+                                    <button type="button" class="btn-set-default" data-add-id="${addr.addId}">기본 배송지로 변경</button>
+                                </c:if>
+                                <button type="button" class="btn-delete-address" data-add-id="${addr.addId}">삭제</button>
+                            </div>
+                        </li>
+                        <c:if test="${!status.last}"><li class="address-list-divider" role="separator"></li></c:if>
+                    </c:forEach>
+                </ul>
+                <p id="address-list-empty" class="address-list-empty"${empty deliveryAddressList ? '' : ' hidden'}>등록된 배송지가 없습니다.</p>
+
+                <c:url var="addAddressUrl" value="/member/deliveryAddress">
+                    <c:param name="returnUrl" value="/member/updateInfo"/>
+                </c:url>
+                <%-- class는 일부러 btn-save-field가 아니다 - 제네릭 저장 핸들러(data-field
+                     기준 분기)에 안 걸리도록, 시각 스타일만 같은 별도 클래스를 쓴다. --%>
+                <button type="button" id="address-add-btn" class="btn-address-add" data-href="${addAddressUrl}">+ 배송지 추가</button>
             </div>
         </li>
 

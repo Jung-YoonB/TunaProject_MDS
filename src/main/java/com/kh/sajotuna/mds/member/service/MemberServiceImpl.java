@@ -25,9 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService{
 
-	// MemberMapper DI
 	private final MemberMapper mapper;
-	// PasswordEncoder DI
 	private final PasswordEncoder passwordEncoder;
 
 	/**
@@ -147,9 +145,8 @@ public class MemberServiceImpl implements MemberService{
 
 	@Override
 	public boolean isPhoneCheck(String phone, Long excludeMemberId) {
-		// PHONE은 하이픈이 붙은 형태로만 저장되므로 조회값도 같은 형태로 맞춰서 넘긴다.
-		// 형식이 아니면(중복확인 버튼을 다 입력하기 전에 누른 경우 등) 들어온 값 그대로 조회한다 -
-		// 어차피 못 찾고, 형식 안내는 폼 검증이 따로 한다.
+		// PHONE은 하이픈 붙은 형태로만 저장되므로 조회값도 맞춰서 넘긴다. 형식이 아니면
+		// 들어온 값 그대로 조회(어차피 못 찾음) - 형식 안내는 폼 검증이 따로 한다.
 		String formatted = formatPhone(phone);
 		return mapper.countByPhone(formatted != null ? formatted : phone, excludeMemberId) > 0;
 	}
@@ -203,9 +200,7 @@ public class MemberServiceImpl implements MemberService{
 
 	@Override
 	public List<MyPageDeliveryDTO> listDelivery(Long memberId, String status, int page) {
-		// 대표 상품 정보(이름/이미지/수량/건수)는 selectDeliveriesByMemberId 쿼리에 이미 조인되어 있음
-		// (주문 건수만큼 반복 조회하던 N+1 쿼리를 단일 쿼리로 정리). 주문이 쌓여도 느려지지 않도록
-		// 상태 필터 + 페이징은 서버(SQL의 WHERE/OFFSET-FETCH)에서 처리한다
+		// 대표 상품 정보는 selectDeliveriesByMemberId 쿼리에 이미 조인돼 있다(N+1 쿼리 정리)
 		int offset = PageWindow.offset(page, DELIVERY_PAGE_SIZE);
 		List<MyPageDeliveryDTO> deliveries = mapper.selectDeliveriesByMemberId(memberId, status, offset, DELIVERY_PAGE_SIZE);
 
@@ -357,8 +352,7 @@ public class MemberServiceImpl implements MemberService{
 	    if (currentMember == null) {
 	        throw new IllegalStateException("회원 정보를 찾을 수 없습니다.");
 	    }
-	    
-	    // LocalDate 타입끼리 직접 비교가 가능해집니다
+
 	    if (birthDate.equals(currentMember.getBirth())) {
 	        return true;
 	    }
@@ -445,6 +439,29 @@ public class MemberServiceImpl implements MemberService{
 			mapper.clearDefaultAddress(address.getMemberId());
 		}
 		mapper.insertDeliveryAddress(address);
+	}
+
+	@Override
+	public List<DeliveryAddressDTO> listDeliveryAddresses(Long memberId) {
+		return mapper.selectDeliveryAddresses(memberId);
+	}
+
+	@Override
+	@Transactional
+	public void setDefaultAddress(Long memberId, Long addId) {
+		// 기존 기본을 풀고 새로 세운다(Y는 회원당 1개만 허용). addId가 본인 소유가 아니면
+		// 아래 UPDATE가 0건 -> 예외 -> @Transactional이 clearDefaultAddress까지 롤백한다.
+		mapper.clearDefaultAddress(memberId);
+		if (mapper.setDefaultAddress(memberId, addId) == 0) {
+			throw new IllegalStateException("배송지를 찾을 수 없습니다.");
+		}
+	}
+
+	@Override
+	public void deleteDeliveryAddress(Long memberId, Long addId) {
+		if (mapper.deleteDeliveryAddress(memberId, addId) == 0) {
+			throw new IllegalStateException("배송지를 찾을 수 없습니다.");
+		}
 	}
 }
 

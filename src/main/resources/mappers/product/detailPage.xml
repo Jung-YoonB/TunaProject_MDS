@@ -37,17 +37,13 @@
 		WHERE W.PRODUCT_ID = p.product_id
 		) AS wish_count,
 
-		<!-- 카테고리명(다중) - 상세 페이지 상단 카테고리 표시/이동경로가 지금까지 하드코딩("결혼·집들이"
-		     고정 문자열)이었던 것을 실데이터로 교체하기 위해 추가(product.xml getList의 CAT_AGG와
-		     동일한 패턴). 카테고리가 없는 상품이면 NULL - JSP에서 그대로 빈 문자열로 보임. -->
+		<!-- 카테고리명(다중) - product.xml getList의 CAT_AGG와 동일 패턴.
+		     카테고리가 없는 상품이면 NULL - JSP에서 그대로 빈 문자열로 보임. -->
 		(SELECT LISTAGG(C.CATEGORY_NAME, ' · ') WITHIN GROUP (ORDER BY C.CATEGORY_ID)
 		   FROM CATEGORYDETAIL CD JOIN CATEGORY C ON CD.CATEGORY_ID = C.CATEGORY_ID
 		  WHERE CD.PRODUCT_ID = p.product_id) AS category_names,
 
-		<!-- 로그인 회원이 이 상품을 이미 찜했는지 - product.xml getList의 WISHED와 동일한 이유/패턴.
-		     로그아웃 후 재로그인해도 하트가 항상 빈 상태로 보여서 다시 찜을 누를 수 있던 문제
-		     조치 - 데이터 자체는 WishServiceImpl.insertWish가 중복을 막아줘서
-		     안 깨졌지만, 화면이 실제 상태를 안 보여주는 게 문제였다. -->
+		<!-- 로그인 회원이 이 상품을 이미 찜했는지 - product.xml getList의 WISHED와 동일 패턴 -->
 		CASE WHEN EXISTS (
 		    SELECT 1 FROM WISH W WHERE W.PRODUCT_ID = p.product_id AND W.MEMBER_ID = #{memberId}
 		) THEN 1 ELSE 0 END AS WISHED
@@ -63,9 +59,7 @@
 		p.product_content
 	</select>
 	
-	<!-- 등급 할인 표시(정상가/할인가) - 지금까지 JSP에 "BRONZE"/"2%"가 고정 문자열로 박혀 있어서
-	     실제 로그인 회원의 등급과 무관하게 항상 같은 값이 보이던 것을 실데이터로 교체하기 위해 추가.
-	     order.OrderMapper의 selectByMemberIdForPay와 같은 조인(MEMBER-GRADE), 용도만 다름. -->
+	<!-- 등급 할인 표시(정상가/할인가) - OrderMapper.selectByMemberIdForPay와 같은 조인, 용도만 다름 -->
 	<select id="getMemberGrade" resultType="MemberGradeDTO" parameterType="Long">
 		SELECT G.GRADE_NAME, G.DISCOUNT_RATE
 		FROM MEMBER M JOIN GRADE G ON M.GRADE_ID = G.GRADE_ID
@@ -117,9 +111,7 @@
 		select count(*) from COUPONHISTORY where MEMBER_ID = #{memberId} and COUPON_ID = #{couponId}
 	</select>
 
-	<!-- "쿠폰 받기" 모달에 띄울 목록 - getCoupons(전체 유효 쿠폰)에서 이 회원이 이미 받은 것(이력 무관,
-	     couponCheck와 동일 기준)을 뺀다. 모달은 "지금 새로 받을 수 있는 쿠폰"만 보여줘야 하므로
-	     이미 발급받은 쿠폰까지 섞여 나오면 안 된다. -->
+	<!-- "쿠폰 받기" 모달용 - getCoupons(전체 유효 쿠폰)에서 이 회원이 이미 받은 것을 뺀다 -->
 	<select id="getIssuableCoupons" resultType="CouponDTO">
 		select coupon_id, coupon_name, coupon_value, coupon_text,
 			to_char(CREATED_AT, 'YYYY-MM-DD') as created_at_str,

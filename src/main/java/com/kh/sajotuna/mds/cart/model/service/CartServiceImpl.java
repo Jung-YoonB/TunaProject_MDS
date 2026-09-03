@@ -19,7 +19,6 @@ public class CartServiceImpl implements CartService{
     @Override
     public String insertCartInfo(CartDTO cart) {
         int result;
-        System.out.println(cart);
 
         findInfoDTO findInfo = new  findInfoDTO(cart.getMemberId(), cart.getPopId());
         if(cart.getQty() == 0 ) {
@@ -43,7 +42,6 @@ public class CartServiceImpl implements CartService{
         int cartListPrice = 0;
 
         List<CartListDTO> getCartList =  mapper.getCartList(memberId);
-        System.out.println("getCartList :: " + getCartList);
 
         for(CartListDTO list : getCartList) {
             cartListPrice+=list.getTotalPrice();
@@ -56,7 +54,6 @@ public class CartServiceImpl implements CartService{
     public String removeCart(Long memberId, Long popId) {
         int result = 0;
         result+= mapper.removeCart(memberId,popId);
-        System.out.println("result :: " + result);
         if(result>0) {
             return "장바구니 목록에서 제외되었습니다.";
         }else {

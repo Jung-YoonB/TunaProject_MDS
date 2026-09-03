@@ -21,8 +21,7 @@ public interface MemberMapper {
 	// 가입 시 포인트 초기화
 	int insertPoint(Long memberId);
 	
-	// 중복 확인. excludeMemberId는 "본인 제외" - 회원정보 수정에서 자기 값을 다시 확인해도
-	// 중복으로 잡히지 않게 한다. 회원가입은 본인이 없으므로 null을 넘긴다.
+	// 중복 확인. excludeMemberId는 "본인 제외"(MemberService 참고), 회원가입은 null
 	int countByLoginId(String loginId);
 	int countByNickname(@Param("nickname") String nickname, @Param("excludeMemberId") Long excludeMemberId);
 	int countByEmail(@Param("email") String email, @Param("excludeMemberId") Long excludeMemberId);
@@ -80,4 +79,11 @@ public interface MemberMapper {
 	int clearDefaultAddress(@Param("memberId") Long memberId);
 
 	int insertDeliveryAddress(DeliveryAddressDTO address);
+
+	// 회원정보 수정 화면의 배송지 드롭다운 목록. 기본 배송지가 항상 맨 위로 온다(매퍼 XML의 ORDER BY).
+	List<DeliveryAddressDTO> selectDeliveryAddresses(@Param("memberId") Long memberId);
+
+	// addId가 이 회원 소유가 아니면 0건 갱신 - 서비스가 그 값을 보고 막는다(다른 회원 배송지 조작 방지)
+	int setDefaultAddress(@Param("memberId") Long memberId, @Param("addId") Long addId);
+	int deleteDeliveryAddress(@Param("memberId") Long memberId, @Param("addId") Long addId);
 }

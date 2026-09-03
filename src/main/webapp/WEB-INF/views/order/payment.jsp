@@ -406,7 +406,7 @@
         <c:url var="addAddressUrl" value="/member/deliveryAddress">
             <c:param name="returnUrl" value="/order/payment"/>
         </c:url>
-        <%-- payment.js가 이동 전에 포인트/쿠폰/결제수단 선택을 저장한다(TC-39) - onclick으로 바로
+        <%-- payment.js가 이동 전에 포인트/쿠폰/결제수단 선택을 저장한다 - onclick으로 바로
              이동시키면 그 틈이 없어 선택이 날아간다. --%>
         <button
             type="button"

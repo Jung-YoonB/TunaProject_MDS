@@ -122,8 +122,7 @@ public class ProductController {
 	@GetMapping("/review/like/{reviewId}")
 	@ResponseBody
 	public String reviewLike(@PathVariable Long reviewId, HttpSession session) {
-		// 세션 키는 LOGIN_SESSION이다. LOGIN_MEMBER는 Model attribute 이름이라 세션엔 절대 안 담긴다
-		// (LOGIN_MEMBER는 Model attribute 이름이라 여기선 항상 null이 된다).
+		// 세션 키는 LOGIN_SESSION - LOGIN_MEMBER는 Model attribute 이름이라 세션엔 안 담긴다
 		MemberDTO user = LoginUtil.member(session);
 		if (user == null) {
 			return "login-required";
@@ -142,7 +141,6 @@ public class ProductController {
 		model.addAttribute("categoryList", service.getCategories());
 		model.addAttribute("tagList", service.getTags());
 		model.addAttribute("bannerList", service.getBanners());
-		System.out.println("searchList :: " + searchList);
 		paging.addTo(model);
 		return "product/searchProduct";
 	}

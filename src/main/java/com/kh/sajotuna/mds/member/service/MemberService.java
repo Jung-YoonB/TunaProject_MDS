@@ -63,4 +63,9 @@ public interface MemberService {
 
 	// 배송지 추가 (utill/deliveryAddress.jsp) - isDefault='Y'면 기존 기본 배송지를 먼저 해제한다
 	void addDeliveryAddress(DeliveryAddressDTO address);
+
+	// 회원정보 수정 화면의 배송지 관리(목록/기본 설정/삭제)
+	List<DeliveryAddressDTO> listDeliveryAddresses(Long memberId);
+	void setDefaultAddress(Long memberId, Long addId);
+	void deleteDeliveryAddress(Long memberId, Long addId);
 }

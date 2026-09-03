@@ -37,9 +37,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 	private static final Set<String> VALID_COMPANIES = Set.of(
 			"CJ대한통운", "한진택배", "롯데택배", "로젠택배", "우체국택배");
 
-	// 배송 단계 순서 (역행 방지용). 프론트가 드롭다운 대신 "다음 단계로" 버튼 방식으로 바뀌면서
-	// SHIPPED/OUT_FOR_DELIVERY를 더 이상 동률로 두지 않고 배송준비중->배송중->배송출발->배송완료
-	// 순서로 명확히 구분함. CANCELED는 배송완료 전이면 어느 단계에서든 갈 수 있어야 하므로 가장 큰 값으로 둠
+	// 배송 단계 순서(역행 방지용). CANCELED는 어느 단계에서든 갈 수 있어야 해서 가장 큰 값
 	private static final Map<String, Integer> DELIVERY_STATUS_RANK = Map.of(
 			"PREPARING", 0,
 			"SHIPPED", 1,
@@ -72,9 +70,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 		String currentDeliveryStatus = snapshot.getDeliveryStatus();
 
 		if (currentDeliveryStatus == null) {
-			// 체크아웃 플로우가 아직 없어서 결제 완료 시점에 DELIVERY 행이 안 만들어짐 -> 배송준비중으로
-			// 상태를 바꿀 때 여기서 행을 새로 만든다. 그 이후(배송중 등)부터는 행이 있는 게 보장되므로
-			// 아래의 일반 UPDATE 분기만 타면 됨 - 배송준비중을 건너뛰고 바로 배송중 등으로 갈 수는 없음
+			// 결제 완료 시점엔 DELIVERY 행이 없다 - 배송준비중으로 바꿀 때 여기서 처음 만든다
 			if (!"PREPARING".equals(deliveryStatus) && !"CANCELED".equals(deliveryStatus)) {
 				throw new IllegalStateException("배송 정보가 없는 주문은 먼저 '배송준비중'으로 상태를 변경하거나 취소/환불 처리해야 합니다.");
 			}

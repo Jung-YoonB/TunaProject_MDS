@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,10 +18,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kh.sajotuna.mds.util.LoginUtil;
 import com.kh.sajotuna.mds.util.PageWindow;
-import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.DeliveryAddressDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
 import com.kh.sajotuna.mds.util.SessionConst;
 import com.kh.sajotuna.mds.util.dto.ApiResponse;
@@ -68,7 +67,6 @@ public class MemberController {
 			return "redirect:/member/login";
 		}
 		model.addAttribute(SessionConst.LOGIN_MEMBER, loginMember);
-		System.out.println("마이페이지용 모델로 저장" + loginMember); // 추적용 출력
 
 		if(member.getRole().equals("USER")) {
 			model.addAttribute("couponCount", service.countCoupons(member.getMemberId()));
@@ -80,9 +78,7 @@ public class MemberController {
 		} else {
 			return "admin/adminPage";
 		}
-		
-		// 유저는 loginMember 에 유저DTO가 모델에 저장되고 넘어감
-	} 
+	}
 
 	@GetMapping("/couponView")
 	public String userCouponViewForm(@RequestParam(defaultValue = "1") int page,
@@ -101,14 +97,12 @@ public class MemberController {
 			int currentPage = paging.currentPage();
 
 			model.addAttribute("couponList", (service.listCoupon(member.getMemberId(), currentPage)));
-			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<CouponDTO>)model.getAttribute("couponList")); // 추적용 출력
 			model.addAttribute("couponCount", service.countCoupons(member.getMemberId()));
 			paging.addTo(model);
 			return "member/usercouponView";
 		} else {
 			return "admin/admincouponView";
 		}
-		// 유저는 couponList에 List<CouponDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	@GetMapping("/orderDelivery")
@@ -128,7 +122,6 @@ public class MemberController {
 
 		if(member.getRole().equals("USER")) {
 			model.addAttribute("deliveryList", (service.listDelivery(member.getMemberId(), status, page)));
-			System.out.println("배송관리 모델로 저장" + (List<MyPageDeliveryDTO>)model.getAttribute("deliveryList")); // 추적용 출력
 
 			model.addAttribute("currentStatus", status);
 			PageWindow.of(page, service.totalDeliveryPages(member.getMemberId(), status)).addTo(model);
@@ -136,8 +129,6 @@ public class MemberController {
 		}  else {
 			return "admin/adminOrderDelivery";
 		}
-
-		// 유저는 deliveryList에 List<MyPageDeliveryDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
 	// 다른 회원 화면과 달리 로그인 가드가 없어 비로그인 상태에서도 탈퇴 화면이 그대로 열렸다.
@@ -204,9 +195,8 @@ public class MemberController {
 		return ApiResponse.success(message, isDuplicate);
 	}
 	
-	// 중복확인 3종은 회원가입(비로그인)과 회원정보 수정(로그인)이 같은 주소를 쓴다.
-	// 로그인 상태면 본인은 세지 않는다 - 안 그러면 자기 닉네임/이메일/연락처를 그대로 다시
-	// 확인했을 때 "이미 사용중"이 떠서 저장 자체가 막힌다. 비로그인이면 null이라 조건이 안 붙는다.
+	// 중복확인 3종은 회원가입/회원정보 수정이 같은 주소를 쓴다. 로그인 상태면 본인은 안 센다
+	// (안 그러면 자기 값을 그대로 다시 확인했을 때도 "이미 사용중"이 뜬다)
 	@GetMapping("/checkNickname")
 	@ResponseBody
 	public ApiResponse<Boolean> checkNickname(String nickname, HttpSession session) {
@@ -248,7 +238,6 @@ public class MemberController {
 			MemberDTO member = service.login(loginId,loginPw);
 		// 로그인 성공 -> 세션에 저장 / 실패 -> 에러 메시지 전달
 		session.setAttribute(SessionConst.LOGIN_SESSION, member );
-		System.out.println("세션 저장 완료: " + session.getAttribute(SessionConst.LOGIN_SESSION)); // 로그인 체크용 나중에 삭제
 		} catch(IllegalStateException e) {
 			e.printStackTrace();
 			redirectAttr.addFlashAttribute("error", e.getMessage());
@@ -279,7 +268,6 @@ public class MemberController {
 		if(session != null) {
 			session.invalidate();
 		}
-		System.out.println("로그아웃 완료");
 		return "redirect:/";
 	}
 	
@@ -298,11 +286,10 @@ public class MemberController {
 			return "admin/adminPage";  // 관리자 데이터 수정은 미구현
 		} else {
 			model.addAttribute(SessionConst.LOGIN_MEMBER, (service.getMemberByMemberId(member.getMemberId())));
-			System.out.println("회원 정보 수정용 모델로 저장" + (MemberDTO)model.getAttribute(SessionConst.LOGIN_MEMBER)); // 추적용 출력
+			// 배송지 드롭다운 초기 목록 - 기본 배송지가 항상 맨 위(매퍼 ORDER BY)
+			model.addAttribute("deliveryAddressList", service.listDeliveryAddresses(member.getMemberId()));
 			return "member/userUpdateInfo";
 		}
-		// 관리자 상태 수정은 미구현
-		// 유저는 loginMember 에 유저DTO가 모델에 저장되고 넘어감
 	}
 	
 	@PostMapping("/updateNickname")
@@ -471,6 +458,50 @@ public class MemberController {
 
 	    // 들어온 화면으로 돌려보낸다. returnUrl이 없거나 우리 사이트 경로가 아니면 회원정보 수정으로.
 	    return "redirect:" + (isSafeRedirect(returnUrl) ? returnUrl : "/member/updateInfo");
+	}
+
+	// 회원정보 수정 화면의 배송지 드롭다운 - 기본 배송지 변경/삭제 후 목록을 다시 그리는 용도.
+	// 초기 목록은 updateInfoForm이 JSTL로 서버 렌더링하고, 이 둘은 그 이후의 조작만 처리한다.
+	@PostMapping("/address/{addId}/default")
+	@ResponseBody
+	public ApiResponse<Void> setDefaultAddress(@PathVariable Long addId, HttpSession session) {
+		MemberDTO member = LoginUtil.member(session);
+		if (member == null) {
+			return ApiResponse.fail("로그인이 필요합니다.");
+		}
+		try {
+			service.setDefaultAddress(member.getMemberId(), addId);
+		} catch (IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
+		return ApiResponse.success("기본 배송지로 설정되었습니다.", null);
+	}
+
+	@PostMapping("/address/{addId}/delete")
+	@ResponseBody
+	public ApiResponse<Void> deleteAddress(@PathVariable Long addId, HttpSession session) {
+		MemberDTO member = LoginUtil.member(session);
+		if (member == null) {
+			return ApiResponse.fail("로그인이 필요합니다.");
+		}
+		try {
+			service.deleteDeliveryAddress(member.getMemberId(), addId);
+		} catch (IllegalStateException e) {
+			return ApiResponse.fail(e.getMessage());
+		}
+		return ApiResponse.success("배송지가 삭제되었습니다.", null);
+	}
+
+	// 배송지 목록 재조회 - 기본 설정/삭제 성공 후 JS가 패널을 다시 그릴 때 호출한다.
+	// (페이지 전체를 새로고침하면 펼쳐둔 패널이 다시 접혀버려서 AJAX로 목록만 새로 받는다.)
+	@GetMapping("/addresses")
+	@ResponseBody
+	public ApiResponse<List<DeliveryAddressDTO>> listAddresses(HttpSession session) {
+		MemberDTO member = LoginUtil.member(session);
+		if (member == null) {
+			return ApiResponse.fail("로그인이 필요합니다.");
+		}
+		return ApiResponse.success(service.listDeliveryAddresses(member.getMemberId()));
 	}
 
 	@PostMapping("/withdraw")

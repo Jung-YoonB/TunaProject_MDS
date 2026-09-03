@@ -22,10 +22,8 @@ public class HomeController {
 
 	private final ProductService service;
 
-	// "더보기"가 검색 결과 페이지("전체 상품 보기")로 보내는 것과 똑같은 목적지라 화면상 기능이
-	// 겹친다는 지적을 받아, 실제로 "더 보여주는" 동작으로 바꿨다. 8개 → (더보기) → 16개(같은 화면에
-	// 이어서 표시) → (그 뒤로는) 번호 페이지네이션. 새 쿼리를 만들지 않고 service.getList()가
-	// 이미 돌려주는 전체 목록(찜 많은 순, 페이징 없음)을 여기서 8개 단위로 잘라 쓴다.
+	// 8개 → "더보기"로 16개(이어서 표시) → 그 뒤론 번호 페이지네이션. 새 쿼리 없이
+	// service.getList()의 전체 목록(찜 많은 순)을 여기서 8개 단위로 잘라 쓴다.
 	private static final int HOME_PAGE_SIZE = 8;
 
 	@GetMapping("/")
@@ -63,9 +61,7 @@ public class HomeController {
 
 
 		model.addAttribute("productList", visible);
-		// 배너는 검색 결과 페이지 사이드바와 동일한 목록(최근 등록 상품 대표이미지 최대 5장) -
-		// service.getList()가 이미 MainPageDTO.banner로 채워주는데 모델에 안 담아서 그동안
-		// 홈 배너가 정적 문구만 보이고 사진이 전혀 안 나오고 있었다.
+		// 배너는 검색 결과 페이지 사이드바와 같은 목록(최근 등록 상품 대표이미지 최대 5장)
 		model.addAttribute("bannerList", mainPage.getBanner());
 		model.addAttribute("categoryList", service.getCategories());
 		model.addAttribute("showLoadMore", showLoadMore);

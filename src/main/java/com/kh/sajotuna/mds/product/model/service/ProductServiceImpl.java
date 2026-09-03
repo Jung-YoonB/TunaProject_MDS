@@ -43,8 +43,6 @@ public class ProductServiceImpl implements ProductService{
 		List<ProductListDTO> list = mapper.getList(searchDTO, 0, NO_PAGING, memberId);
 		List<BannerDTO> bannerList = mapper.bannerList();
 		MainPageDTO dto = new MainPageDTO(list, bannerList);
-		System.out.println("product list:: " + list.toString());
-		System.out.println("banner list :: " + bannerList.toString());
 
 		return dto;
 	}
@@ -66,7 +64,6 @@ public class ProductServiceImpl implements ProductService{
 		dto.setThumbnail(thumbnail);
 		dto.setImage(images);
 		dto.setDetailContents(detailContents);
-		System.out.println("service detail :: " + dto);
 		List<OptionDTO> optionList = mapper.getOptionList(productId);
 		return new DetailPageDTO(dto, optionList, coupons);
 	}
@@ -112,7 +109,7 @@ public class ProductServiceImpl implements ProductService{
 			reviewIds.add(review.getReviewId());
 		}
 
-//		 리뷰가 아예 없으면 쿼리 에러 방지를 위해 곧바로 빈 리스트 리턴
+		// 리뷰가 없으면 getReviewImages를 빈 ID 리스트로 부르지 않고 바로 반환
 		if (reviewIds.isEmpty()) {
 			return reviewList;
 		}
@@ -132,7 +129,6 @@ public class ProductServiceImpl implements ProductService{
 
 	@Override
 	public String increaseReviewLike(Long reviewId, Long memberId) {
-		//좋아요 올라가고, 중간테이블 추가하고 끝?
 		if(memberId == null) {
 			return "not member";
 		}
@@ -160,7 +156,6 @@ public class ProductServiceImpl implements ProductService{
 	public List<ProductListDTO> getSearchList(SearchDTO search, int page, Long memberId) {
 		int offset = PageWindow.offset(page, SEARCH_PAGE_SIZE);
 		List<ProductListDTO> list = mapper.getList(search, offset, SEARCH_PAGE_SIZE, memberId);
-		System.out.println("search list :: " + list);
 		return list;
 	}
 

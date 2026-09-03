@@ -2,7 +2,6 @@ package com.kh.sajotuna.mds.cart.Controller;
 
 import com.kh.sajotuna.mds.util.LoginUtil;
 import com.kh.sajotuna.mds.cart.model.dto.CartDTO;
-import com.kh.sajotuna.mds.cart.model.dto.CartListDTO;
 import com.kh.sajotuna.mds.cart.model.dto.ResponseCartListDTO;
 import com.kh.sajotuna.mds.cart.model.service.CartService;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
@@ -27,16 +26,11 @@ public class CartController {
         MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
-            System.out.println(member);
-            System.out.println(model.getAttribute("message"));
             return "redirect:/member/login";
         }
 
-        System.out.println("memberId :: " + member.getMemberId());
         cart.setMemberId(member.getMemberId());
-        System.out.println("cart :: " + cart);
         String message = service.insertCartInfo(cart);
-        System.out.println("message :: " + message);
         model.addAttribute("message", message);
         return "redirect:/cart/my-cart";
     }
@@ -50,13 +44,10 @@ public class CartController {
         }
         ResponseCartListDTO cartList = service.getCartList(member.getMemberId());
         model.addAttribute("cartList", cartList);
-        System.out.println("cartList :: " + cartList);
         return "product/cart";
     }
 
-    // 헤더 장바구니 뱃지용 - header.js가 페이지 로드마다 호출해서 실제 CART 기준 수량 합계를
-    // 보여준다(뱃지가 localStorage 목업이라 메인 페이지 등에서 실제 담긴 수량과
-    // 안 맞던 것 조치). 비로그인이면 0.
+    // 헤더 장바구니 뱃지용 - 수량 합계가 아니라 담긴 옵션(행) 개수. 비로그인이면 0
     @GetMapping("/count")
     @ResponseBody
     public int count(HttpSession session) {
@@ -64,9 +55,7 @@ public class CartController {
         if (member == null) {
             return 0;
         }
-        return service.getCartList(member.getMemberId()).getCartList().stream()
-                .mapToInt(CartListDTO::getQty)
-                .sum();
+        return service.getCartList(member.getMemberId()).getCartList().size();
     }
 
     // 수량 +/- 버튼용. 다른 CUD와 달리 리다이렉트가 아니라 결과만 돌려준다 - JS가 페이지 새로고침
@@ -84,14 +73,12 @@ public class CartController {
 
     @GetMapping("/remove-cart")
     public String removeCart(HttpSession session, Model model, Long popId) {
-        System.out.println("pop_id :: " + popId);
         MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             return "redirect:/member/login";
         }
         String message = service.removeCart(member.getMemberId(), popId);
-        System.out.println("message :: " + message);
         model.addAttribute("message", message);
         return "redirect:/cart/my-cart";
     }
