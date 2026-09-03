@@ -1,10 +1,10 @@
-# 🎁 Masion De SAJO
+# 🎁 Maison De SAJO
 
 <img width="1717" height="916" alt="mdsstart" src="https://github.com/user-attachments/assets/cd5ef1d2-dac9-44d8-9c6a-798fc9ba0e81" />
 
 
 특별한 날, 소중한 사람에게 마음을 전할 수 있는
-프리미엄 선물세트 쇼핑몰 **Masion De SAJO**입니다.
+프리미엄 선물세트 쇼핑몰 **Maison De SAJO**입니다.
 
 다양한 선물 카테고리와 상품을 한눈에 확인하고,
 간편한 주문과 결제를 통해 소중한 사람에게 선물을 전달할 수 있도록
@@ -31,11 +31,10 @@
 ![Design](https://img.shields.io/badge/Design-Figma-3498DB?)
 ![Collaboration](https://img.shields.io/badge/Collaboration-Discord%EF%BC%8C%20KakaoTalk%EF%BC%8C%20Google%20Workspace-5C6BC0?)
 ![AI Tools](https://img.shields.io/badge/AI%20Tools-ChatGPT%EF%BC%8C%20Claude%EF%BC%8C%20Gemini-8E44AD?)
-![Etc](https://img.shields.io/badge/Etc-Mammoth%20Coffee-A569BD?)
 
 
 ## 📋 프로젝트 개요
-- 프로젝트 이름 : **Masion De SAJO**
+- 프로젝트 이름 : **Maison De SAJO**
 - 프로젝트 기간 : **2026.08 ~ 2026.09**
 - 프로젝트 유형 : **KDT 세미 프로젝트**
 - 프로젝트 주제 : **프리미엄 선물세트 쇼핑몰**
@@ -44,9 +43,9 @@
 
 ## 🎁 프로젝트 소개
 
-### "마음을 담은 선물, Masion De SAJO"
+### "마음을 담은 선물, Maison De SAJO"
 
-Masion De SAJO는 다양한 상황과 대상에 맞는
+Maison De SAJO는 다양한 상황과 대상에 맞는
 선물세트를 편리하게 선택하고 구매할 수 있는
 온라인 선물 쇼핑몰입니다.
 
@@ -117,7 +116,7 @@ Masion De SAJO는 다양한 상황과 대상에 맞는
 
 
 ## 🎨 UI / UX
-Masion De SAJO는 **프리미엄 선물세트 쇼핑몰**이라는 컨셉에 맞춰
+Maison De SAJO는 **프리미엄 선물세트 쇼핑몰**이라는 컨셉에 맞춰
 깔끔하고 직관적인 UI를 목표로 디자인하였습니다.
 
 카카오톡 선물하기와 다양한 온라인 쇼핑몰의
