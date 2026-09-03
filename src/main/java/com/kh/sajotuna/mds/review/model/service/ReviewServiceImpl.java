@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.review.model.service;
 
+import com.kh.sajotuna.mds.util.PageWindow;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,6 +78,16 @@ public class ReviewServiceImpl implements ReviewService {
 		review.setReviewText(reviewText);
 		mapper.insertReview(review);
 
+		saveReviewImages(review.getReviewId(), images);
+	}
+
+	/**
+	 * 첨부 사진을 REVIEW_IMAGES에 넣는다. 빈 파일 칸(선택 안 한 input)은 건너뛴다.
+	 *
+	 * 파일명만 미리 정해서 DB엔 즉시 반영하고, 실제 디스크 쓰기는 트랜잭션 커밋 후로 미룬다
+	 * (admin 상품 등록과 동일한 방식 - 롤백됐는데 파일만 남는 orphan을 막는다).
+	 */
+	private void saveReviewImages(Long reviewId, List<MultipartFile> images) {
 		if (images == null) {
 			return;
 		}
@@ -87,13 +98,11 @@ public class ReviewServiceImpl implements ReviewService {
 				continue;
 			}
 
-			// 파일명만 미리 생성해서 DB엔 즉시 반영하고, 실제 디스크 쓰기는 트랜잭션 커밋 후로 미룬다.
-			// (admin 상품 등록과 동일한 방식 - orphan 파일 방지)
 			String saveName = FileUploadUtil.generateSaveName(file);
 			FileUploadUtil.saveOnCommit(file, uploadDir, saveName);
 
 			ReviewImagesDTO image = new ReviewImagesDTO();
-			image.setReviewId(review.getReviewId());
+			image.setReviewId(reviewId);
 			image.setReviewImageOriginalName(file.getOriginalFilename());
 			image.setReviewImage(saveName);
 			image.setReviewImagePath(IMAGE_URL_PREFIX);
@@ -120,8 +129,7 @@ public class ReviewServiceImpl implements ReviewService {
 
 	@Override
 	public List<ReviewDTO> listMyReviews(Long memberId, int page) {
-		int safePage = Math.max(page, 1);
-		int offset = (safePage - 1) * MY_REVIEWS_PAGE_SIZE;
+		int offset = PageWindow.offset(page, MY_REVIEWS_PAGE_SIZE);
 		List<ReviewDTO> reviews = mapper.selectMyReviews(memberId, offset, MY_REVIEWS_PAGE_SIZE);
 		if (reviews.isEmpty()) {
 			return reviews;
@@ -149,7 +157,7 @@ public class ReviewServiceImpl implements ReviewService {
 	@Override
 	public int totalMyReviewPages(Long memberId) {
 		int totalCount = mapper.countMyReviews(memberId);
-		return Math.max(1, (int) Math.ceil((double) totalCount / MY_REVIEWS_PAGE_SIZE));
+		return PageWindow.totalPages(totalCount, MY_REVIEWS_PAGE_SIZE);
 	}
 
 	@Override

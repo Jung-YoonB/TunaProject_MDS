@@ -16,6 +16,12 @@
               action="${pageContext.request.contextPath}/member/addAddress"
               method="post">
 
+            <%-- 돌아갈 화면. 결제 화면에서 들어왔으면 저장 후 결제 화면으로 돌아간다.
+                 비어 있으면 컨트롤러가 회원정보 수정으로 보낸다. --%>
+            <c:if test="${not empty returnUrl}">
+                <input type="hidden" name="returnUrl" value="<c:out value='${returnUrl}'/>">
+            </c:if>
+
             <!-- 배송지 이름 -->
             <div class="form-item">
 

@@ -36,7 +36,8 @@
             // is-active(서버가 렌더링 시점에 채운 실제 상태)로 판단한다.
             var wasWished = btn.classList.contains('is-active');
             window.toggleWish(readProduct(card), wasWished).then(function (active) {
-                btn.classList.toggle('is-active', active);
+                // 하트 채움과 옆의 찜 개수를 같이 맞춘다(common/cartWishService.js)
+                window.applyWishState(btn, wasWished, active);
             });
         });
     });

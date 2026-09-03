@@ -398,6 +398,17 @@
     color: var(--gsf-text);
 }
 
+/* ===== 상품 게시글 제목 서체 (아리따부리) =====
+   상품 게시글의 "제목"에만 쓴다. 상품 상세는 .product-title 규칙에서 따로 지정.
+     .product-card .product-name  홈 카드 / 검색 결과 카드 / 찜 목록 카드(views/wish.js가 같은 클래스로 그린다)
+
+   .product-name만 쓰면 안 된다 - 결제(.product-item), 주문/배송(.order-delivery-page),
+   리뷰 작성(.review-product-card)도 같은 클래스를 쓰는 공용 이름이라, 조상 .product-card로
+   스코프하지 않으면 그 화면들의 상품명까지 서체가 바뀐다. */
+.product-card .product-name {
+    font-family: var(--gsf-font-title);
+}
+
 .product-description {
     margin: 0 0 5px;
     font-size: 16px;
@@ -1775,6 +1786,29 @@ main:has(.cart-container) {
 	flex-shrink: 0;
 	background-color: #f0f0f0;
 	border-radius: 6px;
+	overflow: hidden;
+}
+
+/* 이 규칙이 없으면 default.css의 img{height:auto}가 그대로 먹어서, 세로로 긴 상품 사진이
+   70px 틀을 뚫고 아래로 삐져나온다(리뷰 작성 .product-thumbnail, 주문/배송 .item-thumb와
+   동일한 처리). object-fit:cover라 비율은 유지한 채 틀을 채운다. */
+.cart-container .item-thumbnail img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* 등록된 대표 이미지가 없을 때의 "이미지 없음" 문구도 70px 안에 들어가야 한다 */
+.cart-container .item-thumbnail span {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	font-size: 11px;
+	color: var(--gsf-subtext);
+	text-align: center;
 }
 .cart-container .item-info {
 	flex: 1;
@@ -2874,11 +2908,13 @@ a.sp-btn-next {
             font-weight: bold;
         }
 
-        /* 쿠폰 */
+        /* 쿠폰 - 포인트 영역(#point, 입력칸+안내문 여러 줄)과 바로 붙어 있으면 안내문과
+           "쿠폰 사용" 라벨이 시각적으로 뭉쳐 보인다. */
         #Coupon {
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-top: 28px;
         }
 
         #Coupon label {
@@ -4061,6 +4097,131 @@ a.sp-btn-next {
     padding-bottom: 4px;
 }
 
+/* 쿠폰 받기 - 구매 버튼 줄과는 분리해 이미지 갤러리 아래 독립된 배너로 뒀지만, 버튼 자체의
+   색상/테두리/호버는 찜·장바구니 담기 버튼(.cart-container .btn-outline)과 규격을 맞춘다.
+   여백에 눌려 있던 첫 버전보다 아래로 내리고 키를 키워 존재감을 줬다. */
+#coupon-issue-banner {
+    width: 100%;
+    height: 64px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #555;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#coupon-issue-banner:hover {
+    border-color: var(--gsf-caramel);
+    color: var(--gsf-caramel);
+}
+
+/* ===== 쿠폰 받기 모달 =====
+   .modal-overlay/.modal-box(style_admin.css)는 전역 이름이라 재사용하면 admin의
+   display:none + .show 클래스 토글 방식과 부딪힌다(이 모달은 [hidden] 속성으로 연다) -
+   그래서 coupon-modal- 접두사로 완전히 새 이름을 쓴다. .modal-close/.modal-actions는
+   상태 토글이 없는 순수 레이아웃 규칙이라 그대로 재사용해도 안전하다. */
+.coupon-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(34, 30, 24, 0.45);
+}
+
+.coupon-modal-overlay[hidden] {
+    display: none;
+}
+
+.coupon-modal-box {
+    position: relative;
+    width: 380px;
+    max-height: 70vh;
+    padding: 28px 24px;
+    background-color: #fff;
+    border-radius: var(--radius-md);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+}
+
+.coupon-modal-box .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+#coupon-modal-title {
+    margin: 0 0 16px;
+    padding-right: 30px; /* 닫기 버튼과 안 겹치게 */
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.coupon-modal-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+}
+
+.coupon-modal-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gsf-border);
+}
+
+.coupon-modal-item:last-child {
+    border-bottom: none;
+}
+
+.coupon-modal-item-name {
+    font-size: 14px;
+    color: var(--gsf-text);
+}
+
+.coupon-modal-item-rate {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gsf-caramel);
+}
+
+.coupon-modal-empty {
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--gsf-subtext);
+    text-align: center;
+}
+
+.coupon-modal-box .modal-actions button {
+    width: auto;
+    flex: 1;
+}
+
+#coupon-modal-claim-all {
+    background-color: var(--gsf-caramel);
+    border: 1px solid var(--gsf-caramel);
+    color: #222;
+}
+
+#coupon-modal-claim-all:disabled {
+    background-color: #eee;
+    border-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
 .product-sub-image {
     display: block;
     flex: 0 0 80px;
@@ -4082,11 +4243,13 @@ a.sp-btn-next {
     flex: 1;
 }
 
-/* 상품 제목 */
+/* 상품 제목 - 이 클래스는 상품 상세(productDetail.jsp)에서만 쓴다.
+   서체는 카드 제목과 같은 아리따부리(위쪽 '상품 게시글 제목 서체' 블록 참고). */
 .product-title {
     margin: 0 0 15px;
     font-size: 25px;
     font-weight: bold;
+    font-family: var(--gsf-font-title);
 }
 
 /* 상품 설명 */

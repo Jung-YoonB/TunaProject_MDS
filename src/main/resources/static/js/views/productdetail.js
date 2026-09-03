@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const cartButton     = document.getElementById('cart-button');
     const buyButton      = document.getElementById('buy-button');
+    const couponButton   = document.getElementById('coupon-issue-banner');
 
     const wishButton     = document.getElementById('wish-button');
     const wishCount      = document.getElementById('wish-count');
@@ -277,29 +278,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             window.toggleWish({ productId: productId }, wasWished).then(function (liked) {
 
-                wishButton.classList.toggle('is-active', liked);
+                // 개수(#wish-count)는 버튼 밖 .product-stat에 있어서 직접 넘긴다.
+                // 상태가 실제로 바뀐 경우에만 ±1 하는 판단도 여기서 같이 처리된다.
+                window.applyWishState(wishButton, wasWished, liked, wishCount);
 
                 const heart =
                     wishButton.querySelector('.icon-heart');
 
                 if (heart) {
                     heart.classList.toggle('is-filled', liked);
-                }
-
-                wishButton.setAttribute(
-                    'aria-label',
-                    liked ? '찜 해제' : '찜하기'
-                );
-
-                if (wishCount) {
-
-                    const count =
-                        parseInt(wishCount.textContent, 10) || 0;
-
-                    wishCount.textContent =
-                        liked
-                            ? count + 1
-                            : Math.max(0, count - 1);
                 }
             });
         });
@@ -549,6 +536,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
+                    // "on"/"off"가 아니면(예: 500이 나서 에러 페이지 HTML이 온 경우) 아무것도 바꾸지
+                    // 않는다. 예전엔 그런 응답도 "off"로 쳐서 하트가 꺼지고 개수가 1 줄어 있었다.
+                    if (result !== 'on' && result !== 'off') {
+                        alert('좋아요 처리에 실패했습니다.');
+                        return;
+                    }
+
                     const liked = result === 'on';
 
                     likeButton.classList.toggle('is-active', liked);
@@ -577,5 +571,112 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         });
     });
+
+
+    /* =========================
+       쿠폰 받기 모달
+
+       ProductController
+       @GetMapping("/mds/coupon/issuable")   모달 열 때 - 지금 새로 받을 수 있는 쿠폰 목록
+       @PostMapping("/mds/coupon/issue")     "모두 받기" - 그 목록을 실제로 발급
+
+       이 상품 전용 쿠폰이 아니라(COUPON 테이블에 PRODUCT_ID가 없다), 매장 전체 쿠폰 중
+       발급 가능한 걸 모달로 먼저 보여주고 "모두 받기"에서 한 번에 받는다.
+       ========================= */
+
+    const couponModal        = document.getElementById('coupon-modal');
+    const couponModalList    = document.getElementById('coupon-modal-list');
+    const couponModalEmpty   = document.getElementById('coupon-modal-empty');
+    const couponModalClose   = document.getElementById('coupon-modal-close');
+    const couponModalCancel  = document.getElementById('coupon-modal-cancel');
+    const couponModalClaimAll = document.getElementById('coupon-modal-claim-all');
+
+    if (couponButton && couponModal) {
+
+        function closeCouponModal() {
+            couponModal.hidden = true;
+        }
+
+        function renderCouponList(coupons) {
+
+            couponModalList.innerHTML = '';
+
+            const hasCoupons = coupons.length > 0;
+            couponModalEmpty.hidden = hasCoupons;
+            couponModalClaimAll.disabled = !hasCoupons;
+
+            coupons.forEach(function (coupon) {
+
+                const li = document.createElement('li');
+                li.className = 'coupon-modal-item';
+
+                const nameEl = document.createElement('span');
+                nameEl.className = 'coupon-modal-item-name';
+                nameEl.textContent = coupon.couponName; // 사용자 데이터라 textContent로만 넣는다
+
+                const rateEl = document.createElement('span');
+                rateEl.className = 'coupon-modal-item-rate';
+                rateEl.textContent = Math.round(coupon.couponValue * 100) + '% 할인';
+
+                li.appendChild(nameEl);
+                li.appendChild(rateEl);
+                couponModalList.appendChild(li);
+            });
+        }
+
+        couponButton.addEventListener('click', function () {
+
+            fetch('/mds/coupon/issuable', { credentials: 'same-origin' })
+                .then(function (res) { return res.json(); })
+                .then(function (result) {
+
+                    if (!result.success) {
+                        alert(result.message || '로그인이 필요합니다.');
+                        window.location.href = '/member/login';
+                        return;
+                    }
+
+                    renderCouponList(result.data);
+                    couponModal.hidden = false;
+                })
+                .catch(function () {
+                    alert('쿠폰 목록을 불러오지 못했습니다.');
+                });
+        });
+
+        couponModalClose.addEventListener('click', closeCouponModal);
+        couponModalCancel.addEventListener('click', closeCouponModal);
+
+        // 배경(오버레이) 클릭 시 닫기 - 모달 상자 자체를 클릭했을 때는 안 닫혀야 한다
+        couponModal.addEventListener('click', function (e) {
+            if (e.target === couponModal) closeCouponModal();
+        });
+
+        couponModalClaimAll.addEventListener('click', function () {
+
+            couponModalClaimAll.disabled = true;
+
+            fetch('/mds/coupon/issue', {
+                method: 'POST',
+                credentials: 'same-origin'
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (result) {
+
+                    if (!result.success) {
+                        alert(result.message || '로그인이 필요합니다.');
+                        window.location.href = '/member/login';
+                        return;
+                    }
+
+                    alert(result.message);
+                    closeCouponModal();
+                })
+                .catch(function () {
+                    alert('쿠폰 발급 중 오류가 발생했습니다.');
+                    couponModalClaimAll.disabled = false;
+                });
+        });
+    }
 
 });

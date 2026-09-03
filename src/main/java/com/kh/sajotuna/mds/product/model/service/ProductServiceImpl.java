@@ -1,5 +1,6 @@
 package com.kh.sajotuna.mds.product.model.service;
 
+import com.kh.sajotuna.mds.util.PageWindow;
 import com.kh.sajotuna.mds.admin.model.dto.TagOptionDTO;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.product.model.dto.detail.DetailPageDTO;
@@ -76,29 +77,33 @@ public class ProductServiceImpl implements ProductService{
 	}
 
 	@Override
-	public String getCoupons(Long memberId, Long couponId ) {
-		int check = mapper.couponCheck(memberId, couponId);
-		if(check != 0) {
-			return "이미 등록된 쿠폰입니다.";
-		}
-		int getCoupon = mapper.insertCoupon(memberId, couponId);
-		if(getCoupon != 0) {
-			return "쿠폰이 등록되었습니다.";
-		}else {
-			return "쿠폰 등록에 실패했습니다.";
-		}
+	public List<CouponDTO> getIssuableCoupons(Long memberId) {
+		return mapper.getIssuableCoupons(memberId);
+	}
 
+	@Override
+	@Transactional
+	public int issueAllCoupons(Long memberId) {
+		int issued = 0;
+		for (CouponDTO coupon : mapper.getCoupons()) {
+			// couponCheck는 발급 이력이 있으면(사용/만료/취소돼 있어도) 무조건 0이 아니다 -
+			// "쿠폰마다 한 번씩만"은 재발급이 아니라 최초 발급 여부만 보면 된다.
+			if (mapper.couponCheck(memberId, coupon.getCouponId()) == 0) {
+				mapper.insertCoupon(memberId, coupon.getCouponId());
+				issued++;
+			}
+		}
+		return issued;
 	}
 	@Override
 	public int totalReviewPages(Long productId) {
 		int totalCount = mapper.countReviews(productId);
-		return Math.max(1, (int) Math.ceil((double) totalCount / REVIEWS_PAGE_SIZE));
+		return PageWindow.totalPages(totalCount, REVIEWS_PAGE_SIZE);
 	}
 
 	@Override
 	public List<ReviewDTO> getReviewList(Long productId, Long memberId, int page) {
-		int safePage = Math.max(page, 1);
-		int offset = (safePage - 1) * REVIEWS_PAGE_SIZE;
+		int offset = PageWindow.offset(page, REVIEWS_PAGE_SIZE);
 
 		List<ReviewDTO> reviewList = mapper.getReviewList(productId, memberId, offset, REVIEWS_PAGE_SIZE);
 		List<Long> reviewIds = new ArrayList<>();
@@ -147,14 +152,13 @@ public class ProductServiceImpl implements ProductService{
 	@Override
 	public int totalPages(SearchDTO searchDTO) {
 		int totalCount = mapper.countSearchProducts(searchDTO);
-		return Math.max(1, (int) Math.ceil((double) totalCount / SEARCH_PAGE_SIZE));
+		return PageWindow.totalPages(totalCount, SEARCH_PAGE_SIZE);
 	}
 
 
 	@Override
 	public List<ProductListDTO> getSearchList(SearchDTO search, int page, Long memberId) {
-		int safePage = Math.max(page, 1);
-		int offset = (safePage - 1) * SEARCH_PAGE_SIZE;
+		int offset = PageWindow.offset(page, SEARCH_PAGE_SIZE);
 		List<ProductListDTO> list = mapper.getList(search, offset, SEARCH_PAGE_SIZE, memberId);
 		System.out.println("search list :: " + list);
 		return list;

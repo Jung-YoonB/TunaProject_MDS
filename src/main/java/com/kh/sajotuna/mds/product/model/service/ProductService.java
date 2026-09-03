@@ -1,6 +1,7 @@
 package com.kh.sajotuna.mds.product.model.service;
 
 import com.kh.sajotuna.mds.admin.model.dto.TagOptionDTO;
+import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.BannerDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.CategoryDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
@@ -25,7 +26,11 @@ public interface ProductService {
 
 	String increaseReviewLike(Long reviewId, Long memberId);
 
-	String getCoupons(Long memberId, Long couponId);
+	// 발급 가능한(유효기간 남은) 쿠폰 중 이 회원이 아직 안 받은 것을 전부 발급한다. 반환값은 새로 발급된 개수.
+	int issueAllCoupons(Long memberId);
+
+	// "쿠폰 받기" 모달에 보여줄 목록 - 지금 이 회원이 새로 받을 수 있는 쿠폰만.
+	List<CouponDTO> getIssuableCoupons(Long memberId);
 	int totalReviewPages(Long memberId);
 
 	int totalPages(SearchDTO searchDTO);

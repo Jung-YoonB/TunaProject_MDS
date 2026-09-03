@@ -40,7 +40,11 @@ public class MemberDTO {
 	@NotBlank(message = "닉네임을 입력해주세요.")
 	@Pattern(regexp = "^[가-힣a-zA-Z0-9_]{2,8}$", message = "닉네임은 한글, 영문, 숫자, 언더바(_)를 사용하여 2~8자로 입력해주세요.")
 	private String nickname;
-	@Pattern(regexp="^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message="올바른 이메일 형식이 아닙니다.")
+	// 이메일 형식 규칙. MemberServiceImpl.emailUpdate도 이 상수를 쓴다(둘이 갈리면
+	// 가입은 통과하는데 변경은 막히는 식으로 어긋난다). 여기 빈 값은 "이메일 미입력" 허용.
+	public static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+
+	@Pattern(regexp = "^$|" + EMAIL_REGEX, message = "올바른 이메일 형식이 아닙니다.")
 	private String email;
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate createdAt;

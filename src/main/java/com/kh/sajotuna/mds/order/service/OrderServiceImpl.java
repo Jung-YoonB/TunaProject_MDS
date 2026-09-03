@@ -1,6 +1,7 @@
 package com.kh.sajotuna.mds.order.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,9 @@ public class OrderServiceImpl implements OrderService {
 	// 포인트 최소 사용 단위. 화면(안내 문구·입력 검증)도 이 값을 써야 하므로
 	// PaymentViewDTO.pointMinUse 로 내려보낸다 - JSP/JS 에 숫자를 따로 적지 말 것.
 	private static final long POINT_MIN_USE = 1_000L;
+
+	// 결제 금액의 1%를 적립한다
+	private static final double POINT_EARN_RATE = 0.01;
 
 	private final OrderMapper mapper;
 	private final MemberMapper memberMapper;
@@ -115,280 +119,230 @@ public class OrderServiceImpl implements OrderService {
 		return pvData;
 	}
 
+	/**
+	 * 결제. 크게 네 단계다.
+	 *   1) 입력 검증 + 서버 기준 데이터 조회 (verifyAndLoad)
+	 *   2) 결제 금액 계산 (calcTotalPrice)
+	 *   3) 주문/주문상세/재고/쿠폰 저장 (saveOrder)
+	 *   4) 포인트·등급·장바구니 뒷정리 (applyPointsAndGrade)
+	 *
+	 * 화면이 보내온 값은 믿지 않는다 - 가격·재고·쿠폰·포인트를 전부 DB에서 다시 읽어 계산한다.
+	 */
 	@Override
 	@Transactional
 	public CheckoutDTO checkout(CheckoutDTO checkoutInputData) {
-	
-	// 최소 사용 단위 확인 (0은 "사용 안 함"이라 통과시킨다)
-	if (checkoutInputData.getUsedPoint() != null && checkoutInputData.getUsedPoint() != 0
-			&& checkoutInputData.getUsedPoint() < POINT_MIN_USE) {
-		throw new IllegalArgumentException("포인트는 " + POINT_MIN_USE + "P 이상부터 사용할 수 있습니다.");
-	}
-		
-	// 회원 정보 조회
-	CheckoutDTO verifiedData = mapper.selectByMemberIdForCheckout(checkoutInputData.getMemberId());
 
-	if (verifiedData == null) {
-		throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
-	}
-	
-	if (checkoutInputData.getItemList() == null
-	        || checkoutInputData.getItemList().isEmpty()) {
-	    throw new IllegalArgumentException("구매할 상품이 없습니다.");
+		CheckoutDTO verifiedData = verifyAndLoad(checkoutInputData);
+
+		calcTotalPrice(verifiedData);
+
+		saveOrder(verifiedData);
+
+		applyPointsAndGrade(verifiedData, checkoutInputData.getCartIds());
+
+		return verifiedData;
 	}
 
-	// 구매할 상품 최신 정보 조회
-	List<OrderItemDTO> itemList = mapper.selectItems(checkoutInputData.getItemList());
 
-	if (itemList == null
-			|| itemList.size() != checkoutInputData.getItemList().size()) {
+	/** 1) 입력을 검증하면서 서버 기준 데이터로 채운 CheckoutDTO를 만든다 */
+	private CheckoutDTO verifyAndLoad(CheckoutDTO input) {
 
-		throw new IllegalArgumentException("상품 정보를 찾을 수 없습니다.");
-	}
-
-	// 조회한 상품에 요청 수량 저장
-	Map<Long, Long> qtyMap = checkoutInputData.getItemList().stream()
-					.collect(Collectors.toMap(OrderItemDTO::getPopId, OrderItemDTO::getQty));
-
-	for (OrderItemDTO item : itemList) {
-		Long qty = qtyMap.get(item.getPopId());
-		if (qty == null || qty <= 0) {
-			throw new IllegalArgumentException("상품 수량이 올바르지 않습니다.");
+		// 최소 사용 단위 확인 (0은 "사용 안 함"이라 통과시킨다)
+		if (input.getUsedPoint() != null && input.getUsedPoint() != 0
+				&& input.getUsedPoint() < POINT_MIN_USE) {
+			throw new IllegalArgumentException("포인트는 " + POINT_MIN_USE + "P 이상부터 사용할 수 있습니다.");
 		}
 
-		if (item.getOptionStock() < qty) {
-			throw new IllegalArgumentException(
-					item.getOptionName() + " 상품의 재고가 부족합니다.");
+		CheckoutDTO verifiedData = mapper.selectByMemberIdForCheckout(input.getMemberId());
+
+		if (verifiedData == null) {
+			throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
 		}
 
-		item.setQty(qty);
-	}
-	
-	verifiedData.setItemList(itemList);
-
-	// 쿠폰 확인
-	verifiedData.setChistId(checkoutInputData.getChistId());
-
-	if (checkoutInputData.getChistId() != null) {
-		BigDecimal couponValue = mapper.selectByChistId(
-						verifiedData.getMemberId(), checkoutInputData.getChistId());
-
-		if (couponValue == null) {
-			throw new IllegalArgumentException("사용할 수 없는 쿠폰입니다.");
-		}
-		verifiedData.setCouponValue(couponValue);
-	} else {
-		verifiedData.setCouponValue(BigDecimal.ZERO);
-	}
-
-	// 사용할 포인트 확인
-	int usedPoint =	checkoutInputData.getUsedPoint() != null ? checkoutInputData.getUsedPoint() : 0;
-
-	if (usedPoint < 0
-			|| usedPoint > verifiedData.getPoint()) {
-		throw new IllegalArgumentException("사용할 수 없는 포인트입니다.");
-	}
-
-	verifiedData.setUsedPoint(usedPoint);
-
-	// 확인이 필요 없는 정보 옮기기
-	verifiedData.setPaymentId(checkoutInputData.getPaymentId());
-	verifiedData.setAddressNameFix(checkoutInputData.getAddressNameFix());
-	verifiedData.setDetailAddressFix(checkoutInputData.getDetailAddressFix());
-	verifiedData.setClientPaidAmount(checkoutInputData.getClientPaidAmount());
-
-	// =====================================================
-	// 상품 금액 계산
-	// =====================================================
-
-	long productTotalPrice = 0L;
-
-	for (OrderItemDTO item : itemList) {
-	    productTotalPrice += item.getOptionPrice() * item.getQty();
-	}
-
-
-	// =====================================================
-	// 배송비 - 할인 전 상품금액 기준
-	// =====================================================
-
-	long deliveryFee = calcDeliveryFee(productTotalPrice);
-
-	verifiedData.setDeliveryFee(deliveryFee);
-
-
-	// =====================================================
-	// 상품 금액에 쿠폰 할인 적용
-	// =====================================================
-
-	BigDecimal calcPrice =
-	        BigDecimal.valueOf(productTotalPrice);
-
-	BigDecimal couponVal =
-	        verifiedData.getCouponValue() != null
-	                ? verifiedData.getCouponValue()
-	                : BigDecimal.ZERO;
-
-	calcPrice =
-	        calcPrice.multiply(
-	                BigDecimal.ONE.subtract(couponVal)
-	        );
-
-
-	// =====================================================
-	// 회원 등급 할인 적용
-	// =====================================================
-
-	BigDecimal discountRate =
-	        verifiedData.getDiscountRate() != null
-	                ? verifiedData.getDiscountRate()
-	                : BigDecimal.ZERO;
-
-	calcPrice =
-	        calcPrice.multiply(
-	                BigDecimal.ONE.subtract(discountRate)
-	        );
-
-
-	// =====================================================
-	// 할인된 상품금액 원 단위 반올림
-	// =====================================================
-
-	long discountedProductPrice =
-	        calcPrice
-	                .setScale(
-	                        0,
-	                        java.math.RoundingMode.HALF_UP
-	                )
-	                .longValue();
-
-
-	// =====================================================
-	// 배송비 추가
-	// =====================================================
-
-	long totalPrice =
-	        discountedProductPrice + deliveryFee;
-
-	
-
-	// =====================================================
-	// 포인트 사용
-	// =====================================================
-
-	totalPrice -= usedPoint;
-	
-	
-
-	System.out.println(
-	        "상품금액: " + productTotalPrice
-	        + ", 배송비: " + deliveryFee
-	        + ", 할인후 상품금액: " + discountedProductPrice
-	        + ", 사용포인트: " + usedPoint
-	        + ", 최종금액: " + totalPrice
-	);
-
-
-	if (totalPrice < 0) {
-	    throw new IllegalArgumentException(
-	            "사용 포인트가 결제 금액보다 많습니다."
-	    );
-	}
-	
-	verifiedData.setTotalPrice(totalPrice);
-	
-	// 주문 테이블 입력
-	int result = mapper.insertProductOrder(verifiedData);
-
-	if (result == 0) {
-		throw new RuntimeException("주문 처리에 실패했습니다.");
-	}
-
-	// 주문 상세 입력 및 재고 차감
-	for (OrderItemDTO item : verifiedData.getItemList()) {
-
-		item.setOrderId(verifiedData.getOrderId());
-		item.setPriceFix(item.getOptionPrice());
-		BigDecimal itemTotal = BigDecimal.valueOf(item.getOptionPrice() * item.getQty());
-		BigDecimal gradeDisAmount = itemTotal
-				.multiply(BigDecimal.ONE.subtract(couponVal))
-				.multiply(verifiedData.getDiscountRate() != null ? verifiedData.getDiscountRate() : BigDecimal.ZERO)
-				.setScale(0, java.math.RoundingMode.HALF_UP);
-				
-		item.setGradeDisAmount(gradeDisAmount.longValue());
-
-		result = mapper.insertOrderDetail(item);
-
-		if (result == 0) {
-			throw new RuntimeException("주문 상세 처리에 실패했습니다.");
+		if (input.getItemList() == null || input.getItemList().isEmpty()) {
+			throw new IllegalArgumentException("구매할 상품이 없습니다.");
 		}
 
-		result = mapper.updateProductStock(item);
+		// 가격·재고는 화면 값이 아니라 지금 시점의 DB 값을 쓴다
+		List<OrderItemDTO> itemList = mapper.selectItems(input.getItemList());
 
-		if (result == 0) {
-			throw new RuntimeException("재고가 부족합니다.");
+		if (itemList == null || itemList.size() != input.getItemList().size()) {
+			throw new IllegalArgumentException("상품 정보를 찾을 수 없습니다.");
 		}
+
+		Map<Long, Long> qtyMap = input.getItemList().stream()
+				.collect(Collectors.toMap(OrderItemDTO::getPopId, OrderItemDTO::getQty));
+
+		for (OrderItemDTO item : itemList) {
+			Long qty = qtyMap.get(item.getPopId());
+
+			if (qty == null || qty <= 0) {
+				throw new IllegalArgumentException("상품 수량이 올바르지 않습니다.");
+			}
+
+			if (item.getOptionStock() < qty) {
+				throw new IllegalArgumentException(item.getOptionName() + " 상품의 재고가 부족합니다.");
+			}
+
+			item.setQty(qty);
+		}
+
+		verifiedData.setItemList(itemList);
+
+		// 쿠폰 - 실제 보유분인지 확인하고 할인율도 DB에서 가져온다
+		verifiedData.setChistId(input.getChistId());
+
+		if (input.getChistId() != null) {
+			BigDecimal couponValue = mapper.selectByChistId(verifiedData.getMemberId(), input.getChistId());
+
+			if (couponValue == null) {
+				throw new IllegalArgumentException("사용할 수 없는 쿠폰입니다.");
+			}
+			verifiedData.setCouponValue(couponValue);
+		} else {
+			verifiedData.setCouponValue(BigDecimal.ZERO);
+		}
+
+		int usedPoint = input.getUsedPoint() != null ? input.getUsedPoint() : 0;
+
+		if (usedPoint < 0 || usedPoint > verifiedData.getPoint()) {
+			throw new IllegalArgumentException("사용할 수 없는 포인트입니다.");
+		}
+		verifiedData.setUsedPoint(usedPoint);
+
+		// 검증할 게 없는 값들
+		verifiedData.setPaymentId(input.getPaymentId());
+		verifiedData.setAddressNameFix(input.getAddressNameFix());
+		verifiedData.setDetailAddressFix(input.getDetailAddressFix());
+		verifiedData.setClientPaidAmount(input.getClientPaidAmount());
+
+		return verifiedData;
 	}
 
-	// 쿠폰 사용 처리
-	if (verifiedData.getChistId() != null) {
-		result = mapper.updateCouponStatus(verifiedData);
-		if (result == 0) {
+
+	/**
+	 * 2) 결제 금액을 계산해 deliveryFee / totalPrice 를 채운다.
+	 *
+	 * 쿠폰과 등급 할인은 BigDecimal로 한 번에 곱한 뒤 마지막에 한 번만 HALF_UP 한다.
+	 * 화면(views/payment.js)도 같은 방식으로 계산해야 보이는 금액과 결제 금액이 어긋나지 않는다.
+	 */
+	private void calcTotalPrice(CheckoutDTO verifiedData) {
+
+		long productTotalPrice = 0L;
+		for (OrderItemDTO item : verifiedData.getItemList()) {
+			productTotalPrice += item.getOptionPrice() * item.getQty();
+		}
+
+		// 배송비는 할인 전 상품금액 기준
+		long deliveryFee = calcDeliveryFee(productTotalPrice);
+		verifiedData.setDeliveryFee(deliveryFee);
+
+		long discountedProductPrice = BigDecimal.valueOf(productTotalPrice)
+				.multiply(BigDecimal.ONE.subtract(couponRateOf(verifiedData)))
+				.multiply(BigDecimal.ONE.subtract(gradeRateOf(verifiedData)))
+				.setScale(0, RoundingMode.HALF_UP)
+				.longValue();
+
+		long usedPoint = verifiedData.getUsedPoint() != null ? verifiedData.getUsedPoint() : 0;
+		long totalPrice = discountedProductPrice + deliveryFee - usedPoint;
+
+		if (totalPrice < 0) {
+			throw new IllegalArgumentException("사용 포인트가 결제 금액보다 많습니다.");
+		}
+
+		verifiedData.setTotalPrice(totalPrice);
+	}
+
+
+	/** 3) 주문 → 주문상세 + 재고 차감 → 쿠폰 사용 처리 */
+	private void saveOrder(CheckoutDTO verifiedData) {
+
+		if (mapper.insertProductOrder(verifiedData) == 0) {
+			throw new RuntimeException("주문 처리에 실패했습니다.");
+		}
+
+		BigDecimal couponRate = couponRateOf(verifiedData);
+		BigDecimal gradeRate = gradeRateOf(verifiedData);
+
+		for (OrderItemDTO item : verifiedData.getItemList()) {
+			item.setOrderId(verifiedData.getOrderId());
+			// 주문 시점 단가를 박아 둔다(상품 가격이 나중에 바뀌어도 지난 주문서는 그대로여야 한다)
+			item.setPriceFix(item.getOptionPrice());
+
+			BigDecimal gradeDisAmount = BigDecimal.valueOf(item.getOptionPrice() * item.getQty())
+					.multiply(BigDecimal.ONE.subtract(couponRate))
+					.multiply(gradeRate)
+					.setScale(0, RoundingMode.HALF_UP);
+			item.setGradeDisAmount(gradeDisAmount.longValue());
+
+			if (mapper.insertOrderDetail(item) == 0) {
+				throw new RuntimeException("주문 상세 처리에 실패했습니다.");
+			}
+
+			// 재고가 모자라면 0건이 갱신된다(쿼리에 OPTION_STOCK >= qty 조건이 있음)
+			if (mapper.updateProductStock(item) == 0) {
+				throw new RuntimeException("재고가 부족합니다.");
+			}
+		}
+
+		if (verifiedData.getChistId() != null && mapper.updateCouponStatus(verifiedData) == 0) {
 			throw new RuntimeException("쿠폰 사용 처리에 실패했습니다.");
 		}
 	}
 
-	// 포인트 사용 처리
-	if (usedPoint > 0) {
-		verifiedData.setBalance(verifiedData.getPoint() - usedPoint);
-		result = mapper.insertPointHistoryUse(verifiedData);
-		if (result == 0) {
-			throw new RuntimeException("포인트 사용 처리에 실패했습니다.");
+
+	/** 4) 포인트 사용·적립 이력, 잔액/누적구매금액/등급 갱신, 장바구니 비우기 */
+	private void applyPointsAndGrade(CheckoutDTO verifiedData, List<Long> cartIds) {
+
+		long usedPoint = verifiedData.getUsedPoint() != null ? verifiedData.getUsedPoint() : 0;
+
+		if (usedPoint > 0) {
+			verifiedData.setBalance(verifiedData.getPoint() - usedPoint);
+			if (mapper.insertPointHistoryUse(verifiedData) == 0) {
+				throw new RuntimeException("포인트 사용 처리에 실패했습니다.");
+			}
 		}
-	}
 
-	// 포인트 적립
-	long earnPoint =(long)(verifiedData.getTotalPrice() * 0.01);
-	verifiedData.setEarnPoint(earnPoint);
+		long earnPoint = (long) (verifiedData.getTotalPrice() * POINT_EARN_RATE);
+		verifiedData.setEarnPoint(earnPoint);
 
-	// 최종 포인트
-	long balance = verifiedData.getPoint() - usedPoint + earnPoint;
-	verifiedData.setBalance(balance);
-	result = mapper.insertPointHistoryEarn(verifiedData);
-	if (result == 0) {
-		throw new RuntimeException("포인트 적립 처리에 실패했습니다.");
-	}
+		long balance = verifiedData.getPoint() - usedPoint + earnPoint;
+		verifiedData.setBalance(balance);
 
-	// 회원 포인트 업데이트
-	result = mapper.updatePoint(verifiedData.getMemberId(), (int) balance);
+		if (mapper.insertPointHistoryEarn(verifiedData) == 0) {
+			throw new RuntimeException("포인트 적립 처리에 실패했습니다.");
+		}
 
-	if (result == 0) {
-		throw new RuntimeException("포인트 업데이트에 실패했습니다.");
-	}
-	
-	// 회원 누적구매금액 업데이트
-	result = mapper.updateTotalAmount(verifiedData.getMemberId(), totalPrice);
+		if (mapper.updatePoint(verifiedData.getMemberId(), (int) balance) == 0) {
+			throw new RuntimeException("포인트 업데이트에 실패했습니다.");
+		}
 
-		if (result == 0) {
+		if (mapper.updateTotalAmount(verifiedData.getMemberId(), verifiedData.getTotalPrice()) == 0) {
 			throw new RuntimeException("누적 구매금액 업데이트에 실패했습니다.");
 		}
-	
-	// 회원 누적구매금액 업데이트
-	result = mapper.updateMemberGrade(verifiedData.getMemberId());
 
-		if (result == 0) {
+		// 누적 구매금액이 바뀌었으니 등급도 다시 매긴다
+		if (mapper.updateMemberGrade(verifiedData.getMemberId()) == 0) {
 			throw new RuntimeException("회원 등급 업데이트에 실패했습니다.");
 		}
-	
 
-	// 장바구니 상품 삭제
-	if (checkoutInputData.getCartIds() != null	&& !checkoutInputData.getCartIds().isEmpty()) {
-		mapper.deleteCartItems(verifiedData.getMemberId(), checkoutInputData.getCartIds());
+		// 장바구니에서 넘어온 결제만 해당 - 바로구매는 지울 게 없다
+		if (cartIds != null && !cartIds.isEmpty()) {
+			mapper.deleteCartItems(verifiedData.getMemberId(), cartIds);
+		}
 	}
 
-	return verifiedData;
 
+	/** 쿠폰 할인율(없으면 0) */
+	private BigDecimal couponRateOf(CheckoutDTO data) {
+		return data.getCouponValue() != null ? data.getCouponValue() : BigDecimal.ZERO;
 	}
+
+	/** 회원 등급 할인율(없으면 0) */
+	private BigDecimal gradeRateOf(CheckoutDTO data) {
+		return data.getDiscountRate() != null ? data.getDiscountRate() : BigDecimal.ZERO;
+	}
+
 	
 	@Override
 	public Long getOrderIdForMember(Long memberId, Long orderId) {

@@ -21,11 +21,12 @@ public interface MemberMapper {
 	// 가입 시 포인트 초기화
 	int insertPoint(Long memberId);
 	
-	// 중복 확인
+	// 중복 확인. excludeMemberId는 "본인 제외" - 회원정보 수정에서 자기 값을 다시 확인해도
+	// 중복으로 잡히지 않게 한다. 회원가입은 본인이 없으므로 null을 넘긴다.
 	int countByLoginId(String loginId);
-	int countByNickname(String nickname);
-	int countByEmail(String email);
-	int countByPhone(String phone);
+	int countByNickname(@Param("nickname") String nickname, @Param("excludeMemberId") Long excludeMemberId);
+	int countByEmail(@Param("email") String email, @Param("excludeMemberId") Long excludeMemberId);
+	int countByPhone(@Param("phone") String phone, @Param("excludeMemberId") Long excludeMemberId);
 	
 	// 로그인 아이디를 통한 회원 조회
 	MemberDTO selectByLoginId(String loginId);

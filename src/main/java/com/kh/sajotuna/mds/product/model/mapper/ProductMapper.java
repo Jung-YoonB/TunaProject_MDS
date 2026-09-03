@@ -43,6 +43,8 @@ public interface ProductMapper {
 	List<OptionDTO> getOptionList(Long productId);
 	int couponCheck(@Param("memberId") Long memberId, @Param("couponId") Long couponId);
 	int insertCoupon(@Param("memberId") Long memberId, @Param("couponId") Long couponId);
+	// "쿠폰 받기" 모달 목록용 - 이 회원이 아직 안 받은 유효 쿠폰만
+	List<CouponDTO> getIssuableCoupons(Long memberId);
 
 	//리뷰 관련
 	List<ReviewDTO> getReviewList(@Param("productId") Long productId, @Param("memberId") Long memberId,

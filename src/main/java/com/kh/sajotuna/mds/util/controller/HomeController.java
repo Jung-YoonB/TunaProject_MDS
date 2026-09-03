@@ -7,11 +7,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
+import com.kh.sajotuna.mds.util.LoginUtil;
+import com.kh.sajotuna.mds.util.PageWindow;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.MainPageDTO;
 import com.kh.sajotuna.mds.product.model.dto.mainPage.ProductListDTO;
 import com.kh.sajotuna.mds.product.model.service.ProductService;
-import com.kh.sajotuna.mds.util.SessionConst;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -30,13 +30,13 @@ public class HomeController {
 
 	@GetMapping("/")
 	public String home(Model model, HttpSession session, @RequestParam(defaultValue = "1") int page) {
-		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
-		Long memberId = (user != null) ? user.getMemberId() : null;
+		Long memberId = LoginUtil.memberId(session);
 		MainPageDTO mainPage = service.getList(memberId);
 		List<ProductListDTO> all = mainPage.getProduct();
 		int totalCount = all.size();
-		int totalPages = Math.max(1, (int) Math.ceil((double) totalCount / HOME_PAGE_SIZE));
-		int currentPage = Math.min(Math.max(page, 1), totalPages);
+		PageWindow paging = PageWindow.of(page,
+				PageWindow.totalPages(totalCount, HOME_PAGE_SIZE));
+		int currentPage = paging.currentPage();
 
 		List<ProductListDTO> visible;
 		boolean showLoadMore;
@@ -61,10 +61,6 @@ public class HomeController {
 
 		boolean showPagination = currentPage >= 2;
 
-		int windowSize = 5;
-		int windowStart = Math.max(1, currentPage - windowSize / 2);
-		int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
-		windowStart = Math.max(1, windowEnd - windowSize + 1);
 
 		model.addAttribute("productList", visible);
 		// 배너는 검색 결과 페이지 사이드바와 동일한 목록(최근 등록 상품 대표이미지 최대 5장) -
@@ -74,10 +70,7 @@ public class HomeController {
 		model.addAttribute("categoryList", service.getCategories());
 		model.addAttribute("showLoadMore", showLoadMore);
 		model.addAttribute("showPagination", showPagination);
-		model.addAttribute("currentPage", currentPage);
-		model.addAttribute("totalPages", totalPages);
-		model.addAttribute("pageWindowStart", windowStart);
-		model.addAttribute("pageWindowEnd", windowEnd);
+		paging.addTo(model);
 		return "home/home";
 	}
 }

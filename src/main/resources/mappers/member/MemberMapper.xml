@@ -24,16 +24,25 @@
 		SELECT COUNT(*) FROM MEMBER WHERE LOGIN_ID = #{loginId}  
   	</select>
   	
-  	<select id="countByNickname" parameterType="String" resultType="int">
-		SELECT COUNT(*) FROM MEMBER WHERE NICKNAME = #{nickname}  
+  	<!-- excludeMemberId가 있으면 그 회원(=본인)은 세지 않는다. 회원정보 수정 화면에서 자기 값을
+  	     그대로 다시 중복확인해도 "이미 사용중"이 뜨지 않게 하기 위한 것.
+  	     회원가입은 본인이 없으므로 null이 넘어오고, 조건 자체가 붙지 않는다. -->
+  	<sql id="excludeSelf">
+  		<if test="excludeMemberId != null">AND MEMBER_ID != #{excludeMemberId}</if>
+  	</sql>
+
+  	<select id="countByNickname" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE NICKNAME = #{nickname} <include refid="excludeSelf"/>
   	</select>
-  	
-  	<select id="countByEmail" parameterType="String" resultType="int">
-		SELECT COUNT(*) FROM MEMBER WHERE EMAIL = #{email}  
+
+  	<select id="countByEmail" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE EMAIL = #{email} <include refid="excludeSelf"/>
   	</select>
-  	
-  	<select id="countByPhone" parameterType="String" resultType="int">
-		SELECT COUNT(*) FROM MEMBER WHERE PHONE = #{phone}  
+
+  	<!-- PHONE은 '010-1234-5678' 형태로만 저장된다. 서비스(formatPhone)가 조회값도 같은 형태로
+  	     맞춰서 넘기므로 여기선 그대로 비교한다. -->
+  	<select id="countByPhone" resultType="int">
+		SELECT COUNT(*) FROM MEMBER WHERE PHONE = #{phone} <include refid="excludeSelf"/>
   	</select>
   	
   	<select id="selectByLoginId" parameterType="String" resultType="MemberDTO">

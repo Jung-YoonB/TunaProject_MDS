@@ -10,6 +10,17 @@
 // 전역 함수로 직접 부르고 있어 이름을 바꾸면 안 된다.
 (function () {
 
+    // 장바구니/찜 엔드포인트는 성공이든 비로그인이든 항상 redirect라, 응답 본문이 아니라
+    // 최종 도착 URL(res.url)이 로그인 화면인지로 비로그인을 판별한다.
+    function isLoginRedirect(res) {
+        return !!(res && res.url && res.url.indexOf('/member/login') !== -1);
+    }
+
+    function goToLogin() {
+        alert('로그인이 필요합니다.');
+        window.location.href = '/member/login';
+    }
+
     function getCartItems() {
         try {
             var items = JSON.parse(localStorage.getItem('cartItems') || '[]');
@@ -62,12 +73,8 @@
             credentials: 'same-origin',
             body: 'popId=' + encodeURIComponent(item.popId) + '&qty=' + encodeURIComponent(item.qty || 1)
         }).then(function (res) {
-            // CartController는 항상 redirect라 응답 본문 대신 최종 도착 URL로 로그인 필요 여부를 구분한다.
-            if (res.url && res.url.indexOf('/member/login') !== -1) {
-                if (!silent) {
-                    alert('로그인이 필요합니다.');
-                    window.location.href = '/member/login';
-                }
+            if (isLoginRedirect(res)) {
+                if (!silent) goToLogin();
                 return false;
             }
             // 담고 나면 헤더 뱃지도 바로 갱신한다(안 하면 다음 페이지 이동 전까지 숫자가 그대로다).
@@ -97,10 +104,8 @@
             });
 
         return request.then(function (res) {
-            // 두 엔드포인트 다 항상 redirect라 최종 도착 URL로 로그인 필요 여부를 구분한다(addToCart와 동일 패턴).
-            if (res.url && res.url.indexOf('/member/login') !== -1) {
-                alert('로그인이 필요합니다.');
-                window.location.href = '/member/login';
+            if (isLoginRedirect(res)) {
+                goToLogin();
                 return wasWished; // 실패했으니 상태 그대로
             }
 
@@ -133,6 +138,30 @@
         return false;
     }
 
+    /**
+     * 찜 버튼의 화면 상태(하트 채움 + 옆의 찜 개수)를 한 번에 맞춘다.
+     * 홈 카드·검색결과 카드·상품 상세가 전부 이걸 쓴다 - 예전엔 각 화면이 is-active만 뒤집고
+     * 숫자는 아무도 안 건드려서, 하트는 채워지는데 개수는 그대로인 채로 남아 있었다.
+     *
+     * 숫자는 "상태가 실제로 바뀐 경우에만" 움직인다. toggleWish는 비로그인(로그인 화면으로 이동)이나
+     * 통신 실패일 때 원래 상태(wasWished)를 그대로 돌려주는데, 그때도 ±1 하면 서버 값과 어긋난다.
+     *
+     * @param countEl 개수를 표시하는 요소. 안 넘기면 버튼 안의 .product-wish-count-num을 쓴다
+     *                (상품 상세는 개수가 버튼 밖 #wish-count에 있어서 직접 넘긴다)
+     */
+    function applyWishState(button, wasWished, nowWished, countEl) {
+        button.classList.toggle('is-active', nowWished);
+        button.setAttribute('aria-label', nowWished ? '찜 해제' : '찜하기');
+
+        if (nowWished === wasWished) return;
+
+        var el = countEl || button.querySelector('.product-wish-count-num');
+        if (!el) return;
+
+        var count = parseInt(el.textContent, 10) || 0;
+        el.textContent = nowWished ? count + 1 : Math.max(0, count - 1);
+    }
+
     window.CartWishService = {
         getCartItems: getCartItems,
         getWishList: getWishList,
@@ -141,11 +170,13 @@
         getCartKey: getCartKey,
         addToCart: addToCart,
         toggleWish: toggleWish,
-        isWished: isWished
+        isWished: isWished,
+        applyWishState: applyWishState
     };
 
     // cart.jsp/wish.jsp/searchProduct.jsp가 쓰는 기존 전역 함수 이름 유지 (하위 호환)
     window.addToCart = addToCart;
     window.toggleWish = toggleWish;
     window.isWished = isWished;
+    window.applyWishState = applyWishState;
 })();

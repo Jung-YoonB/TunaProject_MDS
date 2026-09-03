@@ -30,9 +30,9 @@ Claude Code와 함께 진행한 작업을 시간순으로 쌓아온 **누적 작
 | ✅ 과도기 해소 | **product 전달 목록(3-47) 7건이 이번 병합으로 들어왔다.** 누락됐던 1건(상세 평균별점·리뷰수 `REVIEW_STATUS` 필터)은 3-57에서 보완. `ORA-00904`로 상세가 깨지던 문제 해소 — 상품 상세 200 확인 |
 | 아직 다른 브랜치 | `JJY_Work` / `JWC_works` / `KGH_works` / `product_images` / `origin/KCH_works` — 팀원 개인 작업 브랜치라 각자 `main`을 받아가면 해소됨(3-43 매퍼 수정도 그때 따라감) |
 | 테스트 서버 | **`http://192.168.30.24:8797/`** — 가동 중, 3-42/3-43 결과물 배포 반영 확인 완료. **로컬 개발 서버와 포트가 같으니 헷갈리지 말 것**(`localhost:8797` = devtools 로컬) |
-| 진행 중인 작업 | **3-62 주석 리팩토링 완료** — 코드 주석을 "왜/함정"만 남기게 정리, 낡은 TODO·문서 참조 전량 제거, 그 과정에서 관리자 목업·찜 정렬 버그 2건 발견·조치 |
-| 미커밋 변경 | **41건**(3-61 + 3-62 누적). 관리 문서 3종은 지금 레포 추적 중(집↔회사 이동용, **main 병합 직전 untrack 예정**) + 팀원 파비콘 `src/main/webapp/resources/favicon.png` |
-| 다음 단계 | **(1) 3-61·3-62 작업분 커밋** → (2) **코드 자체 리팩토링**(중복 로직·긴 메서드·매직넘버 — 주석 정리를 우선하기로 해서 아직 미착수) → (3) 화면 육안 확인(좋아요 하트·관리자 마이페이지·찜 인기순) → (4) AUDIT 다른 섹션: 정책 항목(product 집계 3곳 필터), 위험 20번(`style_user.css` 최상위 `#id` 108개), 24번, **28번(운영 코드 `System.out` 42건 — 회원 정보가 콘솔에 남음)** |
+| 진행 중인 작업 | **3-69 쿠폰 받기 버튼 위치 이동 + 모달 개편 완료**(3-68/AUDIT 60 후속). 이전은 3-68 TC-39·TC-41, 3-67 TC-35·TC-36 |
+| 미커밋 변경 | **수정 38 + 신규 2**(3-63~3-69 누적). 신규는 `util/PageWindow.java`, `util/LoginUtil.java`. 관리 문서 3종은 지금 레포 추적 중(집↔회사 이동용, **main 병합 직전 untrack 예정**) |
+| 다음 단계 | **(1) 3-63~3-69 작업분 커밋** → (2) 화면 육안 확인(찜 하트/숫자, 아리따부리 제목, 회원정보 본인 연락처 재입력, 결제 화면 포인트/쿠폰 유지, **쿠폰 받기 모달 — 목록/모두 받기 버튼**) → (3) AUDIT 남은 항목은 버그가 아니라 위험/정책: 28번(System.out), 20번(`style_user.css` 최상위 `#id`), 24번 → (4) 더미 계정(`dummy_pay1~3`·`dummy_admin2`·`dummy_phonefmt`·`dummy_dupphone`·`dummy_sgok`)을 `sql/dummy_order_review.sql`에 반영 |
 | ✅ 로컬 이미지 있음 | 이번 병합(`JWC_works`)으로 `uploads/product`(701개)가 git 추적에 포함돼 로컬(`localhost:8797`)에서도 상품 썸네일이 정상 표시된다(3-58에서 실제 200 확인). 위 "로컬 이미지 없음"은 병합 전 상태였음 — 더는 유효하지 않음 |
 | ✅ cart/wish 연결됨 | 4경로 전부 404였던 것이 **`JWC_works` 병합으로 해소** — `wish/my-wish`·`cart/my-cart` 로그인 상태 200 확인(AUDIT 버그 16번 닫힘) |
 | CSS 구성 | `default.css` / `style.css` / `style_user.css` / `style_admin.css` 4개, `header.jsp`가 전 페이지에 전부 로드 |
@@ -73,7 +73,14 @@ Claude Code와 함께 진행한 작업을 시간순으로 쌓아온 **누적 작
 | `3-59` | 2026-09-03 | **화면 확인 3건 조치** — 상품 상세 장바구니를 실제 `POST /cart/add-cart`로 연결(비로그인 시 로그인 요구), 홈 "더보기"를 진짜 추가 노출(8→16)+페이지네이션으로 재설계("전체 상품 보기"와 겹치던 기능 분리), 이미지 호버 태그 팝업(`.sp-tag-popup`) 마크업 누락 보완 |
 | `3-60` | 2026-09-03 | **대규모 라운드 — AUDIT 27, 29~48 전부 조치** 상품 상세(옵션가격/카테고리/설명/등급할인/대표이미지 500), 검색·찜 카드 리뷰 링크, 장바구니·찜 선택모드+페이지네이션 전면 개편, 장바구니 개별삭제·재담기 수량증가·헤더뱃지 즉시반영, 찜 로그아웃 후 상태 동기화, 결제 PRG(취소/뒤로가기 재제출 확인)+`/checkout` 405 우회+포인트 안내/레이아웃, 리뷰 이미지 경로 누락+좋아요 버튼 신설, 드롭다운 화살표 위치. **버그 섹션 48개 전부 조치 완료 ← 최신** |
 | `3-61` | 2026-09-03 | **좋아요 더미 투입 + 프로젝트 종합 검진** — `REVIEWLIKE` 0행이던 것 210행 생성(스크립트 3-2), **🔴 리뷰 본문 저장형 XSS 발견·실증·조치(AUDIT 49)**, `/member/userWithdraw` 로그인 가드 누락(AUDIT 50), 낡은 TODO 4건, 파비콘 반영 확인, 검진 7항목 이상 없음 |
-| `3-62` | 2026-09-03 | **전 프로젝트 주석 리팩토링 + TODO 8건 전량 처리** — 이력형 주석 16→0, **팀원이 열 수 없는 문서 참조(HANDOFF/AUDIT) 18→0**, TODO 8→0, **관리자 마이페이지 목업→실데이터(AUDIT 51)**, **찜 "인기순" 정렬 부재(AUDIT 52)** ← 최신 |
+| `3-62` | 2026-09-03 | **전 프로젝트 주석 리팩토링 + TODO 8건 전량 처리** — 이력형 주석 16→0, **팀원이 열 수 없는 문서 참조(HANDOFF/AUDIT) 18→0**, TODO 8→0, **관리자 마이페이지 목업→실데이터(AUDIT 51)**, **찜 "인기순" 정렬 부재(AUDIT 52)** |
+| `3-63` | 2026-09-03 | **코드 자체 리팩토링** — 페이지네이션 계산 7곳 중복 + `OrderController`만 다른 알고리즘이던 것을 `PageWindow`로 통일, 세션 캐스팅 41곳(3가지 표기)을 `LoginUtil`로, `checkout()` 272→12줄·`updateDeliveryStatus()` 62→35줄 분해, 전화번호 정규화·이메일 정규식·ORDER_STATUS 동기화 중복 제거. **스모크 39개 지표 단계별 비교로 동작 변화 0** |
+| `3-64` | 2026-09-03 | **버그 제보 조치 — 찜 개수 실시간 미반영(AUDIT 54·55)** — 서버·집계는 정상이고 화면 코드만 문제였다. 홈/검색 카드는 개수를 아예 안 건드리고, 상품 상세는 **비로그인·통신 실패로 상태가 안 바뀌었을 때도 ±1** 하던 반대 결함. `applyWishState()` 하나로 세 화면 통일(상태가 실제로 바뀐 경우에만 증감). 리뷰 좋아요는 개수 갱신 정상이었고, 예상 밖 응답을 "취소"로 오해하던 것만 보강 |
+| `3-65` | 2026-09-03 | **상품 게시글 제목에 아리따부리 서체 적용** — `@font-face`(default.css) + `--gsf-font-title` 토큰(style.css) + 적용 2곳(style_user.css). `.product-name`은 결제·주문배송·리뷰작성이 함께 쓰는 공용 클래스라 조상 `.product-card`로 스코프. 렌더링 결과로 적용 29곳 / 제외 화면 0곳 확인 |
+| `3-66` | 2026-09-03 | **버그 제보 조치 — 연락처 중복확인이 항상 "사용 가능"(AUDIT 56)** — 저장은 하이픈(`010-9999-9999`), 조회는 입력값 그대로(`01099999999`)라 **모든 번호**가 통과하고 있었다. `formatPhone`(조회용) 분리로 해결. 이 수정이 **AUDIT 53(본인 제외 없음)을 즉시 실제 문제로 만들어** 같이 해결 — 매퍼 3종에 `excludeMemberId`. **버그 섹션 미해결 0건 달성** |
+| `3-67` | 2026-09-03 | **QA 제보 TC-35·TC-36(AUDIT 57·58)** — 결제 화면 배송지 추가가 **어디서 들어오든** 회원정보 수정으로 튕기던 것을 `returnUrl`(기존 `isSafeRedirect` 재사용)로 해결. 장바구니 썸네일은 70px 틀에 **내부 `img` 규칙이 없어** 세로 이미지가 최대 51px 흘러넘치던 것 — 프로젝트에 이미 있던 `overflow:hidden`+`object-fit:cover` 패턴 적용. 고정 크기 틀 70개 전수 점검해 장바구니만 누락이었음을 확인 |
+| `3-68` | 2026-09-03 | **QA 제보 TC-39(결제 화면)·TC-41(AUDIT 59·60)** — 결제 화면에서 배송지 추가/서버 검증 실패로 되돌아오면 포인트·쿠폰·결제수단이 초기화되던 것을 `sessionStorage` 임시 저장/복원으로 해결. 상품 상세에 없던 "쿠폰 받기" 버튼 신설 — 죽은 엔드포인트(`GET /mds/coupon/{id}`)를 발급 가능 쿠폰 전량 일괄 발급(`POST /mds/coupon/issue`)으로 재작성, **만료 쿠폰까지 내려주던 쿼리 누락 필터 발견·수정** |
+| `3-69` | 2026-09-03 | **쿠폰 받기 버튼 위치 이동 + 모달 개편** — 구매 버튼 줄에서 빼서 이미지 갤러리 아래 독립 배너로 이동. 클릭 즉시 전체 발급 대신 `GET /mds/coupon/issuable`로 발급 가능 목록(쿠폰명+할인율)을 모달로 먼저 보여주고 "모두 받기"에서 발급. 전역 `.modal-overlay`(admin, `.show` 클래스 토글 방식)와 이름이 겹치면 `[hidden]`으로 절대 안 열리는 함정을 발견해 `coupon-modal-` 접두사로 회피 ← 최신 |
 | 부록 A | — | 참고 메모리(환경/함정 메모) |
 
 ---
@@ -3823,6 +3830,661 @@ USER 화면 10곳 200 / ADMIN 화면 4곳 200
 ### 다음
 
 **코드 자체 리팩토링**(중복 로직·긴 메서드·매직넘버 등)은 아직 시작 전. 주석 정리를 우선한다는 방침에 따라 여기서 끊었다.
+
+---
+
+## 3-63. 2026-09-03: 코드 자체 리팩토링 — 중복 로직 / 긴 메서드 / 매직넘버
+
+3-62에서 미룬 "코드 자체 리팩토링"을 실행했다. **동작을 바꾸지 않는 것이 유일한 성공 조건**이라,
+39개 지표짜리 스모크(`scratchpad/smoke.sh`)를 기준선으로 잡고 **단계마다 돌려 diff가 0인지 확인**했다.
+전 단계에서 `차이 없음`.
+
+### 3-63-1. 페이지네이션 계산 — `PageWindow` 신설
+
+같은 창(window) 계산이 컨트롤러 7곳에 복붙돼 있었고, `OrderController`만 **다른 알고리즘**
+(블록 방식 `((page-1)/size)*size+1`)을 쓰면서 **같은 JSP(`order/userOrderDelivery`)를 렌더**하고 있었다.
+화면은 하나인데 페이지 번호가 두 규칙으로 그려지던 셈. 슬라이딩 윈도 하나로 통일했다.
+
+```java
+public record PageWindow(int currentPage, int totalPages, int windowStart, int windowEnd) {
+    public static PageWindow of(int page, int totalPages)      // 창 계산 + 범위 보정
+    public static int totalPages(int totalCount, int pageSize) // 전체 건수 → 페이지 수(최소 1)
+    public static int offset(int page, int pageSize)           // 페이지 → SQL OFFSET
+    public void addTo(Model model)                             // JSP가 읽는 4개 이름을 한 곳에서 결정
+}
+```
+
+`addTo`가 중요하다. 모델 속성 이름(`currentPage`/`totalPages`/`pageWindowStart`/`pageWindowEnd`)은
+JSP와 짝인데, 한 컨트롤러에서 이름을 잘못 쓰면 **그 화면의 페이지 번호만 조용히 사라진다**(예외 없음).
+
+- `PageWindow.of` 8곳, `totalPages` 6곳, `offset` 5곳 → 직접 계산 **0건**
+- `int safePage = Math.max(page,1); int offset = (safePage-1)*SIZE;` 5쌍 제거
+- 페이지 크기는 이미 상수(`COUPON/DELIVERY/REVIEWS/SEARCH/MY_REVIEWS/HOME_PAGE_SIZE`)라 그대로 둠
+- 검증: `page=0 / -3 / 999`를 5개 화면에 넣어 전부 200
+
+### 3-63-2. `checkout()` 272줄 → 12줄 오케스트레이션
+
+```java
+CheckoutDTO verifiedData = verifyAndLoad(checkoutInputData);  // 73줄: 검증 + 서버 기준 데이터 적재
+calcTotalPrice(verifiedData);                                 // 26줄: 금액 계산
+saveOrder(verifiedData);                                      // 34줄: 주문/상세/재고/쿠폰
+applyPointsAndGrade(verifiedData, cartIds);                   // 39줄: 포인트·등급·장바구니
+```
+
+쿠폰/등급 할인율의 null 방어가 곳곳에 흩어져 있어 `couponRateOf()` / `gradeRateOf()`로 모았다.
+`OrderServiceImpl` 412 → 366줄.
+
+> **함정:** 중간에 `POINT_EARN_RATE cannot be resolved`로 500이 났다. `grep -q ... || sed -i`로 상수를
+> 넣으려 했는데 **삽입이 조용히 실패**한 것. sed/perl 삽입은 성공 여부를 믿지 말고 반드시 다시 grep할 것.
+
+검증은 **실제 결제 1건(주문 62)**을 태워서 했다.
+`112,800 × 0.7 × 0.85 = 67,116 − 10,000P = 57,116` (DB 일치), 적립 571 / 잔액 40,571 /
+누적 1,557,116 / 쿠폰 USE / 장바구니 3→0 / 재고 차감. 확인 후 `dummy_pay1`을 문서상 상태로
+원복하고 주문 62를 삭제했다(재고 128/992/20 복구).
+
+### 3-63-3. 세션 꺼내기 41곳 → `LoginUtil`
+
+같은 캐스팅이 **3가지 표기**로 9개 파일에 41번 흩어져 있었다.
+
+```
+((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION))   11회
+(MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION)    17회
+(MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION)      9회
+```
+
+```java
+public final class LoginUtil {
+    public static MemberDTO member(HttpSession session)  // 비로그인이면 null
+    public static Long memberId(HttpSession session)     // 비로그인이면 null
+}
+```
+
+- 직접 캐스팅 **0건**(`LoginUtil` 내부 1곳만), 8개 파일에서 39회 호출
+- `(user != null) ? user.getMemberId() : null` 6곳도 `memberId()`로 흡수
+- `ProductController.getMemberId()`는 이제 순수 위임이라 제거, 미사용 `SessionConst` import 5개·
+  `ReviewDTO` import·죽은 필드 `MY_REVIEWS_PAGE_SIZE` 정리
+
+> **컨트롤러 안의 로그인 가드 자체는 그대로 뒀다.** `LoginInterceptor`가 이미 `/member/myPage`,
+> `/member/couponView`, `/member/orderDelivery`, `/order/**`를 막고 있어 "중복"처럼 보이지만,
+> 3-61에서 **가드 누락(AUDIT 50)** 을 막 고쳤다. 이중 방어를 걷어내는 건 리팩토링이 아니라 보안 변경이다.
+
+> **사고:** 일괄 치환 스크립트가 **`LoginUtil.java` 자기 자신까지 치환**해서
+> `member()`가 `return LoginUtil.member(session);` 이 되는 무한 재귀가 만들어졌다.
+> 컴파일은 통과한다(스택오버플로는 런타임). 파일 단위 일괄 치환은 **정의 파일을 제외**할 것.
+
+### 3-63-4. 그 밖의 중복
+
+| 대상 | 내용 |
+|---|---|
+| `cartWishService.js` | 로그인 리다이렉트 감지 6줄이 `addToCart`/`toggleWish`에 복붙 → `isLoginRedirect(res)` + `goToLogin()` |
+| `MemberServiceImpl` | **전화번호 정규화 20줄이 `signUp`/`phoneUpdate`에 통째로 복붙** → `normalizePhone()`. 갈리면 저장 형식이 달라져 `isPhoneCheck` 중복검사가 못 잡는다 |
+| `MemberDTO` ↔ `MemberServiceImpl` | 이메일 정규식 2벌 → `MemberDTO.EMAIL_REGEX` 상수 하나(`@Pattern`은 `"^$|" + EMAIL_REGEX`로 빈 값 허용) |
+| `AdminOrderServiceImpl` | ORDER_STATUS 동기화 4줄이 두 경로에 복붙 → `syncOrderStatus()` |
+| `ReviewServiceImpl` | `writeReview` 48줄 → 이미지 저장부를 `saveReviewImages()`로 분리 |
+
+### 3-63-5. `updateDeliveryStatus` 62줄 → 35줄
+
+검증(`validateTransition`)과 반영을 분리했다. 상태 기계라 **13개 분기를 실제 API로 전부** 태웠다
+(주문 58, 배송행 없는 상태에서 시작).
+
+```
+1  잘못된 상태            → 올바르지 않은 배송 상태입니다
+2  행 없는데 SHIPPED      → 먼저 '배송준비중'으로...
+3  PREPARING(신규)        → 성공(행 생성, order_status=PREPARING)
+4  PREPARING(동일 단계)   → 성공
+5  SHIPPED 송장 없음      → 택배사와 송장번호를 입력해야 합니다
+6  SHIPPED 택배사 목록밖  → 올바르지 않은 택배사입니다
+7  SHIPPED 정상          → 성공(order_status=SHIPPED)
+8  PREPARING 역행         → 이전 단계로 되돌릴 수 없습니다
+9  OUT_FOR_DELIVERY      → 성공(order_status=SHIPPED로 합쳐서 동기화)
+10 DELIVERED             → 성공
+11 완료 후 SHIPPED        → 취소/환불 처리만 가능합니다
+12 완료 후 CANCELED       → 성공, order_status는 DELIVERED 유지(2단계라 completeCancel에서 맞춤)
+13 취소 후 PREPARING      → 이미 취소/환불된 주문은 변경 불가
+```
+
+확인 후 주문 58 원복(DELIVERY 행 삭제, `ORDER_STATUS='PAYMENT_COMPLETED'`).
+
+### 3-63-6. 검증
+
+```
+mvnw clean compile EXIT=0        node --check 통과
+스모크 39개 지표 × 5회(단계별)   전부 base와 차이 없음
+페이징 경계 page=0/-3/999 × 9곳  전부 200
+결제 실거래 1건 손검산 후 원복
+배송 상태 기계 13개 분기 전수 + 원복
+전화번호 11자리→010-1122-3344 / 10자리→011-987-6543 (DB 확인)
+이메일 형식오류 차단 / 정상 저장 / 빈값 → NULL
+변경 파일 15 + 신규 2, 319 삽입 / 437 삭제 (순 -118줄)
+미사용 import 0
+```
+
+### 3-63-7. 테스트 계정 (지우지 말 것)
+
+| 계정 | 비밀번호 | 용도 |
+|---|---|---|
+| `dummy_phonefmt` | `Test1234!` | 3-63-4 전화번호/이메일 정규화 검증용. 김폰포맷 / 닉 `폰포맷` / `011-987-6543` |
+
+### 다음
+
+- **AUDIT 28** 운영 코드 `System.out` 42건(세션·회원 정보가 콘솔에 남음) — 리팩토링 라운드에서 손대지 않음
+- **AUDIT 20** `style_user.css` 최상위 `#id` 108개 / **AUDIT 24** 추가 이미지 표시·검증 불일치 / **AUDIT 53** 중복검사 서버측 본인 제외 누락
+- `dummy_pay1~3`·`dummy_admin2`·`dummy_phonefmt`는 아직 DB에만 있음 → `sql/dummy_order_review.sql`에 추가 필요
+- **main 병합 직전 관리 문서 3종 untrack**
+
+---
+
+## 3-64. 2026-09-03: 버그 제보 — 찜 개수가 실시간으로 안 바뀜 (AUDIT 54·55)
+
+> 제보: "① 찜버튼을 눌러도 실시간으로 숫자가 변환되지 않음 / 관련 아이콘 모두 검수
+> ② 관련하여 리뷰 좋아요도 동일 현상 있는지 체크 필요"
+
+### 3-64-1. 서버부터 의심을 걷어냄
+
+카드가 전부 `2`를 보여주길래 집계가 깨진 줄 알았는데, **DB 실측과 일치했다**(우연히 상위 4개 상품이 다 2건).
+`product.xml`의 `COUNT(DISTINCT W.WISH_ID)`도 정상. 실제로 토글해 보면 서버는 정확히 따라간다.
+
+```
+상품 35 카드 렌더값   2 → (찜) 3 → (해제) 2
+헤더 뱃지 /wish/count  2 → 3 → 2
+리뷰 25 좋아요        5 → 4 → 5   (is-active도 같이 뒤집힘)
+```
+
+**서버는 전부 정상. 결함은 화면 코드에만 있었다.**
+
+### 3-64-2. 찾은 것 — 방향이 정반대인 두 결함
+
+| 화면 | 증상 |
+|---|---|
+| 홈 카드 / 검색결과 카드 | `is-active`만 뒤집고 **`.product-wish-count-num`을 아무도 안 건드림** → 하트만 채워지고 숫자는 그대로 (제보 그대로) |
+| 상품 상세 | 개수는 갱신하는데 **상태가 안 바뀌었을 때도 ±1** |
+
+상세 쪽이 덜 눈에 띄지만 더 나쁘다. `toggleWish()`는 비로그인이거나 통신 실패면 **원래 상태
+(`wasWished`)를 그대로 돌려준다.** 그런데 호출부는 그 값을 "지금 찜 상태"로만 읽어서,
+찜 안 한 상품에서 실패하면 `liked=false` → **개수를 1 줄여 버렸다.**
+비로그인은 로그인 화면으로 이동해 가려지지만, **통신 실패는 화면 이동이 없어 틀린 숫자가 그대로 남는다.**
+
+### 3-64-3. 조치 — 세 화면이 공유하는 헬퍼 하나
+
+`common/cartWishService.js`에 추가:
+
+```js
+function applyWishState(button, wasWished, nowWished, countEl) {
+    button.classList.toggle('is-active', nowWished);
+    button.setAttribute('aria-label', nowWished ? '찜 해제' : '찜하기');
+
+    if (nowWished === wasWished) return;   // ← 실패/비로그인이면 숫자를 건드리지 않는다
+
+    var el = countEl || button.querySelector('.product-wish-count-num');
+    if (!el) return;
+    var count = parseInt(el.textContent, 10) || 0;
+    el.textContent = nowWished ? count + 1 : Math.max(0, count - 1);
+}
+```
+
+`views/home.js`, `views/searchProduct.js`, `views/productdetail.js`가 전부 이걸 부른다.
+카드는 개수가 버튼 **안**(`.product-wish-count-num`)이라 기본 탐색으로 잡히고,
+상품 상세는 개수가 버튼 **밖**(`.product-stat > #wish-count`)이라 요소를 인자로 넘긴다.
+
+> 이 갱신이 화면마다 흩어져 있었던 게 원인이라, 고칠 때도 화면마다 세 벌 쓰지 않았다.
+> 새 카드 화면이 생겨도 `applyWishState`만 부르면 같은 실수가 안 난다.
+
+### 3-64-4. 제보 ② 리뷰 좋아요 — 개수 갱신은 정상, 다른 결함이 있었음
+
+`views/productdetail.js`는 `.review-like-count`를 제대로 갱신하고 있었다(서버 `5→4→5` 확인).
+**같은 현상은 아니다.** 다만 점검 중 다른 걸 발견했다.
+
+```js
+const liked = result === 'on';   // ← "on"이 아니면 전부 "취소됨"
+```
+
+엔드포인트가 500을 내면 `res.text()`로 **에러 페이지 HTML**이 들어오는데, 그것도 `'on'`이 아니므로
+하트가 꺼지고 개수가 1 줄었다. 실제로는 아무 일도 안 일어난 상태다.
+→ `'on'`/`'off'`가 아니면 화면을 건드리지 않고 실패 안내만 띄우도록 수정.
+
+### 3-64-5. "관련 아이콘 모두 검수" 결과
+
+| 위치 | 아이콘 | 개수 | 판정 |
+|---|---|---|---|
+| 홈 카드 | `.product-wish-icon` | `.product-wish-count-num` | 🔴 → ✅ 조치 |
+| 검색결과 카드 | `.product-wish-icon` | `.product-wish-count-num` | 🔴 → ✅ 조치 |
+| 상품 상세 찜 | `.icon-heart` (`.is-filled`) | `#wish-count` | 🟠 → ✅ 조치 |
+| 상품 상세 리뷰 좋아요 | `.icon-heart-small` | `.review-like-count` | ✅ 정상 (+ 응답 검증 보강) |
+| 찜 목록 | `.btn-wish-toggle` | 개수 없음 | ✅ 해당 없음 — 카드 제거 후 `location.reload()` |
+| 헤더 찜/장바구니 뱃지 | `#wishBadge`/`#cartBadge` | — | ✅ 정상 — `saveWishList → refreshCartBadge → GET /wish/count`로 서버 값 재조회 |
+| 별점 | `.product-rating-star` | `.product-rating-score` | ✅ 해당 없음 — 토글 아님 |
+
+### 3-64-6. 검증
+
+브라우저 클릭은 못 하니 **로직 단위 테스트 + 서버 실측**으로 나눠 확인했다.
+
+```
+applyWishState 5가지 경우 (가짜 DOM, node)          전부 통과
+  미찜→찜 2→3 / 찜→해제 3→2
+  상태 그대로(미찜) 2→2 / 상태 그대로(찜중) 3→3   ← 실패·비로그인 시 숫자 안 움직임
+  0에서 해제해도 음수 방지 0→0
+서버 실측 상품35 2→3→2 / /wish/count 2→3→2 / 리뷰25 5→4→5  (전부 원복)
+JS 문법 4개 통과 / 정적 리소스 4개 200 / 호출부 3곳 서빙 확인
+스모크 39개 지표 base와 차이 없음
+```
+
+**남은 것**: 실제 브라우저 클릭 확인은 팀장 육안 검수 필요(하트 색·숫자 즉시 반영).
+
+---
+
+## 3-65. 2026-09-03: 상품 게시글 제목에 아리따부리 서체 적용
+
+요청: "상품 카드랑 상세페이지 등에서 확인 되는 상품 게시글 타이틀 부분**에만**" 적용.
+
+### 3-65-1. 세 파일로 나눈 이유
+
+| 파일 | 역할 |
+|---|---|
+| `default.css` | `@font-face`(아리따부리 SemiBold, jsDelivr) — 등록만 |
+| `style.css` `:root` | `--gsf-font-title` 토큰 = `'Aritaburi'` + 기존 기본 서체 fallback |
+| `style_user.css` | 실제 적용 지점 2곳 |
+
+CDN을 못 받아오면 토큰 뒤쪽 기본 서체로 자연히 떨어진다(`font-display: swap`).
+
+### 3-65-2. 적용 지점 — `.product-name` 단독으로 쓰면 안 된다
+
+```css
+.product-card .product-name { font-family: var(--gsf-font-title); }  /* 홈·검색·찜 카드 */
+.product-title              { font-family: var(--gsf-font-title); }  /* 상품 상세 h1 */
+```
+
+**`.product-name`은 공용 클래스다.** 결제(`.product-item`), 주문/배송(`.order-delivery-page`),
+리뷰 작성(`.review-product-card`)도 같은 클래스를 쓴다. `header.jsp`가 CSS 4개를 전 페이지에
+로드하므로, 스코프 없이 `.product-name`에 걸었으면 그 화면들 상품명까지 전부 서체가 바뀐다.
+조상 `.product-card`로 묶어야 카드 3종(홈/검색/찜 — `views/wish.js`도 같은 클래스로 그린다)에만 걸린다.
+
+`.product-title`은 `productDetail.jsp`에서만 쓰는 클래스라 기존 규칙에 한 줄 추가로 끝냈다(새 셀렉터 없음).
+
+### 3-65-3. 검증
+
+실제 렌더링 결과로 적용/제외 범위를 셌다.
+
+```
+적용   /              product-card 8  / product-name 8
+       /mds/searchList product-card 20 / product-name 20
+       /mds/detail/82  product-title 1
+제외   /member/orderDelivery  product-name 8 / product-card 0   ← 조상이 없어 안 걸림
+       /order/payment, /cart/my-cart          product-name 0
+       리뷰 작성 화면은 review-product-card (CSS는 클래스 토큰 단위 매칭이라 .product-card와 안 겹침)
+
+CSS 주석/중괄호 상태 기계 검사 4개 파일 정상   폰트 CDN 200
+정적 리소스 3개 200 + 규칙 서빙 확인            스모크 39개 지표 차이 없음
+```
+
+> 단순 `grep -c '/\*'` 카운트가 240/239로 어긋나 보였는데, 주석 상태 기계로 다시 재면 정상이고
+> HEAD 원본도 같은 수치였다. **주석 짝 검사는 grep 카운트가 아니라 상태 기계로 할 것.**
+
+### 3-65-4. 팀장 확인 필요 (육안)
+
+- **woff 파일이 3.2MB.** `font-display: swap`이라 기본 서체로 먼저 그려진 뒤 폰트가 도착하면 바뀐다 —
+  카드 그리드에서 제목 폭이 한 번 출렁일 수 있다. 거슬리면 서브셋(필요 글자만) 폰트로 교체 검토.
+- **합성 볼드.** `@font-face`는 `font-weight: normal`로 등록했는데 제목 규칙은 `700`/`bold`다.
+  파일 자체가 이미 SemiBold라 브라우저가 그 위에 볼드를 한 번 더 합성한다. 뭉개져 보이면
+  제목 쪽 `font-weight`를 `400`으로 낮추면 파일 원본 두께로 나온다.
+- 결제/장바구니/주문배송/리뷰작성의 상품명은 **일부러 제외**했다. 거기도 바꿀지는 확인 필요.
+
+---
+
+## 3-66. 2026-09-03: 버그 제보 — 연락처 중복확인이 항상 "사용 가능" (AUDIT 56, 53 동시 해결)
+
+> 제보: "010-9999-9999로 가입한 유저가 로그인 후 로그아웃 했을 때 휴대폰 중복 체크에
+> 여전히 010-9999-9999가 사용가능한 번호로 체크됨"
+
+### 3-66-1. 로그아웃과는 무관했고, 특정 번호 문제도 아니었다
+
+**저장 형식과 조회 형식이 달랐다.**
+
+```
+저장   signUp() → normalizePhone() → PHONE = '010-9999-9999'   (하이픈)
+조회   중복확인 API → 입력값 그대로 → WHERE PHONE = '01099999999'
+```
+
+가입 폼은 숫자만 받는다(`MemberDTO`의 `^01[0-9]{8,9}$`). 그래서 중복확인에 넘어가는 값은
+**항상 하이픈 없는 숫자**이고, 하이픈 형식으로 저장된 값과는 **절대 일치할 수 없다.**
+특정 번호가 아니라 **모든 번호가 "사용 가능"** 이었다.
+
+```
+[01099999999]   → 사용 가능한 연락처입니다    ← 제보 그대로 재현
+[010-9999-9999] → 이미 사용중인 연락처입니다  ← 저장 형식으로 넣으면 정상 동작
+```
+
+DB는 안전했다. `UK_MEMBER_PHONE` UNIQUE 제약이 있고 `signUp`은 정규화 **후** `isPhoneCheck`를
+부르므로 실제 중복 가입은 막혀 있었다. **중복확인 버튼만 거짓말을 하고 제출 단계에서야 막혔다.**
+
+### 3-66-2. 조치 — 저장용/조회용 분리
+
+```java
+normalizePhone(String)  // 저장용: 형식 아니면 예외 (signUp, phoneUpdate)
+formatPhone(String)     // 조회용: 형식 아니면 null  (isPhoneCheck)
+```
+
+`formatPhone`은 숫자만 먼저 걸러내므로 **하이픈이 붙은 값을 다시 넣어도 결과가 같다(멱등)** —
+`signUp`/`phoneUpdate`가 정규화한 값으로 다시 `isPhoneCheck`를 불러도 안전하다.
+중복확인은 다 입력하기 전에도 눌릴 수 있어서, 형식이 아니면 예외 대신 들어온 값 그대로 조회한다.
+
+### 3-66-3. 이 수정이 만든 부작용 → AUDIT 53을 같이 해결해야 했다
+
+중복확인이 **제대로 동작하게 되자** 미조치로 남아 있던 53번(본인 제외 없음)이 즉시 문제가 됐다.
+
+- `userUpdateInfo.js`는 "현재 값과 같으면 서버를 안 부른다"로 우회하는데,
+  기준값 `currentValues.phone`은 **하이픈 포함**(`010-9999-9999`)이고
+  입력창은 타이핑하면 **하이픈을 지운다**(`01099999999`).
+- 즉 **번호를 다시 타이핑하면 비교가 어긋나 서버로 가고, 이제는 본인 번호인데 "이미 사용중"으로 저장이 막힌다.**
+- 고치기 전에는 서버가 늘 "사용 가능"이라 이 어긋남이 드러나지 않았을 뿐이다.
+
+그래서 근본 해결을 같이 넣었다.
+
+```xml
+<sql id="excludeSelf">
+    <if test="excludeMemberId != null">AND MEMBER_ID != #{excludeMemberId}</if>
+</sql>
+```
+
+`countByNickname`/`countByEmail`/`countByPhone` 3종에 `excludeMemberId`를 받고,
+컨트롤러가 세션의 본인 ID를 넘긴다. **회원가입은 비로그인이라 null → 조건이 안 붙는다.**
+프론트 우회는 그대로 뒀다 — 이제 서버가 막아주므로 이중 안전장치.
+
+> **매퍼 파라미터를 바꿨다.** `parameterType="String"` → `@Param` 2개. 이건 컴파일로 안 잡히고
+> 호출 시점에 `BindingException`이 나는 자리라, 아래 전 조합을 실제 요청으로 태워서 확인했다.
+
+### 3-66-4. 검증
+
+```
+연락처 형식 4종        01099999999 / 010-9999-9999 / 010 9999 9999 / 0109999-9999
+                       → 전부 "이미 사용중"   미사용 번호는 "사용 가능"   10자리(011-987-6543)도 동일
+
+본인 제외 (dummy_phonefmt 로그인)
+  본인 번호/닉네임/이메일  → 사용 가능      타인 것 → 이미 사용중
+비로그인(회원가입 경로)
+  존재하는 번호/닉네임/이메일 → 전부 이미 사용중  (본인 제외 안 붙음)
+
+저장 경로 회귀   본인 값 그대로 재저장 3종 성공 / 타인 값 3종 차단
+가입 전 과정     중복 연락처·닉네임·이메일·아이디 전부 차단, 전부 신규면 가입 성공
+스모크 39개 지표 차이 없음      컴파일 EXIT=0
+```
+
+### 3-66-5. 확인한 김에 — 탈퇴 마스킹은 정상
+
+탈퇴 회원 3명의 PHONE이 `93`/`930`/`95`로 남아 있어 의심했는데,
+`withdrawMember`의 `PHONE = '9' || MEMBER_ID`가 의도한 결과다. `^01...`을 절대 만들지 않으므로
+실제 번호와 충돌하지 않고, MEMBER_ID가 유일하니 UNIQUE 제약도 만족한다. **버그 아님.**
+
+### 3-66-6. 이번 검증으로 생긴 계정 (지우지 말 것)
+
+| 계정 | 비밀번호 | 연락처 | 용도 |
+|---|---|---|---|
+| `dummy_dupphone` | `Test1234!` | 010-5555-4444 | 중복 연락처 가입 차단 검증 |
+| `dummy_sgok` | `Test1234!` | 010-5555-6666 | 정상 가입 경로 검증 |
+
+기존 `dummy_phonefmt`(`Test1234!` / 011-987-6543)는 3-63에서 만든 전화번호 정규화 검증용.
+`test123`이 제보의 `010-9999-9999`를 쓰고 있어 중복 대상으로 그대로 뒀다.
+
+---
+
+## 3-67. 2026-09-03: QA 제보 TC-35 / TC-36 (AUDIT 57·58)
+
+### 3-67-1. TC-35 — 결제 화면에서 배송지 추가 후 회원정보 수정으로 튕김
+
+`MemberController.addAddress`가 출발지와 무관하게 **항상** `redirect:/member/updateInfo`였다.
+입력·저장은 정상이라 깨진 건 복귀 경로뿐.
+
+조사해 보니 `/member/deliveryAddress`(독립 배송지 추가 화면)로 들어오는 링크는
+**결제 화면 한 곳뿐**이다 — 회원정보 수정 화면은 자체 인라인 배송지 UI를 따로 쓴다.
+즉 이 리다이렉트는 사실상 **모든 경우에 틀린 목적지**였다.
+
+`returnUrl`을 실어 보내는 방식으로 고쳤다.
+
+```
+payment.jsp   <c:url><c:param name="returnUrl" value="/order/payment"/></c:url>
+   ↓
+deliveryAddressForm()   isSafeRedirect 통과 시 model에 담음
+   ↓
+deliveryAddress.jsp     <input type="hidden" name="returnUrl">
+   ↓
+addAddress()   return "redirect:" + (isSafeRedirect(returnUrl) ? returnUrl : "/member/updateInfo")
+```
+
+`isSafeRedirect`는 이미 로그인 복귀·리뷰 작성에서 쓰던 것(우리 사이트 내부 경로만 허용).
+새로 만들지 않고 그대로 재사용했다.
+
+```
+returnUrl=/order/payment   → 결제 화면 복귀          ✅
+미지정                     → 회원정보 수정(종전 동작)  ✅
+https://evil.com           → 차단, 회원정보 수정      ✅
+//evil.com                 → 차단, 회원정보 수정      ✅
+비로그인                   → /member/login (가드 유지) ✅
+```
+
+**돌아온 화면에 새 주소가 반영되는지**도 확인했다. `paymentResume`은 세션 스냅샷이 아니라
+매번 `cartPrepare`로 다시 조회하므로, 기본배송지(`isDefault=Y`)로 추가하면 복귀 즉시 반영된다
+(`isDefault=N`이면 결제 화면은 기본배송지만 쓰므로 안 바뀌는 게 정상).
+
+> 검증에 쓴 `dummy_pay1`의 배송지 6건은 전부 삭제하고 기존 `[집]`을 기본배송지로 원복했다.
+
+### 3-67-2. TC-36 — 장바구니 상품 이미지가 틀을 벗어남
+
+```css
+.cart-container .item-thumbnail {   /* 70x70 고정 */
+	width: 70px; height: 70px; ...
+}
+/* 내부 img 규칙이 없었다 ← 원인 */
+```
+
+규칙이 없으니 `default.css`의 `img { max-width:100%; height:auto }`가 그대로 먹는다.
+**폭은 70px로 맞춰지는데 높이는 원본 비율대로 늘어나** 틀 아래로 흘러넘쳤다.
+`overflow:hidden`도 없어서 `border-radius`가 잘라주지도 못했다.
+
+실측(제보 스크린샷의 상품이 정확히 이 목록에 있다):
+
+```
+조니워커 (상품 35)   594x896   → 70px 틀에서 높이 106px  = 35px 초과
+Dewars  (상품 46)   259x319   → 86px                    = 16px 초과
+인사이디 (상품 115)  860x1494  → 121px                   = 51px 초과
+정사각  750x750               → 70px                     = 정상(재현 안 됨)
+```
+
+`dummy_pay1`의 장바구니는 3건 다 750×750이라 **그 계정으로는 재현되지 않는다.**
+확인하려면 위 세로형 상품(35·46·115 등)을 장바구니에 담아야 한다.
+
+조치는 프로젝트에 이미 있던 패턴을 그대로 따랐다 — 틀에 `overflow:hidden`,
+내부 `img`에 `width/height:100% + object-fit:cover`. "이미지 없음" 문구도 70px 안에 넣었다.
+
+> 같은 패턴이 이미 세 곳(리뷰 작성 `.product-thumbnail`, 주문/배송 `.item-thumb`·
+> `.order-item-thumb`, 홈/검색 `.product-img`)에 있었고 **장바구니만 빠져 있었다.**
+
+### 3-67-3. 같은 결함이 더 없는지 전수 점검
+
+CSS 4개 파일에서 **고정 px 크기(width+height)를 가진 셀렉터 70개**를 뽑아,
+그중 `<img>`가 실제로 들어가는 컨테이너만 추려 `img` 규칙 유무를 확인했다.
+나머지는 전부 버튼·SVG 아이콘·체크박스였고, **이미지 컨테이너 중 규칙이 없던 건 장바구니뿐**이었다.
+
+### 3-67-4. 검증
+
+```
+컴파일 EXIT=0        CSS 주석/중괄호 상태 기계 4개 파일 정상
+returnUrl 전파       결제 화면 링크 → 배송지 화면 hidden → 저장 후 복귀  전 구간 실제 요청으로 확인
+오픈 리다이렉트      외부 주소 2종 차단
+관련 화면 5곳 200    비로그인 가드 2곳 302 /member/login
+스모크 39개 지표 차이 없음
+검증 데이터 원복     dummy_pay1 배송지 6건 삭제 + 기본배송지 복구
+```
+
+---
+
+## 3-68. 2026-09-03: QA 제보 TC-39(재사용 번호, 결제) / TC-41(AUDIT 59·60)
+
+> 두 번째 TC-39는 번호가 겹쳤을 뿐 3-66의 TC-39(전화번호 중복확인)와는 별개 건 - 이번 건은 결제 화면.
+
+### 3-68-1. TC-39 — 결제 화면 재진입 시 포인트/쿠폰/결제수단 초기화
+
+**"이용약관 미선택" 경로는 코드 추적 결과 재현되지 않는다.** `payment.js`의 제출 핸들러는
+`payment_agree`/`privacy_agree` 미체크 시 `event.preventDefault()` + `alert`만 하고 페이지 이동이
+전혀 없다 - 이동이 없으니 애초에 지워질 상태가 없다.
+
+진짜 원인은 **화면이 통째로 새로 그려지는 두 경로**다.
+
+```
+1) "+배송지 추가" 클릭 → GET /order/payment → paymentResume()이 fresh 렌더
+2) 결제하기 제출 → 서버 검증 실패(재고/쿠폰 등) → OrderController.checkout의 catch → redirect
+```
+
+포인트(`#used_point`)·쿠폰(`#coupon_id`)·결제수단(`paymentId` 라디오) 셋 다 **서버 저장값이 아니라
+이 화면의 순수 입력 상태**라, 서버가 매번 기본값(0P/미선택/미선택)으로 새로 그리면 그대로 날아간다.
+
+`sessionStorage`로 임시 저장·복원했다.
+
+```js
+saveDraft()     // 포인트/쿠폰/결제수단 변경 시, "+배송지 추가" 클릭 직전, 제출 시도 시점에 호출
+restoreDraft()  // 페이지 로드 시 draft가 있으면 복원 후 1회성으로 지움
+```
+
+`+배송지 추가` 버튼은 `onclick="location.href=..."`를 `data-href` + `addEventListener`로 바꿔서
+`saveDraft()`를 먼저 부른 뒤 이동하게 했다(둘 다 인라인이면 저장 타이밍을 보장하기 어렵다).
+
+검증은 가짜 DOM + sessionStorage로 5개 시나리오(정상 왕복 / 1회성 소거 / draft 없을 때 무변경 /
+소멸된 쿠폰 조용히 무시 / 저장 실패 시 예외 안 던짐) 전부 통과.
+
+> **함정**: 테스트 하네스에서 `eval('(' + 함수텍스트 + ')')`로 함수 표현식을 만들어 변수에 담아
+> 호출했더니 클로저가 안 잡혀 `document.querySelector`가 매번 호출조차 안 됐다.
+> `eval(함수텍스트)`로 **함수 선언문**으로 평가해야 현재 스코프에 정상적으로 호이스팅된다.
+> 실제 프로덕션 코드는 문제없었다 - 테스트 방법의 함정이었다.
+
+### 3-68-2. TC-41 — 상품 상세 쿠폰 발급 버튼
+
+`ProductController.getCoupon`(`GET /mds/coupon/{couponId}`)이 있긴 했지만 **뷰 어디서도 안 부르는
+죽은 코드**였다(3-57 시점부터 알려진 상태). 단일 쿠폰 ID를 받아 `home/home`으로 리다이렉트하는
+구조라 AJAX 버튼에 쓸 수도 없었다.
+
+`COUPON` 테이블엔 `PRODUCT_ID`가 없다 - 쿠폰은 상품별이 아니라 **매장 전체 쿠폰**이다.
+그래서 요구사항("버튼 클릭 시 발급 가능한 모든 쿠폰 발급")대로 **한 번 클릭에 발급 가능한 쿠폰을
+전부 발급**하는 방식으로 다시 만들었다.
+
+```java
+// ProductServiceImpl.issueAllCoupons(memberId) - 신설
+for (CouponDTO coupon : mapper.getCoupons()) {          // 유효기간 남은 쿠폰만
+    if (mapper.couponCheck(memberId, coupon.getCouponId()) == 0) {  // 이력 없으면
+        mapper.insertCoupon(memberId, coupon.getCouponId());
+        issued++;
+    }
+}
+```
+
+```
+POST /mds/coupon/{couponId}  →  POST /mds/coupon/issue  (@ResponseBody, ApiResponse<Integer>)
+```
+
+**중요한 발견**: 기존 `getCoupons` 쿼리(`detailPage.xml`)가 `WHERE` 조건이 아예 없어서
+**만료된 쿠폰까지 전부** 내려주고 있었다. 마이페이지 쿠폰함(`selectCouponsByMemberId`)과 같은
+기준(`DEADLINE >= TRUNC(SYSDATE)`)으로 맞췄다 - 이거 없이 그대로 뒀으면 "발급 가능한 쿠폰:
+유효기간이 남은 쿠폰"이라는 요구사항을 정면으로 어겼을 것.
+
+`couponCheck`(기존 쿼리, 손 안 댐)는 TYPE 무관하게 이력 존재 여부만 보므로 "쿠폰마다 한 번씩만"을
+그대로 만족한다 - 사용/만료/취소된 이력이 있어도 재발급하지 않는다(재발급이 아니라 최초 1회 정책).
+
+`productDetail.jsp`에 "쿠폰 받기" 버튼, `productdetail.js`에 클릭 핸들러 추가.
+
+### 검증 (`dummy_sgok`, 쿠폰 이력 0건 계정)
+
+```
+비로그인 호출            → "로그인이 필요합니다."
+첫 호출                  → "6개의 쿠폰이 발급되었습니다." (현재 유효 쿠폰 전량)
+바로 재호출               → "받을 수 있는 새 쿠폰이 없습니다." (0개, 중복 발급 안 됨)
+GET으로 접근              → 405 (POST 전용)
+마이페이지 쿠폰함         → 6건 전부 노출
+결제 화면 쿠폰 선택 목록   → 6건 전부 노출 (select value 25·26·27·28·29·30)
+```
+
+`mvnw compile` EXIT 0, 스모크 39개 지표 차이 없음.
+
+`dummy_sgok`는 이제 쿠폰 6종 보유 + 장바구니 1건(popId 125) 상태 - 브라우저에서
+"쿠폰 받기" → 결제 화면에서 선택까지 한 번에 훑어보기 좋다. 정리하지 않고 그대로 뒀다.
+
+---
+
+## 3-69. 2026-09-03: 쿠폰 받기 버튼 위치 이동 + 모달 방식으로 개편
+
+> 3-68에서 만든 "쿠폰 받기" 버튼(구매 버튼 줄 안, 클릭 즉시 전체 발급)을
+> 팀장이 스크린샷으로 지정한 위치(이미지 갤러리 아래, 독립된 배너)로 옮기고,
+> 클릭 즉시 발급 대신 **모달로 목록(쿠폰명+할인율)을 먼저 보여주고 "모두 받기"에서 발급**하도록 개편.
+
+### 3-69-1. 버튼 위치
+
+`#product-buttons`(찜/장바구니/바로구매) 행에서 빼서 `#product-sub-images` 바로 아래,
+`#product-images`(이미지 갤러리) 안의 독립된 배너 버튼으로 옮겼다. 구매 버튼과 톤이 다르게
+`--gsf-caramel` 테두리 + `--gsf-peach-pale` 배경으로 스타일도 분리했다.
+
+### 3-69-2. 모달 흐름과 새 엔드포인트
+
+기존엔 클릭 → 즉시 전체 발급(`POST /mds/coupon/issue`)이었는데, 이제 그 앞에 조회 단계가 붙는다.
+
+```
+클릭 → GET /mds/coupon/issuable  (이 회원이 지금 새로 받을 수 있는 쿠폰만, 이미 받은 건 제외)
+     → 모달에 "쿠폰명 - N% 할인" 목록 렌더, 없으면 "지금 받을 수 있는 쿠폰이 없습니다"
+"모두 받기" 클릭 → POST /mds/coupon/issue  (기존 엔드포인트 그대로 재사용)
+```
+
+목록 조회를 페이지 로드 시점이 아니라 **버튼 클릭 시점**에 매번 새로 하는 이유: 페이지를
+열어두고 있는 사이 다른 상품 상세에서 이미 다 받아갔을 수 있어서, 모달을 열 때마다 최신
+상태를 봐야 "발급 가능"이라는 문구가 거짓말이 안 된다.
+
+```sql
+-- getIssuableCoupons(신설, detailPage.xml) - getCoupons와 다른 점은 NOT EXISTS 한 줄뿐
+select ... from COUPON C
+where DEADLINE >= TRUNC(SYSDATE)
+and not exists (select 1 from COUPONHISTORY CH where CH.MEMBER_ID=#{memberId} and CH.COUPON_ID=C.COUPON_ID)
+```
+
+### 3-69-3. CSS 이름 충돌을 피해감
+
+`style_admin.css`에 이미 전역(페이지 스코프 없는) `.modal-overlay`가 있는데, 이건 **`.show`
+클래스를 붙여야 열리는 방식**이다(`display:none` 기본값 + `.modal-overlay.show{display:flex}`).
+이번 모달은 `[hidden]` 속성으로 여닫는데, 같은 클래스 이름을 썼으면 `hidden`을 지워도
+`.show`가 없어서 `display:none`이 그대로 남아 **영원히 안 열리는** 상태가 됐을 것.
+
+`coupon-modal-overlay`/`coupon-modal-box`처럼 접두사를 붙여 새 이름으로 만들어 피했다.
+반대로 `.modal-close`/`.modal-actions`는 상태 토글이 없는 순수 레이아웃 규칙이라 그대로
+재사용해도 안전해서 재사용했다(관리자 모달과 톤이 자연히 맞는 덤도 있음).
+
+### 검증
+
+```
+발급 가능 목록 API   dummy_buyer(기존 이력 1건) → 5개 정확히 필터
+                     발급 후 재조회 → 0개(목록에서 사라짐)
+                     dummy_sgok(6개 다 보유) → 빈 배열
+                     비로그인 → "로그인이 필요합니다"
+renderCouponList 단위 테스트  5개 렌더 / 이름+할인율(50%,15%) 텍스트 정확 /
+                              빈 목록일 때 안내문구 노출+"모두 받기" 비활성  전부 PASS
+렌더된 페이지         버튼이 이미지 영역 안(158줄)에, 구매버튼 행(277줄)과 분리돼 위치
+                     모달 마크업 3종 확인, 옛 id(coupon-issue-button) 잔존 0건
+CSS 주석/중괄호 검사 4개 파일 정상   컴파일 EXIT 0   스모크 39개 지표 차이 없음
+```
+
+### 3-69-4. 후속 - 위치/스타일 미세조정 (같은 날, 스크린샷 피드백)
+
+"위치 중앙쪽으로 내려주거나 크기 키우고, 색상/호버/테두리는 찜·장바구니 담기 버튼과 맞춰달라"는
+요청으로 한 번 더 손봤다.
+
+```css
+/* 전: 점선 테두리 + 살구색 배경(callout 느낌), 48px 안팎 */
+/* 후: .cart-container .btn-outline과 동일 규격 - 흰 배경 + #ddd 테두리 + 호버 시 캐러멜 테두리/글자색 */
+#coupon-issue-banner {
+    height: 64px;       /* 존재감을 위해 키움 */
+    margin-top: 28px;   /* 이미지 갤러리와 더 떨어뜨려 아래로 내림 */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #555;
+}
+#coupon-issue-banner:hover { border-color: var(--gsf-caramel); color: var(--gsf-caramel); }
+```
+
+CSS 주석/중괄호 검사 정상, 스모크는 38/39 지표 일치(나머지 1건 `mypage_badge`는 이전 턴에
+`dummy_buyer`에게 쿠폰 5개를 실제 발급 테스트한 결과로 배지 숫자가 바뀐 것뿐 - 레이아웃과 무관).
 
 ---
 

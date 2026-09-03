@@ -401,11 +401,17 @@
         >
 
 
-        <%-- 배송지 추가 화면(utill/deliveryAddress.jsp)으로 이동 --%>
+        <%-- 배송지 추가 화면(utill/deliveryAddress.jsp)으로 이동. returnUrl을 실어 보내야
+             저장 후 회원정보 수정이 아니라 이 결제 화면으로 돌아온다. --%>
+        <c:url var="addAddressUrl" value="/member/deliveryAddress">
+            <c:param name="returnUrl" value="/order/payment"/>
+        </c:url>
+        <%-- payment.js가 이동 전에 포인트/쿠폰/결제수단 선택을 저장한다(TC-39) - onclick으로 바로
+             이동시키면 그 틈이 없어 선택이 날아간다. --%>
         <button
             type="button"
             id="add-address"
-            onclick="location.href='<c:url value="/member/deliveryAddress"/>'">
+            data-href="${addAddressUrl}">
 
             + 배송지 추가
 

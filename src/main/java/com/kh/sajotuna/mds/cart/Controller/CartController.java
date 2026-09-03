@@ -1,11 +1,11 @@
 package com.kh.sajotuna.mds.cart.Controller;
 
+import com.kh.sajotuna.mds.util.LoginUtil;
 import com.kh.sajotuna.mds.cart.model.dto.CartDTO;
 import com.kh.sajotuna.mds.cart.model.dto.CartListDTO;
 import com.kh.sajotuna.mds.cart.model.dto.ResponseCartListDTO;
 import com.kh.sajotuna.mds.cart.model.service.CartService;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.util.SessionConst;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -24,7 +24,7 @@ public class CartController {
     @PostMapping("/add-cart")
     public String insertCart( CartDTO cart, HttpSession session, Model model) {
 
-        MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+        MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             System.out.println(member);
@@ -43,7 +43,7 @@ public class CartController {
 
     @GetMapping("/my-cart")
     public String getCartList(HttpSession session, Model model) {
-        MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+        MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             return "redirect:/member/login";
@@ -60,7 +60,7 @@ public class CartController {
     @GetMapping("/count")
     @ResponseBody
     public int count(HttpSession session) {
-        MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+        MemberDTO member = LoginUtil.member(session);
         if (member == null) {
             return 0;
         }
@@ -75,7 +75,7 @@ public class CartController {
     @PostMapping("/update-qty")
     @ResponseBody
     public boolean updateQty(HttpSession session, Long popId, int qty) {
-        MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+        MemberDTO member = LoginUtil.member(session);
         if (member == null) {
             return false;
         }
@@ -85,7 +85,7 @@ public class CartController {
     @GetMapping("/remove-cart")
     public String removeCart(HttpSession session, Model model, Long popId) {
         System.out.println("pop_id :: " + popId);
-        MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+        MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             return "redirect:/member/login";

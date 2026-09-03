@@ -27,7 +27,8 @@
             if (typeof window.toggleWish !== 'function') return;
             var wasWished = btn.classList.contains('is-active');
             window.toggleWish(readProduct(card), wasWished).then(function (active) {
-                btn.classList.toggle('is-active', active);
+                // 하트 채움과 옆의 찜 개수를 같이 맞춘다(common/cartWishService.js)
+                window.applyWishState(btn, wasWished, active);
             });
         });
     });

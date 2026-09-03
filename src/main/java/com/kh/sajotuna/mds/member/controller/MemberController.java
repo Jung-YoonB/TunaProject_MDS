@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.kh.sajotuna.mds.util.LoginUtil;
+import com.kh.sajotuna.mds.util.PageWindow;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.DeliveryAddressDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
@@ -51,7 +53,7 @@ public class MemberController {
 	@GetMapping("/myPage")
 	public String myPageForm(HttpSession session, Model model, RedirectAttributes redirectAttr) {
 
-		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		MemberDTO member = LoginUtil.member(session);
 		
 		if (member == null) {
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
@@ -86,7 +88,7 @@ public class MemberController {
 	public String userCouponViewForm(@RequestParam(defaultValue = "1") int page,
 			HttpSession session, Model model, RedirectAttributes redirectAttr) {
 
-		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		MemberDTO member = LoginUtil.member(session);
 
 		if (member == null) {
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
@@ -95,20 +97,13 @@ public class MemberController {
 		
 		if(member.getRole().equals("USER")) {
 
-			int totalPages = service.totalCouponPages(member.getMemberId());
-			int currentPage = Math.min(Math.max(page, 1), totalPages);
-			int windowSize = 5;
-			int windowStart = Math.max(1, currentPage - windowSize / 2);
-			int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
-			windowStart = Math.max(1, windowEnd - windowSize + 1);
+			PageWindow paging = PageWindow.of(page, service.totalCouponPages(member.getMemberId()));
+			int currentPage = paging.currentPage();
 
 			model.addAttribute("couponList", (service.listCoupon(member.getMemberId(), currentPage)));
 			System.out.println("유저쿠폰뷰용 모델로 저장" + (List<CouponDTO>)model.getAttribute("couponList")); // 추적용 출력
 			model.addAttribute("couponCount", service.countCoupons(member.getMemberId()));
-			model.addAttribute("currentPage", currentPage);
-			model.addAttribute("totalPages", totalPages);
-			model.addAttribute("pageWindowStart", windowStart);
-			model.addAttribute("pageWindowEnd", windowEnd);
+			paging.addTo(model);
 			return "member/usercouponView";
 		} else {
 			return "admin/admincouponView";
@@ -123,7 +118,7 @@ public class MemberController {
 			HttpSession session, Model model,
 			RedirectAttributes redirectAttr) {
 
-		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		MemberDTO member = LoginUtil.member(session);
 
 		if (member == null) {
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
@@ -135,18 +130,8 @@ public class MemberController {
 			model.addAttribute("deliveryList", (service.listDelivery(member.getMemberId(), status, page)));
 			System.out.println("배송관리 모델로 저장" + (List<MyPageDeliveryDTO>)model.getAttribute("deliveryList")); // 추적용 출력
 
-			int totalPages = service.totalDeliveryPages(member.getMemberId(), status);
-			int currentPage = Math.min(Math.max(page, 1), totalPages);
-			int windowSize = 5;
-			int windowStart = Math.max(1, currentPage - windowSize / 2);
-			int windowEnd = Math.min(totalPages, windowStart + windowSize - 1);
-			windowStart = Math.max(1, windowEnd - windowSize + 1);
-
 			model.addAttribute("currentStatus", status);
-			model.addAttribute("currentPage", currentPage);
-			model.addAttribute("totalPages", totalPages);
-			model.addAttribute("pageWindowStart", windowStart);
-			model.addAttribute("pageWindowEnd", windowEnd);
+			PageWindow.of(page, service.totalDeliveryPages(member.getMemberId(), status)).addTo(model);
 			return "order/userOrderDelivery";
 		}  else {
 			return "admin/adminOrderDelivery";
@@ -166,11 +151,17 @@ public class MemberController {
 	    return "member/userWithdraw";
 	}
 
+	// returnUrl은 "배송지 추가를 끝내고 돌아갈 화면". 결제 화면에서 들어오면 결제 화면으로
+	// 돌려보내야 한다(예전엔 어디서 들어오든 회원정보 수정으로 보내고 있었다).
 	@GetMapping("/deliveryAddress")
-	public String deliveryAddressForm(HttpSession session, RedirectAttributes redirectAttr) {
-	    if (session.getAttribute(SessionConst.LOGIN_SESSION) == null) {
+	public String deliveryAddressForm(@RequestParam(required = false) String returnUrl,
+	        HttpSession session, Model model, RedirectAttributes redirectAttr) {
+	    if (LoginUtil.member(session) == null) {
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 	        return "redirect:/member/login";
+	    }
+	    if (isSafeRedirect(returnUrl)) {
+	        model.addAttribute("returnUrl", returnUrl);
 	    }
 	    return "utill/deliveryAddress";
 	}
@@ -213,36 +204,39 @@ public class MemberController {
 		return ApiResponse.success(message, isDuplicate);
 	}
 	
+	// 중복확인 3종은 회원가입(비로그인)과 회원정보 수정(로그인)이 같은 주소를 쓴다.
+	// 로그인 상태면 본인은 세지 않는다 - 안 그러면 자기 닉네임/이메일/연락처를 그대로 다시
+	// 확인했을 때 "이미 사용중"이 떠서 저장 자체가 막힌다. 비로그인이면 null이라 조건이 안 붙는다.
 	@GetMapping("/checkNickname")
 	@ResponseBody
-	public ApiResponse<Boolean> checkNickname(String nickname) {
-		
-		boolean isDuplicate = service.isNicknameCheck(nickname);
-		
+	public ApiResponse<Boolean> checkNickname(String nickname, HttpSession session) {
+
+		boolean isDuplicate = service.isNicknameCheck(nickname, LoginUtil.memberId(session));
+
 		String message = isDuplicate ? "이미 사용중인 닉네임입니다." : "사용 가능한 닉네임입니다.";
-		
+
 		return ApiResponse.success(message, isDuplicate);
 	}
-	
+
 	@GetMapping("/checkEmail")
 	@ResponseBody
-	public ApiResponse<Boolean> checkEmail(String email) {
-		
-		boolean isDuplicate = service.isEmailCheck(email);
-		
+	public ApiResponse<Boolean> checkEmail(String email, HttpSession session) {
+
+		boolean isDuplicate = service.isEmailCheck(email, LoginUtil.memberId(session));
+
 		String message = isDuplicate ? "이미 사용중인 이메일입니다." : "사용 가능한 이메일입니다.";
-		
+
 		return ApiResponse.success(message, isDuplicate);
 	}
-	
+
 	@GetMapping("/checkPhone")
 	@ResponseBody
-	public ApiResponse<Boolean> checkPhone(String phone) {
-		
-		boolean isDuplicate = service.isPhoneCheck(phone);
-		
+	public ApiResponse<Boolean> checkPhone(String phone, HttpSession session) {
+
+		boolean isDuplicate = service.isPhoneCheck(phone, LoginUtil.memberId(session));
+
 		String message = isDuplicate ? "이미 사용중인 연락처입니다." : "사용 가능한 연락처입니다.";
-		
+
 		return ApiResponse.success(message, isDuplicate);
 	}
 	
@@ -293,7 +287,7 @@ public class MemberController {
 	public String updateInfoForm(HttpSession session, Model model,
 					RedirectAttributes redirectAttr) {
 		
-		MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+		MemberDTO member = LoginUtil.member(session);
 		
 		if (member == null) {
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
@@ -315,7 +309,7 @@ public class MemberController {
 	@ResponseBody
 	public ApiResponse<Boolean> updateNickname(HttpSession session, String nickname) {
 	try {
-	MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	MemberDTO member = LoginUtil.member(session);
 	if (member == null) {
 	return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 	}
@@ -338,7 +332,7 @@ public class MemberController {
 	@ResponseBody
 	public ApiResponse<Boolean> updatePhone(HttpSession session, String phone) {
 		try {
-			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			MemberDTO member = LoginUtil.member(session);
 			if (member == null) {
 				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 			}
@@ -355,7 +349,7 @@ public class MemberController {
 	@ResponseBody
 	public ApiResponse<Boolean> updateEmail(HttpSession session, String email) {
 		try {
-			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			MemberDTO member = LoginUtil.member(session);
 			if (member == null) {
 				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 			}
@@ -372,7 +366,7 @@ public class MemberController {
 	@ResponseBody
 	public ApiResponse<Boolean> updateName(HttpSession session, String memberName) {
 		try {
-			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			MemberDTO member = LoginUtil.member(session);
 			if (member == null) {
 				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 			}
@@ -393,7 +387,7 @@ public class MemberController {
 	@ResponseBody
 	public ApiResponse<Boolean> updateBirth(HttpSession session, String birth) {
 		try {
-			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			MemberDTO member = LoginUtil.member(session);
 			if (member == null) {
 				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 			}
@@ -410,7 +404,7 @@ public class MemberController {
 	@ResponseBody
 	public ApiResponse<Boolean> updateGender(HttpSession session, String gender) {
 		try {
-			MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+			MemberDTO member = LoginUtil.member(session);
 			if (member == null) {
 				return ApiResponse.fail("로그인 정보가 존재하지 않습니다.");
 			}
@@ -430,7 +424,7 @@ public class MemberController {
 	        @RequestParam String currentPassword,
 	        @RequestParam String newPassword) {
 	    
-	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	    MemberDTO member = LoginUtil.member(session);
 	    if (member == null) {
 	        return ApiResponse.fail("로그인이 필요합니다.");
 	    }
@@ -453,9 +447,10 @@ public class MemberController {
 	        @RequestParam String address,
 	        @RequestParam(required = false) String detailAddress,
 	        @RequestParam(required = false) String isDefault,
+	        @RequestParam(required = false) String returnUrl,
 	        RedirectAttributes redirectAttr) {
 
-	    MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	    MemberDTO member = LoginUtil.member(session);
 	    if (member == null) {
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
 	        return "redirect:/member/login";
@@ -473,13 +468,15 @@ public class MemberController {
 	    service.addDeliveryAddress(deliveryAddress);
 
 	    redirectAttr.addFlashAttribute("addAddressSuccess", "배송지가 추가되었습니다.");
-	    return "redirect:/member/updateInfo";
+
+	    // 들어온 화면으로 돌려보낸다. returnUrl이 없거나 우리 사이트 경로가 아니면 회원정보 수정으로.
+	    return "redirect:" + (isSafeRedirect(returnUrl) ? returnUrl : "/member/updateInfo");
 	}
 
 	@PostMapping("/withdraw")
 	@ResponseBody
 	public ApiResponse<Boolean> withdraw(HttpSession session) {
-	    MemberDTO member = ((MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION));
+	    MemberDTO member = LoginUtil.member(session);
 	    
 	    if (member == null) {
 	        return ApiResponse.fail("로그인 정보가 없습니다.");

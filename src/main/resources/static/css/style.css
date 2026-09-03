@@ -30,6 +30,8 @@
 	--radius-md: 14px;
 	--radius-lg: 20px;
 	--radius-pill: 999px;
+	/* 서체 - 상품 게시글 제목에만 쓰는 강조 서체(@font-face는 default.css) */
+	--gsf-font-title: 'Aritaburi', MalgunGothic, '맑은 고딕', '돋움', Dotum, AppleGothic, sans-serif;
 }
 
 /* ===== Page scaffold =====

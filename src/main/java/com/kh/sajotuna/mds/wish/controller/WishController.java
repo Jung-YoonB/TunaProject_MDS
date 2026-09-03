@@ -1,7 +1,7 @@
 package com.kh.sajotuna.mds.wish.controller;
 
+import com.kh.sajotuna.mds.util.LoginUtil;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
-import com.kh.sajotuna.mds.util.SessionConst;
 import com.kh.sajotuna.mds.wish.model.dto.WishListDTO;
 import com.kh.sajotuna.mds.wish.model.dto.findWishInfoDTO;
 import com.kh.sajotuna.mds.wish.model.service.WishService;
@@ -25,7 +25,7 @@ public class WishController {
     @PostMapping("/insert-wish")
     public String insertWish(HttpSession session, Long productId, Model model) {
 
-        MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+        MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             System.out.println(model.getAttribute("message"));
@@ -43,7 +43,7 @@ public class WishController {
 
     @GetMapping("/remove-wish")
     public String removeWish(HttpSession session, Long productId, Model model) {
-        MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+        MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             System.out.println(model.getAttribute("message"));
@@ -64,7 +64,7 @@ public class WishController {
     @GetMapping("/count")
     @ResponseBody
     public int count(HttpSession session) {
-        MemberDTO member = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+        MemberDTO member = LoginUtil.member(session);
         if (member == null) {
             return 0;
         }
@@ -73,7 +73,7 @@ public class WishController {
 
     @GetMapping("/my-wish")
     public String myWish(HttpSession session, Model model) {
-        MemberDTO member = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+        MemberDTO member = LoginUtil.member(session);
         if(member == null){
             model.addAttribute("message", "로그인이 필요한 서비스입니다.");
             System.out.println(model.getAttribute("message"));

@@ -28,6 +28,12 @@
                     <img class="product-sub-image" src="<c:url value='/uploads/product/'/>${img}" alt="상품 이미지">
                 </c:forEach>
             </div>
+
+            <%-- 이 상품 전용 쿠폰이 아니라 지금 발급 가능한 쿠폰 전체를 대상으로 하는 버튼이라
+                 (COUPON 테이블에 PRODUCT_ID가 없다) 구매 버튼 줄과 분리해 이미지 아래 독립된
+                 자리에 뒀다. 누르면 모달로 목록을 먼저 보여주고, 실제 발급은 모달의
+                 "모두 받기"에서 진행한다. --%>
+            <button type="button" id="coupon-issue-banner">쿠폰 받기</button>
         </div>
 
         <!-- 상품 상세 정보 -->
@@ -214,6 +220,21 @@
                     </c:if>
                 </nav>
             </c:if>
+        </div>
+    </div>
+
+    <%-- "쿠폰 받기" 모달 - 목록은 서버가 채우지 않고 버튼 클릭 시 JS가 GET /mds/coupon/issuable로
+         받아온다(페이지 로드 시점과 클릭 시점 사이에 이미 다른 상품 상세에서 받아갔을 수 있어서). --%>
+    <div id="coupon-modal" class="coupon-modal-overlay" hidden>
+        <div class="coupon-modal-box" role="dialog" aria-modal="true" aria-labelledby="coupon-modal-title">
+            <button type="button" class="modal-close" id="coupon-modal-close" aria-label="닫기">×</button>
+            <h2 id="coupon-modal-title">지금 받을 수 있는 쿠폰</h2>
+            <ul id="coupon-modal-list" class="coupon-modal-list"></ul>
+            <p id="coupon-modal-empty" class="coupon-modal-empty" hidden>지금 받을 수 있는 쿠폰이 없습니다.</p>
+            <div class="modal-actions">
+                <button type="button" id="coupon-modal-cancel">닫기</button>
+                <button type="button" id="coupon-modal-claim-all">모두 받기</button>
+            </div>
         </div>
     </div>
 

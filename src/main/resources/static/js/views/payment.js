@@ -31,6 +31,63 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // =========================================
+    // 작성 중인 선택값 임시 저장 (TC-39)
+    //
+    // 포인트/쿠폰/결제수단 선택은 서버에 저장되는 값이 아니라 이 화면의 입력 상태일 뿐이다.
+    // 그런데 이 화면을 완전히 새로 그리는 경로가 둘 있다 - "+배송지 추가"로 나갔다 오는 경우와,
+    // 결제하기를 눌렀는데 서버 쪽 검증(재고/쿠폰 등)에 걸려 이 화면으로 다시 리다이렉트되는 경우.
+    // 둘 다 서버가 fresh GET으로 새 화면을 그리므로, 여기서 sessionStorage에 잠깐 담아뒀다가
+    // 다음 로드 때 복원한다. 결제가 실제로 끝나면(주문 완료 화면으로 이동) 더 이상 필요 없다.
+    // =========================================
+
+    const CHECKOUT_DRAFT_KEY = 'checkoutDraft';
+
+    function saveDraft() {
+        const checkedPayment = document.querySelector('input[name="paymentId"]:checked');
+        try {
+            sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify({
+                usedPoint: usedPointInput.value,
+                chistId: couponSelect.value,
+                paymentId: checkedPayment ? checkedPayment.value : ''
+            }));
+        } catch (e) {
+            // 프라이빗 브라우징 등으로 sessionStorage를 못 쓰면 그냥 포기한다(치명적이지 않음)
+        }
+    }
+
+    function restoreDraft() {
+        let draft;
+        try {
+            const raw = sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
+            sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+            draft = raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return;
+        }
+        if (!draft) return;
+
+        if (draft.usedPoint) {
+            usedPointInput.value = draft.usedPoint;
+        }
+        if (draft.chistId) {
+            couponSelect.value = draft.chistId; // 선택지가 더는 없으면(만료/소진) 조용히 무시됨
+        }
+        if (draft.paymentId) {
+            const radio = document.querySelector('input[name="paymentId"][value="' + draft.paymentId + '"]');
+            if (radio) radio.checked = true;
+        }
+    }
+
+    const addAddressBtn = document.getElementById('add-address');
+    if (addAddressBtn) {
+        addAddressBtn.addEventListener('click', function () {
+            saveDraft();
+            location.href = addAddressBtn.dataset.href;
+        });
+    }
+
+
+    // =========================================
     // 서버에서 전달받은 기본 정보
     // =========================================
 
@@ -268,6 +325,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 안내 문구와 상·하한 보정은 전부 calculate() 안에서 처리하므로 여기선 다시 계산만 시킨다
     usedPointInput.addEventListener('change', calculate);
+    usedPointInput.addEventListener('change', saveDraft);
 
 
     // =========================================
@@ -279,9 +337,19 @@ document.addEventListener('DOMContentLoaded', function () {
         function () {
 
             calculate();
+            saveDraft();
 
         }
     );
+
+
+    // =========================================
+    // 결제수단 변경
+    // =========================================
+
+    document.querySelectorAll('input[name="paymentId"]').forEach(function (radio) {
+        radio.addEventListener('change', saveDraft);
+    });
 
 
     // =========================================
@@ -291,6 +359,9 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener(
         'submit',
         function (event) {
+
+            // 서버 검증에 걸려 이 화면으로 되돌아올 수 있으므로 시도 시점 값을 미리 담아둔다
+            saveDraft();
 
             const usedPoint =
                 Number(usedPointInput.value) || 0;
@@ -404,6 +475,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // 최초 화면 계산
     // =========================================
 
+    // 이전 작성 이력이 있으면 입력값부터 복원한 뒤 계산한다(순서가 바뀌면 복원 전 기본값으로 계산됨)
+    restoreDraft();
     calculate();
 
 });

@@ -12,11 +12,12 @@ public interface MemberService {
 	// 회원 가입
 	void signUp(MemberDTO member);
 	
-	// 중복체크용
+	// 중복체크용. excludeMemberId는 "본인 제외"로, 회원정보 수정에서 자기 값을 다시 확인해도
+	// 중복으로 잡히지 않게 한다. 회원가입 경로는 본인이 없으므로 null을 넘긴다.
 	boolean isLoginIdCheck(String loginId);
-	boolean isNicknameCheck(String nickname);
-	boolean isEmailCheck(String email);
-	boolean isPhoneCheck(String phone);
+	boolean isNicknameCheck(String nickname, Long excludeMemberId);
+	boolean isEmailCheck(String email, Long excludeMemberId);
+	boolean isPhoneCheck(String phone, Long excludeMemberId);
 	
 	// 로그인
 	MemberDTO login(String loginId, String loginPw);

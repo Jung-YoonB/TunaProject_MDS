@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.kh.sajotuna.mds.util.LoginUtil;
+import com.kh.sajotuna.mds.util.PageWindow;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.service.MemberService;
@@ -43,7 +45,7 @@ public class OrderController {
 	    System.out.println("orderId = " + orderId);    //추적용
 
 	    MemberDTO member =
-	            (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	            LoginUtil.member(session);
 	    
 	    System.out.println("memberId = " +
 	            (member != null ? member.getMemberId() : null));  // 추적용
@@ -92,7 +94,7 @@ public class OrderController {
 			@ModelAttribute OrderItemDTO orderItem,
 			RedirectAttributes redirectAttr) {
 
-		MemberDTO loginMember = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+		MemberDTO loginMember = LoginUtil.member(session);
 
 		if (loginMember == null) {
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
@@ -128,7 +130,7 @@ public class OrderController {
 	@GetMapping("/payment")
 	public String paymentResume(HttpSession session, Model model, RedirectAttributes redirectAttr) {
 
-		MemberDTO loginMember = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
+		MemberDTO loginMember = LoginUtil.member(session);
 
 		if (loginMember == null) {
 			redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
@@ -190,7 +192,7 @@ public class OrderController {
 	                       RedirectAttributes redirectAttr) {
 
 	    MemberDTO member =
-	            (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	            LoginUtil.member(session);
 
 	    if (member == null) {
 	        redirectAttr.addFlashAttribute("error", "로그인이 필요한 서비스입니다.");
@@ -223,7 +225,7 @@ public class OrderController {
 	        @RequestParam(defaultValue = "1") int page) {
 
 	    MemberDTO member =
-	            (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
+	            LoginUtil.member(session);
 
 	    if (member == null) {
 	        return "redirect:/member/login";
@@ -234,30 +236,13 @@ public class OrderController {
 	    List<MyPageDeliveryDTO> deliveryList =
 	            memberService.listDelivery(memberId, status, page);
 
-	    int totalPages =
-	            memberService.totalDeliveryPages(memberId, status);
-
-	    int currentPage =
-	            Math.max(1, Math.min(page, totalPages));
-
-	    int pageWindowSize = 5;
-
-	    int pageWindowStart =
-	            ((currentPage - 1) / pageWindowSize)
-	            * pageWindowSize + 1;
-
-	    int pageWindowEnd =
-	            Math.min(
-	                    pageWindowStart + pageWindowSize - 1,
-	                    totalPages
-	            );
-
 	    model.addAttribute("deliveryList", deliveryList);
 	    model.addAttribute("currentStatus", status);
-	    model.addAttribute("currentPage", currentPage);
-	    model.addAttribute("totalPages", totalPages);
-	    model.addAttribute("pageWindowStart", pageWindowStart);
-	    model.addAttribute("pageWindowEnd", pageWindowEnd);
+
+	    // MemberController.userOrderDeliveryForm 과 같은 화면(order/userOrderDelivery)을 그리므로
+	    // 페이지 번호 계산도 같아야 한다. 예전엔 여기만 블록 방식(1-5, 6-10)이라 어느 경로로
+	    // 들어왔는지에 따라 같은 화면의 페이지 번호가 다르게 보였다.
+	    PageWindow.of(page, memberService.totalDeliveryPages(memberId, status)).addTo(model);
 
 	    return "order/userOrderDelivery";
 	}

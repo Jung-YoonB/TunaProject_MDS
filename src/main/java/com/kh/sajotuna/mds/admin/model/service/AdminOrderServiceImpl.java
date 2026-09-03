@@ -79,13 +79,23 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 				throw new IllegalStateException("배송 정보가 없는 주문은 먼저 '배송준비중'으로 상태를 변경하거나 취소/환불 처리해야 합니다.");
 			}
 			mapper.insertDelivery(orderId, deliveryStatus, trackingNo, company);
-			// 취소/환불은 2단계(대기중 -> 처리완료)라서 ORDER_STATUS는 여기서 안 맞추고 completeCancel()에서 맞춤.
-			// 그 외(배송준비중)는 기존처럼 바로 동기화
-			if (!"CANCELED".equals(deliveryStatus)) {
-				mapper.updateOrderStatus(orderId, DELIVERY_TO_ORDER_STATUS.get(deliveryStatus));
-			}
+			syncOrderStatus(orderId, deliveryStatus);
 			return;
 		}
+
+		validateTransition(currentDeliveryStatus, deliveryStatus, trackingNo, company);
+
+		int updated = mapper.updateDeliveryStatus(orderId, deliveryStatus, trackingNo, company);
+		if (updated == 0) {
+			throw new IllegalStateException("해당 주문의 배송 정보를 찾을 수 없습니다.");
+		}
+
+		syncOrderStatus(orderId, deliveryStatus);
+	}
+
+	/** DELIVERY 행이 이미 있는 주문의 상태 전이가 허용되는지 검사한다(통과하면 그대로 UPDATE) */
+	private void validateTransition(String currentDeliveryStatus, String deliveryStatus,
+			String trackingNo, String company) {
 
 		// 취소/환불된 주문은 완전히 끝난 상태 - 더 이상 아무 것도 변경 불가
 		if ("CANCELED".equals(currentDeliveryStatus)) {
@@ -107,14 +117,15 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 				throw new IllegalStateException("올바르지 않은 택배사입니다.");
 			}
 		}
+	}
 
-		int updated = mapper.updateDeliveryStatus(orderId, deliveryStatus, trackingNo, company);
-		if (updated == 0) {
-			throw new IllegalStateException("해당 주문의 배송 정보를 찾을 수 없습니다.");
-		}
-
-		// 취소/환불은 2단계(대기중 -> 처리완료)라서 ORDER_STATUS는 여기서 안 맞추고 completeCancel()에서 맞춤.
-		// 그 외 상태는 기존처럼 바로 동기화
+	/**
+	 * 배송 상태에 맞춰 PRODUCTORDER.ORDER_STATUS를 따라가게 한다.
+	 *
+	 * 취소/환불만 예외다 - 2단계(대기중 -> 처리완료)라서 여기서 안 맞추고 completeCancel()에서 맞춘다.
+	 * DELIVERY 행을 새로 만드는 경로와 UPDATE 경로 양쪽이 똑같이 해야 해서 한 곳으로 모았다.
+	 */
+	private void syncOrderStatus(Long orderId, String deliveryStatus) {
 		if (!"CANCELED".equals(deliveryStatus)) {
 			mapper.updateOrderStatus(orderId, DELIVERY_TO_ORDER_STATUS.get(deliveryStatus));
 		}
