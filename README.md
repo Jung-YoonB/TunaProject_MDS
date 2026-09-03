@@ -19,11 +19,16 @@
 
 
 ## 🛠️ 기술 스택
-![FrontEnd](https://img.shields.io/badge/FrontEnd-HTML、CSS、JavaScript-red)
-![BackEnd](https://img.shields.io/badge/BackEnd-Java、Spring、MyBatis-blue)
-![database](https://img.shields.io/badge/Database-Oracle-blueviolet)
-![server](https://img.shields.io/badge/Server-Apache_Tomcat-brightgreen)
-![others](https://img.shields.io/badge/Others-Git、GitHub、SourceTree、Figma-orange)
+![FrontEnd](https://img.shields.io/badge/FrontEnd-HTML5%EF%BC%8C%20CSS3%EF%BC%8C%20JavaScript-FF5E62?)
+![BackEnd](https://img.shields.io/badge/BackEnd-Java%EF%BC%8C%20Spring%20Boot%EF%BC%8C%20MyBatis%EF%BC%8C%20Maven-FF7555?)
+![Database](https://img.shields.io/badge/Database-Oracle%EF%BC%8C%20dbdiagram.io-FF8C42?)
+![Server](https://img.shields.io/badge/Server-Apache%20Tomcat-FFAA3B?)
+![IDE](https://img.shields.io/badge/IDE-IntelliJ%20IDEA%EF%BC%8C%20VS%20Code-2ECC71?)
+![VCS & Management](https://img.shields.io/badge/VCS%20%26%20Management-Git%EF%BC%8C%20GitHub%EF%BC%8C%20Sourcetree%EF%BC%8C%20Trello-1ABC9C?)
+![Design](https://img.shields.io/badge/Design-Figma-3498DB?)
+![Collaboration](https://img.shields.io/badge/Collaboration-Discord%EF%BC%8C%20KakaoTalk%EF%BC%8C%20Google%20Workspace-5C6BC0?)
+![AI Tools](https://img.shields.io/badge/AI%20Tools-ChatGPT%EF%BC%8C%20Claude%EF%BC%8C%20Gemini-8E44AD?)
+![Etc](https://img.shields.io/badge/Etc-Mammoth%20Coffee-A569BD?)
 
 
 ## 📋 프로젝트 개요
