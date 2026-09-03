@@ -32,8 +32,8 @@
 						</c:if>
 					</div>
 					<div class="product-info">
-						<strong class="product-name">${writeInfo.productName}</strong>
-						<strong class="product-option-name">${writeInfo.optionName}</strong>
+						<strong class="product-name"><c:out value="${writeInfo.productName}"/></strong>
+						<strong class="product-option-name"><c:out value="${writeInfo.optionName}"/></strong>
 						<p class="product-price"><c:out value="${writeInfo.priceFix}"/>원</p>
 					</div>
 				</section>

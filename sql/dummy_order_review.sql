@@ -478,6 +478,58 @@ BEGIN
 
 
     -- ==================================================================
+    -- 3-2. 리뷰 좋아요(REVIEWLIKE)
+    --
+    --    상품 상세의 좋아요 수와 하트 활성 상태는 REVIEWLIKE 를 그대로 읽는다
+    --    (detailPage.xml 의 like_count / is_liked). 이 표가 비어 있으면 화면이 전부
+    --    0·빈 하트로만 보여서 기능이 죽은 것처럼 보인다.
+    --
+    --    살아있는 리뷰(REVIEW_STATUS=1)마다 0~6명이 누른 것으로 만든다.
+    --    - 누르는 사람은 더미 회원만 쓴다(정리 블록이 더미 기준으로 지우므로).
+    --    - UK_REVIEWLIKE(REVIEW_ID, MEMBER_ID) 때문에 같은 사람이 같은 리뷰를 두 번 누르면 안 된다.
+    --      한 리뷰당 최대 6명인데 더미 회원은 그보다 많아 서로 겹치지 않는다.
+    --    - 자기가 쓴 리뷰에는 누르지 않는다(현실적이지 않아서).
+    -- ==================================================================
+
+    DECLARE
+        TYPE t_likers IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+        v_likers  t_likers;
+        v_idx     PLS_INTEGER;
+        v_howmany PLS_INTEGER;
+    BEGIN
+        SELECT MEMBER_ID BULK COLLECT INTO v_likers
+          FROM (SELECT MEMBER_ID FROM MEMBER
+                 WHERE LOGIN_ID LIKE 'dummy!_%' ESCAPE '!'
+                 ORDER BY MEMBER_ID);
+
+        IF v_likers.COUNT < 7 THEN
+            RAISE_APPLICATION_ERROR(-20003,
+                '좋아요를 누를 더미 회원이 부족합니다(최소 7명 필요).');
+        END IF;
+
+        FOR r IN (SELECT REVIEW_ID, MEMBER_ID,
+                         ROW_NUMBER() OVER (ORDER BY REVIEW_ID) AS RN
+                    FROM REVIEW
+                   WHERE REVIEW_STATUS = 1
+                   ORDER BY REVIEW_ID) LOOP
+
+            -- 0~6개로 흩는다. 리뷰마다 좋아요 수가 달라야 정렬/표시를 확인할 수 있다
+            v_howmany := MOD(r.RN, 7);
+
+            FOR i IN 1 .. v_howmany LOOP
+                v_idx := 1 + MOD(r.RN + i, v_likers.COUNT);
+
+                IF v_likers(v_idx) != r.MEMBER_ID THEN
+                    INSERT INTO REVIEWLIKE (LIKE_ID, REVIEW_ID, MEMBER_ID)
+                    VALUES (SEQ_REVIEW_LIKE_ID.NEXTVAL, r.REVIEW_ID, v_likers(v_idx));
+                END IF;
+            END LOOP;
+
+        END LOOP;
+    END;
+
+
+    -- ==================================================================
     -- 4. 누적 구매금액 / 등급 맞추기
     --
     --    MEMBER.TOTAL_AMOUNT 와 GRADE_ID 를 실제 주문 합계에 맞춰 둔다.

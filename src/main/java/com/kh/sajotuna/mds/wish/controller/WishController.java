@@ -59,7 +59,7 @@ public class WishController {
     }
 
     // 헤더 찜 뱃지용 - header.js가 페이지 로드마다 호출해서 실제 WISH 기준 개수를 보여준다
-    // (AUDIT 신규 버그: 뱃지가 localStorage 목업이라 메인 페이지 등에서 실제 찜 개수와 안 맞던 것
+    // (뱃지가 localStorage 목업이라 메인 페이지 등에서 실제 찜 개수와 안 맞던 것
     // 조치). 비로그인이면 0.
     @GetMapping("/count")
     @ResponseBody

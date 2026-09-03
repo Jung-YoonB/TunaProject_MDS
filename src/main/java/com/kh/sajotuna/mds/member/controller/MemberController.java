@@ -155,8 +155,14 @@ public class MemberController {
 		// 유저는 deliveryList에 List<MyPageDeliveryDTO> 가 모델에 최신화 되어 넘어감
 	}
 	
+	// 다른 회원 화면과 달리 로그인 가드가 없어 비로그인 상태에서도 탈퇴 화면이 그대로 열렸다.
+	// 실제 탈퇴(POST /member/withdraw)는 막혀 있었지만, 화면이 열리는 것 자체가 혼란을 준다.
 	@GetMapping("/userWithdraw")
-	public String userWithdraw() {
+	public String userWithdraw(HttpSession session, RedirectAttributes redirectAttr) {
+	    if (session.getAttribute(SessionConst.LOGIN_SESSION) == null) {
+	        redirectAttr.addFlashAttribute("error", "로그인이 필요합니다.");
+	        return "redirect:/member/login";
+	    }
 	    return "member/userWithdraw";
 	}
 

@@ -157,7 +157,7 @@
 /* #product 접두사로 명시도를 ID+클래스(1,1,0)까지 올림 - href="#"는 브라우저가 클릭 없이도
    바로 :visited로 취급해서, default.css:22의 a:visited{color:#333}(명시도 0,1,1)가 순수
    클래스 선택자(0,1,0)보다 이겨버리는 문제가 있음(.product-rating에서 실제로 겪은 버그와
-   동일한 원인 - 자세한 내용은 HANDOFF.md 참고). */
+   동일한 원인). */
 #product .section-more {
     font-size: 13px;
     color: var(--gsf-subtext);
@@ -437,18 +437,12 @@
     color: var(--gsf-subtext);
 }
 
-/* 사용자님 요청으로 리뷰 보기 링크화 - .product-wish-toggle과 똑같은 pill 버튼 스타일을
-   써서 둘이 나란히 짝을 이루는 클릭 가능한 요소로 보이게 함(실제 href는 아직 상품 데이터가
-   없어 "#" - 상품 연동 시 리뷰 섹션으로 교체 필요, 위 home.jsp TODO 참고).
-   text-decoration:none은 명시적으로 다시 선언 - default.css의 전역 a:hover 규칙이
-   hover 시 밑줄을 강제로 붙여서(버튼인 .product-wish-toggle과 달리 <a> 태그라 영향받음),
-   아이콘 버튼처럼 보이려면 이걸 덮어써야 함.
-   color도 여기서 다시 선언 - href="#"는 현재 페이지 자신을 가리켜서 브라우저가 클릭 없이도
-   바로 :visited로 취급하는데, default.css:22의 a:visited{color:#333}가 타입+가상클래스라
-   명시도(0,1,1)가 .product-rating 단독(0,1,0)보다 높아 검게 이기고 있었음(실제 원인,
-   사용자님이 DevTools로 확인). #product-list .product-rating은 ID+클래스라 명시도(1,1,0)로
-   a:visited를 확실히 이김. */
-#product-list .product-rating,
+/* 리뷰 보기를 .product-wish-toggle과 같은 pill 버튼 모양으로 맞춰 나란히 보이게 한다.
+   (href는 /mds/detail/{id}#review 로 상품 상세의 리뷰 섹션을 가리킨다)
+   text-decoration/color를 다시 선언하는 이유: href="#"는 현재 페이지를 가리켜 클릭 없이도
+   :visited가 되는데, default.css의 a:visited{color:#333}가 명시도(0,1,1)로 .product-rating
+   단독(0,1,0)을 이겨 검게 나온다. ID+클래스(1,1,0)로 올려서 확실히 이긴다.
+   전역 a:hover의 밑줄도 같은 이유로 여기서 덮어쓴다. */
 .sp-product-grid .product-rating,
 #wish-product-grid .product-rating {
     display: inline-flex;
@@ -551,7 +545,7 @@
 
 /* 원본은 스코프 없는 body{} 였음(사이트 전역에 leak) - 로그인/회원가입은 이미 style.css의
    body.login-hero/signup-hero가 배경을 담당하고, margin:0은 default.css가 이미 전역 리셋
-   하고 있어 그 외엔 불필요한 규칙이라 삭제함. 자세한 내용은 HANDOFF.md 참고. */
+   하고 있어 그 외엔 불필요한 규칙이라 삭제함 */
 
 #title {
     text-align: center;
@@ -1181,7 +1175,7 @@ main:has(.update-page) {
    구조를 직접 갖고 있어서 ".withdraw-page main"(main이 후손)이 성립했음. 2026-09-01
    규격화로 header/footer include + wrapper div 방식으로 바꾸면서 main이 이제 조상이 되어
    그 선택자가 더는 안 맞음 - 형제 페이지 .update-page와 같은 패턴으로 재구성함
-   (배경은 body:has(), 폭은 main:has(), 카드 스타일은 wrapper 자신). HANDOFF.md 3-5/3-6/3-42 참고. */
+   (배경은 body:has(), 폭은 main:has(), 카드 스타일은 wrapper 자신). */
 body:has(.withdraw-page) {
     background-color: #f8f6f2;
 }
@@ -1685,7 +1679,7 @@ main:has(.cart-container) {
 
 /* ===== 상단 컨트롤 (전체 선택 / 선택상품 삭제) =====
    admin/admincouponView.jsp의 선택 모드와 동일한 구조 - 평소엔 "상품 선택" 버튼만 보이고,
-   누르면 전체선택 체크박스 + 선택상품 삭제 버튼이 나타난다(AUDIT 버그: 예전엔 항시 노출). */
+   누르면 전체선택 체크박스 + 선택상품 삭제 버튼이 나타난다. */
 .cart-container .cart-controls {
 	display: flex;
 	align-items: center;
@@ -2002,7 +1996,7 @@ main:has(.wishlist-container) {
 
 /* ===== 전체 선택 / 선택 상품 삭제 =====
    admin/admincouponView.jsp의 선택 모드와 동일한 구조 - 평소엔 "상품 선택" 버튼만 보이고,
-   누르면 전체선택 체크박스 + 선택 상품 삭제 버튼이 나타난다(AUDIT 버그: 예전엔 항시 노출). */
+   누르면 전체선택 체크박스 + 선택 상품 삭제 버튼이 나타난다. */
 .wishlist-container .wishlist-controls[hidden] {
 	display: none;
 }
@@ -2740,10 +2734,8 @@ a.sp-btn-next {
 /* ================================================================
    ↓↓↓ style_payment.css 원본 내용
    ================================================================ */
-/* 원본은 스코프 없는 body{margin:0;font-family:Arial;color:#333} 였음 - 사이트 전역
-   글꼴/글자색을 Arial/#333로 덮어써서 default.css의 기본 글꼴을 leak시키고 있었음(주문/
-   결제 페이지는 이미 style.css의 body.order-hero가 배경을 담당). 필요 없는 규칙이라 삭제함.
-   자세한 내용은 HANDOFF.md 참고. */
+/* 스코프 없는 body{} 규칙이 있었으나 사이트 전역 글꼴·글자색을 덮어써서 삭제했다.
+   배경은 style.css의 body.order-hero가 담당한다. */
 
         /* outer wrapper는 투명하게, 폭/배경은 안쪽 카드(.order-card)에만 준다 -
            main 태그에 직접 폭을 주면 hero 배경이 스크롤 시 깨진다. */
@@ -2751,9 +2743,8 @@ a.sp-btn-next {
             padding: 50px 0;
         }
 
-        /* 결제 전체 영역. 600px는 실제 상품명(옵션명까지 붙으면 40자 넘는 경우가 흔함)엔 좁아서
-           아래 .product-name 같은 "라벨 + 긴 값" 줄에서 라벨(상품명/상품 수량 등)까지 같이
-           찌그러져 줄바꿈되고 있었다(2026-09-03 사용자 보고) - 680px로 넉넉하게. */
+        /* 600px는 실제 상품명(옵션명까지 붙으면 40자를 넘기기도 한다)엔 좁아서
+           "라벨 + 긴 값" 줄에서 라벨까지 같이 찌그러진다. 680px로 넉넉하게. */
         .order-card {
             width: 680px;
             margin: 0 auto;
@@ -2773,9 +2764,7 @@ a.sp-btn-next {
         }
 
         /* 각 섹션. #DiscountInfo(쿠폰/등급/포인트 할인 금액 목록)가 이 목록에 안 들어있어서
-           CSS가 아예 없었다 - 바로 위 #MembershipTier의 구분선에 여백 없이 바짝 붙어 보이던
-           원인(2026-09-03 사용자 보고). */
-        #ProductInfo, #Price, #point, #Coupon, #MembershipTier,
+        /* 각 섹션 공통 여백·구분선. #DiscountInfo를 빠뜨리면 위 섹션 구분선에 바짝 붙어 보인다. */
 		#DeliveryAddress, #PaymentMethod, #Checkbox, #DiscountInfo {
             padding: 22px 0;
             border-bottom: 1px solid #eee;
@@ -2795,9 +2784,8 @@ a.sp-btn-next {
             border-radius: 8px;
         }
 
-        /* 라벨(상품명/상품 수량 등)과 값 둘 다 기본 flex-shrink:1이라, 값이 길면(실제 상품명+옵션명은
-           40자를 넘기기도 함) 라벨까지 같이 찌그러져 "상품" "명"처럼 글자 사이에서 줄바꿈되고 있었다
-           (2026-09-03 사용자 보고). 라벨은 shrink 금지, 값 쪽만 줄바꿈되게 분리. */
+        /* 라벨과 값이 둘 다 기본 flex-shrink:1이라 값이 길면 라벨까지 찌그러진다.
+           라벨은 shrink 금지, 값 쪽만 줄바꿈되게 분리. */
         .order-card .product-name, .order-card .product-quantity, .order-card .price-item {
             display: flex;
             justify-content: space-between;
@@ -3328,7 +3316,7 @@ a.sp-btn-next {
    리뷰 작성 페이지 스타일
    방향: 자극적인 꾸밈 없이, 여백과 절제된 포인트로 정리
 
-   2026-09-01 규격 통일(HANDOFF 3-49): 이 페이지만 wrapper 없이 #review-form(ID)이 컨테이너라
+   2026-09-01 규격 통일: 이 페이지만 wrapper 없이 #review-form(ID)이 컨테이너라
    클래스 선택자로 뭘 덮어써도 밀렸고, body에 글꼴/색을 걸어 헤더·푸터까지 톤이 바뀌었으며,
    *{}/h2{}/.product-price{} 등이 스코프 없이 전역으로 샜다(3-5/3-6과 같은 계열).
    → .review-write-page(wrapper) + .page-content(카드) 2단 구조로 바꾸고 전 규칙을 스코프.
@@ -4173,10 +4161,8 @@ a.sp-btn-next {
     font-size: 15px;
     color: #999;
 }
-
-/* 취소선은 "할인가" 줄이 실제로 있을 때만(로그인 + 등급 할인 > 0) 긋는다 - 예전엔 무조건 그어서,
-   할인가 줄이 안 보이는 비로그인 상태에서도 정상가에 줄이 그어져 마치 뭔가 잘못된 것처럼 보였다
-   (AUDIT 버그 32번 조치의 부작용, 2026-09-03 사용자님이 스크린샷으로 발견). */
+/* 취소선은 "할인가" 줄이 실제로 있을 때만(로그인 + 등급 할인 > 0) 긋는다.
+   무조건 그으면 할인가 줄이 없는 비로그인 상태에서도 정상가에 줄이 그어져 오해를 준다. */
 #price-info:has(.sale-price) .original-price {
     text-decoration: line-through;
 }

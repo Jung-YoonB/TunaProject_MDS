@@ -240,9 +240,7 @@
                                 </svg>
                                 <span class="product-rating-score">${product.score}</span>
                             </a>
-                            <%-- ✅ 조치 완료(2026-09-03): 로그인 회원이 이미 찜한 상품이면 최초 렌더링부터
-                                 하트를 채워서 보여준다 - 예전엔 항상 빈 하트로 시작해서, 로그아웃 후 재로그인하면
-                                 이미 찜한 상품도 다시 찜할 수 있는 것처럼 보였다(AUDIT 신규 버그). --%>
+                            <%-- 이미 찜한 상품은 첫 렌더링부터 채워진 하트로 보여준다(product.wished) --%>
                             <button type="button" class="product-wish-toggle${product.wished ? ' is-active' : ''}" aria-label="${product.wished ? '찜 해제' : '찜하기'}">
                                 <svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                     <path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"></path>
@@ -269,7 +267,7 @@
             </c:if>
             <%-- 페이지 이동 링크는 전부 #product 앵커를 붙인다 - 안 붙이면 전체 페이지 이동이라
                  브라우저가 항상 최상단(배너)으로 스크롤을 되돌려서, 방금 보던 상품 목록 위치를
-                 잃어버리는 문제가 있었다(리뷰 탭의 #review 해시와 같은 패턴, HANDOFF 참고). --%>
+                 잃어버리는 문제가 있었다(리뷰 탭의 #review 해시와 같은 패턴). --%>
             <c:if test="${showPagination and totalPages > 1}">
             <nav class="sp-pagination" aria-label="페이지 탐색">
                 <c:if test="${currentPage > 1}">

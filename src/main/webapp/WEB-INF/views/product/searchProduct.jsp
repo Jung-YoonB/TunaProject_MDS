@@ -141,8 +141,7 @@
 								<svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
 								<span class="product-rating-score">${product.score}</span>
 							</a>
-							<%-- ✅ 조치 완료(2026-09-03): 로그인 회원이 이미 찜한 상품이면 최초 렌더링부터
-							     하트를 채워서 보여준다(home.jsp와 동일한 조치, AUDIT 신규 버그). --%>
+							<%-- 이미 찜한 상품은 첫 렌더링부터 채워진 하트로(home.jsp와 동일) --%>
 							<button type="button" class="product-wish-toggle sp-btn-wishlist${product.wished ? ' is-active' : ''}" aria-label="${product.wished ? '찜 해제' : '찜하기'}">
 								<svg class="product-wish-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/></svg>
 								<span class="product-wish-count-num">${product.wishCount}</span>

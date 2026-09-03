@@ -27,10 +27,7 @@ public class CartServiceImpl implements CartService{
         }
         int checkCart = mapper.findCartById(findInfo);
         if(checkCart == 1) {
-            // ✅ 조치 완료(2026-09-03): 이미 담긴 옵션을 다시 담으면(퀵버튼 반복 클릭, 또는 상세
-            // 페이지에서 같은 옵션으로 재차 담기) 예전엔 여기서 그냥 끝나서 수량이 전혀 안 늘었다
-            // (퀵버튼/상세 페이지 둘 다 이 메서드 하나를 공유해서 두 경로 다 같은 증상이었음).
-            // 표준적인 "장바구니 담기" 동작대로 기존 수량에 얹는다.
+            // 이미 담긴 옵션이면 기존 수량에 더한다. 퀵버튼과 상품 상세가 이 메서드를 공유한다.
             result = mapper.incrementQty(cart.getMemberId(), cart.getPopId(), cart.getQty());
             return result > 0 ? "이미 담긴 상품의 수량을 추가했습니다." : "수량 추가에 실패했습니다.";
         }else if(cart.getQty() <= 0){

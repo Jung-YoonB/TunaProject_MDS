@@ -85,7 +85,7 @@
                         </p>
 
                         <%-- 상품 2건 이상인 주문만 펼치기 버튼을 단다(1건짜리는 대표가 곧 전체).
-                             배송완료 주문은 품목별 리뷰 상태를 봐야 하므로 처음부터 펼쳐둔다 (HANDOFF 3-55) --%>
+                             배송완료 주문은 품목별 리뷰 상태를 봐야 하므로 처음부터 펼쳐둔다 --%>
                         <c:set var="itemsOpen" value="${item.deliveryStatus == 'DELIVERED'}"/>
                         <c:set var="itemsClosedLabel" value="주문 상품 ${item.productCount}건 모두 보기"/>
                         <c:set var="itemsOpenedLabel" value="주문 상품 접기"/>

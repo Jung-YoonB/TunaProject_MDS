@@ -48,10 +48,17 @@
         }));
     }
 
-    // TODO(data binding): "인기순"은 실제 인기 지표가 없어 담긴 순서를 그대로 쓴다.
+    // 정렬 기준은 wish.jsp의 data-sort 값과 짝이다(popular / rating-asc / rating-desc / recent).
+    // "인기순"은 리뷰 수를 지표로 쓴다 - 서버(wish.xml getWishList)가 REVIEW_COUNT를 같이 내려준다.
+    // 같은 리뷰 수면 평점이 높은 쪽을 앞에 둔다.
     function sortItems(items, sortKey) {
         var list = items.slice();
-        if (sortKey === 'rating-asc') {
+        if (sortKey === 'popular') {
+            list.sort(function (a, b) {
+                var diff = (b.reviewCount || 0) - (a.reviewCount || 0);
+                return diff !== 0 ? diff : (b.rating || 0) - (a.rating || 0);
+            });
+        } else if (sortKey === 'rating-asc') {
             list.sort(function (a, b) { return a.rating - b.rating; });
         } else if (sortKey === 'rating-desc') {
             list.sort(function (a, b) { return b.rating - a.rating; });

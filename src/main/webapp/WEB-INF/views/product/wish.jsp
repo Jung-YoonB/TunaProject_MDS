@@ -23,8 +23,7 @@
 				<span>전체 선택</span>
 			</label>
 		</div>
-		<%-- ✅ 조치 완료(2026-09-03, 사용자 보고): 선택 모드에 "선택 삭제"만 있고 "장바구니 담기"가
-		     없어서, 여러 개를 골라 한 번에 장바구니로 옮기는 게 불가능했다(카드 낱개 퀵버튼만 가능). --%>
+		<%-- 선택 모드에서만 보이는 버튼들(views/wish.js가 토글). 카드 낱개 퀵버튼과 같은 API를 쓴다 --%>
 		<div class="list-control-actions">
 			<button type="button" id="wish-cart-btn" hidden>선택 상품 장바구니 담기</button>
 			<button type="button" id="wish-delete-btn" hidden>선택 상품 삭제</button>

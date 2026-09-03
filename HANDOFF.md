@@ -21,18 +21,18 @@ Claude Code와 함께 진행한 작업을 시간순으로 쌓아온 **누적 작
 
 ---
 
-## 지금 상태 요약 (2026-09-02 기준)
+## 지금 상태 요약 (2026-09-03 기준)
 
 | 항목 | 상태 |
 |---|---|
-| 브랜치 상황 | `BJY_works`. **`JWC_works`(`3e4d83f`) 병합 중 — 충돌 2건 해결 완료, 미커밋**(3-57). 병합 회귀 확인 결과 직전 작업물 전부 생존 |
+| 브랜치 상황 | `BJY_works`. 최근 커밋 `b01137a`(fix all) — 3-60까지 커밋 완료. 현재 **3-61 작업분 9건 미커밋** |
 | DB 상태 | **최신화 완료(3-53, 사용자 직접 실행).** `REVIEW_STATUS` 생성 / `LIKE_COUNT`·`REVIEWHISTORY`·`SEQ_REVIEW_RHIST_ID` 제거 / **CATEGORY 15 · TAG 58** / **`PRODUCT` 130건 등록 완료**(60건 예정 → 실제 130건) |
 | ✅ 과도기 해소 | **product 전달 목록(3-47) 7건이 이번 병합으로 들어왔다.** 누락됐던 1건(상세 평균별점·리뷰수 `REVIEW_STATUS` 필터)은 3-57에서 보완. `ORA-00904`로 상세가 깨지던 문제 해소 — 상품 상세 200 확인 |
 | 아직 다른 브랜치 | `JJY_Work` / `JWC_works` / `KGH_works` / `product_images` / `origin/KCH_works` — 팀원 개인 작업 브랜치라 각자 `main`을 받아가면 해소됨(3-43 매퍼 수정도 그때 따라감) |
 | 테스트 서버 | **`http://192.168.30.24:8797/`** — 가동 중, 3-42/3-43 결과물 배포 반영 확인 완료. **로컬 개발 서버와 포트가 같으니 헷갈리지 말 것**(`localhost:8797` = devtools 로컬) |
-| 진행 중인 작업 | **3-60 대규모 라운드 완료**(상품 상세/장바구니·찜 선택모드+페이징/결제 PRG+405/리뷰 이미지·좋아요/드롭다운 화살표, AUDIT 27·29~48 전부 조치) — `PROJECT_AUDIT.md` 버그 항목 **48개 전부 조치 완료, 미해결 0** |
-| 미커밋 변경 | **약 45개 파일**(3-60) + 이전 라운드분 누적(3-56 결제/`JWC_works` 병합/3-57~59). **관리 문서 4종(`HANDOFF.md`/`PROJECT_AUDIT.md`/`HANDOFF_NEXT_SESSION_PROMPT.txt`/스타일가이드 PDF)은 현재 git 추적 중**(2026-09-03 아침부터 의도적 — 집↔회사 두 PC를 GitHub로 동기화하려는 목적. **`main` 병합 직전에만** 다시 추적 제거 후 재커밋 예정). `docs/ADMIN_BINDING_HANDOVER.md`는 삭제 예정 문서라 무시 |
-| 다음 단계 | AUDIT "버그" 섹션은 전부 닫혔음. 남은 것은 다른 섹션 — **정책적 고려가 필요한 부분**(product 영역 집계 3곳 필터 미반영) / **잠재적 위험 요소**(20번 `style_user.css` 최상위 `#id` 102개, 24번 추가 이미지 표시/검증 불일치). 좋아요(`REVIEWLIKE`) 더미 데이터가 여전히 0행이면 3-60에서 새로 단 좋아요 버튼도 화면상 항상 0으로 보일 수 있음 — 확인 필요 |
+| 진행 중인 작업 | **3-62 주석 리팩토링 완료** — 코드 주석을 "왜/함정"만 남기게 정리, 낡은 TODO·문서 참조 전량 제거, 그 과정에서 관리자 목업·찜 정렬 버그 2건 발견·조치 |
+| 미커밋 변경 | **41건**(3-61 + 3-62 누적). 관리 문서 3종은 지금 레포 추적 중(집↔회사 이동용, **main 병합 직전 untrack 예정**) + 팀원 파비콘 `src/main/webapp/resources/favicon.png` |
+| 다음 단계 | **(1) 3-61·3-62 작업분 커밋** → (2) **코드 자체 리팩토링**(중복 로직·긴 메서드·매직넘버 — 주석 정리를 우선하기로 해서 아직 미착수) → (3) 화면 육안 확인(좋아요 하트·관리자 마이페이지·찜 인기순) → (4) AUDIT 다른 섹션: 정책 항목(product 집계 3곳 필터), 위험 20번(`style_user.css` 최상위 `#id` 108개), 24번, **28번(운영 코드 `System.out` 42건 — 회원 정보가 콘솔에 남음)** |
 | ✅ 로컬 이미지 있음 | 이번 병합(`JWC_works`)으로 `uploads/product`(701개)가 git 추적에 포함돼 로컬(`localhost:8797`)에서도 상품 썸네일이 정상 표시된다(3-58에서 실제 200 확인). 위 "로컬 이미지 없음"은 병합 전 상태였음 — 더는 유효하지 않음 |
 | ✅ cart/wish 연결됨 | 4경로 전부 404였던 것이 **`JWC_works` 병합으로 해소** — `wish/my-wish`·`cart/my-cart` 로그인 상태 200 확인(AUDIT 버그 16번 닫힘) |
 | CSS 구성 | `default.css` / `style.css` / `style_user.css` / `style_admin.css` 4개, `header.jsp`가 전 페이지에 전부 로드 |
@@ -72,6 +72,8 @@ Claude Code와 함께 진행한 작업을 시간순으로 쌓아온 **누적 작
 | `3-58` | 2026-09-03 | **메인페이지(`home.jsp`) 서버 연동** — 정적 목업(카테고리/상품 하드코딩) → `ProductService` 실데이터 SSR 전환, 죽은 `/mds/list` 라우트 정리, 카테고리 아이콘 이름 매칭 재배치 |
 | `3-59` | 2026-09-03 | **화면 확인 3건 조치** — 상품 상세 장바구니를 실제 `POST /cart/add-cart`로 연결(비로그인 시 로그인 요구), 홈 "더보기"를 진짜 추가 노출(8→16)+페이지네이션으로 재설계("전체 상품 보기"와 겹치던 기능 분리), 이미지 호버 태그 팝업(`.sp-tag-popup`) 마크업 누락 보완 |
 | `3-60` | 2026-09-03 | **대규모 라운드 — AUDIT 27, 29~48 전부 조치** 상품 상세(옵션가격/카테고리/설명/등급할인/대표이미지 500), 검색·찜 카드 리뷰 링크, 장바구니·찜 선택모드+페이지네이션 전면 개편, 장바구니 개별삭제·재담기 수량증가·헤더뱃지 즉시반영, 찜 로그아웃 후 상태 동기화, 결제 PRG(취소/뒤로가기 재제출 확인)+`/checkout` 405 우회+포인트 안내/레이아웃, 리뷰 이미지 경로 누락+좋아요 버튼 신설, 드롭다운 화살표 위치. **버그 섹션 48개 전부 조치 완료 ← 최신** |
+| `3-61` | 2026-09-03 | **좋아요 더미 투입 + 프로젝트 종합 검진** — `REVIEWLIKE` 0행이던 것 210행 생성(스크립트 3-2), **🔴 리뷰 본문 저장형 XSS 발견·실증·조치(AUDIT 49)**, `/member/userWithdraw` 로그인 가드 누락(AUDIT 50), 낡은 TODO 4건, 파비콘 반영 확인, 검진 7항목 이상 없음 |
+| `3-62` | 2026-09-03 | **전 프로젝트 주석 리팩토링 + TODO 8건 전량 처리** — 이력형 주석 16→0, **팀원이 열 수 없는 문서 참조(HANDOFF/AUDIT) 18→0**, TODO 8→0, **관리자 마이페이지 목업→실데이터(AUDIT 51)**, **찜 "인기순" 정렬 부재(AUDIT 52)** ← 최신 |
 | 부록 A | — | 참고 메모리(환경/함정 메모) |
 
 ---
@@ -3584,6 +3586,243 @@ CSS(`style_user.css`)에 `.sp-tag-popup`(이미지 호버 시 아래쪽에서 �
   static/js/common/cartWishService.js                                 (addToCart silent, toggleWish(wasWished), 뱃지갱신)
   static/css/style_user.css                                           (선택모드 CSS, 결제 레이아웃, #product-option/#coupon_id 화살표)
 ```
+
+---
+
+## 3-61. 2026-09-03: 좋아요 더미 투입 + 프로젝트 종합 검진 (저장형 XSS 발견·조치)
+
+집에서 3-57~3-60을 끝낸 뒤 회사 환경에서 이어받아, **환경이 바뀌었으니 전체를 훑어달라**는 요청으로 진행한 종합 점검 라운드.
+
+### 3-61-1. REVIEWLIKE 더미 데이터 (프롬프트 [0단계])
+
+3-60에서 좋아요 버튼 UI를 새로 달았지만 **`REVIEWLIKE`가 0행**이라 화면이 전부 `0`·빈 하트로만 보이고 있었다. 기능이 죽은 것처럼 보이지만 데이터가 없어서였던 게 맞다.
+
+- 살아있는 리뷰(`REVIEW_STATUS=1`) 75건에 **좋아요 210행** 생성. 리뷰마다 0~6개로 흩어 정렬·표시를 확인할 수 있게 했다.
+- 누르는 주체는 **더미 회원 13명만** 사용 — 정리 블록이 더미 기준으로 지우므로 실제 회원 데이터가 오염되지 않는다.
+- `UK_REVIEWLIKE(REVIEW_ID, MEMBER_ID)` 때문에 한 리뷰에 같은 사람이 두 번 들어가면 안 된다. 한 리뷰당 최대 6명인데 더미 회원이 13명이라 인덱스가 겹치지 않는다.
+- 자기가 쓴 리뷰에는 누르지 않게 했다(현실성).
+
+`sql/dummy_order_review.sql` **3-2 섹션**으로 넣어 DB를 리셋해도 같이 살아난다.
+
+| 확인용 상품 | 리뷰 | 좋아요 |
+|---|---|---|
+| `/mds/detail/82` | 6건 | 25 |
+| `/mds/detail/35` | 6건 | 21 |
+| `/mds/detail/97` | 5건 | 19 |
+
+검증: `dummy_buyer`로 82번 조회 시 좋아요 수 `5·6·6·3·3`, 본인이 누른 리뷰 1건에 `is-active`. 토글 `off`→`on` 왕복 후 210행 그대로 복구. 정합성 3종(중복 / 본인 리뷰 / 삭제된 리뷰에 달린 좋아요) 전부 0건.
+
+### 3-61-2. 🔴 상품 상세 리뷰 본문의 저장형 XSS (AUDIT 버그 49번)
+
+**이번 검진 최대 발견.** `productDetail.jsp`가 리뷰 본문을 `${review.reviewText}`로 **이스케이프 없이** 출력하고 있었고, 저장 단계(`ReviewServiceImpl.writeReview`)에도 길이 검사만 있고 태그 필터가 없었다.
+
+즉 리뷰에 `<img src=x onerror=...>`를 쓰면 **그 상품 페이지를 여는 모든 사용자**의 브라우저에서 실행된다. 자기 화면에서만 터지는 self-XSS가 아니라 저장형이라 심각도가 높다.
+
+실제로 재현해서 확인했다(테스트 후 원문 복구, 잔재 0건):
+
+```
+수정 전: <p class="review-text">테스트<img src=x onerror=alert(1)>     ← 태그 그대로
+수정 후: <p class="review-text">테스트&lt;img src=x onerror=alert(1)&gt;끝</p>
+```
+
+조치: 사용자 입력이 그대로 나오던 곳을 전부 `<c:out>`으로 감쌌다.
+
+```
+productDetail.jsp   reviewText / nickname / optionName
+order/payment.jsp   productName / optionName / couponName / addressName / detailAddress
+review/addReview.jsp  productName / optionName
+```
+
+점검 스크립트로 재검사해 **남은 미이스케이프 0건** 확인.
+
+> **JSP에서 사람이 입력한 값을 찍을 땐 예외 없이 `<c:out>`.** 저장 시 필터링에 기대지 말 것 — 출력 이스케이프가 정석이다. 닉네임처럼 지금은 정규식으로 막혀 있는 값도, 규칙이 완화되는 순간 같은 문제가 된다.
+
+### 3-61-3. `/member/userWithdraw` 로그인 가드 누락 (AUDIT 버그 50번)
+
+회원 화면 12개를 비로그인으로 전수 호출해보니 **11개는 302인데 이 화면만 200**이었다. `MemberController.userWithdraw()`가 세션을 아예 보지 않고 뷰 이름만 반환하고 있었다.
+
+실제 탈퇴(`POST /member/withdraw`)에는 검사가 있어 데이터가 지워지진 않지만(비로그인 POST 시 `"로그인 정보가 없습니다."` 확인), 로그인하지 않은 사람에게 탈퇴 폼이 열리는 것 자체가 혼란을 준다. 같은 클래스의 `deliveryAddressForm()`과 동일한 가드를 넣었다.
+
+### 3-61-4. 낡은 TODO 4건 정리
+
+`header.jsp`가 "컨트롤러 미구현"이라고 적어둔 4곳이 **전부 200으로 동작 중**이었다. 실제 컨트롤러 이름으로 교체(헤더 TODO 0건).
+
+```
+/search 미구현        → 검색 결과 화면(ProductController.getSearchList)
+찜 컨트롤러 미구현     → 찜 목록(WishController.getWishList)
+장바구니 컨트롤러 미구현 → 장바구니(CartController.getCartList)
+배송지 경로 미확정     → 배송지 관리(MemberController.deliveryAddress)
+```
+
+### 3-61-5. 파비콘 반영 (팀원 작업분)
+
+검진 중 팀원에게 받아 추가된 `src/main/webapp/resources/favicon.png`(8,871 bytes)를 확인했다.
+
+- `header.jsp`의 `<head>` 안에 `<link rel="icon">`으로 걸려 있고, header.jsp를 25개 JSP 전부가 include하므로 **전 페이지 적용**된다(홈·상세·로그인·장바구니에서 렌더 확인).
+- 실서버 `200` / `image/png` 정상 서빙 확인.
+- 경로가 `src/main/webapp/resources/`라 CSS·JS(`src/main/resources/static/`)와 다른 방식이지만, 이 프로젝트는 JSP 때문에 어차피 `src/main/webapp`가 문서 루트로 살아 있어 동작에 문제 없다. 그대로 두었다.
+- `/favicon.ico`는 404지만 `<link>` 태그로 지정하고 있어 실사용엔 영향 없다.
+
+### 3-61-6. 종합 검진 - 이상 없던 항목
+
+고칠 게 없어 손대지 않은 것들. **다음 검진 때 같은 항목을 다시 돌려 비교하면 된다.**
+
+| 점검 | 결과 |
+|---|---|
+| 라우트 36개(USER/ADMIN/정적) 스모크 | 전부 정상(권한 차단 포함) |
+| 매퍼 Java 인터페이스 ↔ XML 짝 | 양방향 100% 일치, 죽은 쿼리 0 |
+| JSP가 참조하는 JS 실물 / 죽은 JS 파일 | 0 / 0 |
+| JS 문법(33개) | 전부 통과 |
+| SQL 인젝션(`${}` 바인딩) | 0건, 전부 `#{}` |
+| JSP 규격(header 미include, 절대경로 script) | 0 / 0 (인라인 script 4건은 서버→JS 데이터 전달용 예외) |
+| DB 정합성 16항목 | 15 OK (남은 1건은 이미 알려진 21번 옛 주문의 `TOTAL_PRICE=0`) |
+
+> `/mds/searchList?keyword=<한글>`이 curl로 400을 내는 건 **curl 한글 인코딩 함정**이지 버그가 아니다(퍼센트 인코딩하면 200 + 40건 검색됨). 부록 A의 "curl 한글" 항목과 같은 계열.
+
+### 3-61-7. 기록만 한 것
+
+- **AUDIT 위험 28번(신규)** — 운영 코드에 `System.out.print` **42건**(9개 파일). 그중 세션 객체를 통째로 찍는 곳이 있어 **회원 정보가 서버 콘솔에 남는다.** 여러 담당자 파일에 걸쳐 있어 한 번에 지우면 충돌이 커서, 각 영역을 만질 때 함께 정리하는 쪽을 권함.
+- **AUDIT 위험 20번 갱신** — `style_user.css` 최상위 `#id`가 **102 → 108개로 증가**(2026-09-03 재실측).
+
+### 코드 변경
+
+```
+수정
+  member/controller/MemberController.java   userWithdraw 로그인 가드
+  views/common/header.jsp                   낡은 TODO 4건 정리
+  views/product/productDetail.jsp           reviewText/nickname/optionName 이스케이프
+  views/order/payment.jsp                   상품명·옵션명·쿠폰명·배송지 이스케이프
+  views/review/addReview.jsp                상품명·옵션명 이스케이프
+  sql/dummy_order_review.sql                3-2 리뷰 좋아요 더미 추가
+  PROJECT_AUDIT.md                          버그 49·50 / 위험 28 신규, 20번·요약표 갱신
+
+신규(팀원 작업분)
+  src/main/webapp/resources/favicon.png
+```
+
+---
+
+## 3-62. 2026-09-03: 전 프로젝트 주석 리팩토링 + 남아 있던 TODO 8건 전량 처리
+
+3-61 종합 검진에서 "헤더의 낡은 TODO 4건"을 정리한 흐름을 **프로젝트 전체로 확장**한 라운드.
+코드 자체 리팩토링에 앞서 **주석부터** 정리하기로 한 것(팀장 지시).
+
+### 3-62-1. 정리 기준
+
+주석의 목적을 "**왜 이렇게 짰는지 + 밟으면 안 되는 함정**" 하나로 좁혔다.
+
+| 유형 | 처리 | 이유 |
+|---|---|---|
+| 변경 이력형 `✅ 조치 완료(날짜, 사용자 보고): 예전엔~` | 삭제 | 이력은 이 문서(HANDOFF)가 할 일이다. 코드에 쌓이면 계속 길어지기만 한다 |
+| **문서 참고형** `(HANDOFF 3-51)` `(AUDIT 버그 1번)` | 자립형으로 교체 | **팀원은 이 문서들을 열 수 없다**(팀장 전용 + 레포 밖에 있던 기간도 길었음). 확인할 수 없는 근거는 근거가 아니다 |
+| 인물 언급 `사용자님이 스크린샷으로 발견` | 삭제 | 코드는 누가 발견했는지 몰라도 된다 |
+| 과도한 서술(6~8줄 문단) | 1~3줄로 압축 | |
+| 낡은 TODO / 사실이 아닌 서술 | 삭제 또는 정정 | 틀린 주석은 없느니만 못하다 |
+
+> **문서 참고형 주석은 이 프로젝트의 구조적 모순이었다.** 예전 규약이 "주석은 짧게, 근거는 HANDOFF 번호로 참조"였는데, 정작 `HANDOFF.md`는 팀장만 갱신·보관하는 문서다. 앞으로 코드 주석은 **그 파일만 읽어도 이해되게** 쓸 것.
+
+### 3-62-2. 결과
+
+```
+✅ 조치 완료 이력형        16 → 0
+HANDOFF/AUDIT 문서 참조     18 → 0
+"사용자님/사용자 보고"      13 → 0
+TODO                        8 → 0
+productDetail.jsp        255 → 225줄
+style_user.css          5185 → 5174줄
+```
+
+교체 예시:
+
+```java
+// 전 (팀원이 확인 불가)
+// ✅ 조치 완료(2026-09-03): 예전엔 이 POST가 뷰를 직접 그렸다 - 그러면 브라우저
+// 히스토리의 이 항목 자체가 POST라서... (사용자님이 실제 재현: ...). Post-Redirect-Get으로...
+
+// 후 (자립적)
+// 뷰를 직접 그리지 않고 리다이렉트한다(Post-Redirect-Get). 이 POST가 히스토리에 남으면
+// 뒤로가기·새로고침 때 브라우저가 "양식을 다시 제출하시겠습니까?"를 띄운다.
+// 아래 GET(paymentResume)이 같은 세션 데이터로 같은 화면을 그리므로 로직 중복은 없다.
+```
+
+### 3-62-3. TODO 8건 — 낡은 것 3건
+
+주석이 주장하는 내용이 **이미 사실이 아니었다.** 코드로 하나씩 확인한 뒤 삭제.
+
+| 위치 | 주장 | 실제 |
+|---|---|---|
+| `userWithdraw.jsp` | 탈퇴 링크가 아직 API를 호출하지 않음 | `userUpdateInfo.js:518`이 `MemberService.withdraw()` 호출 후 이동 |
+| `userUpdateInfo.jsp` | 프리필이 예시값(홍길동 등)으로 폴백 / 저장 버튼이 no-op / 배송지 API가 전혀 없음 | **셋 다 아님** — 폴백 제거됨, 저장 7종 전부 실제 API 호출, `POST /member/addAddress` 존재 |
+| `style_user.css` | 리뷰 보기 href가 아직 `"#"` | `/mds/detail/{id}#review` 실제 링크 |
+
+`userUpdateInfo.jsp`에서 **한 가지는 남겼다** — 닉네임/이메일/휴대폰 중복확인에 **서버 쪽 "본인 제외"가 없다**(`countByNickname`이 MEMBER 전체를 센다). 값을 안 바꿔도 자기 자신과 충돌해 "중복"으로 뜨므로 `userUpdateInfo.js`가 "현재 값과 같으면 서버를 안 부름"으로 우회 중이다. 여전히 유효한 미해결 사항이라 AUDIT에도 올렸다.
+
+### 3-62-4. 🔴 관리자 마이페이지가 통째로 목업이던 것 (AUDIT 버그 51번)
+
+가장 실질적인 발견. `admin/adminPage.jsp`가 이름·아이디를 **`"관리자"` / `"admin"` 문자열로 하드코딩**하고 있었고, `adminMypageService.js`(목업)가 같은 값을 다시 덮어쓰고 있었다. **누가 로그인하든 같은 값**이 보인다 — 3-60에서 잡은 "고정 텍스트" 계열 버그와 같다.
+
+정작 **모델엔 실제 데이터가 이미 있었다** — `MemberController.myPageForm()`이 `loginMember`(실제 `MemberDTO`)를 담아 넘기는데 JSP가 안 쓰고 있었을 뿐이다.
+
+```
+adminPage.jsp          하드코딩 4곳 → <c:out value="${loginMember.memberName/loginId}"/>
+views/adminPage.js     목업 렌더링 제거(placeholder 링크 처리만 남김)
+admin/adminMypageService.js   삭제 (이 한 곳에서만 쓰던 목업)
+```
+
+**검증 방법이 중요했다** — `admin` 계정의 실제 이름이 마침 "관리자"라 고쳐도 화면이 똑같아 보인다. 그래서 **두 번째 관리자 계정을 만들어** 증명했다.
+
+```
+dummy_admin2 / 1234   이름 김운영 · 닉네임 운영자B · ROLE=ADMIN
+→ 관리자 마이페이지에 "김운영 (dummy_admin2)" 출력 확인 (고정 텍스트였다면 "관리자/admin")
+```
+이 계정은 지우지 않았다(팀 확인용).
+
+### 3-62-5. 찜 "인기순"이 정렬을 아예 안 하던 것 (AUDIT 버그 52번)
+
+`wish.jsp`의 기본 선택 탭이 `data-sort="popular"`인데, `wishService.sortItems()`에 **`popular` 분기가 없어서** 담긴 순서 그대로 나왔다("인기순"이라는 라벨만 붙어 있던 셈).
+
+TODO는 "실제 인기 지표가 없어서"라고 적혀 있었지만, 확인해보니 **`WishListDTO.reviewCount`가 이미 서버에서 내려오고 있었다**(`wish.xml getWishList`의 `REVIEW_COUNT`). 리뷰 수를 지표로 연결했다(동점이면 평점 높은 순).
+
+### 3-62-6. 남긴 TODO 2건 → 사실 서술로 전환
+
+`getCartKey`(localStorage 임시 키)와 장바구니/찜 캐시의 서버 완전 동기화는 **동작이 깨진 게 아니라 구조 설명**이라, TODO 딱지를 떼고 현재 한계를 명시하는 문장으로 바꿨다(예: "다른 브라우저에서 찜한 것은 여기서 알지 못한다").
+
+### 3-62-7. 검증
+
+`awk`로 줄 단위 편집을 하다 **CSS에 고아 `*/`가 한 건 남아** 문법이 깨진 적이 있다. 이후 전 파일에 문법 검사기를 돌렸다.
+
+```
+컴파일 EXIT=0          JS 33개 전부 통과
+CSS 4개 중괄호 균형·주석 종료·고아 */ 0     XML 매퍼 11개 <!-- --> 짝 일치
+USER 화면 10곳 200 / ADMIN 화면 4곳 200
+관리자 이름 "김운영" 렌더 / 좋아요·리뷰·XSS 이스케이프 유지
+```
+
+> **주석만 지웠다고 넘기지 말 것.** 줄 단위 편집은 오프셋이 밀려 코드를 함께 지우거나 주석을 반만 남긴다. 편집 뒤엔 언어별 문법 검사를 반드시 돌릴 것(CSS는 중괄호 균형 + 고아 `*/`, XML은 `<!-- -->` 짝, JS는 `node --check`).
+
+### 코드 변경
+
+```
+삭제
+  static/js/admin/adminMypageService.js       관리자 프로필 목업
+
+수정 (주석 정리 위주, 40개 파일)
+  views/admin/adminPage.jsp                   실데이터 바인딩 + TODO 정리
+  views/adminPage.js                          목업 렌더링 제거
+  product/wishService.js                      popular 정렬 신설
+  views/member/userUpdateInfo.jsp             낡은 TODO 정리("본인 제외" 건만 존치)
+  views/member/userWithdraw.jsp               낡은 TODO 삭제
+  views/product/productDetail.jsp             이력형 6블록 제거(255→225줄)
+  views/{home,order/payment,order/userOrderDelivery,product/searchProduct,product/wish,review/addReview,common/header}.jsp
+  java/{Member,Order,Product,Wish,Cart}Controller, CartServiceImpl
+  mappers/{member/MemberMapper,product/detailPage,product/product,review/ReviewMapper}.xml
+  static/css/{style,style_user,style_admin}.css
+  static/js/{common/cartWishService,common/placeholderLinks,product/cartService,views/*}.js
+```
+
+### 다음
+
+**코드 자체 리팩토링**(중복 로직·긴 메서드·매직넘버 등)은 아직 시작 전. 주석 정리를 우선한다는 방침에 따라 여기서 끊었다.
 
 ---
 

@@ -1,13 +1,13 @@
-// 장바구니/찜 데이터 로직 (여러 페이지에서 공유: header.jsp, cart.jsp, wish.jsp, searchProduct.jsp).
-// addToCart(2026-09-03)/toggleWish(2026-09-03 추가 조치)는 둘 다 실제 서버(CartController/
-// WishController)에 반영한다 - 비로그인 상태로 눌러도 그냥 로컬에 쌓이던(AUDIT 신규 버그) 것을
-// 막는다. localStorage(cartItems/wishItems)는 이제 "서버 반영 성공 후"에만 갱신하는 캐시로만 쓴다
-// (헤더 뱃지 표시용, isWished()의 초기 렌더 판단용) - 로그인 세션이 없으면 여전히 서버 진짜 상태와
-// 어긋날 수 있다(예: 다른 브라우저에서 찜한 것은 여기서 모름). 완전한 서버 동기화(로그인 시 최초
-// 로드 때 실제 WISH/CART 데이터로 캐시를 채우는 것)는 이번 조치 범위 밖 - TODO(data binding) 유지.
+// 장바구니/찜 데이터 로직. header.jsp, cart.jsp, wish.jsp, searchProduct.jsp가 공유한다.
 //
-// cart.jsp/wish.jsp/searchProduct.jsp가 이미 window.addToCart / window.toggleWish / window.isWished /
-// window.refreshCartBadge를 전역 함수로 직접 호출하고 있어서, 기존 이름을 그대로 유지한다.
+// addToCart/toggleWish는 실제 서버(CartController/WishController)에 반영한다.
+// localStorage(cartItems/wishItems)는 서버 반영에 성공한 뒤에만 갱신하는 캐시일 뿐이다
+// (헤더 뱃지 표시, isWished()의 초기 렌더 판단용). 캐시라서 서버 진짜 상태와 어긋날 수 있다
+// - 다른 브라우저에서 찜한 것은 여기서 알지 못한다. 로그인 시 서버 값으로 캐시를 채우는
+// 완전한 동기화는 아직 없다.
+//
+// 호출부가 window.addToCart / window.toggleWish / window.isWished / window.refreshCartBadge를
+// 전역 함수로 직접 부르고 있어 이름을 바꾸면 안 된다.
 (function () {
 
     function getCartItems() {
@@ -40,7 +40,7 @@
     }
 
     // 상품+옵션 조합의 임시 유일키. addToCart와 장바구니 화면이 같은 규칙을 써야 해서 공용으로 둔다.
-    // TODO(data binding): 실제로는 Cart.pop_id(옵션 단위)가 이 역할을 함.
+    // 서버는 pop_id(옵션 단위)로 식별한다. 이건 localStorage 캐시에서만 쓰는 임시 키.
     function getCartKey(item) {
         return item.productId + '::' + (item.optionName || '기본 옵션');
     }
@@ -48,7 +48,7 @@
     // 검색결과/찜 카드의 "장바구니 담기" 퀵버튼용 - 옵션 선택 UI가 없으므로 상세 페이지 기준
     // 대표 옵션(popId, 서버가 product.xml/wish.xml에서 OPTION_ID가 가장 작은 옵션으로 내려줌)을
     // 그대로 실제 서버(CartController.insertCart, productDetail.jsp의 #cart-button과 동일한
-    // 백엔드)에 담는다. 더 이상 localStorage 목업을 쓰지 않는다(AUDIT 버그 21번 조치).
+    // 백엔드)에 담는다. localStorage 목업은 쓰지 않는다.
     // silent: true면 성공/실패 알림을 안 띄운다(찜 목록의 "선택 상품 장바구니 담기"처럼 여러 건을
     // 한 번에 부르고 호출부가 결과를 모아서 요약 안내를 하나만 띄울 때 씀). 반환값은 성공 여부(boolean).
     function addToCart(item, silent) {
@@ -70,10 +70,7 @@
                 }
                 return false;
             }
-            // ✅ 조치 완료(2026-09-03): 여기서 헤더 뱃지 갱신을 안 부르고 있었다 - 서버엔 실제로
-            // 담겼는데도 뱃지 숫자는 다음 페이지 이동/새로고침 전까지 그대로였다(메인 페이지 등
-            // 퀵버튼으로 담을 때 특히 눈에 띔 - home.js/searchProduct.js/wish.js 전부 이 함수 하나를
-            // 공유해서 여기 한 곳만 고치면 된다).
+            // 담고 나면 헤더 뱃지도 바로 갱신한다(안 하면 다음 페이지 이동 전까지 숫자가 그대로다).
             if (typeof window.refreshCartBadge === 'function') window.refreshCartBadge();
             if (!silent) alert('장바구니에 담았습니다.');
             return true;
@@ -83,14 +80,12 @@
         });
     }
 
-    // 실제 WishController(POST /wish/insert-wish, GET /wish/remove-wish)를 호출한다. 어느 쪽을
-    // 부를지는 호출부가 넘겨주는 wasWished(그 버튼의 현재 DOM 상태 - 서버가 최초 렌더링 때부터
-    // 정확히 채워준다)로 판단한다. ✅ 2026-09-03: 예전엔 이걸 로컬 캐시(isWished, localStorage)로
-    // 판단했는데, 로그아웃 후 재로그인하면 이 캐시가 비어 있어서(다른 계정/새 세션) 이미 찜한
-    // 상품도 "안 찜한 것"으로 오판 - 버튼은 채워진 하트로 보이는데 클릭하면 내부적으로는 "추가"를
-    // 시도하는 상태 불일치가 있었다(AUDIT 신규 버그). insertWish 자체는 이미 찜한 상품이면 에러
-    // 없이 안내만 하고 넘어가서(WishServiceImpl) 데이터가 깨지진 않았지만, 그다음 클릭(진짜 해제하려는
-    // 클릭)이 다시 "추가" 쪽으로 잘못 판단되는 문제가 있어 DOM 기준으로 바꿨다.
+    // WishController(POST /wish/insert-wish, GET /wish/remove-wish)를 호출한다.
+    //
+    // 추가/해제 판단은 반드시 호출부가 넘겨주는 wasWished(버튼의 현재 DOM 상태)로 한다.
+    // 로컬 캐시(isWished)로 판단하면 안 된다 - 로그아웃 후 재로그인하면 캐시가 비어 있어서
+    // 이미 찜한 상품을 "안 찜한 것"으로 오판하고, 해제하려는 클릭이 추가로 처리된다.
+    // 서버가 최초 렌더링부터 하트 상태를 정확히 채워주므로 DOM이 더 믿을 만한 기준이다.
     function toggleWish(item, wasWished) {
         var request = wasWished
             ? fetch('/wish/remove-wish?productId=' + encodeURIComponent(item.productId), { credentials: 'same-origin' })

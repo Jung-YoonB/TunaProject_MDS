@@ -117,14 +117,14 @@
   			NVL(rep.PRODUCT_IMAGE_SAVE_NAME, '') AS PRODUCT_IMAGE_SAVE_NAME,
   			rep.QTY AS QTY,
   			<!-- 리뷰 링크는 대표가 아니라 "아직 안 쓴 것 중 첫 번째"로 건다. 대표 기준이면 상품이
-  			     2건 이상인 주문에서 나머지가 작성 경로를 잃는다(AUDIT 버그 17번). 다 썼으면 NULL이라 대표로 대체 -->
+  			     2건 이상인 주문에서 나머지가 작성 경로를 잃는다. 다 썼으면 NULL이라 대표로 대체 -->
   			NVL(nr.NEXT_OD_ID, rep.OD_ID) AS OD_ID,
   			NVL(rep.PRODUCT_COUNT, 0) AS PRODUCT_COUNT,
   			<!-- QTY는 대표 상품 1건의 수량이라, 여러 상품을 산 주문에서는 실제보다 적게 보인다.
   			     화면에는 주문 전체 수량 합계를 쓴다 -->
   			NVL(rep.TOTAL_QTY, 0) AS TOTAL_QTY,
   			<!-- 이 주문 전체를 다 썼을 때만 1. 품목 1건 단위는 selectOrderItemsByOrderIds 의
-  			     HAS_REVIEW 로 서로 다른 값이다 (이름을 구분해 둔 이유 - HANDOFF 3-55) -->
+  			     HAS_REVIEW 로 서로 다른 값이다 (이름을 구분해 둔 이유 -) -->
   			CASE WHEN nr.NEXT_OD_ID IS NULL THEN 1 ELSE 0 END AS ALL_REVIEWED
   		FROM PRODUCTORDER PO
   		LEFT JOIN DELIVERY D ON D.ORDER_ID = PO.ORDER_ID

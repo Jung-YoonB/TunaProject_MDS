@@ -55,7 +55,7 @@ public class CartController {
     }
 
     // 헤더 장바구니 뱃지용 - header.js가 페이지 로드마다 호출해서 실제 CART 기준 수량 합계를
-    // 보여준다(AUDIT 신규 버그: 뱃지가 localStorage 목업이라 메인 페이지 등에서 실제 담긴 수량과
+    // 보여준다(뱃지가 localStorage 목업이라 메인 페이지 등에서 실제 담긴 수량과
     // 안 맞던 것 조치). 비로그인이면 0.
     @GetMapping("/count")
     @ResponseBody

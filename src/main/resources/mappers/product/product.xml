@@ -28,8 +28,7 @@
                 ), 0.0) AS SCORE,
 
                 <!-- 로그인 회원이 이 상품을 이미 찜했는지 - 카드의 하트 아이콘 초기 상태용. memberId가
-                     null(비로그인)이면 "= NULL" 비교라 항상 거짓이라 자연히 0(false)이 된다.
-                     비로그인 시에도 다시 찜을 누를 수 있는 것처럼 보이던 문제(AUDIT 신규 버그) 조치. -->
+                     null(비로그인)이면 "= NULL" 비교라 항상 거짓이 되어 자연히 0(false)으로 떨어진다. -->
                 CASE WHEN EXISTS (
                     SELECT 1 FROM WISH W2
                     WHERE W2.PRODUCT_ID = P.PRODUCT_ID AND W2.MEMBER_ID = #{memberId}
@@ -59,7 +58,7 @@
 
                 <where>
                         <!-- 상세조회(detailPage.xml)는 ON_SALE만 허용하는데 목록/검색엔 이 필터가 없어서
-                             품절·숨김·판매중지 상품도 노출되던 것(AUDIT 버그 4번). 지금은(2026-09) 130건이
+                             품절·숨김·판매중지 상품도 노출되던 것. 지금은(2026-09) 130건이
                              전부 ON_SALE이라 눈에 안 띄지만, 상태가 바뀌면 바로 재현된다. -->
                         AND P.STATUS = 'ON_SALE'
 
@@ -157,7 +156,7 @@
 
                 <where>
                         <!-- getList와 동일한 STATUS 필터 - 빠뜨리면 총 개수와 실제 목록 건수가 어긋나
-                             페이지네이션이 깨진다(AUDIT 버그 4번). -->
+                             페이지네이션이 깨진다. -->
                         AND P.STATUS = 'ON_SALE'
 
                         <!-- 검색창 검색 -->

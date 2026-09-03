@@ -39,10 +39,10 @@
                     <span>상품명</span>
 
                     <span>
-                        ${item.productName}
+                        <c:out value="${item.productName}"/>
 
                         <c:if test="${not empty item.optionName}">
-                            (${item.optionName})
+                            (<c:out value="${item.optionName}"/>)
                         </c:if>
                     </span>
 
@@ -132,13 +132,9 @@
          포인트 사용
     ====================================================== -->
 
-    <%-- ✅ 조치 완료(2026-09-03, 사용자 보고): 예전엔 #point 전체가 display:flex 한 줄이라
-         라벨/입력칸/안내문 6개가 전부 가로 한 줄에 욱여넣어져 있었다(1P만 입력해도 안내문이
-         입력칸 옆에 붙어 줄바꿈되며 깨져 보인 원인). 입력 행(.point-input-row)만 flex로 묶고
-         안내문들은 그 아래 세로로 쌓이게 분리. 안내문 자체도 "1,000P 이상부터 사용 가능"을
-         정적 안내(.point-guide)와 동적 경고(#point-warning) 둘 다에서 중복해서 말하고 있었어서,
-         정적 안내는 입력값과 무관한 규칙(0P=미사용 처리)만 남기고 "얼마 이상 입력하세요" 류는
-         입력칸 바로 아래(#point-warning) 한 곳에서만 갈아끼운다(payment.js). --%>
+    <%-- 입력 행(.point-input-row)만 가로로 묶고 안내문은 그 아래 세로로 쌓는다.
+         "얼마 이상 입력하세요" 류는 #point-warning 한 곳에서만 말한다(payment.js가 갈아끼움).
+         .point-guide 는 입력값과 무관한 규칙(0P는 미사용 처리)만 담당 - 두 곳에서 같은 말을 하면 겹쳐 보인다. --%>
     <div id="point">
 
         <div class="point-input-row">
@@ -222,7 +218,7 @@
                     value="${coupon.chistId}"
                     data-discount="${coupon.couponValue}">
 
-                    ${coupon.couponName}
+                    <c:out value="${coupon.couponName}"/>
                     -
                     ${(coupon.couponValue * 100).intValue()}%
 
@@ -364,7 +360,7 @@
                 </span>
 
                 <span id="address_name">
-                    ${pvData.addressName}
+                    <c:out value="${pvData.addressName}"/>
                 </span>
 
             </div>
@@ -377,7 +373,7 @@
                 </span>
 
                 <span id="detail_address">
-                    ${pvData.detailAddress}
+                    <c:out value="${pvData.detailAddress}"/>
                 </span>
 
             </div>
@@ -405,9 +401,7 @@
         >
 
 
-        <%-- ✅ 조치 완료(2026-09-03): 클릭해도 아무 반응이 없던 것(AUDIT 신규 버그) - 실제
-             배송지 추가 화면(utill/deliveryAddress.jsp, PROJECT_AUDIT 버그 10번)으로 이동하도록
-             연결. deliveryAddress.jsp의 "취소" 버튼과 같은 인라인 onclick 패턴을 그대로 씀. --%>
+        <%-- 배송지 추가 화면(utill/deliveryAddress.jsp)으로 이동 --%>
         <button
             type="button"
             id="add-address"

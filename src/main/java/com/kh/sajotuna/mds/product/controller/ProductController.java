@@ -83,7 +83,7 @@ public class ProductController {
 
 	@GetMapping("/coupon/{couponId}")
 	public String getCoupon(HttpSession session, Model model, @PathVariable Long couponId) {
-		// 세션 키는 LOGIN_SESSION (AUDIT 버그 1번 - LOGIN_MEMBER로 읽어 항상 null → NPE 500이었다)
+		// 세션 키는 LOGIN_SESSION (LOGIN_MEMBER로 읽으면 항상 null이라 NPE가 난다)
 		MemberDTO user = (MemberDTO)session.getAttribute(SessionConst.LOGIN_SESSION);
 
 		if (user == null) {
@@ -118,7 +118,7 @@ public class ProductController {
 	@ResponseBody
 	public String reviewLike(@PathVariable Long reviewId, HttpSession session) {
 		// 세션 키는 LOGIN_SESSION이다. LOGIN_MEMBER는 Model attribute 이름이라 세션엔 절대 안 담긴다
-		// (AUDIT 버그 1번 - 이 자리에서 항상 null이라 바로 NPE 500이 났다).
+		// (LOGIN_MEMBER는 Model attribute 이름이라 여기선 항상 null이 된다).
 		MemberDTO user = (MemberDTO) session.getAttribute(SessionConst.LOGIN_SESSION);
 		if (user == null) {
 			return "login-required";

@@ -9,7 +9,9 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>메종 드 사조</title>
-
+	<!-- 파비콘 -->
+	<link rel="icon" type="image/png" href="${pageContext.request.contextPath}/resources/favicon.png">
+	
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@600;700&display=swap" rel="stylesheet">
@@ -48,7 +50,7 @@
 		<c:set var="bodyClass" value="coupon-hero"/>
 	</c:when>
 	<c:when test="${__path == '/member/deliveryAddress'}">
-		<%-- TODO: 배송지 추가 페이지는 아직 컨트롤러가 연결되어 있지 않아 실제 경로 미확정 --%>
+		<%-- 배송지 관리(MemberController.deliveryAddress) --%>
 		<c:set var="bodyClass" value="delivery-hero"/>
 	</c:when>
 	<c:otherwise>
@@ -63,7 +65,7 @@
 		</div>
 
 		<div id="search_box">
-			<%-- TODO(placeholder route): "/search" 컨트롤러 미구현 --%>
+			<%-- 검색 결과 화면(ProductController.getSearchList) --%>
 			<form id="headerSearchForm" action="<c:url value='/mds/searchList'/>" method="get">
 				<%-- 검색 결과 화면에서 검색어가 사라지지 않도록 현재 keyword를 그대로 채워둔다
 					 (검색 화면 안쪽 검색창과 동일). 다른 화면에서는 keyword가 없어 빈 값이 된다. --%>
@@ -81,7 +83,7 @@
 
 		<div class="header-actions">
 			<div class="icon">
-				<%-- TODO(placeholder route): 찜 컨트롤러 미구현, 담당 브랜치 확정 시 경로 조정 --%>
+				<%-- 찜 목록(WishController.getWishList) --%>
 				<a class="icon-item" href="<c:url value='/wish/my-wish'/>">
 					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 						<path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.5-8 11-8 11z"/>
@@ -90,7 +92,7 @@
 					<span class="icon-label">찜</span>
 				</a>
 
-				<%-- TODO(placeholder route): 장바구니 컨트롤러 미구현, 담당 브랜치 확정 시 경로 조정 --%>
+				<%-- 장바구니(CartController.getCartList) --%>
 				<a class="icon-item" href="<c:url value='/cart/my-cart'/>">
 					<svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 						<circle cx="9" cy="21" r="1"/>

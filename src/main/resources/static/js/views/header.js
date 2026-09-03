@@ -1,7 +1,7 @@
 // header.jsp 의 장바구니/찜 notice 뱃지(알람) 인터랙션.
 // 2026-09-03부로 실제 서버 값을 쓴다(GET /cart/count, /wish/count) - 이전엔 localStorage 합계만
 // 보여줘서, 예를 들어 상세 페이지에서 담고 메인으로 돌아오면 그 브라우저의 localStorage가 아직
-// 안 갱신된 페이지에서는 뱃지가 실제 담긴 수량과 안 맞는 문제가 있었다(AUDIT 신규 버그).
+// 안 갱신된 페이지에서는 뱃지가 실제 담긴 수량과 안 맞는 문제가 있었다
 (function () {
     var isLoggedIn = document.body.dataset.loggedIn === 'true';
     var homeUrl = document.body.dataset.homeUrl;

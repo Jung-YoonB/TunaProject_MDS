@@ -4,7 +4,7 @@
 // 카드 마크업/클래스가 동일해서 셀렉터도 그대로 맞춘다).
 // 찜 초기 상태는 서버가 카드 렌더링 시점에 class="...is-active"를 직접 찍어준다
 // (ProductListDTO.wished) - searchProduct.js와 동일한 이유로 여기서 localStorage로
-// 다시 판단하지 않는다(AUDIT 신규 버그).
+// 다시 판단하지 않는다
 (function () {
 
     var productList = document.getElementById('product-list');

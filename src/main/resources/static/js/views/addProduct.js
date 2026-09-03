@@ -360,7 +360,7 @@ function applyTagTextColor(tagElement){
 }
 
 
-// 태그 배경 위 글자색. 단순 밝기 임계값 대신 WCAG 명암비로 고른다 (HANDOFF 3-54-4)
+// 태그 배경 위 글자색. 단순 밝기 임계값 대신 WCAG 명암비로 고른다
 const TAG_TEXT_DARK = "#1f1b18";
 const TAG_TEXT_LIGHT = "#ffffff";
 
@@ -722,7 +722,7 @@ function clearMainImage(){
 
 /* ==================================================
    옵션 (개수 제한 없는 동적 행 - 최소 1개)
-   행 하나 = 옵션 하나 = PRODUCTOPTION 1건 + OPTIONDETAIL 1건 (HANDOFF 3-48)
+   행 하나 = 옵션 하나 = PRODUCTOPTION 1건 + OPTIONDETAIL 1건
    ================================================== */
 
 const optionList = document.getElementById("optionList");

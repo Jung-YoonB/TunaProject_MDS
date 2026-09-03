@@ -7,7 +7,7 @@
 // 찜 초기 상태(하트 채움 여부)는 이제 서버가 카드 렌더링 시점에 실제 WISH 데이터 기준으로
 // class="...is-active"를 직접 찍어준다(ProductListDTO.wished, product.xml getList) - 예전엔
 // 여기서 localStorage 캐시(window.isWished)로 판단해서, 로그아웃 후 재로그인하면 캐시가 비어
-// 이미 찜한 상품도 빈 하트로 보이던 문제가 있었다(AUDIT 신규 버그). 클릭 시 방향(추가/해제)도
+// 이미 찜한 상품도 빈 하트로 보이던 문제가 있었다 클릭 시 방향(추가/해제)도
 // 이 서버 렌더링 상태(버튼의 현재 is-active 클래스)를 그대로 넘긴다.
 (function () {
 
@@ -32,7 +32,7 @@
         btn.addEventListener('click', function () {
             if (typeof window.toggleWish !== 'function') return;
             // toggleWish는 이제 실제 서버(WishController)를 호출하고 결과(Promise<boolean>)를 준다
-            // (AUDIT 신규 버그: 비로그인 상태에서도 로컬에만 담기던 것 조치). 방향은 버튼의 현재
+            // (비로그인 상태에서도 로컬에만 담기던 것 조치). 방향은 버튼의 현재
             // is-active(서버가 렌더링 시점에 채운 실제 상태)로 판단한다.
             var wasWished = btn.classList.contains('is-active');
             window.toggleWish(readProduct(card), wasWished).then(function (active) {

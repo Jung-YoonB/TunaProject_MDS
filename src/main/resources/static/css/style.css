@@ -47,7 +47,7 @@ body {
    default.css의 전역 a:focus{text-decoration:underline} 때문에 밑줄이 남는다.
    default.css는 다른 팀과 공유하는 공통 규약이라 손대지 않고 여기서 명시도로 이긴다
    ((0,2,1) > (0,1,1)). :focus:not(:focus-visible) = 마우스 클릭으로 생긴 포커스만 해당하므로
-   키보드 Tab(:focus-visible)과 hover의 밑줄은 그대로다. HANDOFF 3-51 참고. */
+   키보드 Tab(:focus-visible)과 hover의 밑줄은 그대로다. */
 a:focus:not(:focus-visible) {
 	text-decoration: none;
 }
@@ -59,7 +59,7 @@ main {
 	flex-direction: column;
 }
 
-/* ===== 콘텐츠가 짧을 때 카드 아래 생기던 빈 띠 제거 (HANDOFF 3-50) =====
+/* ===== 콘텐츠가 짧을 때 카드 아래 생기던 빈 띠 제거 =====
    main{flex:1 0 auto}가 이미 남는 높이를 갖고 있으므로, 그 높이를 wrapper → 카드까지
    이어받게 한다(예전엔 wrapper마다 min-height:100vh를 걸어 페이지만 길어지고 카드는 안 늘어났다).
    ※ 목록을 명시한 이유: JSP들이 </main> 직전에 <script>를 둬서 :last-child 류가 안 맞는다.
@@ -147,7 +147,7 @@ body.product-detail-hero {
 /* ===== 공용 SVG 아이콘 (2026-09-01 규격화) =====
    원래 사이트 곳곳에서 ★ / ♡ / ♥ / ✓ / × 같은 유니코드 글리프를 아이콘으로 쓰고 있었는데,
    환경(폰트)에 따라 컬러 이모지로 렌더링되면 CSS color가 무시되고 세로 정렬도 어긋난다.
-   헤더(#site-header .icon-svg)와 홈 카드에서 먼저 SVG로 바꿨던 것(HANDOFF 3-39-1/3-39-2)을
+   헤더(#site-header .icon-svg)와 홈 카드에서 먼저 SVG로 바꿨던 것을
    나머지 화면 전체에 적용하면서, 반복되는 아이콘을 여기 공용 클래스로 모았다.
 
    크기는 전부 1em이라 각 자리의 기존 font-size를 그대로 따라간다 - 즉 글리프였을 때의

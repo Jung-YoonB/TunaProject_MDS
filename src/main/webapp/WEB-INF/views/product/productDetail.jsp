@@ -9,10 +9,6 @@
 <div class="product-detail-page">
 <div class="product-detail-page-card">
 
-    <%-- ✅ 조치 완료(2026-09-03): 카테고리/이동경로가 실제 상품과 무관하게 항상 "결혼·집들이 /
-         코토나 타월 핸드타월 세트"로 고정돼 있었다(어느 상품을 봐도 똑같이 나옴) - 카테고리를
-         전혀 조회하지 않던 detailPage 쿼리에 product.xml getList의 CAT_AGG와 같은 방식으로
-         추가해서 실데이터로 교체. 카테고리가 없는 상품이면 빈 문자열로 보인다. --%>
     <!-- 상품 카테고리 -->
     <div id="product-category">${detail.product.categoryNames}</div>
 
@@ -39,17 +35,14 @@
 
             <h1 class="product-title">${detail.product.productTitle}</h1>
 
-            <%-- ✅ 조치 완료(2026-09-03): "집들이 수건 선물 세트"가 모든 상품에 고정으로 박혀
-                 있었다 - productDetail 쿼리가 이미 조회해서 DTO에 담고 있던 productName(짧은
-                 부제 성격 필드)이 화면 어디에도 안 쓰이고 있었을 뿐이라 그걸로 교체. --%>
             <div class="product-description">
                 ${detail.product.productName}
             </div>
 
             <!-- 리뷰 / 찜 -->
             <div id="product-stats">
-                <%-- 별/하트는 원래 유니코드 글리프(★/♡)였으나 환경에 따라 컬러 이모지로
-                     렌더링돼 CSS color를 무시하는 문제가 있어 SVG로 통일함(2026-09-01). --%>
+                <%-- 별/하트는 유니코드 글리프를 쓰면 환경에 따라 컬러 이모지로 렌더링돼
+                     CSS color를 무시한다. 그래서 아이콘은 전부 SVG. --%>
                 <div class="product-stat">
                     <svg class="product-rating-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
                     ${detail.product.avgScore}
@@ -62,12 +55,8 @@
             </div>
 
             <!-- 가격 -->
-            <%-- ✅ 조치 완료(2026-09-03): 등급 할인이 로그인 여부/실제 등급과 무관하게 항상
-                 "BRONZE / 2%"로 고정돼 있었다(예: PLATINUM 15% 회원이 봐도 2%로 표시, 비로그인도
-                 노출됨). ProductController가 세션 회원의 실제 GRADE.DISCOUNT_RATE를 memberGrade로
-                 담아주도록 수정 - 비로그인이면 memberGrade 자체가 모델에 없어서(EL이 empty로 처리)
-                 할인 줄이 안 보이고 data-discount-rate도 0으로 떨어져 productdetail.js의
-                 applyDiscount()가 자연히 할인 없이 계산한다. --%>
+            <%-- 비로그인이면 memberGrade가 모델에 없어 할인 줄이 숨겨지고,
+                 data-discount-rate도 0이 되어 productdetail.js가 할인 없이 계산한다. --%>
             <div id="price-info" data-discount-rate="${not empty memberGrade ? memberGrade.discountRate : 0}">
 
                 <div class="price-row">
@@ -104,7 +93,7 @@
                                 data-stock="${opt.stock}"
                                 <c:if test="${status.first}">selected</c:if>
                                 <c:if test="${opt.stock == 0}">disabled</c:if>>
-                            ${opt.optionName} (${opt.price}원<c:if test="${opt.stock == 0}"> / 품절</c:if><c:if test="${opt.stock > 0 and opt.stock < 50}"> / ${opt.stock}개 남음</c:if>)
+                            <c:out value="${opt.optionName}"/> (${opt.price}원<c:if test="${opt.stock == 0}"> / 품절</c:if><c:if test="${opt.stock > 0 and opt.stock < 50}"> / ${opt.stock}개 남음</c:if>)
                         </option>
                     </c:forEach>
                 </select>
@@ -131,14 +120,6 @@
             </div>
 
             <!-- 상품 버튼 -->
-            <%--
-                 ✅ 조치 완료(2026-09-03): 클릭 시 common/cartWishService.js의 window.toggleWish()가
-                 실제 WishController(POST /wish/insert-wish, GET /wish/remove-wish)를 호출한다
-                 (비로그인이면 /member/login으로 리다이렉트, cart-button과 동일 패턴).
-                 로그인 + 이미 찜한 상품이면 최초 렌더링부터 is-active를 붙인다(detail.product.wished,
-                 detailPage.xml의 WISHED 서브쿼리) - 예전엔 항상 "찜 안 한" 상태로 시작해서, 로그아웃 후
-                 재로그인하면 이미 찜한 상품도 다시 찜할 수 있는 것처럼 보였다(AUDIT 신규 버그).
-            --%>
             <div id="product-buttons">
                 <%-- 하트는 SVG 한 개만 두고, 찜 on/off는 views/productdetail.js가
                      .is-filled 클래스로 채움 여부만 바꾼다(글리프 교체 방식에서 변경). --%>
@@ -181,11 +162,6 @@
             <p class="tab-content-text">고객 부주의로 인한 상품 훼손 시 교환/환불이 제한될 수 있습니다.</p>
         </div>
 
-        <%--
-             백엔드 확인 필요: detailPage() 컨트롤러에서 이미 있는 ProductServiceImpl.getReviewList(productId, memberId)를
-             한 번 더 호출해서 model.addAttribute("reviewList", ...) 로 얹어주면 됨 (DetailPageDTO에 새 필드 추가할 필요 없음,
-             /mds/review/{productId} 에서 이미 하는 것과 동일한 패턴).
-        --%>
         <div class="tab-panel" data-tab-panel="review">
             <c:if test="${empty reviewList}">
                 <p class="tab-content-text">아직 작성된 리뷰가 없습니다.</p>
@@ -193,16 +169,14 @@
             <c:forEach items="${reviewList}" var="review">
                 <div class="review-item">
                     <div class="review-item-header">
-                        <span class="review-writer">${review.nickname}</span>
+                        <%-- 사용자가 직접 쓴 값은 반드시 <c:out>으로 이스케이프한다.
+                             특히 아래 review-text는 자유 입력이라 그대로 찍으면 저장형 XSS가 된다. --%>
+                        <span class="review-writer"><c:out value="${review.nickname}"/></span>
                         <span class="review-score">
                             <svg class="icon-star icon-inline" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.26 6.9.6-5.2 4.53 1.6 6.76L12 16.9l-6.2 3.25 1.6-6.76-5.2-4.53 6.9-.6L12 2z"/></svg>
                             ${review.score}
                         </span>
                         <span class="review-date">${review.writeDate}</span>
-                        <%-- ✅ 조치 완료(2026-09-03, 사용자 보고): 리뷰 좋아요 버튼이 화면에 아예
-                             없었다 - 백엔드(ProductController.reviewLike, GET /mds/review/like/{id})와
-                             집계(ReviewDTO.likeCount/liked)는 이미 있었는데 호출하는 UI가 없었다.
-                             비로그인이면 클릭 시 로그인으로 안내(productdetail.js). --%>
                         <button type="button" class="review-like-btn${review.liked ? ' is-active' : ''}"
                                 data-review-id="${review.reviewId}"
                                 aria-label="${review.liked ? '좋아요 취소' : '좋아요'}">
@@ -211,19 +185,16 @@
                         </button>
                     </div>
                     <div class="review-images">
-                        <%-- ✅ 조치 완료(2026-09-03, 사용자 보고): reviewImagePath가 서버에서 비어
-                             내려와 상대경로로 깨졌었다 - detailPage.xml의 getReviewImages 쿼리 수정 --%>
                         <c:forEach items="${review.reviewImages}" var="reviewImg">
                             <img class="review-image" src="${reviewImg.reviewImagePath}${reviewImg.reviewImage}" alt="리뷰 이미지">
                         </c:forEach>
                     </div>
-                    <p class="review-text">${review.reviewText}</p>
+                    <p class="review-text"><c:out value="${review.reviewText}"/></p>
                 </div>
             </c:forEach>
 
-            <%-- 리뷰 페이지 번호. 한 페이지 5개(ProductServiceImpl.REVIEWS_PAGE_SIZE)라 리뷰가 많으면
-                 여기서 넘겨본다. 검색 결과 화면과 같은 .sp-pagination 스타일을 그대로 재사용한다.
-                 #review 해시는 페이지를 넘겨도 리뷰 탭이 열린 채로 돌아오게 하려는 것(productdetail.js가 처리). --%>
+            <%-- 한 페이지 5개(ProductServiceImpl.REVIEWS_PAGE_SIZE).
+                 #review 해시는 페이지를 넘겨도 리뷰 탭이 열린 채로 돌아오게 한다. --%>
             <c:if test="${totalPages > 1}">
                 <nav class="sp-pagination" aria-label="리뷰 페이지 탐색">
                     <c:if test="${currentPage > 1}">
