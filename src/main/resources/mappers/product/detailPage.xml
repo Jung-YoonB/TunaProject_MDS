@@ -5,18 +5,21 @@
   
 <mapper namespace="com.kh.sajotuna.mds.product.model.mapper.ProductMapper">
 
-	<select id="productDetail" resultType="ProductDetailDTO" parameterType="Long">
+	<select id="productDetail" resultType="ProductDetailDTO">
 		SELECT
 		p.product_id,
 		p.product_title,
 		p.product_name,
 		p.product_content,
 		MIN(PO.OPTION_PRICE) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS PRICE,
+		<!-- 삭제된 리뷰(REVIEW_STATUS=0)는 평균 별점·리뷰 수에서 빠져야 한다.
+		     product.xml getList / wish.xml 의 같은 집계와 동일 기준 -->
 		NVL(( SELECT ROUND(AVG(R.SCORE), 1)
 		FROM REVIEW R
 		JOIN ORDERDETAIL OD_SUB ON R.OD_ID = OD_SUB.OD_ID
 		JOIN OPTIONDETAIL SUB_OD ON OD_SUB.POP_ID = SUB_OD.POP_ID
 		WHERE SUB_OD.PRODUCT_ID = p.product_id
+		AND R.REVIEW_STATUS = 1
 		), 0.0) AS avg_score,
 
 		(
@@ -25,13 +28,25 @@
 		JOIN ORDERDETAIL OD_SUB ON R.OD_ID = OD_SUB.OD_ID
 		JOIN OPTIONDETAIL SUB_OD ON OD_SUB.POP_ID = SUB_OD.POP_ID
 		WHERE SUB_OD.PRODUCT_ID = p.product_id
+		AND R.REVIEW_STATUS = 1
 		) AS review_count,
 
 		(
 		SELECT COUNT(W.WISH_ID)
 		FROM WISH W
 		WHERE W.PRODUCT_ID = p.product_id
-		) AS wish_count
+		) AS wish_count,
+
+		<!-- 카테고리명(다중) - product.xml getList의 CAT_AGG와 동일 패턴.
+		     카테고리가 없는 상품이면 NULL - JSP에서 그대로 빈 문자열로 보임. -->
+		(SELECT LISTAGG(C.CATEGORY_NAME, ' · ') WITHIN GROUP (ORDER BY C.CATEGORY_ID)
+		   FROM CATEGORYDETAIL CD JOIN CATEGORY C ON CD.CATEGORY_ID = C.CATEGORY_ID
+		  WHERE CD.PRODUCT_ID = p.product_id) AS category_names,
+
+		<!-- 로그인 회원이 이 상품을 이미 찜했는지 - product.xml getList의 WISHED와 동일 패턴 -->
+		CASE WHEN EXISTS (
+		    SELECT 1 FROM WISH W WHERE W.PRODUCT_ID = p.product_id AND W.MEMBER_ID = #{memberId}
+		) THEN 1 ELSE 0 END AS WISHED
 
 		FROM product p
 		JOIN optiondetail o ON p.product_id = o.product_id
@@ -44,10 +59,20 @@
 		p.product_content
 	</select>
 	
+	<!-- 등급 할인 표시(정상가/할인가) - OrderMapper.selectByMemberIdForPay와 같은 조인, 용도만 다름 -->
+	<select id="getMemberGrade" resultType="MemberGradeDTO" parameterType="Long">
+		SELECT G.GRADE_NAME, G.DISCOUNT_RATE
+		FROM MEMBER M JOIN GRADE G ON M.GRADE_ID = G.GRADE_ID
+		WHERE M.MEMBER_ID = #{memberId}
+	</select>
+
+	<!-- 대표이미지(product_title_image=0)는 DB 제약으로 "상품당 1건"이 강제되지 않아, 데이터가
+	     꼬여 2건 이상이면 resultType="String"(스칼라 기대)이라 TooManyResultsException으로
+	     상세 페이지 전체가 500이 난다. ROWNUM=1로 방어(wish.xml의 대표이미지 서브쿼리와 동일 패턴). -->
 	<select id="getThumbnail" resultType="String" parameterType="Long">
 	select product_image_save_name as thumbnail
 	from productimage
-	where product_id = #{productId} and product_title_image = 0
+	where product_id = #{productId} and product_title_image = 0 and ROWNUM = 1
 	</select>
 	
 	<select id="getImages" resultType="String" parameterType="Long">
@@ -72,15 +97,32 @@
 
 	<!-- CouponDTO가 admin과 공용 DTO가 되면서 createdAt/deadline(LocalDate, admin 전용)이 추가됐지만,
 	     스토어프론트는 원래대로 문자열 표시용 필드(createdAtStr/deadlineStr)만 채우면 됨 -->
+	<!-- 유효기간이 남은 쿠폰만 - 지난 쿠폰까지 내려주면 "발급 가능한 쿠폰" 목록에 못 받는 쿠폰이 섞인다.
+	     마이페이지 쿠폰함(MemberMapper.selectCouponsByMemberId)과 같은 기준(DEADLINE >= TRUNC(SYSDATE)). -->
 	<select id="getCoupons" resultType="CouponDTO" >
 		select coupon_id, coupon_name, coupon_value, coupon_text,
 			to_char(CREATED_AT, 'YYYY-MM-DD') as created_at_str,
 			to_char(DEADLINE, 'YYYY-MM-DD') as deadline_str
 		from COUPON
+		where DEADLINE >= TRUNC(SYSDATE)
 	</select>
 
 	<select id="couponCheck" resultType="int">
 		select count(*) from COUPONHISTORY where MEMBER_ID = #{memberId} and COUPON_ID = #{couponId}
+	</select>
+
+	<!-- "쿠폰 받기" 모달용 - getCoupons(전체 유효 쿠폰)에서 이 회원이 이미 받은 것을 뺀다 -->
+	<select id="getIssuableCoupons" resultType="CouponDTO">
+		select coupon_id, coupon_name, coupon_value, coupon_text,
+			to_char(CREATED_AT, 'YYYY-MM-DD') as created_at_str,
+			to_char(DEADLINE, 'YYYY-MM-DD') as deadline_str
+		from COUPON C
+		where DEADLINE >= TRUNC(SYSDATE)
+		and not exists (
+			select 1 from COUPONHISTORY CH
+			where CH.MEMBER_ID = #{memberId} and CH.COUPON_ID = C.COUPON_ID
+		)
+		order by DEADLINE asc
 	</select>
 
 	<insert id="insertCoupon">
@@ -135,8 +177,10 @@
 	</select>
 
 
+	<!-- REVIEW_IMAGE_PATH를 같이 뽑아야 화면의 <img src="경로+파일명">이 성립한다.
+	     빼먹으면 파일명만 남아 상대경로로 깨진다(ReviewMapper.selectReviewImagesByReviewIds와 같은 구성). -->
 	<select id="getReviewImages" resultType="ReviewImagesDTO" >
-		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_image
+		select ri.REVIEW_ID, REVIEW_IMAGE_SAVE_NAME as review_image, ri.REVIEW_IMAGE_PATH
 		from REVIEWIMAGE ri join REVIEW r on ri.REVIEW_ID = r.REVIEW_ID
 		where r.REVIEW_ID in <foreach collection="list" item="reviewId" open="(" separator=", " close=")">
 		#{reviewId}

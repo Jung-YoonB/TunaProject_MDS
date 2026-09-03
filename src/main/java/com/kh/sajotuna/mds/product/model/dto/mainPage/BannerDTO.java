@@ -15,5 +15,8 @@ import lombok.ToString;
 @Alias("BannerDTO")
 public class BannerDTO {
 
+	// banner = PRODUCTIMAGE.PRODUCT_IMAGE_SAVE_NAME (파일명만)
+	// imagePath + banner 를 이어붙인 게 실제 이미지 주소다(상품 카드/주문/리뷰 화면과 동일한 규칙).
+	private String imagePath;
 	private	String banner;
 }

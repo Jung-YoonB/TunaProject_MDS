@@ -5,13 +5,17 @@
   
 <mapper namespace="com.kh.sajotuna.mds.product.model.mapper.ProductMapper">
 
-        <select id="getList" resultType="ProductListDTO" parameterType="SearchDTO">
+        <select id="getList" resultType="ProductListDTO">
                 SELECT
                 P.PRODUCT_ID,
                 P.PRODUCT_TITLE,
                 COUNT(DISTINCT W.WISH_ID) AS WISH_COUNT,
+                PI.PRODUCT_IMAGE_PATH AS IMAGE_PATH,
                 PI.PRODUCT_IMAGE_SAVE_NAME AS TITLE_IMAGE,
                 MIN(PO.OPTION_PRICE) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS PRICE,
+                <!-- 검색결과 카드 "장바구니 담기" 퀵버튼용 대표 옵션(popId) - PRICE와 동일한 기준(OPTION_ID
+                     최솟값) 행에서 뽑아야 상세 페이지의 "기본 옵션"과 일치한다. -->
+                MIN(OD.POP_ID) KEEP (DENSE_RANK FIRST ORDER BY PO.OPTION_ID ASC) AS POP_ID,
                 CAT_AGG.CATEGORY_NAMES AS CATEGORY_NAMES,
                 TAG_AGG.TAG_DATA AS TAG_DATA,
                 NVL((
@@ -21,7 +25,14 @@
                 JOIN OPTIONDETAIL SUB_OD ON OD_SUB.POP_ID = SUB_OD.POP_ID
                 WHERE SUB_OD.PRODUCT_ID = P.PRODUCT_ID
                 AND R.REVIEW_STATUS = 1
-                ), 0.0) AS SCORE
+                ), 0.0) AS SCORE,
+
+                <!-- 로그인 회원이 이 상품을 이미 찜했는지 - 카드의 하트 아이콘 초기 상태용. memberId가
+                     null(비로그인)이면 "= NULL" 비교라 항상 거짓이 되어 자연히 0(false)으로 떨어진다. -->
+                CASE WHEN EXISTS (
+                    SELECT 1 FROM WISH W2
+                    WHERE W2.PRODUCT_ID = P.PRODUCT_ID AND W2.MEMBER_ID = #{memberId}
+                ) THEN 1 ELSE 0 END AS WISHED
 
                 FROM PRODUCT P
                 JOIN (
@@ -46,7 +57,109 @@
                 LEFT JOIN WISH W ON P.PRODUCT_ID = W.PRODUCT_ID
 
                 <where>
-                        <!-- 1. 검색창 검색 -->
+                        <!-- 상세조회(detailPage.xml)는 ON_SALE만 허용하는데 목록/검색엔 이 필터가 없어서
+                             품절·숨김·판매중지 상품도 노출되던 것. 지금은(2026-09) 130건이
+                             전부 ON_SALE이라 눈에 안 띄지만, 상태가 바뀌면 바로 재현된다. -->
+                        AND P.STATUS = 'ON_SALE'
+
+                        <!-- 검색 (상품명, 카테고리, 태그 모두 검색어를 기반으로 가져옴) -->
+                        <if test="search.keyword != null and search.keyword != ''">
+                                AND (
+                                P.PRODUCT_TITLE LIKE '%' || #{search.keyword} || '%'
+                                OR P.PRODUCT_NAME LIKE '%' || #{search.keyword} || '%'
+                                OR CAT_AGG.CATEGORY_NAMES LIKE '%' || #{search.keyword} || '%'
+                                OR TAG_AGG.TAG_DATA LIKE '%' || #{search.keyword} || '%'
+                                )
+                        </if>
+
+                        <!-- 카테고리 다중 선택 -->
+                        <if test="search.category != null and search.category.size() > 0">
+                                AND CAT_AGG.PRODUCT_ID IN (
+                                SELECT PRODUCT_ID
+                                FROM CATEGORYDETAIL
+                                WHERE CATEGORY_ID IN
+                                <foreach collection="search.category" item="catId" open="(" separator="," close=")">
+                                        #{catId}
+                                </foreach>
+                                )
+                        </if>
+
+                        <!-- 태그 다중 선택-->
+                        <if test="search.tag != null and search.tag.size() > 0">
+                                AND TAG_AGG.PRODUCT_ID IN (
+                                SELECT PRODUCT_ID
+                                FROM TAGDETAIL
+                                WHERE TAG_ID IN
+                                <foreach collection="search.tag" item="tagId" open="(" separator="," close=")">
+                                        #{tagId}
+                                </foreach>
+                                )
+                        </if>
+                </where>
+                GROUP BY
+                P.PRODUCT_ID,
+                P.PRODUCT_TITLE,
+                PI.PRODUCT_IMAGE_PATH,
+                PI.PRODUCT_IMAGE_SAVE_NAME,
+                CAT_AGG.CATEGORY_NAMES,
+                TAG_AGG.TAG_DATA
+                ORDER BY COUNT(DISTINCT W.WISH_ID) DESC
+
+                <!-- 페이징은 호출부가 pageSize로 결정한다(0이면 전체 조회).
+                     원래는 "검색 조건이 하나라도 있을 때만" 페이징했는데, 그러면 조건 없이 들어온
+                     검색 결과 화면에서 목록은 전체가 한 번에 나오는데 페이지 번호만 여러 개 찍히는
+                     불일치가 생긴다. 회원 배송목록/내 리뷰 페이징(MemberMapper, ReviewMapper)처럼
+                     쿼리는 항상 offset/pageSize를 그대로 따르고, 페이지 크기 결정은 서비스가 한다. -->
+                <if test="pageSize > 0">
+                        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+                </if>
+        </select>
+	
+	<!-- 배너에 쓸 상품 대표 이미지 최대 5장. 최근 등록된 상품 순서(PRODUCT_ID는 시퀀스라 내림차순 = 최신).
+	     한 상품에 대표 이미지가 여러 장 들어가 있는 경우가 있어 ROW_NUMBER로 상품당 1장만 남긴 뒤 자른다
+	     (예전에는 WISH 조인 + GROUP BY로 찜 많은 순이었는데, 배너는 신상품 노출이 목적이라 기준을 바꿈). -->
+	<select id="bannerList" resultType="BannerDTO">
+        SELECT IMAGE_PATH, BANNER
+        FROM (
+            SELECT PI.PRODUCT_ID,
+                   PI.PRODUCT_IMAGE_PATH AS IMAGE_PATH,
+                   PI.PRODUCT_IMAGE_SAVE_NAME AS BANNER,
+                   ROW_NUMBER() OVER (PARTITION BY PI.PRODUCT_ID ORDER BY PI.PRODUCT_IMAGE_ID) AS RN
+            FROM PRODUCTIMAGE PI
+            WHERE PI.PRODUCT_TITLE_IMAGE = 0
+        )
+        WHERE RN = 1
+        ORDER BY PRODUCT_ID DESC
+        FETCH FIRST 5 ROWS ONLY
+	</select>
+
+        <select id="countSearchProducts" resultType="int" parameterType="searchDto">
+                SELECT COUNT(DISTINCT P.PRODUCT_ID)
+                FROM PRODUCT P
+
+                <!-- 검색어 조건에 카테고리/태그명이 포함되므로 이 두 조인은 유지해야 합니다 -->
+                JOIN (
+                SELECT CD.PRODUCT_ID,
+                LISTAGG(C.CATEGORY_NAME, ',') WITHIN GROUP (ORDER BY C.CATEGORY_ID) AS CATEGORY_NAMES
+                FROM CATEGORYDETAIL CD
+                JOIN CATEGORY C ON CD.CATEGORY_ID = C.CATEGORY_ID
+                GROUP BY CD.PRODUCT_ID
+                ) CAT_AGG ON P.PRODUCT_ID = CAT_AGG.PRODUCT_ID
+
+                LEFT JOIN (
+                SELECT TD.PRODUCT_ID,
+                LISTAGG(T.TAG_NAME || '|' || T.TAG_COLOR, ',') WITHIN GROUP (ORDER BY T.TAG_ID) AS TAG_DATA
+                FROM TAGDETAIL TD
+                JOIN TAG T ON TD.TAG_ID = T.TAG_ID
+                GROUP BY TD.PRODUCT_ID
+                ) TAG_AGG ON P.PRODUCT_ID = TAG_AGG.PRODUCT_ID
+
+                <where>
+                        <!-- getList와 동일한 STATUS 필터 - 빠뜨리면 총 개수와 실제 목록 건수가 어긋나
+                             페이지네이션이 깨진다. -->
+                        AND P.STATUS = 'ON_SALE'
+
+                        <!-- 검색창 검색 -->
                         <if test="keyword != null and keyword != ''">
                                 AND (
                                 P.PRODUCT_TITLE LIKE '%' || #{keyword} || '%'
@@ -56,39 +169,43 @@
                                 )
                         </if>
 
-                        <!-- 2. 카테고리 메뉴 클릭-->
-                        <if test="category != null">
-                                AND CAT_AGG.PRODUCT_ID IN (SELECT PRODUCT_ID FROM CATEGORYDETAIL WHERE CATEGORY_ID = #{category})
+                        <!-- 카테고리 다중 선택 (List) -->
+                        <if test="category != null and category.size() > 0">
+                                AND P.PRODUCT_ID IN (
+                                SELECT PRODUCT_ID
+                                FROM CATEGORYDETAIL
+                                WHERE CATEGORY_ID IN
+                                <foreach collection="category" item="catId" open="(" separator="," close=")">
+                                        #{catId}
+                                </foreach>
+                                )
                         </if>
 
-                        <!-- 3. 태그 버튼 클릭 -->
-                        <if test="tag != null">
-                                AND TAG_AGG.PRODUCT_ID IN (SELECT PRODUCT_ID FROM TAGDETAIL WHERE TAG_ID = #{tag})
+                        <!-- 태그 다중 선택 (List) -->
+                        <if test="tag != null and tag.size() > 0">
+                                AND P.PRODUCT_ID IN (
+                                SELECT PRODUCT_ID
+                                FROM TAGDETAIL
+                                WHERE TAG_ID IN
+                                <foreach collection="tag" item="tagId" open="(" separator="," close=")">
+                                        #{tagId}
+                                </foreach>
+                                )
                         </if>
                 </where>
-                GROUP BY
-                P.PRODUCT_ID,
-                P.PRODUCT_TITLE,
-                PI.PRODUCT_IMAGE_SAVE_NAME,
-                CAT_AGG.CATEGORY_NAMES,
-                TAG_AGG.TAG_DATA
-                ORDER BY COUNT(DISTINCT W.WISH_ID) DESC
-
-                <if test="(keyword != null and keyword != '') or category != null or tag != null">
-                        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
-                </if>
         </select>
-	
-	<select id="bannerList" resultType="BannerDTO">
-        SELECT
-        PI.PRODUCT_IMAGE_SAVE_NAME as banner
-        FROM PRODUCTIMAGE PI
-        LEFT JOIN WISH W ON PI.PRODUCT_ID = W.PRODUCT_ID
-        WHERE PI.PRODUCT_TITLE_IMAGE = 0
-        GROUP BY
-        PI.PRODUCT_ID,
-        PI.PRODUCT_IMAGE_SAVE_NAME
-        ORDER BY COUNT(DISTINCT W.WISH_ID) DESC
-        FETCH FIRST 5 ROWS ONLY
-	</select>
+
+        <!-- 검색 화면 카테고리 칩 목록 -->
+        <select id="selectAllCategories" resultType="CategoryDTO">
+                SELECT CATEGORY_ID, CATEGORY_NAME
+                FROM CATEGORY
+                ORDER BY CATEGORY_ID
+        </select>
+
+        <!-- 검색 화면 태그 칩 목록. TAG_COLOR까지 내려서 칩 색을 상품 등록 화면과 맞춘다 -->
+        <select id="selectAllTags" resultType="TagOptionDTO">
+                SELECT TAG_ID, TAG_NAME, TAG_COLOR
+                FROM TAG
+                ORDER BY TAG_ID
+        </select>
 </mapper>

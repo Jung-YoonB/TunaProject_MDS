@@ -7,7 +7,7 @@
 //
 // 참고: href="#"는 브라우저가 클릭 없이도 :visited로 취급하므로, 이런 링크에 색을 입힐 때는
 // default.css:22의 a:visited{color:#333}(명시도 0,1,1)를 이길 수 있게 ID 스코프 등으로
-// 명시도를 올려야 한다. (PROJECT_AUDIT.md 잠재적 위험 19번)
+// 명시도를 올려야 한다.
 (function () {
 
     // scopeSelector 안쪽의 href="#" 링크만 대상으로 한다.

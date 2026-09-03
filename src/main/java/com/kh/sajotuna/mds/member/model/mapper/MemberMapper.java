@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryAddressDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageOrderItemDTO;
@@ -20,11 +21,11 @@ public interface MemberMapper {
 	// 가입 시 포인트 초기화
 	int insertPoint(Long memberId);
 	
-	// 중복 확인
+	// 중복 확인. excludeMemberId는 "본인 제외"(MemberService 참고), 회원가입은 null
 	int countByLoginId(String loginId);
-	int countByNickname(String nickname);
-	int countByEmail(String email);
-	int countByPhone(String phone);
+	int countByNickname(@Param("nickname") String nickname, @Param("excludeMemberId") Long excludeMemberId);
+	int countByEmail(@Param("email") String email, @Param("excludeMemberId") Long excludeMemberId);
+	int countByPhone(@Param("phone") String phone, @Param("excludeMemberId") Long excludeMemberId);
 	
 	// 로그인 아이디를 통한 회원 조회
 	MemberDTO selectByLoginId(String loginId);
@@ -72,4 +73,17 @@ public interface MemberMapper {
 
 	// 위 건수와 같은 조건에서 가장 먼저 리뷰를 쓸 주문상세 1건 (없으면 null)
 	Long selectNextReviewableOdId(@Param("memberId") Long memberId);
+
+	// 새 배송지 추가 전, 기본 배송지로 체크했으면 기존 기본 배송지를 먼저 해제한다
+	// (UX_DELIVERYADDRESS_IS_DEFAULT 조건부 유니크 인덱스 - 회원당 Y는 1개뿐).
+	int clearDefaultAddress(@Param("memberId") Long memberId);
+
+	int insertDeliveryAddress(DeliveryAddressDTO address);
+
+	// 회원정보 수정 화면의 배송지 드롭다운 목록. 기본 배송지가 항상 맨 위로 온다(매퍼 XML의 ORDER BY).
+	List<DeliveryAddressDTO> selectDeliveryAddresses(@Param("memberId") Long memberId);
+
+	// addId가 이 회원 소유가 아니면 0건 갱신 - 서비스가 그 값을 보고 막는다(다른 회원 배송지 조작 방지)
+	int setDefaultAddress(@Param("memberId") Long memberId, @Param("addId") Long addId);
+	int deleteDeliveryAddress(@Param("memberId") Long memberId, @Param("addId") Long addId);
 }

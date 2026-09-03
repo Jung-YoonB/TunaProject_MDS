@@ -41,6 +41,10 @@ public class PaymentViewDTO {
 	private long couponDiscount;   // 쿠폰 할인 금액
 	private long pointUse;         // 포인트 사용 금액
 	private long finalPrice;       // 최종 결제 금액
+
+	// 포인트 최소 사용 단위. 안내 문구와 화면 검증이 서버와 같은 값을 쓰도록 내려보낸다
+	// (OrderServiceImpl.POINT_MIN_USE 가 단일 출처 - JSP/JS에 숫자를 적지 말 것)
+	private long pointMinUse;
 	
 	// 리스트
 	private List<OrderItemDTO> itemList;		// 구매할 것들 정보 (옵션id, 수량, 옵션 이름, 옵션가격, 상품 이름)

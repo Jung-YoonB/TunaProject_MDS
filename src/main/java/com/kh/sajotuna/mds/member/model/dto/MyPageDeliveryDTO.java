@@ -44,7 +44,9 @@ public class MyPageDeliveryDTO {
 	private String productImageSaveName;
 	private Integer qty;
 	private Integer productCount; // 주문에 포함된 상품 건수 (2건 이상이면 "외 N건" 표시용)
-	private boolean hasReview; // 이 주문의 모든 상품을 다 썼는지 (하나라도 남으면 false)
+	// 이 주문의 "모든" 상품 리뷰를 다 썼는지 (하나라도 남으면 false).
+	// 품목 1건 단위는 MyPageOrderItemDTO.hasReview 이며 서로 다른 값이다 - 이름을 구분해 둔다.
+	private boolean allReviewed;
 
 	// 주문 전체 수량 합계. qty는 대표 상품 1건의 수량이라 여러 상품을 산 주문에서는
 	// 화면에 "수량: 2개"처럼 실제보다 적게 보인다

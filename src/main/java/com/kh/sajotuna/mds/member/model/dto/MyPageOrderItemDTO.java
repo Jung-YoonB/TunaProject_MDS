@@ -37,4 +37,7 @@ public class MyPageOrderItemDTO {
 
 	private String productImagePath;
 	private String productImageSaveName;
+
+	// 이 품목의 리뷰를 이미 썼는지. 삭제한 리뷰도 "썼음"으로 친다(재작성 차단과 같은 기준, 정책 11번)
+	private boolean hasReview;
 }

@@ -5,17 +5,19 @@ import java.util.List;
 import com.kh.sajotuna.mds.coupon.model.CouponDTO;
 import com.kh.sajotuna.mds.member.model.dto.MemberDTO;
 import com.kh.sajotuna.mds.member.model.dto.MyPageDeliveryDTO;
+import com.kh.sajotuna.mds.member.model.dto.DeliveryAddressDTO;
 
 public interface MemberService {
 
 	// 회원 가입
 	void signUp(MemberDTO member);
 	
-	// 중복체크용
+	// 중복체크용. excludeMemberId는 "본인 제외"로, 회원정보 수정에서 자기 값을 다시 확인해도
+	// 중복으로 잡히지 않게 한다. 회원가입 경로는 본인이 없으므로 null을 넘긴다.
 	boolean isLoginIdCheck(String loginId);
-	boolean isNicknameCheck(String nickname);
-	boolean isEmailCheck(String email);
-	boolean isPhoneCheck(String phone);
+	boolean isNicknameCheck(String nickname, Long excludeMemberId);
+	boolean isEmailCheck(String email, Long excludeMemberId);
+	boolean isPhoneCheck(String phone, Long excludeMemberId);
 	
 	// 로그인
 	MemberDTO login(String loginId, String loginPw);
@@ -58,4 +60,12 @@ public interface MemberService {
 
 	// 빠른메뉴 "리뷰 작성" 타일이 바로 보낼 주문상세 1건 (없으면 null)
 	Long nextReviewableOdId(Long memberId);
+
+	// 배송지 추가 (utill/deliveryAddress.jsp) - isDefault='Y'면 기존 기본 배송지를 먼저 해제한다
+	void addDeliveryAddress(DeliveryAddressDTO address);
+
+	// 회원정보 수정 화면의 배송지 관리(목록/기본 설정/삭제)
+	List<DeliveryAddressDTO> listDeliveryAddresses(Long memberId);
+	void setDefaultAddress(Long memberId, Long addId);
+	void deleteDeliveryAddress(Long memberId, Long addId);
 }

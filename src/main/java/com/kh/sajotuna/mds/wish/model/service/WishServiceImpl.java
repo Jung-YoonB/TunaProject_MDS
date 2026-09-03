@@ -42,7 +42,6 @@ public class WishServiceImpl implements WishService{
     @Override
     public List<WishListDTO> getWishList(Long memberId) {
         List<WishListDTO> list = mapper.getWishList(memberId);
-        System.out.println("wishList :: " + list);
 
         return  list;
     }

@@ -462,45 +462,147 @@ document.querySelectorAll(".btn-save-field").forEach(function (btn) {
                 console.error(error);
                 alert("비밀번호 변경 중 오류가 발생했습니다.");
             }
-
-        /* --------------------------------
-           배송지
-           -------------------------------- */
-        } else if (field === "address") {
-
-            const addressName =
-                document.querySelector("#addressName").value.trim();
-
-            const detailAddress =
-                document.querySelector("#detailAddress").value.trim();
-
-            const isDefault =
-                document.querySelector("#isDefaultAddress").checked;
-
-            if (!addressName || !detailAddress) {
-                alert("배송지 이름과 상세 주소를 모두 입력해주세요.");
-                return;
-            }
-
-            // 배송지는 아직 백엔드가 없으므로 화면에서만 처리
-            let summary = addressName + " · " + detailAddress;
-
-            if (isDefault) {
-                summary += " (기본 배송지)";
-            }
-
-            document.querySelector("#current-address").textContent = summary;
-
-            document.querySelector("#addressName")
-                .dataset.currentValue = addressName;
-
-            document.querySelector("#detailAddress")
-                .dataset.currentValue = detailAddress;
-
-            collapsePanel(panel);
         }
     });
 });
+
+
+/* =========================
+   배송지 목록 - 조회/기본 설정/삭제
+   (새 배송지 추가 자체는 utill/deliveryAddress.jsp에서 한다)
+   ========================= */
+
+(function () {
+
+    const addressList = document.getElementById("address-list");
+    const addressListEmpty = document.getElementById("address-list-empty");
+    const currentAddressText = document.getElementById("current-address");
+    const addAddressBtn = document.getElementById("address-add-btn");
+
+    if (!addressList) return;
+
+    if (addAddressBtn) {
+        addAddressBtn.addEventListener("click", function () {
+            location.href = addAddressBtn.dataset.href;
+        });
+    }
+
+    // 사용자 데이터(주소명/상세주소)라 textContent로만 채운다
+    function renderAddressList(list) {
+
+        addressList.innerHTML = "";
+
+        list.forEach(function (addr, index) {
+
+            const li = document.createElement("li");
+            li.className = "address-list-item" + (addr.isDefault === "Y" ? " is-default" : "");
+            li.dataset.addId = addr.addId;
+
+            const info = document.createElement("div");
+            info.className = "address-list-item-info";
+
+            const nameEl = document.createElement("strong");
+            nameEl.textContent = addr.addressName;
+            info.appendChild(nameEl);
+
+            if (addr.isDefault === "Y") {
+                const badge = document.createElement("span");
+                badge.className = "address-default-badge";
+                badge.textContent = "기본 배송지";
+                info.appendChild(badge);
+            }
+
+            const detailEl = document.createElement("p");
+            detailEl.textContent = addr.detailAddress;
+            info.appendChild(detailEl);
+
+            const actions = document.createElement("div");
+            actions.className = "address-list-item-actions";
+
+            if (addr.isDefault !== "Y") {
+                const setDefaultBtn = document.createElement("button");
+                setDefaultBtn.type = "button";
+                setDefaultBtn.className = "btn-set-default";
+                setDefaultBtn.dataset.addId = addr.addId;
+                setDefaultBtn.textContent = "기본 배송지로 변경";
+                actions.appendChild(setDefaultBtn);
+            }
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className = "btn-delete-address";
+            deleteBtn.dataset.addId = addr.addId;
+            deleteBtn.textContent = "삭제";
+            actions.appendChild(deleteBtn);
+
+            li.appendChild(info);
+            li.appendChild(actions);
+            addressList.appendChild(li);
+
+            if (index < list.length - 1) {
+                const divider = document.createElement("li");
+                divider.className = "address-list-divider";
+                divider.setAttribute("role", "separator");
+                addressList.appendChild(divider);
+            }
+        });
+
+        addressListEmpty.hidden = list.length > 0;
+        currentAddressText.textContent = list.length > 0 ? list[0].addressName : "등록된 배송지가 없습니다";
+    }
+
+    // 기본 설정/삭제 성공 후 다시 부른다. 페이지 전체를 새로고침하면 펼쳐둔 패널이 접혀버려서
+    // 목록만 AJAX로 다시 받아 그 자리에서 갈아끼운다.
+    function reloadAddressList() {
+        fetch("/member/addresses", { credentials: "same-origin" })
+            .then(function (res) { return res.json(); })
+            .then(function (result) {
+                if (result.success) renderAddressList(result.data);
+            })
+            .catch(function () {});
+    }
+
+    addressList.addEventListener("click", function (e) {
+
+        const setDefaultBtn = e.target.closest(".btn-set-default");
+        const deleteBtn = e.target.closest(".btn-delete-address");
+
+        if (setDefaultBtn) {
+            const addId = setDefaultBtn.dataset.addId;
+            fetch("/member/address/" + addId + "/default", { method: "POST", credentials: "same-origin" })
+                .then(function (res) { return res.json(); })
+                .then(function (result) {
+                    if (!result.success) {
+                        alert(result.message || "기본 배송지 설정에 실패했습니다.");
+                        return;
+                    }
+                    reloadAddressList();
+                })
+                .catch(function () {
+                    alert("기본 배송지 설정 중 오류가 발생했습니다.");
+                });
+            return;
+        }
+
+        if (deleteBtn) {
+            if (!confirm("이 배송지를 삭제하시겠습니까?")) return;
+
+            const addId = deleteBtn.dataset.addId;
+            fetch("/member/address/" + addId + "/delete", { method: "POST", credentials: "same-origin" })
+                .then(function (res) { return res.json(); })
+                .then(function (result) {
+                    if (!result.success) {
+                        alert(result.message || "배송지 삭제에 실패했습니다.");
+                        return;
+                    }
+                    reloadAddressList();
+                })
+                .catch(function () {
+                    alert("배송지 삭제 중 오류가 발생했습니다.");
+                });
+        }
+    });
+})();
 
 
 /* ---- 회원 탈퇴 ---- */

@@ -16,10 +16,42 @@
         delete from wish where member_id = #{memberId} and PRODUCT_ID = #{productId}
     </delete>
 
+    <!-- 찜 목록. 찜 화면 카드가 쓰는 값(대표 이미지, 최저 옵션가, 평균 별점, 리뷰 수)까지 함께 내려준다.
+         대표 이미지는 여러 장이거나 아예 없을 수 있어서 조인 대신 스칼라 서브쿼리로 1건만 뽑는다
+         (MemberMapper.selectDeliveriesByMemberId와 같은 패턴). 조인+WHERE로 걸면 대표 이미지가
+         없는 상품이 목록에서 통째로 빠져버린다. -->
     <select id="getWishList" parameterType="Long" resultType="WishListDTO">
-        select w.WISH_ID, w.MEMBER_ID, w.PRODUCT_ID, p.PRODUCT_TITLE, pi.PRODUCT_IMAGE_SAVE_NAME as title_image
-        from WISH w join product p on w.PRODUCT_ID = p.PRODUCT_ID
-        left join productimage pi on p.PRODUCT_ID = pi.PRODUCT_ID
-        where pi.PRODUCT_TITLE_IMAGE = 0 and w.MEMBER_ID = #{memberId}
+        select w.WISH_ID, w.MEMBER_ID, w.PRODUCT_ID,
+               p.PRODUCT_TITLE as PRODUCT_NAME,
+               (select pi.PRODUCT_IMAGE_PATH from PRODUCTIMAGE pi
+                 where pi.PRODUCT_ID = p.PRODUCT_ID and pi.PRODUCT_TITLE_IMAGE = 0 and ROWNUM = 1) as IMAGE_PATH,
+               (select pi.PRODUCT_IMAGE_SAVE_NAME from PRODUCTIMAGE pi
+                 where pi.PRODUCT_ID = p.PRODUCT_ID and pi.PRODUCT_TITLE_IMAGE = 0 and ROWNUM = 1) as TITLE_IMAGE,
+               NVL((select MIN(po.OPTION_PRICE)
+                      from OPTIONDETAIL od
+                      join PRODUCTOPTION po on od.OPTION_ID = po.OPTION_ID
+                     where od.PRODUCT_ID = p.PRODUCT_ID), 0) as PRICE,
+               <!-- 찜 카드 "장바구니 담기" 퀵버튼용 대표 옵션 - 상세 페이지 기준(OPTION_ID가 가장 작은
+                    옵션)과 맞춘다. PRICE는 최저가 기준이라 서로 다른 옵션일 수 있어 별도로 뽑는다. -->
+               (select od.POP_ID
+                      from OPTIONDETAIL od
+                      join PRODUCTOPTION po on od.OPTION_ID = po.OPTION_ID
+                     where od.PRODUCT_ID = p.PRODUCT_ID
+                     order by po.OPTION_ID asc
+                     fetch first 1 row only) as POP_ID,
+               NVL((select ROUND(AVG(r.SCORE), 1)
+                      from REVIEW r
+                      join ORDERDETAIL rod on r.OD_ID = rod.OD_ID
+                      join OPTIONDETAIL rodt on rod.POP_ID = rodt.POP_ID
+                     where rodt.PRODUCT_ID = p.PRODUCT_ID and r.REVIEW_STATUS = 1), 0) as SCORE,
+               (select count(*)
+                      from REVIEW r
+                      join ORDERDETAIL rod on r.OD_ID = rod.OD_ID
+                      join OPTIONDETAIL rodt on rod.POP_ID = rodt.POP_ID
+                     where rodt.PRODUCT_ID = p.PRODUCT_ID and r.REVIEW_STATUS = 1) as REVIEW_COUNT
+          from WISH w
+          join PRODUCT p on w.PRODUCT_ID = p.PRODUCT_ID
+         where w.MEMBER_ID = #{memberId}
+         order by w.WISH_ID desc
     </select>
 </mapper>

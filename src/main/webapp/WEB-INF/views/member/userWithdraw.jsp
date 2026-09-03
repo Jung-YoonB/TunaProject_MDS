@@ -54,16 +54,8 @@
 
     </div>
 
-<%--
-    TODO(data binding):
-    - 이 화면은 모델 바인딩되는 값이 전혀 없는 "안내 전용" 화면입니다(순수 정적 문구).
-    - 실제 탈퇴 처리 백엔드는 #BE014에서 이미 신설됨 — MemberController의
-      POST /member/withdraw와 MemberMapper.xml의 <update id="withdrawMember">가 있음.
-      다만 views/userUpdateInfo.js의 탈퇴 링크가 아직 그 API를 호출하지 않고 이 화면으로
-      바로 이동만 하므로, 연동 시 "요청 성공 후 이 화면으로 이동"하도록 바꿔야 합니다.
-    - 2026-09-01 규격화: 원래 전체 JSP 25개 중 유일하게 header.jsp를 include하지 않고
-      자기 <head>에서 CSS를 직접 link하던 독립 페이지였으나, 다른 페이지와 동일하게
-      header/footer include + wrapper div 방식으로 통일함(HANDOFF.md 3-42 참고).
---%>
+<%-- 탈퇴 완료 안내 전용 화면(모델 바인딩 없음).
+     실제 탈퇴는 회원정보 수정 화면의 탈퇴 링크가 POST /member/withdraw를 호출해 성공한 뒤
+     이리로 넘어온다(views/userUpdateInfo.js). 이 화면을 직접 열어도 탈퇴되지 않는다. --%>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

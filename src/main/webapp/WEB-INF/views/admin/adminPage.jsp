@@ -19,9 +19,9 @@
                 <div class="profile-identity">
                     <div class="profile-name-wrap">
                         <div class="profile-name-line">
-                            <span class="profile-name" id="profile-name">관리자</span>
+                            <span class="profile-name" id="profile-name"><c:out value="${loginMember.memberName}"/></span>
                         </div>
-                        <p class="profile-subtitle" id="profile-subtitle">관리자 (admin)</p>
+                        <p class="profile-subtitle" id="profile-subtitle"><c:out value="${loginMember.memberName}"/> (<c:out value="${loginMember.loginId}"/>)</p>
                     </div>
                 </div>
             </div>
@@ -29,11 +29,11 @@
             <div class="info-list">
                 <div class="info-row">
                     <span class="info-label">이름</span>
-                    <span class="info-value" id="val-name">관리자</span>
+                    <span class="info-value" id="val-name"><c:out value="${loginMember.memberName}"/></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">아이디</span>
-                    <span class="info-value" id="val-login-id">admin</span>
+                    <span class="info-value" id="val-login-id"><c:out value="${loginMember.loginId}"/></span>
                 </div>
             </div>
         </section>
@@ -163,25 +163,9 @@
 
 </div>
 
-    <%-- TODO(data binding): Member 테이블 연동 필요.
-         현재는 로그인 세션 없이 관리자 1인 목업 값을 하드코딩.
-         - 프로필 카드는 "이름"과 "아이디" 2개 항목만 표시함(닉네임/이메일/휴대폰 번호는 제거).
-           이름: Member.member_name, 아이디: Member.login_id
-           (role='ADMIN'인 로그인 세션의 Member row 1건 기준으로 바인딩 필요).
-           표시값은 실제 인물명이 아닌 "관리자"로 일반화했고, 아이디는 실제 시드 계정 값인 "admin"과
-           일치시킴 — 실제 자격증명(비밀번호 등)은 화면에 노출하지 않음.
-         - 빠른 메뉴(4타일): 상품 관리/주문·배송 관리/쿠폰 관리는 admin 패키지 컨트롤러(/admin/product/add,
-           /admin/order, /admin/coupon)로 연결됨 — resources/static/temp/*.html 정적 프로토타입은 더 이상
-           사용하지 않음. 문의 내역은 대응 화면이 없어 href="#" 처리.
-         - 일반 메뉴: 원래 그룹 헤더(상품관리/쿠폰 조회 및 등록/문의내역) + 하위 항목의 2단 아코디언
-           구조였는데, 유저 마이페이지(member/myPage.jsp)에 새로 만든 목록형 디자인(제목+설명+화살표,
-           .list-card/.list-row)과 통일하기 위해 그룹 헤더를 없애고 5개 항목을 평평한 리스트로 재구성함
-           (상품 등록/주문·배송 관리/쿠폰 조회 및 등록은 기존 화면 연결, 문의사항 처리/공지 작성은 대응
-           화면이 프로젝트에 없어 href="#" 임시 처리 — 추후 실제 화면/컨트롤러 구현 필요).
-         - 이전에 있던 "관리자 권한 정보"/"계정 관리"(로그아웃 포함)/"관리자 최근 활동 내역" 카드는
-           사용자 요청에 따라 이번 레이아웃 개편에서 완전히 제거됨. --%>
+    <%-- 문의사항 처리 / 공지 작성 / 문의 내역은 대응 화면이 아직 없어 href="#" 상태다.
+         common/placeholderLinks.js가 클릭을 막아 페이지 상단으로 튀지 않게 한다. --%>
 <script src="<c:url value='/js/common/placeholderLinks.js'/>"></script>
-<script src="<c:url value='/js/admin/adminMypageService.js'/>"></script>
 <script src="<c:url value='/js/views/adminPage.js'/>"></script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp"/>

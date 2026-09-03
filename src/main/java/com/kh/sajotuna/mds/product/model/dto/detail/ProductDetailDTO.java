@@ -28,6 +28,8 @@ public class ProductDetailDTO {
 	private String thumbnail;		//상품 썸네일 (대표이미지)
 	private List<String> image;		//상품 이미지
 	private List<String> detailContents;	//상품 설명 이미지
+	private String categoryNames;	//카테고리명(다중, " · "로 연결) - 상세 페이지 카테고리 표시/이동경로용
+	private boolean wished;	//로그인 회원이 이미 찜한 상품인지 - 찜 버튼 초기 상태용(비로그인은 항상 false)
 
 	// admin.AdminProductService의 상품 등록도 같은 PRODUCT 테이블에 행을 하나 추가하는데,
 	// 같은 테이블을 참조하는 DTO(ProductInsertDTO)가 따로 있어서 이쪽으로 합침(ReviewDTO와 동일한 방식).

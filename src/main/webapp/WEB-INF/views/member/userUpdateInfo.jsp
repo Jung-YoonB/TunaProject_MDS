@@ -170,24 +170,46 @@
             </div>
         </li>
 
-        <!-- 배송지 -->
+        <!-- 배송지 - 등록/기본 설정/삭제는 이 화면에서, 실제 새 배송지 추가는 결제 화면과 같은
+             독립 화면(utill/deliveryAddress.jsp)에서 한다(우편번호 검색 팝업이 필요해서). -->
         <li class="info-edit-item">
             <button type="button" class="info-edit-header" aria-expanded="false">
                 <span class="info-edit-label">배송지</span>
-                <span class="info-edit-current" id="current-address">등록된 배송지가 없습니다</span>
+                <span class="info-edit-current" id="current-address">
+                    <c:choose>
+                        <c:when test="${empty deliveryAddressList}">등록된 배송지가 없습니다</c:when>
+                        <c:otherwise><c:out value="${deliveryAddressList[0].addressName}"/></c:otherwise>
+                    </c:choose>
+                </span>
                 <svg class="info-edit-chevron" viewBox="0 0 24 24" focusable="false"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="info-edit-panel" hidden>
-                <input type="text" id="addressName" class="signup-input" placeholder="배송지 이름 (예: 우리집, 회사)">
-                <input type="text" id="detailAddress" class="signup-input" placeholder="상세 주소를 입력해주세요">
-                <label class="address-default-check">
-                    <input type="checkbox" id="isDefaultAddress">
-                    기본 배송지로 설정
-                </label>
-                <div class="edit-actions">
-                    <button type="button" class="btn-cancel-edit">취소</button>
-                    <button type="button" class="btn-save-field" data-field="address">저장</button>
-                </div>
+                <ul id="address-list" class="address-list">
+                    <c:forEach items="${deliveryAddressList}" var="addr" varStatus="status">
+                        <li class="address-list-item${addr.isDefault == 'Y' ? ' is-default' : ''}" data-add-id="${addr.addId}">
+                            <div class="address-list-item-info">
+                                <strong><c:out value="${addr.addressName}"/></strong>
+                                <c:if test="${addr.isDefault == 'Y'}"><span class="address-default-badge">기본 배송지</span></c:if>
+                                <p><c:out value="${addr.detailAddress}"/></p>
+                            </div>
+                            <div class="address-list-item-actions">
+                                <c:if test="${addr.isDefault != 'Y'}">
+                                    <button type="button" class="btn-set-default" data-add-id="${addr.addId}">기본 배송지로 변경</button>
+                                </c:if>
+                                <button type="button" class="btn-delete-address" data-add-id="${addr.addId}">삭제</button>
+                            </div>
+                        </li>
+                        <c:if test="${!status.last}"><li class="address-list-divider" role="separator"></li></c:if>
+                    </c:forEach>
+                </ul>
+                <p id="address-list-empty" class="address-list-empty"${empty deliveryAddressList ? '' : ' hidden'}>등록된 배송지가 없습니다.</p>
+
+                <c:url var="addAddressUrl" value="/member/deliveryAddress">
+                    <c:param name="returnUrl" value="/member/updateInfo"/>
+                </c:url>
+                <%-- class는 일부러 btn-save-field가 아니다 - 제네릭 저장 핸들러(data-field
+                     기준 분기)에 안 걸리도록, 시각 스타일만 같은 별도 클래스를 쓴다. --%>
+                <button type="button" id="address-add-btn" class="btn-address-add" data-href="${addAddressUrl}">+ 배송지 추가</button>
             </div>
         </li>
 
@@ -205,31 +227,14 @@
 
 </div>
 
-<%-- TODO(data binding): 프리필 값(display***)은 MemberController.updateInfoForm()이
-     mypageForm()과 동일하게 service.getMemberByMemberId(...)를 호출해 채우는 실제 세션 데이터(
-     loginMember)를 우선 사용함 — 목업 아님. 다만 로그인하지 않은 상태로 열람하거나 특정 값이
-     비어 있을 때도 화면을 확인할 수 있도록, 상단의 <c:set> 블록에서 각 필드가 비어 있으면
-     예시값(홍길동/1998-05-14/M/gildong99/hong123/01012345678/hong123@example.com)으로
-     대체함 — 실제 로그인 상태에서는 이 예시값이 쓰이지 않음.
-     - 항목을 탭하면 하위 패널이 펼쳐지고, 그 안에서만 값을 수정한 뒤 "저장"을 눌러야 반영되는
-       구글 계정 정보 화면과 동일한 UX. "취소"를 누르면 입력값을 되돌리고 패널을 접음.
-     - 닉네임/이메일/휴대폰 중복확인: 이미 존재하는 실제 API(/member/checkNickname,
-       /member/checkEmail, /member/checkPhone)를 그대로 호출함. 다만 서버에 "본인 제외" 로직이
-       없어 값이 바뀌지 않은 경우 자기 자신과 충돌해 오탐(중복)으로 표시될 수 있으므로,
-       userUpdateInfo.js에서 "현재 저장된 값과 동일하면 서버 호출 없이 자동 통과" 로직으로
-       우회함(저장에 성공할 때마다 기준값을 최신값으로 갱신) — 근본 해결은 추후 서버 측
-       "본인 제외" 파라미터 추가가 필요.
-     - 아이디는 상단에 변경 불가 고정 블록으로만 표시하며 목록/수정 대상이 아님.
-     - 새 비밀번호: 두 칸 모두 비어 있으면 변경하지 않음(선택 입력). 입력 시 MemberDTO.loginPw와
-       동일한 정규식/일치 검증만 프론트에서 수행.
-     - 배송지: DeliveryAddress 테이블(add_id/member_id/address_name/detail_address/is_default)에
-       대응하는 컨트롤러/서비스/매퍼가 전혀 없음 — 현재는 완전히 목업(저장해도 DB 미반영, 새로고침
-       시 사라짐). 실제 구현 시 DeliveryAddress 전용 CRUD API 신설 필요.
-     - 각 항목의 "저장" 버튼: 화면 표시값만 갱신하고 DB에는 반영되지 않는 no-op.
-       단 백엔드는 #BE014에서 이미 신설됨 — MemberController에 POST /member/updateName,
-       /updateBirth, /updateGender, /updateNickname, /updatePhone, /updateEmail,
-       /updatePassword, /withdraw 8개와 MemberMapper.xml의 대응 <update> 문이 전부 있음.
-       프론트에서 이 엔드포인트들을 호출하기만 하면 되는 상태(연동은 이번 범위 밖). --%>
+<%-- 항목을 탭하면 패널이 펼쳐지고 그 안에서 값을 고친 뒤 "저장"을 눌러야 반영된다.
+     저장 버튼은 실제 API(POST /member/updateName·updateNickname·updatePhone·updateEmail·
+     updateBirth·updateGender·updatePassword)를 호출한다.
+
+     ⚠️ 닉네임/이메일/휴대폰 중복확인은 서버에 "본인 제외" 조건이 없다
+     (countByNickname 등이 MEMBER 전체를 세므로 값을 안 바꿔도 자기 자신과 충돌해 "중복"으로 뜬다).
+     그래서 userUpdateInfo.js가 "현재 저장된 값과 같으면 서버를 부르지 않고 통과"로 우회한다.
+     근본 해결은 서버 쪽에 본인 제외(memberId) 파라미터를 추가하는 것. --%>
 <script src="<c:url value='/js/member/memberService.js'/>"></script>
 <script src="<c:url value='/js/views/userUpdateInfo.js'/>"></script>
 

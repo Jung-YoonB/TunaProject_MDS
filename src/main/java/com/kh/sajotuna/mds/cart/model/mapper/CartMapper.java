@@ -21,4 +21,9 @@ public interface CartMapper {
 
     int removeCart(@Param("memberId") Long memberId, @Param("popId") Long popId);
 
+    int updateQty(@Param("memberId") Long memberId, @Param("popId") Long popId, @Param("qty") int qty);
+
+    // 이미 장바구니에 있는 옵션을 다시 담을 때(퀵버튼/상세 페이지 공통) 수량을 얹는다.
+    int incrementQty(@Param("memberId") Long memberId, @Param("popId") Long popId, @Param("deltaQty") int deltaQty);
+
 }

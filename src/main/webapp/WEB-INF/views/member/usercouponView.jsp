@@ -42,13 +42,13 @@
         <c:if test="${totalPages > 1}">
         <nav class="pagination" aria-label="페이지 이동">
             <c:if test="${currentPage > 1}">
-            <a class="page-link page-prev" href="<c:url value='/member/couponView'><c:param name='page' value='${currentPage - 1}'/></c:url>">이전</a>
+            <a class="page-link page-prev" href="<c:url value='/member/couponView'><c:param name='page' value='${currentPage - 1}'/></c:url>#title">이전</a>
             </c:if>
             <c:forEach begin="${pageWindowStart}" end="${pageWindowEnd}" var="p">
-            <a class="page-link ${p == currentPage ? 'is-active' : ''}" href="<c:url value='/member/couponView'><c:param name='page' value='${p}'/></c:url>">${p}</a>
+            <a class="page-link ${p == currentPage ? 'is-active' : ''}" href="<c:url value='/member/couponView'><c:param name='page' value='${p}'/></c:url>#title">${p}</a>
             </c:forEach>
             <c:if test="${currentPage < totalPages}">
-            <a class="page-link page-next" href="<c:url value='/member/couponView'><c:param name='page' value='${currentPage + 1}'/></c:url>">다음</a>
+            <a class="page-link page-next" href="<c:url value='/member/couponView'><c:param name='page' value='${currentPage + 1}'/></c:url>#title">다음</a>
             </c:if>
         </nav>
         </c:if>
